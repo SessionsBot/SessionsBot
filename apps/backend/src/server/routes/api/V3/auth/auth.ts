@@ -46,11 +46,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                 redirect_uri: REDIRECT_URI,
                 scope: "identify guilds, email",
             }),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-            }
+            { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
         );
 
         // 3. Get access/refresh tokens from Discord oAuth:
@@ -76,7 +72,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                 : `https://cdn.discordapp.com/embed/avatars/0.png`,
         };
 
-        // 5. Get User's Guilds Data:
+        // 5. Get User's Guilds - Map:
         const botGuilds = await core.botClient.guilds.fetch();
         const botGuildsIds = botGuilds.map((g) => g.id);
         const ADMINISTRATOR = 0x00000008;
