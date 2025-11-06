@@ -1,26 +1,50 @@
 {
   "$schema": "https://unpkg.com/release-it/schema/release-it.json",
-  "hooks": {
-    "before:init": ["npm run build"]
-  },
+  "hooks": {},
   "plugins": {
     "@release-it/conventional-changelog": {
       "preset": {
-      "name": "conventionalcommits",
-      "types": [
-        {"type": "feat", "section": "⚡️ Features"},
-        {"type": "fix", "section": "🐞 Bug Fixes"},
-        {"type": "chore", "section": "🧹 Chores"},
-        {"type": "docs", "section": "📄 Documentation"},
-        {"type": "style", "section": "🎨 Styling"},
-        {"type": "refactor", "section": "♻️ Refactoring"},
-        {"type": "perf", "section": "📈 Performance"},
-        {"type": "test", "section": "🧪 Tests"}
-      ]
-    },
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "⚡️ Features"
+          },
+          {
+            "type": "fix",
+            "section": "🐞 Bug Fixes"
+          },
+          {
+            "type": "chore",
+            "section": "🧹 Chores"
+          },
+          {
+            "type": "docs",
+            "section": "📄 Documentation"
+          },
+          {
+            "type": "style",
+            "section": "🎨 Styling"
+          },
+          {
+            "type": "refactor",
+            "section": "♻️ Refactoring"
+          },
+          {
+            "type": "perf",
+            "section": "📈 Performance"
+          },
+          {
+            "type": "test",
+            "section": "🧪 Tests"
+          }
+        ]
+      },
       "infile": "CHANGELOG.md",
       "ignoreRecommendedBump": true,
-      "gitRawCommitsOpts": { "path": "apps/backend" }
+      "gitRawCommitsOpts": {
+        "path": "apps/backend"
+      }
     }
   },
   "git": {
