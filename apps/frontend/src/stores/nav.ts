@@ -10,8 +10,7 @@ export const useNavStore = defineStore("nav", {
       discordServer: {
         invite: "https://discord.gg/dKp5HZPjCg",
         supportInvite: "https://discord.gg/49gNbwA8t6",
-      },
-      discordOAuthSignIn: "http://localhost:3000/api/auth/discord-sign-in",
+      }
     },
   }),
 

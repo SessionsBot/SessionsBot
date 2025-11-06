@@ -175,8 +175,7 @@
             <Button @click="
               nav.closeNav();
             $router.push('/bot-admin');
-            " v-if="auth.signedIn" :disabled="$route.path == '/bot-admin'" class="nav-button bg-red-400/20!"
-              unstyled>
+            " v-if="auth.signedIn" :disabled="$route.path == '/bot-admin'" class="nav-button bg-red-400/20!" unstyled>
               <ShieldUserIcon />
               <p class="font-medium">ADMIN Panel</p>
             </Button>
@@ -235,7 +234,7 @@
   }
 
   .nav-button:disabled {
-    @apply scale-100 ! bg-indigo-400/30;
+    @apply !scale-100 bg-indigo-400/30;
   }
 
   .nav-footer-link {
