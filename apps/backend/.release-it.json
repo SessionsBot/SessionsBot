@@ -60,7 +60,6 @@
     "release": true,
     "releaseName": "backend@v${version}",
     "preRelease": true,
-    "autoGenerate": true,
     "makeLatest": true,
     "comments": {
       "submit": true,

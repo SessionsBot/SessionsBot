@@ -6,13 +6,8 @@ import core from "../../../../../utils/core";
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
 import { User } from "@supabase/supabase-js";
 
-/**
- *+ [ NOTES ]
- *  Alter the api.sessionsbot.fyi redirect to auto include the /api path...
- *  - hosted on https://redirect.pizza
- *  - keep in mind: new api routes
- *  -- no longer includes /api or /vX
- */
+// ! BEFORE PRODUCTION:
+// - Switch over development tokens/keys/vars/etc.
 
 const CLIENT_ID = process.env["DEV_CLIENT_ID"];
 const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
@@ -20,18 +15,14 @@ const REDIRECT_URI = "http://localhost:3000/api/auth/discord-callback";
 
 const authRouter = express.Router({ mergeParams: true });
 const frontendRedirects = {
-    authSuccess: "https://sessionsbot.fyi",
     // authFailure: 'https://sessionsbot.fyi/sign-in?discordOauthError=true',
-    authFailure: "http://localhost:3000/auth-error",
+    authFailure: "http://localhost:5173/sign-in?discordOauthError=true",
 };
 
 // Sign In Endpoint - Initial Sign In w/ Discord:
 authRouter.get("/discord-sign-in", async (req, res) => {
     // Redirect user to Discord oAuth:
-    // ! FIX ME: DEV TESTING CALLBACK URL:
-    return res.redirect(
-        "https://discord.com/oauth2/authorize?client_id=1380300328179732500&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fdiscord-callback&scope=identify+guilds+email"
-    );
+    return res.redirect('https://discord.com/oauth2/authorize?client_id=1380300328179732500&response_type=code&redirect_uri=https%3A%2F%2Fapi.sessionsbot.fyi%2Fauth%2Fdiscord-redirect&scope=identify+guilds+email');
 });
 
 // Discord oAuth Callback Endpoint - Redirect to after initial Discord sign in:
@@ -206,8 +197,9 @@ authRouter.get("/discord-callback", async (req, res) => {
         if (linkErr || !linkData?.properties?.action_link) throw ["Failed to generate login link!", { linkErr, linkData }];
 
         // 8. Log & Redirect New Auth Session:
-        logtail.warn(`👤 - ${userData?.username} Authorized! - Direct oAuth2`, { user: userDataMapped });
+        logtail.log(`👤 - ${userData?.username} Authorized! - Direct oAuth2`, { user: userDataMapped });
         return res.redirect(linkData.properties.action_link);
+
     } catch (err) {
         // Log & Return Error:
         logtail.warn(`👤 - Auth FAILED - See Details..`, { err });
