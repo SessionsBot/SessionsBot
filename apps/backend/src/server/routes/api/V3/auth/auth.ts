@@ -11,7 +11,7 @@ import { User } from "@supabase/supabase-js";
 
 const CLIENT_ID = process.env["DEV_CLIENT_ID"];
 const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
-const REDIRECT_URI = "http://localhost:3000/api/auth/discord-callback";
+const REDIRECT_URI = "https://api.sessionsbot.fyi/auth/discord-redirect";
 
 const authRouter = express.Router({ mergeParams: true });
 const frontendRedirects = {
