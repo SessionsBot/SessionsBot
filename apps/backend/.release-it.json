@@ -52,12 +52,16 @@
     "requireCleanWorkingDir": true,
     "requireBranch": "main",
     "tagName": "backend@v${version}",
-    "tagAnnotation": "Release v${version}",
+    "tagAnnotation": "Release backend@v${version}",
+    "commitMessage": "Release backend@v${version}",
     "push": true
   },
   "github": {
     "release": true,
     "releaseName": "backend@v${version}",
+    "preRelease": true,
+    "autoGenerate": true,
+    "makeLatest": true,
     "comments": {
       "submit": true,
       "issue": ":rocket: _This issue has been resolved in v${version}. See [${releaseName}](${releaseUrl}) for release notes._",
