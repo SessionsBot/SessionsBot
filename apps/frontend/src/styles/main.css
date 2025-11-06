@@ -1,0 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* --color-lightBackground: #DAD7CD;
+    --color-lightForeground: #a3b18a;
+    --color-lightAccent: #607458;
+
+    --color-darkBackground: #101814;
+    --color-darkForeground: #607458;
+    --color-darkAccent: #293D33; */
+
+  --color-ring: var(--color-zinc-700);
+
+  --font-rubik: "Rubik";
+  --font-cutLetters: "Protest Guerrilla";
+  --default-font-family: var(--font-rubik);
+}
+
+html,
+body {
+  background: var(--color-zinc-900);
+  /* background: radial-gradient(circle at top, #1e1b4b 0%, #111827 60%); */
+  color: white;
+  font-family: var(--font-rubik) !important;
+  box-sizing: border-box;
+}
+
+#app {
+  background: radial-gradient(circle at top, hsl(244, 43%, 19%) 0%, #111827 60%);
+  @apply min-h-full w-full max-w-full flex flex-col flex-wrap flex-1 relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  min-height: 100vh; /* Full screen height */
+}
+
+.scroll-hidden {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+}
+.scroll-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

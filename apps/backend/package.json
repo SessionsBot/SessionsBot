@@ -1,0 +1,40 @@
+{
+  "name": "sessions-bot",
+  "version": "0.0.0",
+  "private": "true",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "test": "node dist/index.js",
+    "deploy-cmds": "tsx src/utils/deployCommands.js",
+    "release": "npx release-it"
+  },
+  "dependencies": {
+    "@logtail/node": "^0.5.6",
+    "@sessionsbot/shared": "file:../../packages/shared",
+    "@supabase/supabase-js": "^2.78.0",
+    "axios": "^1.12.2",
+    "chrono-node": "^2.9.0",
+    "cors": "^2.8.5",
+    "discord.js": "^14.24.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "firebase-admin": "^13.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.7.2",
+    "lz-string": "^1.5.0",
+    "node-cron": "^4.0.5",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.1",
+    "@types/cors": "^2.8.19",
+    "@types/luxon": "^3.7.1",
+    "release-it": "^19.0.5",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

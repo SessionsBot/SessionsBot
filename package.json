@@ -1,0 +1,12 @@
+{
+  "name": "sessionsbot",
+  "version": "0.0.0",
+  "description": "SessionsBot makes it simple to schedule and manage recurring events directly in your Discord server. With our web app dashboard, you can create sessions that automatically appear in your server as interactive signup panels.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {},
+  "author": "",
+  "license": "ISC"
+}
