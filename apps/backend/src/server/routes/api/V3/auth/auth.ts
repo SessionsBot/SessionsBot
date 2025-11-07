@@ -9,9 +9,56 @@ import { User } from "@supabase/supabase-js";
 // ! BEFORE PRODUCTION:
 // - Switch over development tokens/keys/vars/etc.
 
+const AuthErrorTypes = {
+    oAuth2: {
+        message: "Discord oAuth2 Failed, code not valid or Discord error present.",
+        status: 401,
+    },
+    codeExchange: {
+        message: "Failed to exchange Discord auth code for access token.",
+        status: 500,
+    },
+    fetchUser: {
+        message: "Failed to fetch user data from Discord API.",
+        status: 502,
+    },
+    missingEmail: {
+        message: "Discord user missing verified email address.",
+        status: 400,
+    },
+    createUser: {
+        message: "Failed to create new Supabase user.",
+        status: 500,
+    },
+    updateUser: {
+        message: "Failed to update existing Supabase user.",
+        status: 500,
+    },
+    generateLink: {
+        message: "Failed to generate Supabase magic link.",
+        status: 500,
+    },
+}
+class AuthError {
+    public readonly errorType: keyof typeof AuthErrorTypes
+    public readonly message: string
+    public readonly status: number
+    public readonly queryPath: string
+
+    constructor(errType: keyof typeof AuthErrorTypes, extra?: any) {
+        const { message, status } = AuthErrorTypes[errType]
+        this.errorType = errType
+        this.message = message
+        this.status = status
+        this.queryPath = `&errorType=${errType}`
+        if (extra) (this as any).extra = extra;
+    }
+};
+
 const CLIENT_ID = process.env["DEV_CLIENT_ID"];
 const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
 const REDIRECT_URI = "https://api.sessionsbot.fyi/auth/discord-callback";
+const BOT_ADMIN_UIDs = process.env["BOT_ADMIN_USER_IDS"]?.split(",") ?? [];
 
 const authRouter = express.Router({ mergeParams: true });
 const frontendRedirects = {
@@ -19,11 +66,13 @@ const frontendRedirects = {
     authFailure: "http://localhost:5173/sign-in?discordOauthError=true",
 };
 
+
 // Sign In Endpoint - Initial Sign In w/ Discord:
 authRouter.get("/discord-sign-in", async (req, res) => {
     // Redirect user to Discord oAuth:
     return res.redirect('https://discord.com/oauth2/authorize?client_id=1380300328179732500&response_type=code&redirect_uri=https%3A%2F%2Fapi.sessionsbot.fyi%2Fauth%2Fdiscord-callback&scope=identify+guilds+email');
 });
+
 
 // Discord oAuth Callback Endpoint - Redirect to after initial Discord sign in:
 authRouter.get("/discord-callback", async (req, res) => {
@@ -31,9 +80,7 @@ authRouter.get("/discord-callback", async (req, res) => {
         // 1. Get code/query from callback:
         const { code, error } = req.query;
         // If oAuth failed:
-        if (!code || error) {
-            return res.redirect(frontendRedirects.authFailure);
-        }
+        if (!code || error) throw new AuthError('oAuth2');
 
         // 2. Exchange code for token:
         const tokenReq = await axios.post(
@@ -50,18 +97,13 @@ authRouter.get("/discord-callback", async (req, res) => {
         );
 
         // 3. Get access/refresh tokens from Discord oAuth:
-        const {
-            data: { access_token, refresh_token },
-        } = tokenReq;
-        if (!access_token || !refresh_token) {
-            logtail.warn(`👤 - Auth FAILED - Couldn't fetch access/refresh tokens...`, { tokenReq });
-            return res.redirect(frontendRedirects.authFailure);
-        }
+        const { data: { access_token, refresh_token } } = tokenReq;
+        if (!access_token || !refresh_token) throw new AuthError('codeExchange');
 
         // 4. Get extra Discord data for user:
         const userResponse = await axios.get("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${access_token}` } });
         const userData: APIUser = userResponse?.data;
-        if (!userData) throw { message: "Failed to fetch authenticating users Discord data!" };
+        if (!userData) throw new AuthError('fetchUser', { source: 'Discord user data fetch from token.' });
         const userDataMapped = {
             id: userData?.id,
             username: userData?.username,
@@ -71,6 +113,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                 ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
                 : `https://cdn.discordapp.com/embed/avatars/0.png`,
         };
+        if (!userDataMapped.email) throw new AuthError('missingEmail');
 
         // 5. Get User's Guilds - Map:
         const botGuilds = await core.botClient.guilds.fetch();
@@ -79,7 +122,7 @@ authRouter.get("/discord-callback", async (req, res) => {
         const MANAGE_GUILD = 0x00000020;
         const guildsResponse = await axios.get("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${access_token}` } });
         const guilds: RESTGetAPICurrentUserGuildsResult = guildsResponse.data;
-        if (!guilds) throw { message: "Failed to fetch authenticating users Discord guilds!" };
+        if (!guilds) throw new AuthError('fetchUser', { source: 'Discord user guilds data fetch from token.' });
         const userGuildsMapped = guilds.map((g) => ({
             id: g?.id,
             name: g?.name,
@@ -96,14 +139,11 @@ authRouter.get("/discord-callback", async (req, res) => {
         // 6. Create/Find Supabase User for Authenticated Discord User:
         let userProfile = null;
         let authUser: User = null;
-        const { data: existingProfile, error: profileFetchErr } = await supabase.from("profiles").select("*").eq("discord_id", userDataMapped.id).single();
-        if (profileFetchErr) throw ["Failed to fetch existing profiles for oAuth", existingProfile];
+        const { data: existingProfile, error: profileFetchErr } = await supabase.from("profiles").select("*").eq("discord_id", userDataMapped.id).maybeSingle();
+        if (profileFetchErr) throw new AuthError('fetchUser', { source: 'Failed to fetch existing profile from Supabase.', fetch_error: profileFetchErr });
         if (!existingProfile) { // No Profile - New User - Create:
             // Create new Auth User:
-            const {
-                data: { user: newUser },
-                error: createUserErr,
-            } = await supabase.auth.admin.createUser({
+            const { data: { user: newUser }, error: createUserErr } = await supabase.auth.admin.createUser({
                 email: userDataMapped.email,
                 email_confirm: true,
                 user_metadata: {
@@ -114,7 +154,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                     },
                 },
             });
-            if (createUserErr || !newUser) throw ["Failed to create new auth user!", { createUserErr, newUser }];
+            if (createUserErr || !newUser) throw new AuthError('createUser', { error_details: createUserErr, source: 'Auth Users' });
 
             // Create new Auth Profile:
             const { data: newProfile, error: createProfileErr } = await supabase
@@ -124,8 +164,6 @@ authRouter.get("/discord-callback", async (req, res) => {
                     discord_id: userDataMapped.id,
                     email: userDataMapped.email,
                     username: userDataMapped.username,
-                    display_name: userDataMapped.display_name,
-                    avatar: userDataMapped.avatar,
                     discord_access_token: access_token,
                     discord_refresh_token: refresh_token,
                     discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
@@ -133,19 +171,20 @@ authRouter.get("/discord-callback", async (req, res) => {
                     created_at: new Date().toISOString(),
                 })
                 .select();
-            if (createProfileErr || !newProfile) throw ["Failed to create new profile for user!", { createProfileErr, newProfile }];
+            if (createProfileErr || !newProfile) throw new AuthError('createUser', { error_details: createProfileErr, source: 'User Profiles' });
 
             // Assign User
             userProfile = newProfile;
             authUser = newUser;
 
         } else { // Found Profile - Fetch User - Update:
+            // Get Existing User:
             const userUid = existingProfile?.id;
-            const {
-                data: { user: existingUser },
-                error: getUserErr,
-            } = await supabase.auth.admin.getUserById(userUid);
-            if (getUserErr) throw ["Failed to fetch existing user from profile id within auth!", { getUserErr, userUid }];
+            const isBotAdmin = BOT_ADMIN_UIDs.includes(userUid);
+            const appRoles = ['user'];
+            if (isBotAdmin) appRoles.push('admin');
+            const { data: { user: existingUser }, error: getUserErr } = await supabase.auth.admin.getUserById(userUid);
+            if (getUserErr) throw new AuthError('fetchUser', { source: 'Fetch user within auth from profile id.' });
             // Update profile:
             const updProfile = supabase
                 .from("profiles")
@@ -153,8 +192,6 @@ authRouter.get("/discord-callback", async (req, res) => {
                     discord_id: userDataMapped.id,
                     email: userDataMapped.email,
                     username: userDataMapped.username,
-                    display_name: userDataMapped.display_name,
-                    avatar: userDataMapped.avatar,
                     discord_access_token: access_token,
                     discord_refresh_token: refresh_token,
                     discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
@@ -164,6 +201,9 @@ authRouter.get("/discord-callback", async (req, res) => {
                 .select();
             // Update User
             const updUser = supabase.auth.admin.updateUserById(userUid, {
+                app_metadata: {
+                    roles: appRoles
+                },
                 user_metadata: {
                     ...userDataMapped,
                     guilds: {
@@ -174,32 +214,37 @@ authRouter.get("/discord-callback", async (req, res) => {
             });
             // Make Updates
             const [{ data: profileUpdData, error: profileUpdErr }, { data: userUpdData, error: userUpdErr }] = await Promise.all([updProfile, updUser]);
-            if (profileUpdErr || userUpdErr) throw ["Failed to make user updates during oAuth!", { userUid, profileUpdErr, userUpdErr }];
+            if (profileUpdErr || userUpdErr) throw new AuthError('updateUser', { context: { userUid, profileUpdErr, userUpdErr } });
 
             // Assign User
-            userProfile = existingProfile;
-            authUser = existingUser;
+            userProfile = profileUpdData?.[0] ?? existingProfile;
+            authUser = userUpdData.user ?? existingUser;
         }
-        if (!userProfile || !authUser) throw ["Failed to fetch either profile or user for authenticating user..", { userProfile, authUser }];
+        if (!userProfile || !authUser) throw new AuthError('fetchUser', { source: "Failed to fetch either profile or user for authenticating user..", context: { userProfile, authUser } });
 
         // 7. Redirect user back to frontend with Magic Session Link:
         const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
             type: "magiclink",
             email: authUser.email,
             options: {
-                redirectTo: "http://localhost:5173/",
+                redirectTo: "http://localhost:5173/", // ! SWITCH BEFORE PRODUCTION
             },
         });
-        if (linkErr || !linkData?.properties?.action_link) throw ["Failed to generate login link!", { linkErr, linkData }];
+        if (linkErr || !linkData?.properties?.action_link) throw new AuthError('generateLink', { context: { linkData, linkErr } });
 
         // 8. Log & Redirect New Auth Session:
         logtail.log(`👤 - ${userData?.username} Authorized! - Direct oAuth2`, { user: userDataMapped });
         return res.redirect(linkData.properties.action_link);
 
     } catch (err) {
-        // Log & Return Error:
-        logtail.warn(`👤 - Auth FAILED - See Details..`, { err });
-        return res.redirect(frontendRedirects.authFailure);
+        // Log & Redirect to failed sign in page:
+        if (err instanceof AuthError) {
+            logtail.warn(`👤 - Auth FAILED - ${err.errorType} - see details`, { err });
+            return res.redirect(frontendRedirects.authFailure + err.queryPath);
+        } else {
+            logtail.error(`👤 - Auth FAILED - UNKNOWN ERROR - see details`, { err });
+            return res.redirect(frontendRedirects.authFailure + '&errorType=unknown');
+        }
     }
 });
 

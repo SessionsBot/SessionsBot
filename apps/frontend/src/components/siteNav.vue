@@ -124,7 +124,7 @@
             $router.push('/pricing');
             " :disabled="$route.path == '/pricing'" class="nav-button" unstyled>
               <CircleDollarSignIcon :stroke-width="2" />
-              <p class="font-medium">Pricing</p>
+              <p class="">Pricing</p>
             </Button>
 
             <!-- Support -->
@@ -133,7 +133,7 @@
             $router.push('/support');
             " :disabled="$route.path == '/support'" class="nav-button" unstyled>
               <MessageCircleQuestionMark :stroke-width="2" />
-              <p class="font-medium">Support</p>
+              <p class="">Support</p>
             </Button>
 
             <!-- Documentation -->
@@ -142,7 +142,7 @@
             defaultWindow?.open('https://docs.sessionsbot.fyi', '_blank');
             " class="nav-button relative!" unstyled>
               <BookOpenTextIcon :stroke-width="2" />
-              <p class="font-medium">Documentation</p>
+              <p class="">Documentation</p>
               <ExternalLinkIcon :stroke-width="2.5" class="absolute right-1.5 size-3" />
             </Button>
           </span>
@@ -158,7 +158,7 @@
             <!-- Sign In -->
             <Button @click="auth.signIn()" v-if="!auth.signedIn" class="nav-button relative!" unstyled>
               <i class="pi pi-discord ml-0.5" />
-              <p class="font-medium">Sign Into Account</p>
+              <p class="">Sign Into Account</p>
               <ExternalLinkIcon :stroke-width="2.5" class="absolute right-1.5 size-3" />
             </Button>
 
@@ -168,14 +168,15 @@
             $router.push('/account');
             " v-if="auth.signedIn" :disabled="$route.path == '/account'" class="nav-button" unstyled>
               <UserCircle2Icon />
-              <p class="font-medium">My Account</p>
+              <p class="">My Account</p>
             </Button>
 
             <!-- Bot ADMIN -->
             <Button @click="
               nav.closeNav();
             $router.push('/bot-admin');
-            " v-if="auth.signedIn" :disabled="$route.path == '/bot-admin'" class="nav-button bg-red-400/20!" unstyled>
+            " v-if="auth.signedIn" :disabled="$route.path == '/bot-admin'"
+              class="nav-button bg-red-400/10! hover:bg-red-400/20!" unstyled>
               <ShieldUserIcon />
               <p class="font-medium">ADMIN Panel</p>
             </Button>
@@ -183,7 +184,7 @@
             <!-- Sign Out -->
             <Button @click="auth.signOut()" v-if="auth.signedIn" class="nav-button" unstyled>
               <LogOutIcon />
-              <p class="font-medium">Sign Out</p>
+              <p class="">Sign Out</p>
             </Button>
           </span>
         </section>

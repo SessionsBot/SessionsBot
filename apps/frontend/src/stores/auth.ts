@@ -6,7 +6,9 @@ import type { UserMetadata } from "@supabase/supabase-js";
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
-        userData: <UserMetadata | undefined>{}
+        userData: <UserMetadata | undefined>{},
+        // Is that below overkill? / will it run each time a nav is created in a component or just once for the store in general?
+        user: computedAsync(async (onCancel) => { const { data: { user } } = await supabase.auth.getUser(); return user; }),
     }),
 
     actions: {
@@ -38,8 +40,8 @@ export const useAuthStore = defineStore('auth', {
                 }
                 if (event == 'TOKEN_REFRESHED') {
                     console.log('[AUTH EVENT] - Token Refreshed', { session });
-                    // authStore.signedIn = true;
-                    // authStore.userData = session?.user?.user_metadata
+                    this.signedIn = true;
+                    this.userData = session?.user?.user_metadata
                     return
                 }
                 if (event == 'SIGNED_OUT') {

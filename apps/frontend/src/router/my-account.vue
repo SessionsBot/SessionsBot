@@ -1,10 +1,12 @@
 <script setup lang="ts">
   import { useAuthStore } from "@/stores/auth";
+  import { supabase } from "@/utils/supabase";
   import { LogOutIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
   import { storeToRefs } from "pinia";
 
   const auth = useAuthStore();
-  const { userData, signedIn } = storeToRefs(auth);
+  const { userData, signedIn, user } = storeToRefs(auth);
+
 </script>
 
 <template>
@@ -33,22 +35,30 @@
             <p class="userDataField">{{ userData?.id }}</p>
           </div>
           <div class="flex flex-col mb-5 flex-wrap justify-center items-center content-center">
+
             <!-- User Image -->
-            <img :src="userData?.avatar" class="sm:size-40 size-35 mb-7 sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+            <img :src="userData?.avatar" class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+            <!-- Acc Actions -->
             <span class="flex flex-nowrap flex-row gap-2 pt-1.5 justify-center items-center">
-              <!-- Acc Actions -->
               <Button unstyled
                 class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 transition-all active:scale-95 p-1.75 rounded-md cursor-pointer">
                 <RefreshCcwIcon />
                 <p class="text-nowrap">Refresh Data</p>
               </Button>
 
-              <Button @click="auth.signOut()" unstyled
+              <Button @click="auth.signOut(); $router.push('/')" unstyled
                 class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-red-700/50 hover:bg-red-600/50 active:bg-red-500/50 transition-all active:scale-95 p-1.75 rounded-md cursor-pointer">
                 <LogOutIcon />
                 <p class="text-nowrap">Sign Out</p>
               </Button>
             </span>
+
+            <!-- TESTING -->
+            <p class="m-2 mt-4 text-xs opacity-25">
+              {{ user?.id }}
+            </p>
+
+
           </div>
         </section>
       </div>
