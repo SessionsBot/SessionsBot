@@ -75,11 +75,6 @@ authRouter.get("/discord-sign-in", async (req, res) => {
 });
 
 
-authRouter.get('/ip', (request, response) => {
-    response.send(request.ip);
-});
-
-
 // Discord oAuth Callback Endpoint - Redirect to after initial Discord sign in:
 authRouter.get("/discord-callback", async (req, res) => {
     try {
