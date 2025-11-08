@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
         async resyncDiscordData(triggerType = 'manual') {
             const userToken = await this.getUserJWT()
             if (!userToken) return console.warn('Cannot update user Discord data - no auth token...');
-            await axios.get('http://localhost:3000/api/auth/discord-refresh', { headers: { Authorization: `Bearer ${userToken}`, 'trigger-type': triggerType } })
+            await axios.get('https://api.sessionsbot.fyi/auth/discord-refresh', { headers: { Authorization: `Bearer ${userToken}`, 'trigger-type': triggerType } })
                 .then(async (res) => {
                     await supabase.auth.refreshSession()
                 })
