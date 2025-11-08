@@ -54,6 +54,11 @@ export const useAuthStore = defineStore('auth', {
             console.log('WATCHING AUTH...')
         },
 
+        async getUserJWT() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            return session?.access_token
+        },
+
         async signOut() {
             this.signedIn = false;
             this.userData = {};

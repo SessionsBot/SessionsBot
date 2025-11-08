@@ -1,11 +1,13 @@
 import axios from "axios";
-import { supabase } from "../../../../../utils/database/supabase";
+import { supabase } from "../../../../../utils/database/supabase.js";
 import express from "express";
-import logtail from "../../../../../utils/logs/logtail";
-import core from "../../../../../utils/core";
+import logtail from "../../../../../utils/logs/logtail.js";
+import core from "../../../../../utils/core.js";
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
 import { User } from "@supabase/supabase-js";
-import { APIResponse } from "../../../../utils/responder";
+import { APIResponse as reply } from "../../../../utils/responder.js";
+import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
+import { DateTime } from "luxon";
 
 // ! BEFORE PRODUCTION:
 // - Switch over development tokens/keys/vars/etc.
@@ -113,6 +115,7 @@ authRouter.get("/discord-callback", async (req, res) => {
             avatar: userData?.avatar
                 ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
                 : `https://cdn.discordapp.com/embed/avatars/0.png`,
+            last_sync: new Date().toISOString()
         };
         if (!userDataMapped.email) throw new AuthError('missingEmail');
 
@@ -147,6 +150,10 @@ authRouter.get("/discord-callback", async (req, res) => {
             const { data: { user: newUser }, error: createUserErr } = await supabase.auth.admin.createUser({
                 email: userDataMapped.email,
                 email_confirm: true,
+                app_metadata: {
+                    roles: ['user'],
+                    last_synced: new Date().toISOString()
+                },
                 user_metadata: {
                     ...userDataMapped,
                     guilds: {
@@ -168,7 +175,6 @@ authRouter.get("/discord-callback", async (req, res) => {
                     discord_access_token: access_token,
                     discord_refresh_token: refresh_token,
                     discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
-                    last_synced: new Date().toISOString(),
                     created_at: new Date().toISOString(),
                 })
                 .select();
@@ -196,21 +202,23 @@ authRouter.get("/discord-callback", async (req, res) => {
                     discord_access_token: access_token,
                     discord_refresh_token: refresh_token,
                     discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
-                    last_synced: new Date().toISOString(),
                 })
                 .eq("id", userUid)
                 .select();
             // Update User
             const updUser = supabase.auth.admin.updateUserById(userUid, {
+                email: userDataMapped.email,
+                email_confirm: true,
                 app_metadata: {
-                    roles: appRoles
+                    roles: appRoles,
+                    last_synced: new Date().toISOString(),
                 },
                 user_metadata: {
                     ...userDataMapped,
                     guilds: {
                         all: userGuildsMapped,
                         manageable: manageableGuildsMapped,
-                    },
+                    }
                 },
             });
             // Make Updates
@@ -251,8 +259,115 @@ authRouter.get("/discord-callback", async (req, res) => {
 
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
-authRouter.get("/discord-refresh", async (req, res) => {
-    return new APIResponse(res).sendFailure({ message: 'This endpoint is still a WIP, please check back another time.' })
+authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, res) => {
+    try {
+        // 1. Get Data/User from Req:
+        const { auth: { user: reqUser, profile: reqUserProfile } } = req;
+        console.log('TOKEN ACCEPTED!');
+
+        // 2. Get Discord token data from profile:
+        const { discord_refresh_token, discord_token_expires_at } = reqUserProfile
+        if (!discord_refresh_token || !discord_token_expires_at) return new reply(res).failure('Failed to get refresh token/data for user, sign out and back in.');
+        const tokenExpDate = DateTime.fromISO(discord_token_expires_at)
+        const tokenExpired = tokenExpDate?.diffNow('seconds')?.seconds <= 0;
+        if (!tokenExpDate || tokenExpired) return new reply(res).failure('Token has expired! You will have to sign back into Discord.')
+
+        // 3. Exchange refresh token for fresh tokens:
+        const tokenReq = await axios.post(
+            "https://discord.com/api/oauth2/token",
+            new URLSearchParams(<any>{
+                client_id: CLIENT_ID,
+                client_secret: CLIENT_SECRET,
+                grant_type: "refresh_token",
+                refresh_token: discord_refresh_token,
+                scope: "identify guilds, email",
+            }),
+            { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
+        ).catch((err) => { throw ['Failed to exchange previous refresh token for fresh discord tokens!', err] });
+
+        // 4. Get access/refresh tokens from Discord oAuth:
+        const { data: { access_token, refresh_token } } = tokenReq;
+        if (!access_token || !refresh_token) throw new AuthError('codeExchange');
+
+        // 5. Get extra Discord data for user:
+        const userResponse = await axios.get("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${access_token}` } });
+        const userData: APIUser = userResponse?.data;
+        if (!userData) throw new AuthError('fetchUser', { source: 'Discord user data fetch from token.' });
+        const userDataMapped = {
+            id: userData?.id,
+            username: userData?.username,
+            email: userData?.email,
+            display_name: userData?.global_name,
+            avatar: userData?.avatar
+                ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
+                : `https://cdn.discordapp.com/embed/avatars/0.png`,
+            last_sync: new Date().toISOString()
+        };
+        if (!userDataMapped.email) throw new AuthError('missingEmail');
+
+        // 6. Get User's Guilds - Map:
+        const botGuilds = await core.botClient.guilds.fetch();
+        const botGuildsIds = botGuilds.map((g) => g.id);
+        const ADMINISTRATOR = 0x00000008;
+        const MANAGE_GUILD = 0x00000020;
+        const guildsResponse = await axios.get("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${access_token}` } });
+        const guilds: RESTGetAPICurrentUserGuildsResult = guildsResponse.data;
+        if (!guilds) throw new AuthError('fetchUser', { source: 'Discord user guilds data fetch from token.' });
+        const userGuildsMapped = guilds.map((g) => ({
+            id: g?.id,
+            name: g?.name,
+            icon: g?.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}` : `https://cdn.discordapp.com/embed/avatars/0.png`,
+            permissions: g?.permissions,
+            memberCount: g?.approximate_member_count,
+            hasSessionsBot: botGuildsIds.includes(g?.id),
+        }));
+        const manageableGuildsMapped = userGuildsMapped.filter((guild) => {
+            const permissions = BigInt(guild?.["permissions_new"] ?? guild.permissions);
+            return (permissions & BigInt(ADMINISTRATOR)) !== 0n || (permissions & BigInt(MANAGE_GUILD)) !== 0n;
+        });
+
+        // 7. Update Auth User and User Profile:
+        const updProfile = supabase.from('profiles').upsert({
+            discord_id: userDataMapped.id,
+            email: userDataMapped.email,
+            username: userDataMapped.username,
+            discord_access_token: access_token,
+            discord_refresh_token: refresh_token,
+            discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
+
+        }).eq("id", reqUser.id).limit(1).single();
+
+        const isBotAdmin = BOT_ADMIN_UIDs.includes(reqUser.id);
+        const appRoles = ['user'];
+        if (isBotAdmin) appRoles.push('admin');
+        const updAuthUser = supabase.auth.admin.updateUserById(userData?.id, {
+            email: userDataMapped.email,
+            email_confirm: true,
+            app_metadata: {
+                roles: appRoles,
+                last_synced: new Date().toISOString(),
+            },
+            user_metadata: {
+                ...userDataMapped,
+                guilds: {
+                    all: userGuildsMapped,
+                    manageable: manageableGuildsMapped,
+                }
+            },
+        })
+
+        // 8. Make Updates:
+        const [{ error: updProfileErr }, { error: updAuthUserErr }] = await Promise.all([updProfile, updAuthUser])
+        if (updProfileErr) throw ['Failed to update auth user profile data!', updProfileErr];
+        if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
+
+        // 9. Return Success:
+        return new reply(res).success('Successfully updated user data from Discord!');
+
+    } catch (err) {
+        logtail.warn(`👤 -  Auth Refresh Failed - See Details`, { err });
+        return new reply(res).failure('Failed to update user data from Discord! Sign out and back in...');
+    }
 });
 
 export default authRouter;

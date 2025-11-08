@@ -1,11 +1,20 @@
 <script setup lang="ts">
   import { useAuthStore } from "@/stores/auth";
   import { supabase } from "@/utils/supabase";
+  import axios from "axios";
   import { LogOutIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
   import { storeToRefs } from "pinia";
 
   const auth = useAuthStore();
   const { userData, signedIn, user } = storeToRefs(auth);
+
+  async function testRefresh() {
+    const userToken = await auth.getUserJWT();
+    await axios.get('http://localhost:3000/api/auth/discord-refresh', { headers: { Authorization: `Bearer ${userToken}` } })
+      .then((res) => console.log(`API RES`, res))
+      .catch((err) => console.log(`API ERR`, err))
+
+  }
 
 </script>
 
@@ -40,7 +49,7 @@
             <img :src="userData?.avatar" class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
             <!-- Acc Actions -->
             <span class="flex flex-nowrap flex-row gap-2 pt-1.5 justify-center items-center">
-              <Button unstyled
+              <Button @click="async () => await testRefresh()" unstyled
                 class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 transition-all active:scale-95 p-1.75 rounded-md cursor-pointer">
                 <RefreshCcwIcon />
                 <p class="text-nowrap">Refresh Data</p>

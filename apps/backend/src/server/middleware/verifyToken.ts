@@ -1,38 +1,40 @@
-import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken'
-import logtail from '../../utils/logs/logtail.js';
-import { AuthedUser } from '@sessionsbot/shared';
-import { APIResponse } from '../utils/responder.js';
-import { HttpStatusCode } from 'axios';
+import { NextFunction, Request, Response } from "express";
+import { supabase } from "../../utils/database/supabase.js";
+import { APIResponse as reply } from "../utils/responder.js";
+import { HttpStatusCode } from "axios";
+import logtail from "../../utils/logs/logtail.js";
+import { User } from "@supabase/supabase-js";
 
-const JWT_SECRET = process.env?.['JWT_SECRET'];
-
-/** **🔑 Used to verify a users authentication token!**
- *- `Valid token`: *Allows request*
- *- `Invalid token`: *Returns 429*
- */
-export const verifyToken = (req:Request, res:Response, next:NextFunction) => {try {
-    const authToken = req?.headers?.authorization.split(' ')[1];
-    // Attempt to verify/decode token from headers:
-    try {
-        const decodedUser = jwt.verify(authToken, JWT_SECRET) as AuthedUser;
-        // Attach authed user to request:
-        req['user'] = decodedUser;
-        return next(); // allowed if no err
-
-    } catch (verifyErr) {
-        if(verifyErr?.name == 'TokenExpiredError'){
-            // Expired token:
-            return new APIResponse(res).sendFailure('Invalid Permissions - Your authentication token has expired!', HttpStatusCode.Unauthorized);
-        }else if (verifyErr?.name == 'JsonWebTokenError'){
-            // Invalid token:
-            return new APIResponse(res).sendFailure('Invalid Permissions - Your authentication token is invalid/altered!', HttpStatusCode.BadRequest);
-        } else throw verifyErr;
+export interface authorizedRequest extends Request {
+    auth: {
+        user: User,
+        profile: any
     }
+};
 
-} catch (err) {
-    console.log('FAILED', err);
-    
-    // logtail.warn(`[👤] FAILED to verify auth token for API request - See details...`, {err, req});
-    return new APIResponse(res).sendFailure('Internal Error - Failed to verify auth token. If this error persists, contact support.');
-}}
+const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // Get token from auth headers:
+        const authToken = req.headers?.authorization?.split(' ')?.[1];
+        // Fetch auth user from token:
+        const { data: { user: authUser }, error: fetchUserErr } = await supabase.auth.getUser(authToken);
+        if (fetchUserErr || !authUser) return new reply(res).failure('Invalid Auth Token!', HttpStatusCode.Unauthorized);
+        // Found User via Token - Get Profile:
+        const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle()
+        if (fetchProfileErr || !userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
+        // Attach authorized user to req:
+        req['auth'] = {
+            user: authUser,
+            profile: userProfile
+        };
+        // Allow request:
+        return next()
+
+    } catch (err) {
+        // Log and return error:
+        logtail.warn('🔑 - Auth Token Verification Failure - See Details..', { err });
+        return new reply(res).failure('An error occurred while verifying user auth token.', 500)
+    }
+}
+
+export default verifyToken;
