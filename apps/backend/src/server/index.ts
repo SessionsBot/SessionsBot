@@ -27,3 +27,8 @@ app.listen(PORT, () => {
     console.info(`[🌐] Web Server is running on ${PORT}`);
     if (process.env['ENVIRONMENT'] == 'development') console.info(`[🌐] Visit at http://localhost:${PORT}`);
 })
+
+// 404 - Not Found / Unknown Routes:
+app.use((req, res) => {
+    return res.redirect(core.urls.mainSite + '/api-not-found')
+});
