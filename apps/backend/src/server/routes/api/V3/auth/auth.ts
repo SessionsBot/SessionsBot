@@ -115,7 +115,6 @@ authRouter.get("/discord-callback", async (req, res) => {
             avatar: userData?.avatar
                 ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
                 : `https://cdn.discordapp.com/embed/avatars/0.png`,
-            last_sync: new Date().toISOString()
         };
         if (!userDataMapped.email) throw new AuthError('missingEmail');
 
@@ -264,6 +263,10 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         // 1. Get Data/User from Req:
         const { auth: { user: reqUser, profile: reqUserProfile } } = req;
         console.log('TOKEN ACCEPTED!');
+        const triggerType = req.headers['trigger-type'] || 'unknown trigger?';
+        const isBotAdmin = BOT_ADMIN_UIDs.includes(reqUser.id);
+        const appRoles = ['user'];
+        if (isBotAdmin) appRoles.push('admin');
 
         // 2. Get Discord token data from profile:
         const { discord_refresh_token, discord_token_expires_at } = reqUserProfile
@@ -280,7 +283,6 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
                 client_secret: CLIENT_SECRET,
                 grant_type: "refresh_token",
                 refresh_token: discord_refresh_token,
-                scope: "identify guilds, email",
             }),
             { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
         ).catch((err) => { throw ['Failed to exchange previous refresh token for fresh discord tokens!', err] });
@@ -301,7 +303,6 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
             avatar: userData?.avatar
                 ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
                 : `https://cdn.discordapp.com/embed/avatars/0.png`,
-            last_sync: new Date().toISOString()
         };
         if (!userDataMapped.email) throw new AuthError('missingEmail');
 
@@ -327,7 +328,7 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         });
 
         // 7. Update Auth User and User Profile:
-        const updProfile = supabase.from('profiles').upsert({
+        const updProfile = supabase.from('profiles').update({
             discord_id: userDataMapped.id,
             email: userDataMapped.email,
             username: userDataMapped.username,
@@ -335,12 +336,9 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
             discord_refresh_token: refresh_token,
             discord_token_expires_at: new Date(Date.now() + tokenReq.data?.expires_in * 1000).toISOString(),
 
-        }).eq("id", reqUser.id).limit(1).single();
+        }).eq("id", reqUser.id).limit(1).select().single()
 
-        const isBotAdmin = BOT_ADMIN_UIDs.includes(reqUser.id);
-        const appRoles = ['user'];
-        if (isBotAdmin) appRoles.push('admin');
-        const updAuthUser = supabase.auth.admin.updateUserById(userData?.id, {
+        const updAuthUser = supabase.auth.admin.updateUserById(req?.auth?.user?.id, {
             email: userDataMapped.email,
             email_confirm: true,
             app_metadata: {
@@ -362,6 +360,7 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
 
         // 9. Return Success:
+        logtail.log(`👤 - ${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userDataMapped });
         return new reply(res).success('Successfully updated user data from Discord!');
 
     } catch (err) {

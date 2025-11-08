@@ -1,62 +1,42 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
 import { useNavStore } from "./nav";
-import type { UserMetadata } from "@supabase/supabase-js";
+import type { User, UserMetadata } from "@supabase/supabase-js";
+import axios from "axios";
+import { DateTime } from "luxon";
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
         userData: <UserMetadata | undefined>{},
-        // Is that below overkill? / will it run each time a nav is created in a component or just once for the store in general?
-        user: computedAsync(async (onCancel) => { const { data: { user } } = await supabase.auth.getUser(); return user; }),
+        user: <User | undefined>undefined
     }),
 
     actions: {
-        signIn() {
-            // Direct to Discord oAuth2 Sign In:
-            const nav = useNavStore()
-            return window.location.assign('https://api.sessionsbot.fyi/auth/discord-sign-in');
-        },
 
         watchAuth() {
             // Watch for auth events:
             supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event == 'INITIAL_SESSION') {
-                    console.log('[AUTH EVENT] - INITIAL_SESSION', { session })
-                    return
-                }
-                if (event == 'SIGNED_IN') {
-                    console.log('user signed in!')
-                    this.signedIn = true;
-                    this.userData = session?.user?.user_metadata
-                    return
-                }
-                if (event == 'USER_UPDATED') {
-                    console.log('user updated!')
-                    console.log('session', session)
-                    this.signedIn = session?.user ? true : false;
-                    this.userData = session?.user?.user_metadata || {}
-                    return
-                }
-                if (event == 'TOKEN_REFRESHED') {
-                    console.log('[AUTH EVENT] - Token Refreshed', { session });
-                    this.signedIn = true;
-                    this.userData = session?.user?.user_metadata
-                    return
-                }
-                if (event == 'SIGNED_OUT') {
-                    console.log('[AUTH EVENT] - Signed Out!', { session });
-                    this.signedIn = false;
-                    this.userData = {};
-                    return
+                this.signedIn = session?.user ? true : false;
+                this.user = session?.user;
+                this.userData = session?.user?.user_metadata || {};
+                console.log(`[👤]{Auth Event} - ${event}`, { signedIn: this.signedIn, user: this.user, userData: this.userData })
+                // Check for outdated Discord Data:
+                if (this.signedIn) {
+                    const lastSyncDate = DateTime.fromISO(this.user?.app_metadata?.last_synced)
+                    const staleData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
+                    console.log({ lastSyncDate: lastSyncDate.toLocaleString(DateTime.DATETIME_FULL), staleData })
+                    if (staleData) {
+                        await this.resyncDiscordData('AUTOMATIC');
+                        console.log('Refreshed Discord Data Automatically!');
+                    }
                 }
             })
-            console.log('WATCHING AUTH...')
         },
 
-        async getUserJWT() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            return session?.access_token
+        signIn() {
+            // Redirect to Discord oAuth2 Sign In:
+            return window.location.assign('https://api.sessionsbot.fyi/auth/discord-sign-in');
         },
 
         async signOut() {
@@ -64,6 +44,25 @@ export const useAuthStore = defineStore('auth', {
             this.userData = {};
             const { error } = await supabase.auth.signOut()
             if (error) console.warn('FAILED TO SIGN OUT', error);
+        },
+
+        async getUserJWT() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            return session?.access_token
+        },
+
+        async resyncDiscordData(triggerType = 'manual') {
+            const userToken = await this.getUserJWT()
+            if (!userToken) return console.warn('Cannot update user Discord data - no auth token...');
+            await axios.get('http://localhost:3000/api/auth/discord-refresh', { headers: { Authorization: `Bearer ${userToken}`, 'trigger-type': triggerType } })
+                .then(async (res) => {
+                    await supabase.auth.refreshSession()
+                })
+                .catch(async (err) => {
+                    console.warn(`[Auth/Discord Refresh]: Error - Please directly sign in again, sorry!`, err);
+                    await this.signOut();
+                    this.signIn();
+                })
         }
     },
 
