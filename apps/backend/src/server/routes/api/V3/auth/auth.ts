@@ -8,56 +8,10 @@ import { User } from "@supabase/supabase-js";
 import { APIResponse as reply } from "../../../../utils/responder.js";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
+import { AuthError, AuthErrorTypes } from "./authTypes.js";
 
 // ! BEFORE PRODUCTION:
 // - Switch over development tokens/keys/vars/etc.
-
-const AuthErrorTypes = {
-    oAuth2: {
-        message: "Discord oAuth2 Failed, code not valid or Discord error present.",
-        status: 401,
-    },
-    codeExchange: {
-        message: "Failed to exchange Discord auth code for access token.",
-        status: 500,
-    },
-    fetchUser: {
-        message: "Failed to fetch user data from Discord API.",
-        status: 502,
-    },
-    missingEmail: {
-        message: "Discord user missing verified email address.",
-        status: 400,
-    },
-    createUser: {
-        message: "Failed to create new Supabase user.",
-        status: 500,
-    },
-    updateUser: {
-        message: "Failed to update existing Supabase user.",
-        status: 500,
-    },
-    generateLink: {
-        message: "Failed to generate Supabase magic link.",
-        status: 500,
-    },
-}
-class AuthError {
-    public readonly errorType: keyof typeof AuthErrorTypes
-    public readonly message: string
-    public readonly status: number
-    public readonly queryPath: string
-
-    constructor(errType: keyof typeof AuthErrorTypes, extra?: any) {
-        const { message, status } = AuthErrorTypes[errType]
-        this.errorType = errType
-        this.message = message
-        this.status = status
-        this.queryPath = `&errorType=${errType}`
-        if (extra) (this as any).extra = extra;
-    }
-};
-
 const CLIENT_ID = process.env["DEV_CLIENT_ID"];
 const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
 const REDIRECT_URI = "https://api.sessionsbot.fyi/auth/discord-callback";
@@ -65,6 +19,7 @@ const BOT_ADMIN_UIDs = process.env["BOT_ADMIN_USER_IDS"]?.split(",") ?? [];
 
 const authRouter = express.Router({ mergeParams: true });
 const frontendRedirects = {
+    // ! BEFORE PRODUCTION:
     // authFailure: 'https://sessionsbot.fyi/sign-in?discordOauthError=true',
     authFailure: "http://localhost:5173/sign-in?discordOauthError=true",
 };
@@ -235,7 +190,8 @@ authRouter.get("/discord-callback", async (req, res) => {
             type: "magiclink",
             email: authUser.email,
             options: {
-                redirectTo: "http://localhost:5173/", // ! SWITCH BEFORE PRODUCTION
+                // ! BEFORE PRODUCTION - SWITCH TO FRONTEND URL:
+                redirectTo: "http://localhost:5173/",
             },
         });
         if (linkErr || !linkData?.properties?.action_link) throw new AuthError('generateLink', { context: { linkData, linkErr } });
