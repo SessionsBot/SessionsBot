@@ -5,12 +5,12 @@ import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
 
 /** Main backend web server instance for Sessions Bot. */
-const app = express() 
+const app = express()
 const PORT = process.env.PORT || 3000;
 
 // Server setup:
 app.use(express.json()); // auto parse json
-app.set('trust-proxy', 1); // allow true origin proxy/ip
+app.set('trust proxy', 1); // allow true origin proxy/ip
 app.use(corsMiddleware); // use cors middleware
 app.use(rateLimiter); // use rate limiter guard\
 
@@ -25,5 +25,5 @@ app.use('/api', apiRouter)
 // Start Web Server:
 app.listen(PORT, () => {
     console.info(`[🌐] Web Server is running on ${PORT}`);
-    if(process.env['ENVIRONMENT'] == 'development') console.info(`[🌐] Visit at http://localhost:${PORT}`);
+    if (process.env['ENVIRONMENT'] == 'development') console.info(`[🌐] Visit at http://localhost:${PORT}`);
 })

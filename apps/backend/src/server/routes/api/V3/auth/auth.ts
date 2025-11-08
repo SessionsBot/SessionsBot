@@ -5,6 +5,7 @@ import logtail from "../../../../../utils/logs/logtail";
 import core from "../../../../../utils/core";
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
 import { User } from "@supabase/supabase-js";
+import { APIResponse } from "../../../../utils/responder";
 
 // ! BEFORE PRODUCTION:
 // - Switch over development tokens/keys/vars/etc.
@@ -71,6 +72,11 @@ const frontendRedirects = {
 authRouter.get("/discord-sign-in", async (req, res) => {
     // Redirect user to Discord oAuth:
     return res.redirect('https://discord.com/oauth2/authorize?client_id=1380300328179732500&response_type=code&redirect_uri=https%3A%2F%2Fapi.sessionsbot.fyi%2Fauth%2Fdiscord-callback&scope=identify+guilds+email');
+});
+
+
+authRouter.get('/ip', (request, response) => {
+    response.send(request.ip);
 });
 
 
@@ -251,7 +257,7 @@ authRouter.get("/discord-callback", async (req, res) => {
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
 authRouter.get("/discord-refresh", async (req, res) => {
-
+    return new APIResponse(res).sendFailure({ message: 'This endpoint is still a WIP, please check back another time.' })
 });
 
 export default authRouter;
