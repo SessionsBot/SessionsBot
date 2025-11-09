@@ -17,6 +17,8 @@ const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
 const REDIRECT_URI = "https://api.sessionsbot.fyi/auth/discord-callback";
 const BOT_ADMIN_UIDs = process.env["BOT_ADMIN_USER_IDS"]?.split(",") ?? [];
 
+const stringTimestamp = () => DateTime.now().setZone('America/Chicago').toFormat('f');
+
 const authRouter = express.Router({ mergeParams: true });
 const frontendRedirects = {
     // ! BEFORE PRODUCTION:
@@ -197,16 +199,16 @@ authRouter.get("/discord-callback", async (req, res) => {
         if (linkErr || !linkData?.properties?.action_link) throw new AuthError('generateLink', { context: { linkData, linkErr } });
 
         // 8. Log & Redirect New Auth Session:
-        logtail.log(`👤 - ${userData?.username} Authorized! - Direct oAuth2`, { user: userDataMapped });
+        logtail.log(`👤 - ${userData?.username} Authorized! - Direct oAuth2`, { user: userDataMapped, timestamp: stringTimestamp() });
         return res.redirect(linkData.properties.action_link);
 
     } catch (err) {
         // Log & Redirect to failed sign in page:
         if (err instanceof AuthError) {
-            logtail.warn(`👤 - Auth FAILED - ${err.errorType} - see details`, { err });
+            logtail.warn(`👤 - Auth FAILED - ${err.errorType} - see details`, { err, timestamp: stringTimestamp() });
             return res.redirect(frontendRedirects.authFailure + err.queryPath);
         } else {
-            logtail.error(`👤 - Auth FAILED - UNKNOWN ERROR - see details`, { err });
+            logtail.error(`👤 - Auth FAILED - UNKNOWN ERROR - see details`, { err, timestamp: stringTimestamp() });
             return res.redirect(frontendRedirects.authFailure + '&errorType=unknown');
         }
     }
@@ -316,11 +318,11 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
 
         // 9. Return Success:
-        logtail.log(`👤 - ${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userDataMapped });
+        logtail.log(`👤 - ${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userDataMapped, timestamp: stringTimestamp() });
         return new reply(res).success('Successfully updated user data from Discord!');
 
     } catch (err) {
-        logtail.warn(`👤 -  Auth Refresh Failed - See Details`, { err });
+        logtail.warn(`👤 -  Auth Refresh Failed - See Details`, { err, timestamp: stringTimestamp() });
         return new reply(res).failure('Failed to update user data from Discord! Sign out and back in...');
     }
 });
