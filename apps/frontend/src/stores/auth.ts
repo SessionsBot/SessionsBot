@@ -2,14 +2,15 @@ import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
 import { useNavStore } from "./nav";
 import type { User, UserMetadata } from "@supabase/supabase-js";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { DateTime } from "luxon";
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
         userData: <UserMetadata | undefined>{},
-        user: <User | undefined>undefined
+        user: <User | undefined>undefined,
+        refreshInProgress: false
     }),
 
     actions: {
@@ -17,19 +18,29 @@ export const useAuthStore = defineStore('auth', {
         watchAuth() {
             // Watch for auth events:
             supabase.auth.onAuthStateChange(async (event, session) => {
-                this.signedIn = session?.user ? true : false;
-                this.user = session?.user;
-                this.userData = session?.user?.user_metadata || {};
-                console.log(`[👤]{Auth Event} - ${event}`, { signedIn: this.signedIn, user: this.user, userData: this.userData })
+                // Get current auth user 
+                const user = session?.user;
+                // Update auth store:
+                this.signedIn = user ? true : false;
+                this.user = user;
+                this.userData = user?.user_metadata || {};
+
+                console.info(`[👤]{Auth Event} - ${event}`, { signedIn: this.signedIn, user: this.user, userData: this.userData })
+
                 // Check for outdated Discord Data:
-                if (this.signedIn) {
-                    const lastSyncDate = DateTime.fromISO(this.user?.app_metadata?.last_synced)
-                    const staleData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
-                    console.log({ lastSyncDate: lastSyncDate.toLocaleString(DateTime.DATETIME_FULL), staleData })
-                    if (staleData) {
-                        await this.resyncDiscordData('AUTOMATIC');
-                        console.log('Refreshed Discord Data Automatically!');
-                    }
+                if (this.signedIn && user) {
+                    const lastSyncISO = user.app_metadata?.last_synced;
+                    const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
+                    if (lastSyncDate && lastSyncDate.isValid) {
+                        const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 0.05;
+                        const expiresAt = lastSyncDate.plus({ hours: 0.05 }).setZone('America/Chicago').toFormat('f');
+                        if (expiredData) { // last discord data sync >= 24 hours ago
+                            console.warn(`[👤] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`)
+                            await this.resyncDiscordData('AUTOMATIC');
+                            console.info('[✔] - Completed refresh (allegedly)')
+                        } else console.info(`[👤] - Discord Data is not outdated.. - ${lastSyncDate.setZone('America/Chicago').toFormat('f')} \nExpires At: ${expiresAt}`)
+                    } else console.warn(`[👤] Auth couldn't find the "Last Discord Sync" date..`)
+
                 }
             })
         },
@@ -52,17 +63,27 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async resyncDiscordData(triggerType = 'manual') {
-            const userToken = await this.getUserJWT()
-            if (!userToken) return console.warn('Cannot update user Discord data - no auth token...');
-            await axios.get('https://api.sessionsbot.fyi/auth/discord-refresh', { headers: { Authorization: `Bearer ${userToken}`, 'trigger-type': triggerType } })
-                .then(async (res) => {
-                    await supabase.auth.refreshSession()
-                })
-                .catch(async (err) => {
-                    console.warn(`[Auth/Discord Refresh]: Error - Please directly sign in again, sorry!`, err);
-                    await this.signOut();
-                    this.signIn();
-                })
+            // Check cooldown
+            if (this.refreshInProgress) {
+                console.warn('REFRESH HAS ALREADY BEEN CALLED SLOW THE FUCK DOWN!');
+            } else this.refreshInProgress = true;
+            // Get user token
+            console.info('REFRESH CALLED!')
+
+            const refreshEndpoint = 'https://regional-melloney-sessions-bot-630bded7.koyeb.app/api/auth/discord-refresh';
+            // const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
+            // Send refresh api request
+            console.log('SENDING AUTH DATA REFRESH API CALL');
+            try {
+                const userToken = await this.getUserJWT()
+                if (!userToken) return console.warn('Cannot update user Discord data - no auth token...');
+                const { status, data } = await axios.get(refreshEndpoint, { headers: { Authorization: `Bearer ${userToken}`, 'trigger-type': triggerType } });
+                if (status >= 300) throw { data, status };
+                await supabase.auth.refreshSession();
+            } catch (err) {
+                console.warn('[👤]{REFRESH API} FAILED, api request error', err);
+            }
+
         }
     },
 

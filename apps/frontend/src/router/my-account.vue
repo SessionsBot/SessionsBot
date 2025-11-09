@@ -8,6 +8,8 @@
   const auth = useAuthStore();
   const { userData, signedIn, user } = storeToRefs(auth);
 
+  const avatarLoaded = ref(false)
+
 </script>
 
 <template>
@@ -39,7 +41,13 @@
           <div class="flex flex-col mb-5 flex-wrap justify-center items-center content-center">
 
             <!-- User Image -->
-            <img :src="userData?.avatar" class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+            <span>
+              <Skeleton v-if="!avatarLoaded"
+                class="sm:size-40 !size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+              <img v-if="avatarLoaded" @load="avatarLoaded = true" :src="userData?.avatar"
+                class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+
+            </span>
             <!-- Acc Actions -->
             <span class="flex flex-nowrap flex-row gap-2 pt-1.5 justify-center items-center">
               <Button @click="async () => await auth.resyncDiscordData()" unstyled
