@@ -14,7 +14,12 @@ app.set('trust proxy', 1); // trust true origin IP
 app.use(corsMiddleware); // use cors middleware
 app.use(rateLimiter); // use rate limiter guard
 
-// ROOT / api/backend -> frontend
+app.use((req, res, next) => {
+    console.log("req.ip:", req.ip, "| x-forwarded-for:", req.headers["x-forwarded-for"]);
+    next();
+});
+
+// ROOT / backend web service -> frontend
 app.all('/', (async (req, res) => {
     res.redirect(core.urls.mainSite);
 }))
