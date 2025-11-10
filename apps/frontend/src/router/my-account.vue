@@ -44,8 +44,9 @@
             <span>
               <Skeleton v-if="!avatarLoaded"
                 class="sm:size-40 !size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
-              <img v-if="avatarLoaded" @load="avatarLoaded = true" :src="userData?.avatar"
-                class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400" />
+              <img @load="avatarLoaded = true" :src="userData?.avatar"
+                class="sm:size-40 size-35 mb-7  sm:mb-5 m-5 rounded-md ring-3 ring-zinc-400"
+                :class="{ 'hidden': !avatarLoaded }" />
 
             </span>
             <!-- Acc Actions -->

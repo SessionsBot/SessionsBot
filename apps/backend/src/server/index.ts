@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Server setup:
 app.use(express.json()); // auto parse json
-app.set('trust proxy', 1); // allow true origin proxy/ip
+app.set('trust proxy', true); // allow true origin (bypass cloud flare stuff)
 app.use(corsMiddleware); // use cors middleware
 app.use(rateLimiter); // use rate limiter guard\
 
