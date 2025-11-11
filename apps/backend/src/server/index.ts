@@ -14,16 +14,6 @@ app.set('trust proxy', 2); // trust true origin IP (2 - for cloudflare)
 app.use(corsMiddleware); // use cors middleware
 app.use(rateLimiter); // use rate limiter guard
 
-app.use((req, res, next) => {
-    console.log("req.ip:", req.ip, "| x-forwarded-for:", req.headers["x-forwarded-for"]);
-    next();
-});
-
-// ROOT / backend web service -> frontend
-app.all('/', (async (req, res) => {
-    res.redirect(core.urls.mainSite);
-}))
-
 // ROOT / Top Level Routes:
 app.use('/api', apiRouter)
 

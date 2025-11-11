@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
         userData: <UserMetadata | undefined>{},
-        user: <User | undefined>undefined,
+        user: <User | null>null,
         refreshInProgress: false
     }),
 
@@ -19,7 +19,8 @@ export const useAuthStore = defineStore('auth', {
             // Watch for auth events:
             supabase.auth.onAuthStateChange(async (event, session) => {
                 // Get current auth user 
-                const user = session?.user;
+                // const user = session?.user;
+                const { data: { user } } = await supabase.auth.getUser()
                 // Update auth store:
                 this.signedIn = user ? true : false;
                 this.user = user;
@@ -85,9 +86,11 @@ export const useAuthStore = defineStore('auth', {
 
                 if (status < 300) {
                     console.log('Refresh from backend success - reloading session...')
-                    await supabase.auth.refreshSession()
-                    console.log('Session reloaded')
-                } else throw ['STATUS ERR', data]
+                    const refreshResult = await supabase.auth.refreshSession();
+                    console.log('Session reloaded', { result: refreshResult })
+                } else {
+                    throw ['REFRESH ERR', data];
+                }
 
             } catch (err) {
                 // Failed Discord Refresh:

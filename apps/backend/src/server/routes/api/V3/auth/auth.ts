@@ -313,7 +313,7 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         })
 
         // 8. Make Updates:
-        const [{ error: updProfileErr }, { error: updAuthUserErr }] = await Promise.all([updProfile, updAuthUser])
+        const [{ error: updProfileErr }, { error: updAuthUserErr, data: { user: authUserUpd } }] = await Promise.all([updProfile, updAuthUser])
         if (updProfileErr) throw ['Failed to update auth user profile data!', updProfileErr];
         if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
 
