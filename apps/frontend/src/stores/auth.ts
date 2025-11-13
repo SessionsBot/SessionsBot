@@ -36,46 +36,47 @@ export const useAuthStore = defineStore('auth', {
         async resyncDiscordData(triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC', authToken: string) {
 
             try {
-                // Check cooldown
-                if (this.refreshInProgress) {
-                    return console.warn('Slow down! Already refreshing...');
-                }
-                this.refreshInProgress = true;
+                // Check/set cooldown
+                if (this.$state.refreshInProgress) {
+                    return;
+                } else this.$state.refreshInProgress = true;
 
                 // Get/fetch user auth token:
                 if (!authToken) throw 'Failed to re-sync Discord data! - No auth token provided..';
 
                 // Make refresh request:
-                const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh'
-                const { status, data } = await axios.get(refreshEndpoint, {
-                    headers: { Authorization: `Bearer ${authToken}`, 'trigger-type': triggerType },
-                    timeout: 10000,
-                    validateStatus: (s) => s < 500
+                const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
+                const { status, data: { data: { fresh_token } } } = await axios.get(refreshEndpoint, {
+                    headers: { Authorization: `Bearer ${authToken}`, 'trigger-type': triggerType }
                 });
 
                 // Handle request response - Fetch new user data:
-                console.log('Refresh from backend success - reloading session...');
-                const refreshedUser = await this.resyncStoreUser();
-                console.log(refreshedUser)
+                if (fresh_token) {
+                    await supabase.auth.setSession({
+                        access_token: fresh_token,
+                        refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || 'null'
+                    });
+                    await supabase.auth.refreshSession();
+                    console.info('✅ -REFRESHED SESSION - Success!');
 
-                // Reset refresh busy flag:
-                this.refreshInProgress = false;
+                } else throw [`Failed to receive a fresh auth token from backend during refresh!`, { fresh_token }];
+
+
 
             } catch (err) {
                 // Failed Discord Refresh:
-                console.warn('[👤]{REFRESH API} FAILED', err);
-                this.refreshInProgress = false;
+                console.warn('[❌-👤]{REFRESH AUTH} FAILED... See details', err);
+                // Prompt fresh sign in:
+                // ! REMOVE ME
+                alert('Failed refresh auth data api - prompting fresh login');
+                this.signIn();
+
+            } finally {
+                // Reset refresh busy flag:
+                setTimeout(() => this.$state.refreshInProgress = false, 3_000);
+                return;
             }
         },
-
-        async resyncStoreUser() {
-            const { data: { user } } = await supabase.auth.getUser();
-            this.user = user;
-            this.userData = user?.user_metadata;
-            this.signedIn = user ? true : false;
-            console.info('Refreshed user data object in Pinia Store!')
-            return user;
-        }
     },
 
 })
@@ -103,10 +104,10 @@ export const watchAuth = async () => {
                 const expiresAt = lastSyncDate.plus({ hours: 0.05 }).setZone('America/Chicago').toFormat('f');
                 if (expiredData) {
                     // last discord data sync >= 24 hours ago
-                    console.warn(`[👤] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
-                    await store.resyncDiscordData('AUTOMATIC', session?.access_token);
-                } else console.info(`[👤] - Discord Data is not outdated.. - ${lastSyncDate.setZone('America/Chicago').toFormat('f')} \nExpires At: ${expiresAt}`)
-            } else console.warn(`[👤] Auth couldn't find the "Last Discord Sync" date..`)
+                    console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
+                    store.resyncDiscordData('AUTOMATIC', session?.access_token);
+                } else console.info(`[🔁] - Discord Data is not outdated.. - ${lastSyncDate.setZone('America/Chicago').toFormat('f')} \nExpires At: ${expiresAt}`);
+            } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date..`);
 
         }
     })

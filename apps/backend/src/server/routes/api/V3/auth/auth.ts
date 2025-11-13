@@ -220,7 +220,6 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
     try {
         // 1. Get Data/User from Req:
         const { auth: { user: reqUser, profile: reqUserProfile } } = req;
-        console.log('TOKEN ACCEPTED!');
         const triggerType = req.headers['trigger-type'] || 'unknown trigger?';
         const isBotAdmin = BOT_ADMIN_UIDs.includes(reqUser.id);
         const appRoles = ['user'];
@@ -243,7 +242,7 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
                 refresh_token: discord_refresh_token,
             }),
             { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
-        ).catch((err) => { throw ['Failed to exchange previous refresh token for fresh discord tokens!', err] });
+        ).catch((err) => { throw new AuthError('codeExchange', { err }); });
 
         // 4. Get access/refresh tokens from Discord oAuth:
         const { data: { access_token, refresh_token } } = tokenReq;
@@ -314,24 +313,19 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
 
         // 8. Make Updates:
         const [{ error: updProfileErr }, { error: updAuthUserErr, data: { user: authUserUpd } }] = await Promise.all([updProfile, updAuthUser])
-        if (updProfileErr) throw ['Failed to update auth user profile data!', updProfileErr];
-        if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
+        if (updProfileErr) throw new AuthError('updateUser', { source: "Updating User Profile - Refresh", err: updProfileErr });
+        if (updAuthUserErr) throw new AuthError('updateUser', { source: "Updating Auth User - Refresh", err: updAuthUserErr });
 
         // 9. Create MagicLink - Extract new JWT for user:
-        const { data: { properties: resProps, user: magicUser } } = await supabase.auth.admin.generateLink({
+        const { error: magicLinkERR, data: { properties: { hashed_token }, user: magicUser } } = await supabase.auth.admin.generateLink({
             type: 'magiclink',
             email: userData.email,
         })
-        const extractedJWT = resProps.action_link.split('&token=')[1].split('&redirect_to')[0]
-        let hashedJWT = resProps.hashed_token;
+        if (magicLinkERR || !hashed_token) throw new AuthError('generateLink', { err: magicLinkERR });
 
-        if (extractedJWT == hashedJWT) {
-            hashedJWT == 'IDENTICAL!'
-        }
-
-        // 10. Return Success:
+        // 10. Return Success - Fresh Token:
         logtail.log(`👤 - ${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userDataMapped, timestamp: stringTimestamp() });
-        return new reply(res).success({ extractedJWT, hashedJWT });
+        return new reply(res).success({ fresh_token: hashed_token });
 
     } catch (err) {
         logtail.warn(`👤 -  Auth Refresh Failed - See Details`, { err, timestamp: stringTimestamp() });
