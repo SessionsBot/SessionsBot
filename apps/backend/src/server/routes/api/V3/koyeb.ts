@@ -16,3 +16,6 @@ koyebRouter.get('/env', async (req, res) => {
 
     res.send({ git: { SHA, GIT_REPOSITORY, GIT_BRANCH, COMMIT_AUTHOR }, koyeb: { INSTANCE_ID, DATA_CENTER, REGION } })
 })
+
+
+export default koyebRouter
