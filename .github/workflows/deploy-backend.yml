@@ -45,7 +45,7 @@ jobs:
         env:
           KOYEB_API_KEY: ${{ secrets.BACKEND_DEPLOY_KEY }}
         run: |
-          koyeb deploy . regional-melloney/sessionsbot --token $KOYEB_API_KEY --env GIT_SHA=$GITHUB_SHA
+          koyeb deploy . basic-meadowlark/sessionsbot --token $KOYEB_API_KEY --env KOYEB_GIT_SHA=$GITHUB_SHA
 
       - name: Update Deployment Status
         if: always()
