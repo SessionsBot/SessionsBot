@@ -5,17 +5,21 @@ const koyebRouter = express.Router({ mergeParams: true })
 
 // Testing koyeb env vars
 koyebRouter.get('/env', async (req, res) => {
-    const SHA = process.env?.['KOYEB_GIT_SHA'];
-    const GIT_BRANCH = process.env?.['KOYEB_GIT_BRANCH'];
-    const GIT_REPOSITORY = process.env?.['KOYEB_GIT_REPOSITORY'];
-    const COMMIT_AUTHOR = process.env?.['KOYEB_GIT_COMMIT_AUTHOR'];
+    const gitVars = {
+        SHA: process.env?.['KOYEB_GIT_SHA'],
+        GIT_BRANCH: process.env?.['KOYEB_GIT_BRANCH'],
+        GIT_REPOSITORY: process.env?.['KOYEB_GIT_REPOSITORY'],
+        COMMIT_AUTHOR: process.env?.['KOYEB_GIT_COMMIT_AUTHOR'],
+    }
+    const koyebVars = {
+        INSTANCE_ID: process.env?.['KOYEB_INSTANCE_ID'],
+        DATA_CENTER: process.env?.['KOYEB_DC'],
+        REGION: process.env?.['KOYEB_REGION'],
+        REGION_DEPLOYMENT_ID: process.env?.['KOYEB_REGIONAL_DEPLOYMENT_ID'],
+        KOYEB_HYPERVISOR_ID: process.env?.['KOYEB_HYPERVISOR_ID'],
+    }
 
-    const INSTANCE_ID = process.env?.['KOYEB_INSTANCE_ID'];
-    const DATA_CENTER = process.env?.['KOYEB_DC'];
-    const REGION = process.env?.['KOYEB_REGION'];
-    const REGION_DEPLOYMENT_ID = process.env?.['KOYEB_REGIONAL_DEPLOYMENT_ID'];
 
-    res.send({ git: { SHA, GIT_BRANCH, GIT_REPOSITORY, COMMIT_AUTHOR }, koyeb: { INSTANCE_ID, DATA_CENTER, REGION, REGION_DEPLOYMENT_ID } })
 })
 
 
