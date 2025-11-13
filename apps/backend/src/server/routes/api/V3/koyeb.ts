@@ -13,8 +13,9 @@ koyebRouter.get('/env', async (req, res) => {
     const INSTANCE_ID = process.env?.['KOYEB_INSTANCE_ID'];
     const DATA_CENTER = process.env?.['KOYEB_DC'];
     const REGION = process.env?.['KOYEB_REGION'];
+    const REGION_DEPLOYMENT_ID = process.env?.['KOYEB_REGIONAL_DEPLOYMENT_ID'];
 
-    res.send({ git: { SHA, GIT_REPOSITORY, GIT_BRANCH, COMMIT_AUTHOR }, koyeb: { INSTANCE_ID, DATA_CENTER, REGION } })
+    res.send({ git: { SHA, GIT_BRANCH, GIT_REPOSITORY, COMMIT_AUTHOR }, koyeb: { INSTANCE_ID, DATA_CENTER, REGION, REGION_DEPLOYMENT_ID } })
 })
 
 
