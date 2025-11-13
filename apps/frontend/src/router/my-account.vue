@@ -3,10 +3,11 @@
   import { supabase } from "@/utils/supabase";
   import axios from "axios";
   import { LogOutIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
+  import { DateTime } from "luxon";
   import { storeToRefs } from "pinia";
 
   const auth = useAuthStore();
-  const { userData, signedIn, user } = storeToRefs(auth);
+  const { userData, signedIn, user, refreshInProgress } = storeToRefs(auth);
 
   const avatarLoaded = ref(false)
 
@@ -51,7 +52,11 @@
             </span>
             <!-- Acc Actions -->
             <span class="flex flex-nowrap flex-row gap-2 pt-1.5 justify-center items-center">
-              <Button @click="async () => await auth.resyncDiscordData()" unstyled
+              <Button @click="async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                await auth.resyncDiscordData('MANUAL', session?.access_token)
+              }" unstyled
                 class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 transition-all active:scale-95 p-1.75 rounded-md cursor-pointer">
                 <RefreshCcwIcon />
                 <p class="text-nowrap">Refresh Data</p>
@@ -66,8 +71,11 @@
 
             <!-- TESTING -->
             <p class="m-2 mt-4 text-xs opacity-25">
-              Last Updated: {{ user?.app_metadata?.last_synced }} <br> UID: {{ user?.id }}
+              Last Updated: {{
+                DateTime.fromISO(user?.app_metadata?.last_synced).setZone('local').toFormat('f') }} <br> UID: {{
+                user?.id }}
             </p>
+
 
 
           </div>

@@ -317,9 +317,21 @@ authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, r
         if (updProfileErr) throw ['Failed to update auth user profile data!', updProfileErr];
         if (updAuthUserErr) throw ['Failed to update auth user data!', updAuthUserErr];
 
-        // 9. Return Success:
+        // 9. Create MagicLink - Extract new JWT for user:
+        const { data: { properties: resProps, user: magicUser } } = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: userData.email,
+        })
+        const extractedJWT = resProps.action_link.split('&token=')[1].split('&redirect_to')[0]
+        let hashedJWT = resProps.hashed_token;
+
+        if (extractedJWT == hashedJWT) {
+            hashedJWT == 'IDENTICAL!'
+        }
+
+        // 10. Return Success:
         logtail.log(`👤 - ${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userDataMapped, timestamp: stringTimestamp() });
-        return new reply(res).success('Successfully updated user data from Discord!');
+        return new reply(res).success({ extractedJWT, hashedJWT });
 
     } catch (err) {
         logtail.warn(`👤 -  Auth Refresh Failed - See Details`, { err, timestamp: stringTimestamp() });

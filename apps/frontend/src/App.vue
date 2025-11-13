@@ -5,7 +5,7 @@
   import { ref } from 'vue';
   import { useNavStore } from './stores/nav';
   import { supabase } from './utils/supabase';
-import { useAuthStore } from './stores/auth';
+  import { useAuthStore, watchAuth } from './stores/auth';
 
   const auth = useAuthStore();
 
@@ -15,8 +15,8 @@ import { useAuthStore } from './stores/auth';
   // Nav store:
   const nav = useNavStore();
 
-  onMounted(()=>{
-    auth.watchAuth()
+  onMounted(async () => {
+    await watchAuth();
   })
 
 </script>
@@ -25,7 +25,8 @@ import { useAuthStore } from './stores/auth';
 
   <SiteHeader ref="headerElmRef" />
 
-  <span class="flex flex-col flex-1 overflow-x-clip! max-w-screen!" :class="{'overflow-y-clip! max-h-screen!': nav.navOpen }">
+  <span class="flex flex-col flex-1 overflow-x-clip! max-w-screen!"
+    :class="{ 'overflow-y-clip! max-h-screen!': nav.navOpen }">
     <RouterView v-slot="{ Component }">
       <Transition name="slide" mode="out-in">
         <component :style="{ marginTop: `${headerHeight || 40}px` }" class="max-w-screen! overflow-x-clip min-w-[300px]"
