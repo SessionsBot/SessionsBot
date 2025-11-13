@@ -19,6 +19,7 @@ koyebRouter.get('/env', async (req, res) => {
         KOYEB_HYPERVISOR_ID: process.env?.['KOYEB_HYPERVISOR_ID'],
     }
 
+    res.send({ git: gitVars, koyeb: koyebVars });
 
 })
 
