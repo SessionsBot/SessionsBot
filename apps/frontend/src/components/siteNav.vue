@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { useAuthStore } from "@/stores/auth";
-  import { useNavStore } from "@/stores/nav";
+  import { externalUrls, useNavStore } from "@/stores/nav";
   import { supabase } from "@/utils/supabase";
   import { defaultWindow } from "@vueuse/core";
   import {
@@ -85,7 +85,7 @@
             <Button @click="
               $router.push('/');
             nav.closeNav();
-            " :disabled="$route.path == '/'" class="nav-button" unstyled>
+            " :disabled="$route.matched[0]?.name == 'Homepage'" class="nav-button" unstyled>
               <HomeIcon :stroke-width="2" />
               <p class="">Homepage</p>
             </Button>
@@ -94,7 +94,7 @@
             <Button @click="
               $router.push('/dashboard');
             nav.closeNav();
-            " :disabled="$route.path == '/dashboard'" class="nav-button" unstyled>
+            " :disabled="$route.matched[0]?.name == 'Dashboard'" class="nav-button" unstyled>
               <LucideLayoutDashboard :stroke-width="2" />
               <p class="">Dashboard</p>
             </Button>
@@ -102,7 +102,7 @@
             <!-- Invite Bot -->
             <Button @click="
               nav.closeNav();
-            defaultWindow?.open(nav.externalUrls.inviteBot, '_blank');
+            defaultWindow?.open(externalUrls.inviteBot, '_blank');
             " class="nav-button relative" unstyled>
               <i class="pi pi-discord ml-0.5" />
               <p class="">Invite Bot</p>
@@ -122,7 +122,7 @@
             <Button @click="
               nav.closeNav();
             $router.push('/pricing');
-            " :disabled="$route.path == '/pricing'" class="nav-button" unstyled>
+            " :disabled="$route.matched[0]?.name == 'Pricing'" class="nav-button" unstyled>
               <CircleDollarSignIcon :stroke-width="2" />
               <p class="">Pricing</p>
             </Button>
@@ -131,7 +131,7 @@
             <Button @click="
               nav.closeNav();
             $router.push('/support');
-            " :disabled="$route.path == '/support'" class="nav-button" unstyled>
+            " :disabled="$route.matched[0]?.name == 'Support'" class="nav-button" unstyled>
               <MessageCircleQuestionMark :stroke-width="2" />
               <p class="">Support</p>
             </Button>
@@ -166,17 +166,18 @@
             <Button @click="
               nav.closeNav();
             $router.push('/account');
-            " v-if="auth.signedIn" :disabled="$route.path == '/account'" class="nav-button" unstyled>
+            " v-if="auth.signedIn" :disabled="$route.matched[0]?.name == 'Account'" class="nav-button" unstyled>
               <UserCircle2Icon />
               <p class="">My Account</p>
             </Button>
 
             <!-- Bot ADMIN -->
-            <Button @click="
+            <Button hidden @click="
               nav.closeNav();
             $router.push('/bot-admin');
-            " v-if="auth.signedIn" :disabled="$route.path == '/bot-admin'"
-              class="nav-button bg-red-400/10! hover:bg-red-400/20!" unstyled>
+            " v-if="auth.signedIn || auth.user?.app_metadata?.roles?.includes('admin')"
+              :disabled="$route.matched[0]?.name == 'Bot Admin'" class="nav-button bg-red-400/10! hover:bg-red-400/20!"
+              unstyled>
               <ShieldUserIcon />
               <p class="font-medium">ADMIN Panel</p>
             </Button>
@@ -199,12 +200,12 @@
           <p class="text-xs text-nowrap text-white/30">More Resources</p>
           <div class="bg-ring/50 h-1 rounded-full flex-1/2" />
         </div>
-        <p class="nav-footer-link" @click="$router.push('/privacy')"
-          :class="{ 'text-indigo-300': $route.path == '/privacy' }">Privacy Policy</p>
-        <p class="nav-footer-link" @click="$router.push('/terms')"
-          :class="{ 'text-indigo-300': $route.path == '/terms' }">Terms and Conditions</p>
+        <p class="nav-footer-link" @click="$router.push('/privacy'); nav.closeNav();"
+          :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Privacy' }">Privacy Policy</p>
+        <p class="nav-footer-link" @click="$router.push('/terms'); nav.closeNav();"
+          :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">Terms and Conditions</p>
 
-        <span @click="defaultWindow?.open(nav.externalUrls.gitHub, '_blank')"
+        <span @click="defaultWindow?.open(externalUrls.gitHub, '_blank')"
           class="inline! cursor-pointer hover:underline underline-offset-1 text-xs opacity-55">
           <span> Source Code </span>
           <ExternalLinkIcon class="inline!" :size="12" />

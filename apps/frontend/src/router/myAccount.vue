@@ -2,14 +2,21 @@
   import { useAuthStore } from "@/stores/auth";
   import { supabase } from "@/utils/supabase";
   import axios from "axios";
-  import { LogOutIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
+  import { InfoIcon, LogOutIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
   import { DateTime } from "luxon";
   import { storeToRefs } from "pinia";
 
   const auth = useAuthStore();
-  const { userData, signedIn, user, refreshInProgress } = storeToRefs(auth);
+  const { userData, signedIn, user, refreshStatus } = storeToRefs(auth);
 
   const avatarLoaded = ref(false)
+
+  // Create mailto link
+  const draftDeleteAccountEmail = () => `mailto:support@sessionsbot.fyi?${new URLSearchParams({
+    subject: `ACCOUNT DELETION REQUEST - ${userData?.value?.username}`,
+    body: `Hello, I would like to exercise my legal rights and request for my personal user account on https://sessionsbot.fyi and related personal information to be deleted as soon as possible. \n\n──────── DO NOT EDIT BELOW THIS LINE ──────── \nDELETE ACCOUNT REQUEST:\nUID: ${user?.value?.id}\nDID: ${userData?.value?.id}\nUSER_EMAIL: ${user?.value?.email} \n──────── DO NOT EDIT ABOVE THIS LINE ──────── `,
+  }).toString()
+    }`;
 
 </script>
 
@@ -19,7 +26,7 @@
 
       <!-- Main Account Panel -->
       <div v-if="auth.signedIn"
-        class="flex flex-col w-[85%] max-w-170 bg-zinc-400/10 backdrop-blur-md justify-center items-center content-center ring-2 ring-zinc-400 m-5 rounded-md overflow-clip">
+        class="flex flex-col w-[80%] max-w-170 bg-zinc-400/10 backdrop-blur-md justify-center items-center content-center ring-2 ring-zinc-400 m-5 rounded-md overflow-clip">
         <!-- Panel Header -->
         <header
           class="bg-white/2.5 gap-1.5 p-3 px-2 w-full flex flex-row flex-wrap justify-start items-center content-center backdrop-blur-md border-b-2 border-zinc-400">
@@ -27,7 +34,7 @@
           <p class="font-medium">My Account</p>
         </header>
         <section
-          class="flex flex-col sm:gap-0 sm:flex-row justify-evenly items-center flex-wrap bg-black/40 p-2 w-full backdrop-blur-2xl">
+          class="flex flex-col sm:gap-0 sm:flex-row justify-evenly items-center bg-black/40 p-2 w-full backdrop-blur-2xl">
           <div class="flex flex-col gap-1 justify-center items-start py-4">
             <!-- User Data: -->
             <p class="font-bold">Username:</p>
@@ -39,7 +46,7 @@
             <p class="font-bold">User Id:</p>
             <p class="userDataField">{{ userData?.id }}</p>
           </div>
-          <div class="flex flex-col mb-5 flex-wrap justify-center items-center content-center">
+          <div class="flex flex-col mb-0 sm:mb-5 flex-wrap justify-center items-center content-center">
 
             <!-- User Image -->
             <span>
@@ -51,14 +58,19 @@
 
             </span>
             <!-- Acc Actions -->
-            <span class="flex flex-nowrap flex-row gap-2 pt-1.5 justify-center items-center">
+            <span class="flex flex-wrap flex-row gap-3 mb-1.5 pt-1.75 justify-center items-center">
               <Button @click="async () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) return;
                 await auth.resyncDiscordData('MANUAL', session?.access_token)
-              }" unstyled
-                class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 transition-all active:scale-95 p-1.75 rounded-md cursor-pointer">
-                <RefreshCcwIcon />
+              }" unstyled :disabled="auth.$state.refreshStatus != 'idle'"
+                class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 disabled:cursor-not-allowed disabled:scale-90 transition-all transition-[350 ms] active:scale-95 p-1.75 rounded-md cursor-pointer"
+                :class="{
+                  'bg-zinc-600/60! opacity-55': (auth.$state.refreshStatus == 'busy'),
+                  'bg-amber-700/50!': (auth.$state.refreshStatus == 'failed'),
+                  'bg-green-700/50!': (auth.$state.refreshStatus == 'succeeded')
+                }">
+                <RefreshCcwIcon :class="{ 'animate-spin': (auth.$state.refreshStatus == 'busy'), }" />
                 <p class="text-nowrap">Refresh Data</p>
               </Button>
 
@@ -69,17 +81,25 @@
               </Button>
             </span>
 
-            <!-- TESTING -->
-            <p class="m-2 mt-4 text-xs opacity-25">
-              Last Updated: {{
-                DateTime.fromISO(user?.app_metadata?.last_synced).setZone('local').toFormat('f') }} <br> UID: {{
-                user?.id }}
+            <!-- Last Sync Date: -->
+            <p
+              class="flex opacity-35 w-full justify-center items-center flex-wrap gap-1 text-center text-xs sm:mb-0 my-4">
+              <b>Last Discord Sync: </b> {{
+                DateTime.fromISO(user?.app_metadata?.last_synced).setZone('local').toRelative() }}
             </p>
-
 
 
           </div>
         </section>
+        <footer
+          class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center backdrop-blur-xl border-t-2 border-zinc-400">
+          <p class="w-full sm:w-fit">
+            <b>UID:</b> {{ user?.id }}
+          </p>
+          <a class="hover:underline sm:w-fit w-full font-medium" :href=draftDeleteAccountEmail()>
+            Account Deletion Request
+          </a>
+        </footer>
       </div>
 
       <!-- Sign In - No Account Panel -->

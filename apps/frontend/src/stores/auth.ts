@@ -4,18 +4,36 @@ import { useNavStore } from "./nav";
 import type { User, UserMetadata } from "@supabase/supabase-js";
 import axios, { AxiosError } from "axios";
 import { DateTime } from "luxon";
+import { TYPE, useToast } from "vue-toastification";
+import { CheckSquare2, MessageSquareWarning, TimerReset } from "lucide-vue-next";
+import type { RouteRecordRaw } from "vue-router";
 
+/****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
         userData: <UserMetadata | undefined>{},
         user: <User | undefined | null>undefined,
-        refreshInProgress: false
+        refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
+        redirectAfterAuth: {
+            get: () => {
+                return localStorage.getItem('redirect-after-auth');
+            },
+            set: (path: string) => {
+                return localStorage.setItem('redirect-after-auth', path);
+            },
+            clear: () => {
+                return localStorage.removeItem('redirect-after-auth');
+            }
+        },
     }),
 
     actions: {
 
-        signIn() {
+        signIn(directAfterSignIn?: string) {
+            if (directAfterSignIn) {
+                this.redirectAfterAuth.set(directAfterSignIn);
+            }
             // Redirect to Discord oAuth2 Sign In:
             return window.location.assign('https://api.sessionsbot.fyi/auth/discord-sign-in');
         },
@@ -24,8 +42,10 @@ export const useAuthStore = defineStore('auth', {
             this.signedIn = false;
             this.userData = {};
             const { error } = await supabase.auth.signOut()
-            if (error) console.warn('FAILED TO SIGN OUT', error);
+            if (error) console.warn('[👤] - FAILED TO SIGN OUT', error);
         },
+
+
 
         async getUserJWT() {
             const { data: { session }, error } = await supabase.auth.getSession();
@@ -34,19 +54,25 @@ export const useAuthStore = defineStore('auth', {
 
 
         async resyncDiscordData(triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC', authToken: string) {
-
+            const toaster = useToast();
+            let toastId = null;
             try {
                 // Check/set cooldown
-                if (this.$state.refreshInProgress) {
+                if (this.$state.refreshStatus != 'idle') {
                     return;
-                } else this.$state.refreshInProgress = true;
+                } else this.$state.refreshStatus = 'busy';
+
+                // Show loading notification:
+                toastId = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true })
+
                 // Check for recent refresh
                 if (this.user?.app_metadata?.last_synced) {
                     // Get last sync date:
                     const lastSyncDate = DateTime.fromISO(this.user.app_metadata?.last_synced);
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
                     if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
-                        return console.warn('Please wait a little bit before refreshing your account again!', `Cooldown: 15 mins, Remaining: ${15 - minsFromLastSync} mins`)
+                        this.$state.refreshStatus = 'failed';
+                        return toaster.update(toastId, { content: `Uh oh! You have to wait at least 15 minuets before refreshing account data again. (Time Remaining: ${Math.floor(15 - minsFromLastSync) || 1} mins)`, options: { icon: TimerReset, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } })
                     };
                 }
 
@@ -66,7 +92,11 @@ export const useAuthStore = defineStore('auth', {
                         refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || 'null'
                     });
                     await supabase.auth.refreshSession();
-                    console.info('✅ -REFRESHED SESSION - Success!');
+                    this.$state.refreshStatus = 'succeeded';
+                    console.info('✅ - REFRESHED SESSION - Success!');
+
+                    // Update toast / notification of success:
+                    toaster.update(toastId, { content: `Success! You're account data has been synced with Discord!`, options: { icon: CheckSquare2, type: TYPE.SUCCESS, timeout: 4_000, hideProgressBar: false } })
 
                 } else throw [`Failed to receive a fresh auth token from backend during refresh!`, { fresh_token }];
 
@@ -74,15 +104,21 @@ export const useAuthStore = defineStore('auth', {
 
             } catch (err) {
                 // Failed Discord Refresh:
-                console.warn('[❌-👤]{REFRESH AUTH} FAILED... See details', err);
+                this.$state.refreshStatus = 'failed';
+                console.warn('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
+                // Update toast / notification of failure:
+                if (toastId) {
+                    toaster.update(toastId, { content: `Uh oh! We couldn't resync your Discord Data! You'll have to sign back in using your Discord Account, redirecting you now...`, options: { icon: MessageSquareWarning, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } })
+                }
+
                 // Prompt fresh sign in:
                 // ! REMOVE ME
-                alert('Failed refresh auth data api - prompting fresh login');
-                this.signIn();
+                // alert('Failed refresh auth data api - prompting fresh login');
+                // this.signIn();
 
             } finally {
                 // Reset refresh busy flag:
-                setTimeout(() => this.$state.refreshInProgress = false, 3_000);
+                setTimeout(() => this.$state.refreshStatus = 'idle', 3_000);
                 return;
             }
         },
@@ -106,6 +142,15 @@ export const watchAuth = async () => {
 
         console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
 
+        // If Initial Session w/ Redirect after Auth:
+        const redirectPath = store.redirectAfterAuth.get();
+        if (event == 'INITIAL_SESSION' && redirectPath) {
+            console.info('INITIAL SESSION with after auth redirect to:', redirectPath);
+            const router = useRouter();
+            router.push(redirectPath);
+            store.redirectAfterAuth.clear();
+        }
+
         // Check for outdated Discord Data:
         if (store.signedIn && user) {
             const lastSyncISO = user.app_metadata?.last_synced;
@@ -117,8 +162,8 @@ export const watchAuth = async () => {
                     // last discord data sync >= 24 hours ago
                     console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
                     store.resyncDiscordData('AUTOMATIC', session?.access_token);
-                } else console.info(`[🔁] - Discord Data is not outdated.. - ${lastSyncDate.setZone('America/Chicago').toFormat('f')} \nExpires At: ${expiresAt}`);
-            } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date..`);
+                }
+            } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
         }
     })

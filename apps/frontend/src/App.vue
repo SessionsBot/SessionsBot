@@ -4,7 +4,6 @@
   import SiteFooter from './components/siteFooter.vue';
   import { ref } from 'vue';
   import { useNavStore } from './stores/nav';
-  import { supabase } from './utils/supabase';
   import { useAuthStore, watchAuth } from './stores/auth';
 
   const auth = useAuthStore();
@@ -15,6 +14,7 @@
   // Nav store:
   const nav = useNavStore();
 
+  // On App Mount:
   onMounted(async () => {
     await watchAuth();
   })
