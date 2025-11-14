@@ -12,7 +12,7 @@ const apiRouter = express.Router();
 
 // Fallback route:
 apiRouter.all('/', (req, res) => {
-    res.send({ status: 'operational', release_version: core.botVersion, api_version: 3 });
+    res.send({ status: 'operational', release_version: core.botVersion, api_version: 3, git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 8) });
 })
 
 // Nested Routes:

@@ -3,7 +3,6 @@ import core from "../utils/core.js";
 import corsMiddleware from "./middleware/cors.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
-import koyebRouter from "./routes/api/V3/koyeb.js";
 
 /** Main backend web server instance for Sessions Bot. */
 const app = express()
@@ -17,7 +16,6 @@ app.use(rateLimiter); // use rate limiter guard
 
 // ROOT / Top Level Routes:
 app.use('/api', apiRouter)
-app.use('/koyeb', koyebRouter)
 
 // Start Web Server:
 app.listen(PORT, () => {

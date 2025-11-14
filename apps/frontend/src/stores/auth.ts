@@ -40,6 +40,15 @@ export const useAuthStore = defineStore('auth', {
                 if (this.$state.refreshInProgress) {
                     return;
                 } else this.$state.refreshInProgress = true;
+                // Check for recent refresh
+                if (this.user?.app_metadata?.last_synced) {
+                    // Get last sync date:
+                    const lastSyncDate = DateTime.fromISO(this.user.app_metadata?.last_synced);
+                    const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
+                    if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
+                        return console.warn('Please wait a little bit before refreshing your account again!', `Cooldown: 15 mins, Remaining: ${15 - minsFromLastSync} mins`)
+                    };
+                }
 
                 // Get/fetch user auth token:
                 if (!authToken) throw 'Failed to re-sync Discord data! - No auth token provided..';
@@ -82,6 +91,8 @@ export const useAuthStore = defineStore('auth', {
 })
 
 
+/****Util:** Supabase Auth Went Listener 
+ * - Handles auth events and keeps user in `useAuthStore()` up to date. */
 export const watchAuth = async () => {
     const store = useAuthStore();
     // Watch for auth events:
@@ -100,8 +111,8 @@ export const watchAuth = async () => {
             const lastSyncISO = user.app_metadata?.last_synced;
             const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
             if (lastSyncDate && lastSyncDate.isValid) {
-                const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 0.05;
-                const expiresAt = lastSyncDate.plus({ hours: 0.05 }).setZone('America/Chicago').toFormat('f');
+                const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
+                const expiresAt = lastSyncDate.plus({ hours: 24 }).setZone('America/Chicago').toFormat('f');
                 if (expiredData) {
                     // last discord data sync >= 24 hours ago
                     console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
