@@ -15,7 +15,6 @@ jobs:
       - name: List deployment IDs
         id: list
         run: |
-          # Fetch all deployment IDs as a JSON array
           ids=$(gh api /repos/${{ github.repository }}/deployments --paginate --jq '[.[].id]')
           echo "ids=$ids" >> $GITHUB_OUTPUT
         env:
@@ -25,23 +24,28 @@ jobs:
         run: |
           ids='${{ steps.list.outputs.ids }}'
 
-          # Loop through each deployment ID
           for id in $(echo "$ids" | jq -r '.[]'); do
             echo "Deleting deployment $id"
 
-            # Fetch all status IDs for this deployment
-            status_ids=$(gh api /repos/${{ github.repository }}/deployments/$id/statuses --jq '[.[].id]')
+            # Get status list (may be empty or missing)
+            status_ids=$(gh api /repos/${{ github.repository }}/deployments/$id/statuses --jq '[.[].id]' || echo '[]')
 
-            # Loop through statuses
             for sid in $(echo "$status_ids" | jq -r '.[]'); do
+              if [ -z "$sid" ] || [ "$sid" = "null" ]; then
+                echo "  Skipping invalid status entry"
+                continue
+              fi
+
               echo "  Deleting status $sid"
-              gh api -X DELETE /repos/${{ github.repository }}/deployments/$id/statuses/$sid
+              gh api -X DELETE /repos/${{ github.repository }}/deployments/$id/statuses/$sid || \
+                echo "    (Status $sid already deleted — skipping)"
             done
 
-            # Delete the deployment itself
-            gh api -X DELETE /repos/${{ github.repository }}/deployments/$id
+            echo "  Deleting deployment $id"
+            gh api -X DELETE /repos/${{ github.repository }}/deployments/$id || \
+              echo "    (Deployment $id already gone — skipping)"
           done
 
-          echo "🎉 All deployments removed"
+          echo "🎉 Cleanup complete"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
