@@ -5,36 +5,43 @@ on:
 
 permissions:
   contents: read
-  deployments: write    # REQUIRED or GitHub will reject the delete calls
+  deployments: write
 
 jobs:
   nuke-deployments:
     runs-on: ubuntu-latest
 
     steps:
-      - name: List deployments
+      - name: List deployment IDs
         id: list
         run: |
-          echo "ids=$(gh api /repos/${{ github.repository }}/deployments --paginate --jq '.[].id')" >> $GITHUB_OUTPUT
+          # Fetch all deployment IDs as a JSON array
+          ids=$(gh api /repos/${{ github.repository }}/deployments --paginate --jq '[.[].id]')
+          echo "ids=$ids" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete deployments and statuses
+      - name: Delete deployments & statuses
         run: |
-          for id in ${{ steps.list.outputs.ids }}; do
-            echo "Deleting deployment $id..."
+          ids='${{ steps.list.outputs.ids }}'
 
-            # Delete statuses first
-            status_ids=$(gh api /repos/${{ github.repository }}/deployments/$id/statuses --jq '.[].id')
-            for sid in $status_ids; do
+          # Loop through each deployment ID
+          for id in $(echo "$ids" | jq -r '.[]'); do
+            echo "Deleting deployment $id"
+
+            # Fetch all status IDs for this deployment
+            status_ids=$(gh api /repos/${{ github.repository }}/deployments/$id/statuses --jq '[.[].id]')
+
+            # Loop through statuses
+            for sid in $(echo "$status_ids" | jq -r '.[]'); do
               echo "  Deleting status $sid"
               gh api -X DELETE /repos/${{ github.repository }}/deployments/$id/statuses/$sid
             done
 
-            # Delete deployment itself
+            # Delete the deployment itself
             gh api -X DELETE /repos/${{ github.repository }}/deployments/$id
           done
 
-          echo "All deployments deleted 🎉"
+          echo "🎉 All deployments removed"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
