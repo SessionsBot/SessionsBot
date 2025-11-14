@@ -1,0 +1,40 @@
+name: Delete All Deployments
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write    # REQUIRED or GitHub will reject the delete calls
+
+jobs:
+  nuke-deployments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: List deployments
+        id: list
+        run: |
+          echo "ids=$(gh api /repos/${{ github.repository }}/deployments --paginate --jq '.[].id')" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete deployments and statuses
+        run: |
+          for id in ${{ steps.list.outputs.ids }}; do
+            echo "Deleting deployment $id..."
+
+            # Delete statuses first
+            status_ids=$(gh api /repos/${{ github.repository }}/deployments/$id/statuses --jq '.[].id')
+            for sid in $status_ids; do
+              echo "  Deleting status $sid"
+              gh api -X DELETE /repos/${{ github.repository }}/deployments/$id/statuses/$sid
+            done
+
+            # Delete deployment itself
+            gh api -X DELETE /repos/${{ github.repository }}/deployments/$id
+          done
+
+          echo "All deployments deleted 🎉"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
