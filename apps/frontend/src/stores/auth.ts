@@ -64,7 +64,7 @@ export const useAuthStore = defineStore('auth', {
 
                 // Show loading notification:
                 if (triggerType == 'MANUAL') {
-                    toastId = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true });
+                    toastId = await toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true });
                 } else console.log('AUTO REFRESH')
 
                 // Check for recent refresh

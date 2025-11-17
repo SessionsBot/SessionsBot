@@ -73,7 +73,7 @@
                             </span>
                             <!-- Last Synced Time Elapsed -->
                             <span
-                                class="bg-zinc-500/20 italic border-black border-2 border-x-0 p-1 h-full flex items-center">
+                                class="bg-zinc-500/20 italic font-semibold opacity-70 border-black border-2 border-x-0 p-1 h-full flex items-center">
 
                                 {{ DateTime.fromISO(user?.app_metadata?.last_synced).toRelative() }}
 
