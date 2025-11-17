@@ -63,7 +63,9 @@ export const useAuthStore = defineStore('auth', {
                 } else this.$state.refreshStatus = 'busy';
 
                 // Show loading notification:
-                toastId = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true })
+                if (triggerType == 'MANUAL') {
+                    toastId = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true });
+                } else console.log('AUTO REFRESH')
 
                 // Check for recent refresh
                 if (this.user?.app_metadata?.last_synced) {
@@ -72,9 +74,10 @@ export const useAuthStore = defineStore('auth', {
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
                     if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
                         this.$state.refreshStatus = 'failed';
-                        return toaster.update(toastId, { content: `Uh oh! You have to wait at least 15 minuets before refreshing account data again. (Time Remaining: ${Math.floor(15 - minsFromLastSync) || 1} mins)`, options: { icon: TimerReset, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } })
+                        if (toastId) toaster.update(toastId, { content: `Uh oh! You have to wait at least 15 minuets before refreshing account data again. (Time Remaining: ${Math.floor(15 - minsFromLastSync) || 1} mins)`, options: { icon: TimerReset, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } });
+                        return;
                     };
-                }
+                } else throw `Failed to find 'Last Synced' date?`;
 
                 // Get/fetch user auth token:
                 if (!authToken) throw 'Failed to re-sync Discord data! - No auth token provided..';
@@ -96,7 +99,7 @@ export const useAuthStore = defineStore('auth', {
                     console.info('✅ - REFRESHED SESSION - Success!');
 
                     // Update toast / notification of success:
-                    toaster.update(toastId, { content: `Success! You're account data has been synced with Discord!`, options: { icon: CheckSquare2, type: TYPE.SUCCESS, timeout: 4_000, hideProgressBar: false } })
+                    if (toastId) toaster.update(toastId, { content: `Success! You're account data has been re-synced with Discord!`, options: { icon: CheckSquare2, type: TYPE.SUCCESS, timeout: 4_000, hideProgressBar: false } });
 
                 } else throw [`Failed to receive a fresh auth token from backend during refresh!`, { fresh_token }];
 
@@ -110,11 +113,10 @@ export const useAuthStore = defineStore('auth', {
                 if (toastId) {
                     toaster.update(toastId, { content: `Uh oh! We couldn't resync your Discord Data! You'll have to sign back in using your Discord Account, redirecting you now...`, options: { icon: MessageSquareWarning, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } })
                 }
-
-                // Prompt fresh sign in:
-                // ! REMOVE ME
-                // alert('Failed refresh auth data api - prompting fresh login');
-                // this.signIn();
+                // Redirect new sign in after wait:
+                setTimeout(() => {
+                    this.signIn();
+                }, 4_000);
 
             } finally {
                 // Reset refresh busy flag:

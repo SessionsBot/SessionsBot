@@ -2,7 +2,7 @@ import { definePreset } from "@primeuix/themes";
 import Aura from '@primeuix/themes/aura';
 import type { AuraBaseTokenSections } from "@primeuix/themes/aura/base";
 import type { ButtonTokenSections } from "@primeuix/themes/types/button";
-import type { PrimeVueConfiguration } from "primevue";
+import type { PrimeVueConfiguration, PrimeVuePTOptions } from "primevue";
 
 
 const customButtonColors = {
@@ -146,6 +146,31 @@ const customPreset = definePreset(Aura, {
 });
 
 
+/** Main Theme PASS THROUGHs */
+const primePT: PrimeVuePTOptions = {
+    inputtext: {
+        root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
+    },
+    textarea: {
+        root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
+    },
+    datepicker: {
+        root: 'text-white!',
+        calendar: 'max-w-[80%]!',
+        panel: 'bg-zinc-700! ',
+        header: 'bg-zinc-700! text-white!',
+        day: 'hover:bg-black/35! text-white!',
+        month: 'hover:bg-black/35! text-white!',
+        year: 'hover:bg-black/35! text-white!',
+        selectMonth: 'hover:bg-black/35! text-white!',
+        selectYear: 'hover:bg-black/35! text-white!',
+        weekDay: 'text-white/80!',
+        hour: 'text-white!',
+        minute: 'text-white!',
+        ampm: 'text-white!'
+    }
+}
+
 /** Main Exported PrimeVue Config */
 const primeVueConfig = <PrimeVueConfiguration>{
     theme: {
@@ -155,6 +180,7 @@ const primeVueConfig = <PrimeVueConfiguration>{
         }
     },
     ripple: true,
+    pt: primePT,
     ptOptions: {
         mergeSections: true,
         mergeProps: true
