@@ -156,7 +156,6 @@ const primePT: PrimeVuePTOptions = {
     },
     datepicker: {
         root: 'text-white!',
-        calendar: 'max-w-[80%]!',
         panel: 'bg-zinc-700! ',
         header: 'bg-zinc-700! text-white!',
         day: 'hover:bg-black/35! text-white!',

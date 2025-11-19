@@ -1,13 +1,18 @@
 <script setup lang="ts">
-    import type { FormInstance, FormResolverOptions, FormSubmitEvent } from '@primevue/forms/form';
+    import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
     import z from 'zod';
     import { zodResolver } from '@primevue/forms/resolvers/zod'
     import type { TooltipOptions, } from 'primevue';
-    import { Clock10Icon, Clock4Icon, TextInitialIcon } from 'lucide-vue-next';
-    import type { ComponentPublicInstance, VNodeRef } from 'vue';
+    import { ClipboardCheckIcon, Clock10Icon, Clock4Icon, LinkIcon, NewspaperIcon, SettingsIcon, TextInitialIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
+    import SesInfoForm from './sesInfoForm.vue';
+    import SesDiscordForm from './sesDiscordForm.vue';
 
-    const testForm = ref({
+    // Main Submission Draft:
+    const submissionDraft = ref({});
+
+    // Main form logic:
+    const sesForm = ref({
 
         /** Reffed Form Element */
         eRef: ref<FormInstance>(),
@@ -15,32 +20,67 @@
         /** Form Input Resolver */
         resolver: zodResolver(z.object({
             title: z.string('Please enter a valid title.').regex(/^[A-Za-z0-9 ]*$/, 'Can only include characters A-Z and 0-9.').trim().min(1, 'Title must have at least 1 character(s).'),
-            description: z.string('Please enter a valid description.').trim().or(z.null()),
+            description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').or(z.null()),
             startDate: z.date('Please enter a valid date.').refine((v) => v.getTime() >= new Date().getTime(), 'Date has already occurred.'),
             endDate: z.date('Please enter a valid date.').refine(
                 (v) => {
-                    const startDate = (testForm.value.eRef?.getFieldState('startDate')?.value || new Date(0)) as Date
+                    const startDate = (sesForm.value.eRef?.getFieldState('startDate')?.value || new Date(0)) as Date
                     const now = new Date();
                     return (v >= now && v >= startDate)
                 },
                 'End Date must occur after Start Date.'
-            ).or(z.null())
+            ).or(z.null()),
+            location: z.url('Invalid Url').startsWith('https://', 'Url must start with: "https://".').or(z.null()),
+            channelId: z.string().trim().min(5)
         })),
 
         /** Form Input Options */
         options: ref({
             includeEndDate: true,
             maxSelectableDate: () => DateTime.now().plus({ year: 1 }).toJSDate(),
-            minSelectableDate: () => DateTime.now().toJSDate()
+            minSelectableDate: () => DateTime.now().toJSDate(),
+            includeLocation: true,
         }),
 
         /** Form Submit Handler */
         submit: (e: FormSubmitEvent) => {
             console.log('Submitted', e)
+            if (e.valid) {
+                submissionDraft.value = {
+                    ...submissionDraft.value,
+                    ...e.values
+                }
+            }
         }
+    });
 
+    const formInView = ref<'information' | 'discord' | 'signup'>('information');
+
+    watch(formInView, (newV, oldV) => {
+        console.info('Form in View:', newV);
+    })
+    watch(submissionDraft, (newV, oldV) => {
+        console.info('Submission Draft Updated:', newV);
     })
 
+    // Auto fill session end date:
+    const firstStartDateSelection = ref(true);
+    const startDateModel = ref();
+    const endDateModel = ref();
+    const onStartDateEntered = (startDate: any) => {
+        // Apply default end date on first selection:
+        if (firstStartDateSelection.value) {
+            firstStartDateSelection.value = false;
+            const defaultEnd = DateTime.fromJSDate(startDate).plus({ hours: 1 }).toJSDate();
+            sesForm.value.eRef?.setFieldValue('endDate', defaultEnd)
+            endDateModel.value = defaultEnd
+        };
+        // Validate end date:
+        sesForm.value.eRef?.validate('endDate');
+    }
+
+
+    // Styling Pass Through(s):
     const inputToolTipPT = { root: 'translate-x-1.5! -translate-y-1.5!', text: 'text-xs!' }
 
 </script>
@@ -48,99 +88,57 @@
 <template>
     <main class="flex flex-1 flex-col flex-wrap justify-center items-center content-center">
 
-        <Form unstyled v-slot="$form" :ref="(el) => testForm.eRef = <any>el" :resolver="testForm.resolver"
-            @submit="testForm.submit"
-            class="gap-2! max-w-full flex flex-col flex-wrap justify-center items-center content-center">
+        <section
+            class="bg-zinc-800 mt-5 flex flex-row justify-start ring-2 overflow-clip ring-white/50 max-w-180 w-[90%] rounded-md">
 
-            <!-- INPUT: Session Title -->
-            <div class="inputArea">
-                <!-- Input/Label -->
-                <label for="title" class="inputLabel" :class="{ 'text-red-400!': $form.title?.invalid }">
-                    <TextInitialIcon :size="13" :stroke-width="2.75" />
-                    <p> Title </p>
-                </label>
-                <!-- Text Input -->
-                <InputText fluid type="text" size="small" name="title"
-                    v-tool-tip.bottom="<TooltipOptions>{ value: 'Give this session a brief title.', pt: { text: 'text-xs!', root: '' } }" />
-                <!-- Invalid Message -->
-                <Message unstyled class="w-full! text-wrap! flex-wrap! font-medium text-red-400!"
-                    v-for="err in $form.title?.errors">
-                    <p class="text-[13px]! pl-0.5"> {{ err?.message || 'Invalid Input!' }}</p>
-                </Message>
+            <!-- Form Navigator -->
+            <section
+                class="w-fit! z-3! flex flex-wrap flex-col justify-start items-center gap-1 pb-1 border-r-white/50 border-r-2">
+                <!-- Header -->
+                <span
+                    class="gap-0.5 bg-zinc-900 border-b-white/50  border-b-2 p-1 w-full flex flex-row flex-wrap items-center">
+                    <SettingsIcon class="opacity-50" :size="15" />
+                    <p class="opacity-50 font-normal text-sm"> Options </p>
+                </span>
+                <!-- Information -->
+                <Button unstyled :class="{ 'bg-indigo-500!': formInView == 'information' }"
+                    @click="formInView = 'information'" class="formNavButton">
+                    <NewspaperIcon />
+                    <p> Information </p>
+                </Button>
+                <!-- Discord -->
+                <Button unstyled :class="{ 'bg-indigo-500!': formInView == 'discord' }" @click="formInView = 'discord'"
+                    class="formNavButton">
+                    <i class="pi pi-discord pt-0.5 scale-150" />
+                    <p> Discord Settings </p>
+                </Button>
+                <!-- Signup -->
+                <Button unstyled :class="{ 'bg-indigo-500!': formInView == 'signup' }" @click="formInView = 'signup'"
+                    class="formNavButton">
+                    <ClipboardCheckIcon />
+                    <p class="text-wrap"> Signup RSVPs </p>
+                    <div hidden
+                        class="flex justify-center items-center flex-wrap rounded-full aspect-square p-0.5 bg-red-400 shadow-md shadow-black/40">
+                        <p class="text-xs"> 2 </p>
+                    </div>
+                </Button>
 
-            </div>
+            </section>
 
+            <!-- Form Display -->
+            <Form unstyled v-slot="$form" :ref="(el) => sesForm.eRef = <any>el" :resolver="sesForm.resolver"
+                class="w-full">
+                <Transition name="fade" mode="out-in">
 
-            <!-- INPUT: Session Description -->
-            <div class="inputArea">
-                <!-- Input/Label -->
-                <label for="description" class="inputLabel" :class="{ 'text-red-400!': $form.description?.invalid }">
-                    <TextInitialIcon :size="13" :stroke-width="2.75" />
-                    <p> Description </p>
-                </label>
-                <!-- Text Input -->
-                <TextArea fluid auto-resize size="small" name="description"
-                    v-tool-tip.bottom="<TooltipOptions>{ value: 'Give this session an optional description.', pt: inputToolTipPT }" />
-                <!-- Invalid Message -->
-                <Message unstyled class="w-full! text-wrap! flex-wrap! font-medium text-red-400!"
-                    v-for="err in $form.description?.errors">
-                    <p class="text-[13px]! pl-0.5"> {{ err?.message || 'Invalid Input!' }}</p>
-                </Message>
+                    <SesInfoForm v-if="formInView == 'information'" :ses-form="sesForm"
+                        v-model:form-in-view="formInView" :form$="$form" />
+                    <SesDiscordForm v-else-if="formInView == 'discord'" :ses-form="sesForm"
+                        v-model:formInView="formInView" :form$="$form" />
 
-            </div>
+                </Transition>
 
-
-            <!-- INPUT: Session Start Time -->
-            <div class="inputArea">
-                <!-- Input/Label -->
-                <label for="startDate" class="inputLabel" :class="{ 'text-red-400!': $form.startDate?.invalid }">
-                    <Clock10Icon :size="13" :stroke-width="2.75" />
-                    <p> Start Time </p>
-                </label>
-                <!-- Date Picker -->
-                <DatePicker name="startDate" fluid date-format="m/d/y" :step-minute="5" size="small" :show-time="true"
-                    hour-format="12" :max-date="testForm.options.maxSelectableDate()"
-                    :min-date="testForm.options.minSelectableDate()" @value-change="testForm.eRef?.validate('endDate')"
-                    v-tool-tip.bottom="<TooltipOptions>{ value: 'Assign the sessions start date and time.', pt: inputToolTipPT }" />
-                <!-- Invalid Message -->
-                <Message unstyled class="w-full! text-wrap! flex-wrap! font-medium text-red-400!"
-                    v-for="err in $form.startDate?.errors">
-                    <p class="text-[13px]! pl-0.5"> {{ err?.message || 'Invalid Input!' }}</p>
-                </Message>
-
-            </div>
-
-
-            <!-- INPUT: Session End Time -->
-            <div class="inputArea">
-
-                <!-- Input/Label -->
-                <label for="endDate" class="inputLabel" :class="{ 'text-red-400!': $form.endDate?.invalid }">
-                    <Clock4Icon :size="13" :stroke-width="2.75" />
-                    <p> End Time </p>
-                </label>
-                <!-- Toggle -->
-                <div class="flex w-full flex-row items-center justify-start relative right-1.5">
-                    <ToggleSwitch class="scale-70" v-model="testForm.options.includeEndDate"
-                        @value-change="(toggled) => { if (!toggled) { testForm.eRef?.setFieldValue('endDate', null) }; testForm.eRef?.validate('endDate'); }" />
-                    <p class="font-medium text-[13px] text-white/85"> Include End Time? </p>
-                </div>
-                <!-- Date Picker -->
-                <DatePicker name="endDate" fluid date-format="m/d/y" :step-minute="5" size="small" :show-time="true"
-                    hour-format="12" :max-date="testForm.options.maxSelectableDate()"
-                    :min-date="testForm.options.minSelectableDate()" v-if="testForm.options.includeEndDate"
-                    v-tool-tip.bottom="<TooltipOptions>{ value: 'Assign the sessions end date and time. (optional)', pt: inputToolTipPT }" />
-                <!-- Invalid Message -->
-                <Message unstyled class="w-full! text-wrap! flex-wrap! font-medium text-red-400!"
-                    v-for="err in $form.endDate?.errors">
-                    <p class="text-[13px]! pl-0.5"> {{ err?.message || 'Invalid Input!' }}</p>
-                </Message>
-
-            </div>
-
-            <Button class="my-4 self-end! mr-2" label="Submit" type="submit" />
-        </Form>
-
+            </Form>
+        </section>
 
 
 
@@ -149,6 +147,10 @@
 
 <style scoped>
     @reference "../../styles/main.css";
+
+    .formNavButton {
+        @apply w-full p-1 flex flex-1 flex-col gap-0.5 justify-center items-center content-center bg-zinc-700 hover:bg-zinc-600 cursor-pointer transition-all
+    }
 
     .inputArea {
         @apply flex flex-col !w-60 !sticky gap-2

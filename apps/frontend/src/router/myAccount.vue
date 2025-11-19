@@ -88,7 +88,7 @@
                                 }" @click="async () => {
                                     const { data: { session } } = await supabase.auth.getSession();
                                     if (!session) return;
-                                    await auth.resyncDiscordData('MANUAL', session?.access_token);
+                                    await auth.resyncDiscordData(session?.access_token, 'MANUAL', true);
                                 }">
                                 <RefreshCcwIcon class="size-4"
                                     :class="{ 'animate-spin': (auth.$state.refreshStatus == 'busy'), }" />
@@ -100,7 +100,7 @@
                             <Button @click="async () => {
                                 const { data: { session } } = await supabase.auth.getSession();
                                 if (!session) return;
-                                await auth.resyncDiscordData('MANUAL', session?.access_token)
+                                await auth.resyncDiscordData(session?.access_token, 'MANUAL', true);
                             }" unstyled :disabled="auth.$state.refreshStatus != 'idle'"
                                 class="flex flex-row justify-between items-center gap-1 flex-nowrap bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 disabled:cursor-not-allowed disabled:scale-90 transition-all transition-[350 ms] active:scale-95 p-1.75 rounded-md cursor-pointer"
                                 :class="{
