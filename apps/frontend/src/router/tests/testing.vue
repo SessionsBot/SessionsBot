@@ -47,7 +47,7 @@
             console.log('Submitted', e)
             if (e.valid) {
                 submissionDraft.value = {
-                    ...submissionDraft.value,
+                    ...(submissionDraft.value || {}),
                     ...e.values
                 }
             }
@@ -62,26 +62,6 @@
     watch(submissionDraft, (newV, oldV) => {
         console.info('Submission Draft Updated:', newV);
     })
-
-    // Auto fill session end date:
-    const firstStartDateSelection = ref(true);
-    const startDateModel = ref();
-    const endDateModel = ref();
-    const onStartDateEntered = (startDate: any) => {
-        // Apply default end date on first selection:
-        if (firstStartDateSelection.value) {
-            firstStartDateSelection.value = false;
-            const defaultEnd = DateTime.fromJSDate(startDate).plus({ hours: 1 }).toJSDate();
-            sesForm.value.eRef?.setFieldValue('endDate', defaultEnd)
-            endDateModel.value = defaultEnd
-        };
-        // Validate end date:
-        sesForm.value.eRef?.validate('endDate');
-    }
-
-
-    // Styling Pass Through(s):
-    const inputToolTipPT = { root: 'translate-x-1.5! -translate-y-1.5!', text: 'text-xs!' }
 
 </script>
 
