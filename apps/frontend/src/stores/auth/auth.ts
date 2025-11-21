@@ -1,12 +1,15 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
-import { useNavStore } from "./nav";
+import { useNavStore } from "../nav";
 import type { User, UserMetadata } from "@supabase/supabase-js";
 import axios, { AxiosError } from "axios";
 import { DateTime } from "luxon";
 import { TYPE, useToast } from "vue-toastification";
 import { CheckSquare2, MessageSquareWarning, TimerReset } from "lucide-vue-next";
 import type { RouteRecordRaw } from "vue-router";
+import { BasicResult, BasicResult as result } from "@sessionsbot/shared"
+import type { ResyncResult } from "./authTypes";
+
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
@@ -53,14 +56,16 @@ export const useAuthStore = defineStore('auth', {
         },
 
 
-        async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC', showToast: boolean) {
-            const toaster = useToast();
-            let toastId = null;
+        async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult<any>> {
 
             try {
                 // Check/set cooldown
                 if (this.$state.refreshStatus != 'idle') {
-                    return
+                    // Already Refreshing - return
+                    return {
+                        success: false,
+                        data: { reason: 'BUSY', message: 'Already refreshing.. please wait!' }
+                    }
                 } else this.$state.refreshStatus = 'busy';
 
                 // Check for recent refresh
@@ -70,18 +75,17 @@ export const useAuthStore = defineStore('auth', {
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
                     if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
                         this.$state.refreshStatus = 'failed';
-                        toaster(`Uh oh! You have to wait at least 15 minuets before refreshing account data again. (Time Remaining: ${Math.floor(15 - minsFromLastSync) || 1} mins)`, { icon: TimerReset, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false });
-                        return;
+                        // COOLDOWN - Return
+                        return {
+                            success: false,
+                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least 15 minuets before each refresh. (Remaining: ${Math.floor(15 - minsFromLastSync) >= 1 ? Math.floor(15 - minsFromLastSync) : '1>'} mins)` }
+                        };
                     };
-                } else throw `Failed to find 'Last Synced' date?`;
+                } else throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };
 
-                // Show loading notification:
-                if (showToast) {
-                    toastId = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeButton: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true });
-                };
 
                 // Get/fetch user auth token:
-                if (!authToken) throw 'Failed to re-sync Discord data! - No auth token provided..';
+                if (!authToken) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
@@ -99,30 +103,39 @@ export const useAuthStore = defineStore('auth', {
                     this.$state.refreshStatus = 'succeeded';
                     console.info('✅ - REFRESHED SESSION - Success!');
 
-                    // Update toast / notification of success:
-                    if (showToast && toastId) toaster.update(toastId, { content: `Success! You're account data has been re-synced with Discord!`, options: { icon: CheckSquare2, type: TYPE.SUCCESS, timeout: 4_000, hideProgressBar: false } });
+                    // Return Success
+                    return {
+                        success: true,
+                        data: null
+                    }
 
-                } else throw [`Failed to receive a fresh auth token from backend during refresh!`, { fresh_token }];
+                } else throw { reason: "REFRESH ERROR", message: 'Failed to re-sync Discord data - You\'ll have to sign back in, Sorry! Redirecting you now....' };
 
 
 
-            } catch (err) {
+            } catch (err: any) {
+
                 // Failed Discord Refresh:
                 this.$state.refreshStatus = 'failed';
                 console.warn('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
-                // Update toast / notification of failure:
-                if (showToast && toastId != null) {
-                    toaster.update(toastId, { content: `Uh oh! We couldn't resync your Discord Data! You'll have to sign back in using your Discord Account, redirecting you now...`, options: { icon: MessageSquareWarning, type: TYPE.ERROR, timeout: 8_000, hideProgressBar: false, closeOnClick: false } })
-                }
+
                 // Redirect new sign in after wait:
                 setTimeout(() => {
                     this.signIn();
                 }, 4_000);
 
+                // Return Failure:
+                return {
+                    success: false,
+                    data: {
+                        reason: err?.reason || 'REFRESH ERROR',
+                        message: err?.message || `Failed to refresh account data, you'll have to sign back in! (redirecting you now...)`
+                    }
+                }
+
             } finally {
                 // Reset refresh busy flag:
                 setTimeout(() => this.$state.refreshStatus = 'idle', 3_000);
-                return;
             }
         },
     },
@@ -164,7 +177,7 @@ export const watchAuth = async () => {
                 if (expiredData) {
                     // last discord data sync >= 24 hours ago
                     console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
-                    store.resyncDiscordData(session?.access_token, 'AUTOMATIC', false);
+                    store.resyncDiscordData(session?.access_token, 'AUTOMATIC');
                 }
             } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 

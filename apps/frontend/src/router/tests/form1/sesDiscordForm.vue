@@ -84,7 +84,7 @@
 
 
 <style scoped>
-    @reference "../../styles/main.css";
+    @reference "../../../styles/main.css";
 
     .inputArea {
         @apply flex flex-col !w-60 !sticky gap-2

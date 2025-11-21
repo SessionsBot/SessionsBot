@@ -20,10 +20,6 @@
     <main class="flex flex-wrap w-full h-full flex-1 justify-center items-center content-center">
         <div class="max-w-4xl mx-auto py-12 pb-2 px-6 relative">
 
-            <div class="fixed right-2 bottom-2 z-[100]">
-                <scrollToTop />
-            </div>
-
             <div class="w-full flex flex-row gap-3 mb-6 py-5 flex-wrap justify-center items-center content-center">
                 <BookMarkedIcon :size="33" />
                 <h1 class="text-4xl font-extrabold w-fit text-center">
@@ -184,7 +180,7 @@
                 </li>
                 <li>
                     <strong>Support:</strong> Email <a class="link" :href="`mailto:${supportEmail}`">{{ supportEmail
-                        }}</a>.
+                    }}</a>.
                     No guaranteed response times, but we aim to reply quickly.
                 </li>
                 <li>

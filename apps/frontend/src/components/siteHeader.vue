@@ -7,7 +7,9 @@
 
   // Expose header element so parent can measure
   const headerRef = ref<HTMLElement | null>(null);
-  defineExpose({ headerRef });
+  const headerHeight = useElementSize(headerRef).height || 0;
+
+  defineExpose({ headerHeight })
 
   const nav = useNavStore();
 </script>

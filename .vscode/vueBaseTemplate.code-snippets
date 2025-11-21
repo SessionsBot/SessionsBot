@@ -1,0 +1,23 @@
+{
+	"Vue Base Template":{
+		"prefix": "!vue",
+		"scope": "vue,Vue",
+		"body": [
+			"<script lang=\"ts\" setup>",
+			"    $0",
+			"</script>",
+			"",
+			"",
+			"<template>",
+			"    <main class=\"justify-center items-center\">",
+			"        $1",
+			"    </main>",
+			"</template>",
+			"",
+			"",
+			"<style scoped>",
+			"    $0",
+			"</style>",
+		]
+	}
+}

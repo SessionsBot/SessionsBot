@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { useAuthStore } from "@/stores/auth";
+  import { useAuthStore } from "@/stores/auth/auth";
   import { externalUrls, useNavStore } from "@/stores/nav";
   import { supabase } from "@/utils/supabase";
   import { defaultWindow } from "@vueuse/core";

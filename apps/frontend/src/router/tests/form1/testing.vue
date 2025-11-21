@@ -126,7 +126,7 @@
 </template>
 
 <style scoped>
-    @reference "../../styles/main.css";
+    @reference "../../../styles/main.css";
 
     .formNavButton {
         @apply w-full p-1 flex flex-1 flex-col gap-0.5 justify-center items-center content-center bg-zinc-700 hover:bg-zinc-600 cursor-pointer transition-all
