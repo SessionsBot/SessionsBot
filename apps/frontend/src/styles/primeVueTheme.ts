@@ -2,10 +2,11 @@ import { definePreset } from "@primeuix/themes";
 import Aura from '@primeuix/themes/aura';
 import type { AuraBaseTokenSections } from "@primeuix/themes/aura/base";
 import type { ButtonTokenSections } from "@primeuix/themes/types/button";
+import type { PrimeVueConfiguration, PrimeVuePTOptions } from "primevue";
 
 
 const customButtonColors = {
-    root:<ButtonTokenSections.Root>{
+    root: <ButtonTokenSections.Root>{
         primary: {
             activeBackground: 'oklch(0.5500 0.2002 270.64)', /* darkest */
             activeBorderColor: 'oklch(0.5500 0.2002 270.64)',
@@ -89,7 +90,7 @@ const customButtonColors = {
     }
 }
 
-/** Main Exported Theme Preset - For PrimeVue */
+/** Main Theme Preset - For PrimeVue */
 const customPreset = definePreset(Aura, {
     semantic: <AuraBaseTokenSections.Semantic>{
         primary: {
@@ -110,18 +111,21 @@ const customPreset = definePreset(Aura, {
     components: {
         button: {
             root: customButtonColors.root,
-            colorScheme:{
-                dark: {root: customButtonColors.root},
-                light: { root: {...customButtonColors.root,
-                    contrast: {
-                        background: 'oklch(0.35 0.0392 257.29)',
-                        borderColor: 'oklch(0.35 0.0392 257.29)',
-                        hoverBackground: 'oklch(0.40 0.0392 257.29)',
-                        hoverBorderColor: 'oklch(0.40 0.0392 257.29)',
-                        activeBackground: 'oklch(0.45 0.0392 257.29)',
-                        activeBorderColor: 'oklch(0.45 0.0392 257.29)',
+            colorScheme: {
+                dark: { root: customButtonColors.root },
+                light: {
+                    root: {
+                        ...customButtonColors.root,
+                        contrast: {
+                            background: 'oklch(0.35 0.0392 257.29)',
+                            borderColor: 'oklch(0.35 0.0392 257.29)',
+                            hoverBackground: 'oklch(0.40 0.0392 257.29)',
+                            hoverBorderColor: 'oklch(0.40 0.0392 257.29)',
+                            activeBackground: 'oklch(0.45 0.0392 257.29)',
+                            activeBorderColor: 'oklch(0.45 0.0392 257.29)',
+                        }
                     }
-                } },
+                },
             },
             css: `
                 .p-button {
@@ -141,4 +145,45 @@ const customPreset = definePreset(Aura, {
 
 });
 
-export default customPreset;
+
+/** Main Theme PASS THROUGHs */
+const primePT: PrimeVuePTOptions = {
+    inputtext: {
+        root: 'bg-zinc-800! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
+    },
+    textarea: {
+        root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
+    },
+    datepicker: {
+        root: 'text-white!',
+        panel: 'bg-zinc-700! ',
+        header: 'bg-zinc-700! text-white!',
+        day: 'hover:bg-black/35! text-white!',
+        month: 'hover:bg-black/35! text-white!',
+        year: 'hover:bg-black/35! text-white!',
+        selectMonth: 'hover:bg-black/35! text-white!',
+        selectYear: 'hover:bg-black/35! text-white!',
+        weekDay: 'text-white/80!',
+        hour: 'text-white!',
+        minute: 'text-white!',
+        ampm: 'text-white!'
+    }
+}
+
+/** Main Exported PrimeVue Config */
+const primeVueConfig = <PrimeVueConfiguration>{
+    theme: {
+        preset: customPreset,
+        options: {
+            darkModeSelector: '.dark'
+        }
+    },
+    ripple: true,
+    pt: primePT,
+    ptOptions: {
+        mergeSections: true,
+        mergeProps: true
+    },
+}
+
+export default primeVueConfig;

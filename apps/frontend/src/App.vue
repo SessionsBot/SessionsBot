@@ -1,35 +1,41 @@
 <script setup lang="ts">
-  import { useElementSize } from '@vueuse/core';
+  import { useElementSize, type MaybeElementRef } from '@vueuse/core';
   import SiteHeader from './components/siteHeader.vue';
   import SiteFooter from './components/siteFooter.vue';
   import { ref } from 'vue';
   import { useNavStore } from './stores/nav';
-  import { supabase } from './utils/supabase';
-import { useAuthStore } from './stores/auth';
+  import { useAuthStore, watchAuth } from './stores/auth/auth';
 
+  // Auth Store:
   const auth = useAuthStore();
-
-  // Reactive Header Height:
-  const headerElmRef = ref<{ headerRef: HTMLElement | null } | null>(null);
-  const headerHeight = useElementSize(() => headerElmRef.value?.headerRef).height;
   // Nav store:
   const nav = useNavStore();
 
-  onMounted(()=>{
-    auth.watchAuth()
+
+  // // Reactive Header Height:
+  const headerRef = ref();
+  const headerHeight = computed(() => headerRef.value?.['headerHeight'] ?? 0)
+
+
+  // On App Mount:
+  onMounted(async () => {
+    await watchAuth();
   })
 
 </script>
 
 <template>
 
-  <SiteHeader ref="headerElmRef" />
+  <!-- Site Header -->
+  <SiteHeader ref="headerRef" />
 
-  <span class="flex flex-col flex-1 overflow-x-clip! max-w-screen!" :class="{'overflow-y-clip! max-h-screen!': nav.navOpen }">
+  <span class="flex flex-col flex-1 overflow-x-clip! max-w-screen!"
+    :class="{ 'overflow-y-clip! max-h-screen!': nav.navOpen }">
     <RouterView v-slot="{ Component }">
       <Transition name="slide" mode="out-in">
-        <component :style="{ marginTop: `${headerHeight || 40}px` }" class="max-w-screen! overflow-x-clip min-w-[300px]"
-          :is="Component" />
+        <!-- Main Body Component -->
+        <component :style="{ marginTop: headerHeight ? headerHeight + 'px' : '0 px' }"
+          class="max-w-screen! overflow-x-clip min-w-[300px] flex flex-1 flex-wrap" :is="Component" />
       </Transition>
     </RouterView>
 

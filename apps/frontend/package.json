@@ -15,17 +15,22 @@
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.5",
+    "@primevue/forms": "^4.4.1",
     "@sessionsbot/shared": "file:../../packages/shared",
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/vite": "^4.1.15",
     "@vueuse/core": "^14.0.0",
+    "axios": "^1.13.2",
     "lucide-vue-next": "^0.548.0",
+    "luxon": "^3.7.2",
     "pinia": "^3.0.3",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
+    "rrule": "^2.8.1",
     "tailwindcss": "^4.1.15",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.4.1",

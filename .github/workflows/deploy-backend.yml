@@ -1,0 +1,77 @@
+name: Deploy - Backend
+run-name: Deploy - Backend
+
+on:
+  push:
+    tags:
+      - "@backend*"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write # Required to create and update deployments
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Deployment
+        id: create_deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            return true; // # ! FIX ME LATER
+            const response = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              required_contexts: [],
+              auto_merge: false,
+              environment: "Discord Bot - Backend",
+              production_environment: true
+            });
+
+            core.setOutput("deployment_id", response.data.id);
+
+      - name: Install Koyeb CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/koyeb/koyeb-cli/master/install.sh | sh
+          echo "$HOME/.koyeb/bin" >> $GITHUB_PATH
+
+      - name: Deploy to Koyeb
+        id: koyeb_deploy
+        continue-on-error: true
+        env:
+          KOYEB_API_KEY: ${{ secrets.BACKEND_DEPLOY_KEY }}
+        run: |
+          koyeb deploy . basic-meadowlark/sessionsbot \
+          --token $KOYEB_API_KEY \
+          --env KOYEB_GIT_SHA=$GITHUB_SHA \
+          --env KOYEB_GIT_BRANCH=$GITHUB_REF_NAME \
+          --env KOYEB_GIT_REPOSITORY=$GITHUB_REPOSITORY \
+          --env KOYEB_GIT_COMMIT_MESSAGE="${{ github.event.head_commit.message }}" \
+          --env KOYEB_GIT_COMMIT_AUTHOR="${{ github.event.head_commit.author.name }}" \
+
+      - name: Update Deployment Status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          DEPLOYMENT_ID: ${{ steps.create_deployment.outputs.deployment_id }}
+          KOYEB_STATUS: ${{ steps.koyeb_deploy.outputs }}
+        with:
+          script: |
+            return true // # ! FIX ME LATER
+            const deploymentId = Number(process.env.DEPLOYMENT_ID);
+            const status = process.env.KOYEB_STATUS === 'success' ? 'success' : 'failure';
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deploymentId,
+              state: status,
+              environment: "Discord Bot - Backend",
+              environment_url: "https://regional-melloney-sessions-bot-630bded7.koyeb.app/",
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });

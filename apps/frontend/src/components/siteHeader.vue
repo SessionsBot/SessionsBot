@@ -7,20 +7,23 @@
 
   // Expose header element so parent can measure
   const headerRef = ref<HTMLElement | null>(null);
-  defineExpose({ headerRef });
+  const headerHeight = useElementSize(headerRef).height || 0;
+
+  defineExpose({ headerHeight })
 
   const nav = useNavStore();
 </script>
 
 <template>
-  <header
-    ref="headerRef"
-    class="flex border-b z-5 drop-shadow-2xl drop-shadow-black/40 border-white/5 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm"
-  >
-    <div class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse"></div>
+  <header ref="headerRef"
+    class="flex border-b z-5 drop-shadow-2xl drop-shadow-black/40 border-white/5 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
+    <div
+      class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse">
+    </div>
 
     <!-- Site Title -->
-    <span @click="$router.push('/')" class="flex select-none! cursor-pointer items-center :w-fit justify-center content-center gap-1.5 m-3 flex-wrap">
+    <span @click="$router.push('/')"
+      class="flex select-none! cursor-pointer items-center :w-fit justify-center content-center gap-1.5 m-3 flex-wrap">
       <div class="sm:size-11 size-9 logo-shadow rounded-xl">
         <img src="/favicon.ico" class="sm:size-11 size-9 ring-2! ring-ring rounded-xl" :draggable="false" />
       </div>
@@ -29,7 +32,8 @@
 
     <!-- Nav Button -->
     <span class="flex items-center justify-center content-center gap-1 m-1">
-      <Button @click="nav.openNav()" unstyled class="bg-indigo-500 p-2 m-3 rounded-md drop-shadow-black active:scale-95 transition-all cursor-pointer">
+      <Button @click="nav.openNav()" unstyled
+        class="bg-indigo-500 p-2 m-3 rounded-md drop-shadow-black active:scale-95 transition-all cursor-pointer">
         <MenuIcon class="text-xs size-5 sm:size-6" />
         <p class="hidden">View Menu</p>
       </Button>

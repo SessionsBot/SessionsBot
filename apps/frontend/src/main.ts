@@ -1,37 +1,33 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
-import PrimeVue, { type PrimeVueConfiguration } from 'primevue/config';
-import Aura from '@primeuix/themes/aura';
-import primeVueTheme from './styles/primeVueTheme'
+import Toast from 'vue-toastification'
+import PrimeVue from 'primevue/config';
+import Tooltip from 'primevue/tooltip';
 
 import App from './App.vue'
+
+import { toastOptions } from './utils/toaster';
+import primeVueConfig from './styles/primeVueTheme';
 import router from './router'
+
 
 // Import CSS:
 import './styles/main.css'
 import './styles/animations.css'
 import 'primeicons/primeicons.css'
+import "vue-toastification/dist/index.css";
+
+
 
 
 // Configure & Mount App:
 const app = createApp(App)
 
-app.use(PrimeVue, <PrimeVueConfiguration>{
-    theme: {
-        preset: primeVueTheme,
-        options: {
-            darkModeSelector: '.dark'
-        }
-    },
-    ripple: true,
-    ptOptions: {
-        mergeSections: true,
-        mergeProps: true
-    },
-})
 
 app.use(createPinia())
 app.use(router)
+app.use(Toast, toastOptions)
+app.use(PrimeVue, primeVueConfig)
+app.directive('tool-tip', Tooltip);
 
 app.mount('#app')

@@ -1,26 +1,50 @@
 {
   "$schema": "https://unpkg.com/release-it/schema/release-it.json",
-  "hooks": {
-    "before:init": ["npm run build"]
-  },
+  "hooks": {},
   "plugins": {
     "@release-it/conventional-changelog": {
       "preset": {
-      "name": "conventionalcommits",
-      "types": [
-        {"type": "feat", "section": "⚡️ Features"},
-        {"type": "fix", "section": "🐞 Bug Fixes"},
-        {"type": "chore", "section": "🧹 Chores"},
-        {"type": "docs", "section": "📄 Documentation"},
-        {"type": "style", "section": "🎨 Styling"},
-        {"type": "refactor", "section": "♻️ Refactoring"},
-        {"type": "perf", "section": "📈 Performance"},
-        {"type": "test", "section": "🧪 Tests"}
-      ]
-    },
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "⚡️ Features"
+          },
+          {
+            "type": "fix",
+            "section": "🐞 Bug Fixes"
+          },
+          {
+            "type": "chore",
+            "section": "🧹 Chores"
+          },
+          {
+            "type": "docs",
+            "section": "📄 Documentation"
+          },
+          {
+            "type": "style",
+            "section": "🎨 Styling"
+          },
+          {
+            "type": "refactor",
+            "section": "♻️ Refactoring"
+          },
+          {
+            "type": "perf",
+            "section": "📈 Performance"
+          },
+          {
+            "type": "test",
+            "section": "🧪 Tests"
+          }
+        ]
+      },
       "infile": "CHANGELOG.md",
       "ignoreRecommendedBump": true,
-      "gitRawCommitsOpts": { "path": "apps/backend" }
+      "gitRawCommitsOpts": {
+        "path": "apps/backend"
+      }
     }
   },
   "git": {
@@ -28,12 +52,15 @@
     "requireCleanWorkingDir": true,
     "requireBranch": "main",
     "tagName": "backend@v${version}",
-    "tagAnnotation": "Release v${version}",
+    "tagAnnotation": "Release backend@v${version}",
+    "commitMessage": "Release backend@v${version}",
     "push": true
   },
   "github": {
     "release": true,
     "releaseName": "backend@v${version}",
+    "preRelease": true,
+    "makeLatest": true,
     "comments": {
       "submit": true,
       "issue": ":rocket: _This issue has been resolved in v${version}. See [${releaseName}](${releaseUrl}) for release notes._",
