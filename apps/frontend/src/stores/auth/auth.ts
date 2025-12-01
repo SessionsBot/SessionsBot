@@ -73,12 +73,13 @@ export const useAuthStore = defineStore('auth', {
                     // Get last sync date:
                     const lastSyncDate = DateTime.fromISO(this.user.app_metadata?.last_synced);
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
+                    const remainingWaitMins = Math.floor(15 - minsFromLastSync) >= 1 ? Math.floor(15 - minsFromLastSync) : '1>';
                     if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
                         this.$state.refreshStatus = 'failed';
                         // COOLDOWN - Return
                         return {
                             success: false,
-                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least 15 minuets before each refresh. (Remaining: ${Math.floor(15 - minsFromLastSync) >= 1 ? Math.floor(15 - minsFromLastSync) : '1>'} mins)` }
+                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least 15 minuets before each refresh. (Remaining: ${remainingWaitMins} mins)` }
                         };
                     };
                 } else throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };
@@ -101,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
                     });
                     await supabase.auth.refreshSession();
                     this.$state.refreshStatus = 'succeeded';
-                    console.info('✅ - REFRESHED SESSION - Success!');
+                    console.info('✅ - REFRESHED AUTH SESSION!');
 
                     // Return Success
                     return {
@@ -173,10 +174,10 @@ export const watchAuth = async () => {
             const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
             if (lastSyncDate && lastSyncDate.isValid) {
                 const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
-                const expiresAt = lastSyncDate.plus({ hours: 24 }).setZone('America/Chicago').toFormat('f');
-                if (expiredData) {
+                if (expiredData && store.refreshStatus == 'idle') {
                     // last discord data sync >= 24 hours ago
                     console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
+                    // auto refresh acc data:
                     store.resyncDiscordData(session?.access_token, 'AUTOMATIC');
                 }
             } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);

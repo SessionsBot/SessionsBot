@@ -2,6 +2,7 @@ import { definePreset } from "@primeuix/themes";
 import Aura from '@primeuix/themes/aura';
 import type { AuraBaseTokenSections } from "@primeuix/themes/aura/base";
 import type { ButtonTokenSections } from "@primeuix/themes/types/button";
+import type { ValueOf } from "@sessionsbot/shared";
 import type { PrimeVueConfiguration, PrimeVuePTOptions } from "primevue";
 
 
@@ -105,7 +106,7 @@ const customPreset = definePreset(Aura, {
             800: 'oklch(0.3907 0.2002 270.64)',
             900: 'oklch(0.3307 0.2002 270.64)',
             950: 'oklch(0.3007 0.2002 270.64)',
-        }
+        },
     },
 
     components: {
@@ -138,7 +139,44 @@ const customPreset = definePreset(Aura, {
                 }
             `,
         },
+        select: {
+            root: {
+                focusBorderColor: 'var(--color-indigo-400)',
+                invalidBorderColor: 'var(--color-red-400)',
+                hoverBorderColor: 'var(--color-indigo-300)',
+            },
+            overlay: {
+                background: 'var(--color-zinc-800)',
+                color: 'var(--color-white)/75 !important',
+            },
+            option: {
+                focusBackground: 'color-mix(in oklab, var(--color-white) /* #fff = #ffffff */ 5%, transparent);',
+                selectedBackground: 'var(--color-indigo-400)',
+                selectedFocusBackground: 'var(--color-indigo-400)',
+                selectedFocusColor: 'var(--color-white)',
+                selectedColor: 'var(--color-white) !important',
+                focusColor: 'var(--color-white)',
+            },
+        },
+        inputnumber: {
 
+            colorScheme: {
+                dark: {
+                    button: {
+                        background: 'var(--color-zinc-800)',
+                        borderColor: 'var(--color-white)',
+                        hoverBorderColor: 'var(--color-indigo-400)',
+                        activeBorderColor: 'var(--color-indigo-400)',
+                    },
+                }
+            },
+            css: `
+                .p-inputnumber-button {
+                    border-width: 2px !important;
+            
+                }
+            `
+        }
     },
 
 
@@ -149,7 +187,7 @@ const customPreset = definePreset(Aura, {
 /** Main Theme PASS THROUGHs */
 const primePT: PrimeVuePTOptions = {
     inputtext: {
-        root: 'bg-zinc-800! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
+        root: 'bg-zinc-800! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!'
     },
     textarea: {
         root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
@@ -167,7 +205,16 @@ const primePT: PrimeVuePTOptions = {
         hour: 'text-white!',
         minute: 'text-white!',
         ampm: 'text-white!'
+    },
+    select: {
+        root: 'bg-zinc-800! text-white! border-2! font-bold',
+        overlay: 'text-white! border-2! border-zinc-600! overflow-clip',
+        // option: 'hover:bg-white/5!',
+        list: 'bg-zinc-800!',
+        label: 'text-white!',
+        optionLabel: 'text-white'
     }
+
 }
 
 /** Main Exported PrimeVue Config */

@@ -28,6 +28,7 @@ body {
   color: white;
   font-family: var(--font-rubik) !important;
   box-sizing: border-box;
+  color-scheme: dark;
 }
 
 #app {
