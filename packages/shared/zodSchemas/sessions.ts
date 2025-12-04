@@ -1,5 +1,6 @@
 import z, { string, stringFormat } from "zod";
-import {GuildSessionData, rsvpSchema} from '@sessionsbot/shared'
+import type { GuildSessionData } from '@sessionsbot/shared'
+import { rsvpSchema } from '@sessionsbot/shared'
 
 export const sessionSchema = z.object({
     title: z.string('Please provide a valid title.')

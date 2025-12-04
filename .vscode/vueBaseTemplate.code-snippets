@@ -4,7 +4,7 @@
 		"scope": "vue,Vue",
 		"body": [
 			"<script lang=\"ts\" setup>",
-			"    $0",
+			"    ",
 			"</script>",
 			"",
 			"",
@@ -16,7 +16,7 @@
 			"",
 			"",
 			"<style scoped>",
-			"    $0",
+			"    ",
 			"</style>",
 		]
 	}

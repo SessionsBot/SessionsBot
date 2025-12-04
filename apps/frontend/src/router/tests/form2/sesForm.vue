@@ -1,12 +1,19 @@
 <script lang="ts" setup>
     import z, { safeParse, treeifyError } from 'zod'
-    import { ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInside, MapPinCheckInsideIcon, TextInitialIcon, Trash2Icon } from 'lucide-vue-next';
+    import { ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
-    import RsvpsTab from './tabs/rsvps.vue';
+    import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
     import DiscordTab from './tabs/discord.vue';
-    import { Transition } from 'vue';
+    import { KeepAlive, Transition, type Component } from 'vue';
 
+    import { useConfirm } from 'primevue';
+    import { useAuthStore } from '@/stores/auth';
+
+    // Services:
+    const confirmService = useConfirm()
+    const router = useRouter()
+    const auth = useAuthStore()
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -29,6 +36,20 @@
             return tabSelected.value = 'schedule';
     };
 
+    // Form Abort Confirm Dialog Ref:
+    const abortForm = () => {
+        console.log('trying to open')
+        confirmService.require({
+            header: 'Are you sure?',
+            message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
+            accept: () => {
+                router.push('/');
+            },
+            reject: () => {
+                console.info('Rejected!');
+            },
+        })
+    }
 
     /** ACTION: Form Mode ("new" or "edit") */
     const formAction = ref<'new' | 'edit'>('new');
@@ -41,7 +62,7 @@
         startDate: null as Date | null,
         endDate: null as Date | null,
         channelId: '',
-        rsvps: {},
+        rsvps: new Map(),
         recurrence: null as any,
     });
 
@@ -54,7 +75,7 @@
 
     /** Form Resolver Schema */
     const formSchema = z.object({
-        title: z.string('Please enter a valid title.').regex(/^[A-Za-z0-9 ]*$/, 'Can only include characters A-Z and 0-9.').trim().min(1, 'Title must have at least 1 character.'),
+        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.'),
         description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').optional().nullish(),
         location: z.url('Invalid Url').startsWith('https://', 'Url must start with: "https://".').trim().optional().nullish().or(z.literal(['', ``, ""])),
         startDate: z.date('Please enter a valid date.').refine((v) => v?.getTime() >= new Date().getTime(), 'Date has already occurred.'),
@@ -67,7 +88,11 @@
             'End Date must occur after Start Date.'
         ).optional().nullable(),
         channelId: z.string().trim().min(5),
-        rsvps: z.object(z.any()),
+        rsvps: z.map(z.string(), z.object({
+            name: z.string(),
+            emoji: z.string(),
+            capacity: z.number()
+        })).nullish(),
         recurrence: z.any()
     })
 
@@ -80,13 +105,21 @@
     watch(() => invalidFields.value, (v) => {
 
         const keys = new Set(v?.keys())
+        // Info Tab:
         if (infoFields.some((fieldName) => keys.has(fieldName))) {
             if (!invalidTabs.value.has('information')) {
                 invalidTabs.value.add('information');
             }
-        } else {
-            invalidTabs.value.delete('information');
+        } else invalidTabs.value.delete('information');
+
+        // RSVP Tab:
+
+        // Schedule Tab:
+        if (keys.has('recurrence')) {
+            invalidTabs.value.add('schedule');
         }
+        else invalidTabs.value.delete('schedule');
+
     }, { deep: true })
 
 
@@ -108,7 +141,16 @@
 
     /** Form Submission Function */
     async function submitForm() {
-
+        // Apply Options:
+        if (!formOptions.value.rsvpsEnabled) {
+            // Rsvps Disabled:
+            formValues.value.rsvps = null;
+        }
+        if (!formOptions.value.recurrenceEnabled) {
+            // Recurrence Disabled:
+            formValues.value.recurrence = null;
+        }
+        console.log('Form Submitted', formValues.value);
     }
 
     /** On Page/Form Mount */
@@ -151,7 +193,7 @@
                         </span>
 
                         <!-- Abort/Delete Session - Button -->
-                        <Button unstyled
+                        <Button unstyled @click="abortForm()"
                             class="p-2 hover:bg-red-400/20 active:scale-95 cursor-pointer transition-all rounded-full">
                             <Trash2Icon class="opacity-40 size-5" />
                         </Button>
@@ -194,25 +236,41 @@
                     class="flex px-6 w-full overflow-clip flex-1 justify-center items-center content-center flex-wrap">
 
                     <Transition name="slide" mode="out-in" :duration="0.5">
-                        <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
-                            v-model:title="formValues.title" v-model:description="formValues.description"
-                            v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate" />
+                        <KeepAlive>
+                            <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
+                                v-model:title="formValues.title" v-model:description="formValues.description"
+                                v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate" />
 
-                        <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
-                            v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
+                            <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
+                                v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
 
-                        <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
-                            v-model:recurrence-enabled="formOptions.recurrenceEnabled" />
+                            <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
+                                v-model:recurrence-enabled="formOptions.recurrenceEnabled" />
 
-                        <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField />
+                            <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField />
+                        </KeepAlive>
                     </Transition>
 
                 </section>
 
 
                 <!-- Form Footer -->
-                <div class="w-full p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
+                <div
+                    class="w-full flex flex-row-reverse items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
 
+                    <!-- Created By - Badge -->
+                    <div hidden class="flex gap-1 items-center flex-row ml-1 text-sm">
+                        <p> Created By: </p>
+                        <!-- User Name/Icon -->
+                        <a :href="'https://discord.com/users/' + auth?.userData?.id"
+                            class="bg-white/5 ring-2 ring-ring p-0.5 px-1.5 gap-1 rounded-sm flex flex-row  items-center justify-center flex-wrap">
+                            <img :src="auth.userData?.avatar" alt="(user avatar)"
+                                class="size-4 rounded-full ring-2 ring-zinc-600">
+                            <p> {{ auth.userData?.username }}</p>
+                        </a>
+                    </div>
+
+                    <!-- Tab/Submit Btns -->
                     <div class="flex justify-end items-center content-center gap-3 p-2">
 
                         <!-- Back Tab Button -->

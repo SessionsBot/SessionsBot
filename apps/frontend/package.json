@@ -30,7 +30,8 @@
     "tailwindcss": "^4.1.15",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
-    "vue-toastification": "^2.0.0-rc.5"
+    "vue-toastification": "^2.0.0-rc.5",
+    "vue3-emoji-picker": "^1.1.8"
   },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.4.1",

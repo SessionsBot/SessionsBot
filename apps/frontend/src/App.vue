@@ -2,6 +2,7 @@
   import { useElementSize, type MaybeElementRef } from '@vueuse/core';
   import SiteHeader from './components/siteHeader.vue';
   import SiteFooter from './components/siteFooter.vue';
+  import PV_Dialog from './components/ConfirmDialog.vue';
   import { ref } from 'vue';
   import { useNavStore } from './stores/nav';
   import { useAuthStore, watchAuth } from './stores/auth/auth';
@@ -41,6 +42,9 @@
 
     <SiteFooter />
   </span>
+
+  <!-- Confirm Dialog -->
+  <PV_Dialog />
 
 </template>
 
