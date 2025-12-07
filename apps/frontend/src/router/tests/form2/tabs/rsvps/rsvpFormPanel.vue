@@ -129,7 +129,7 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-zinc-900! text-white! ring-ring! border-ring! border-2! m-7!">
+        class="bg-zinc-900! text-white! ring-2! ring-ring! m-7!">
 
         <!-- Header -->
         <template #header class="w-full! grow!">

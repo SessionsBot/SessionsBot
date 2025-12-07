@@ -2,25 +2,22 @@
     import { useAuthStore } from "@/stores/auth/auth";
     import { supabase } from "@/utils/supabase";
     import axios from "axios";
-    import { InfoIcon, LogOutIcon, MoveRightIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
+    import { FileUserIcon, InfoIcon, LogOutIcon, MoveRightIcon, RefreshCcwIcon, UserCircle2Icon } from "lucide-vue-next";
     import { DateTime } from "luxon";
     import { storeToRefs } from "pinia";
 
     import lastSyncedBadge from "./lastSyncedBadge.vue";
     import LastSyncedBadge from "./lastSyncedBadge.vue";
     import SignInCard from "./signInCard.vue";
+    import DeleteData from "./deleteData.vue";
 
     const auth = useAuthStore();
     const { userData, signedIn, user, refreshStatus } = storeToRefs(auth);
 
     const avatarLoaded = ref(false)
 
-    // Create mailto link
-    const draftDeleteAccountEmail = () => `mailto:support@sessionsbot.fyi?${new URLSearchParams({
-        subject: `ACCOUNT DELETION REQUEST - ${userData?.value?.username}`,
-        body: `Hello, I would like to exercise my legal rights and request for my personal user account on https://sessionsbot.fyi and related personal information to be deleted as soon as possible. \n\n──────── DO NOT EDIT BELOW THIS LINE ──────── \nDELETE ACCOUNT REQUEST:\nUID: ${user?.value?.id}\nDID: ${userData?.value?.id}\nUSER_EMAIL: ${user?.value?.email} \n──────── DO NOT EDIT ABOVE THIS LINE ──────── `,
-    }).toString()
-        }`;
+    // Account Deletion Visibility:
+    const deleteDataInfoVisible = ref<boolean>(false);
 
 </script>
 
@@ -79,23 +76,23 @@
                         </span>
 
 
-                        <!-- More Details Toggle -->
-                        <span class="flex opacity-35 flex-row gap-1 mt-4 items-center">
-                            <p class="text-xs"> More Details </p>
-                            <MoveRightIcon :size="15" />
+                        <!-- Acc/Data Deletion Req Button -->
+                        <span @click="deleteDataInfoVisible = !deleteDataInfoVisible;"
+                            class="flex opacity-35 flex-row gap-1 mt-2 items-center cursor-pointer active:bg-black/80 hover:bg-black/50 transition-all p-1.75 px-2 rounded-full">
+                            <FileUserIcon class="m-auto p-auto" :size="15" />
+                            <p class="text-xs"> Account / Data Deletion Requests </p>
                         </span>
-
-
 
 
                     </div>
                 </section>
+
                 <footer hidden
                     class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-zinc-400">
                     <p class="w-full sm:w-fit">
                         <b>UID:</b> {{ user?.id }}
                     </p>
-                    <a class="hover:underline sm:w-fit w-full font-medium" :href=draftDeleteAccountEmail()>
+                    <a class="hover:underline sm:w-fit w-full font-medium">
                         Account Deletion Request
                     </a>
                 </footer>
@@ -105,6 +102,9 @@
             <SignInCard v-else />
 
         </Transition>
+
+        <!-- Delete Data - Dialog -->
+        <DeleteData v-model:is-visible="deleteDataInfoVisible" />
     </main>
 </template>
 

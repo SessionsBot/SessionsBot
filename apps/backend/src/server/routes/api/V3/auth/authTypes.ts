@@ -27,6 +27,10 @@ export const AuthErrorTypes = {
         message: "Failed to generate Supabase magic link.",
         status: 500,
     },
+    unknown: {
+        message: "An unknown error has occurred please see console/logs.",
+        status: 500
+    }
 }
 
 export class AuthError {

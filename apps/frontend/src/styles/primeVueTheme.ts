@@ -176,7 +176,7 @@ const customPreset = definePreset(Aura, {
             
                 }
             `
-        }
+        },
     },
 
 
@@ -213,6 +213,9 @@ const primePT: PrimeVuePTOptions = {
         list: 'bg-zinc-800!',
         label: 'text-white!',
         optionLabel: 'text-white'
+    },
+    dialog: {
+        root: 'bg-zinc-800! border-0!',
     }
 
 }
