@@ -13,6 +13,6 @@
     "allowArbitraryExtensions": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["./src","../../../packages/shared"],
+  "include": ["./src","../../../packages/*"],
   "exclude": ["./node_modules", "./dist"]
 }

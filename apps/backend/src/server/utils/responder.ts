@@ -10,7 +10,7 @@ export class APIResponse {
     }
 
     /** Sends back a successful http response with provided inputs. */
-    public sendSuccess<t>(data: t, statusCode = 200) {
+    public success<t>(data: t, statusCode = 200) {
         return this.res.status(statusCode).json({
             success: true,
             data,
@@ -24,7 +24,7 @@ export class APIResponse {
 
 
     /** Sends back a failed http response with provided inputs. */
-    public async sendFailure<t>(error: t, statusCode: HttpStatusCode = 500) {
+    public async failure<t>(error: t, statusCode: HttpStatusCode = 500) {
         return this.res.status(statusCode).json({
             success: false,
             data: null,
@@ -36,6 +36,6 @@ export class APIResponse {
         })
     }
 
-    public success = this.sendSuccess;
-    public failure = this.sendFailure;
+    public sendSuccess = this.success;
+    public sendFailure = this.failure;
 }

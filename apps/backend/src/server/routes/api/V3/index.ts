@@ -2,21 +2,22 @@
 import express from "express";
 import { APIResponse } from "../../../utils/responder";
 import { HttpStatusCode } from "axios";
-
-// import authRouter from './auth/index.js'
-import authRouter from './auth/auth.js'
 import core from "../../../../utils/core";
+
+import authRouter from './auth/auth.js'
+import guildsRouter from "./guilds/guilds";
 
 // Create Router
 const apiRouter = express.Router();
 
 // Fallback route:
 apiRouter.all('/', (req, res) => {
-    res.send({ status: 'operational', release_version: core.botVersion, api_version: 3, git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 8) });
+    res.send({ status: 'operational', release_version: core.botVersion, api_version: 3, git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7) });
 })
 
 // Nested Routes:
-apiRouter.use('/auth', authRouter)
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/guilds', guildsRouter);
 
 
 // - Export Router:

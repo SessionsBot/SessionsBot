@@ -12,6 +12,7 @@ export interface authorizedRequest extends Request {
     }
 };
 
+
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Get token from auth headers:
