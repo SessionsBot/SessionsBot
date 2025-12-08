@@ -15,6 +15,11 @@
     const router = useRouter()
     const auth = useAuthStore()
 
+    // Guild Id & Data:
+    // ! Convert to Model
+    const guildId = ref<string>('1379160686629880028');
+
+
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
     const tabSelected = ref<FormTabs>('information')
@@ -38,15 +43,11 @@
 
     // Form Abort Confirm Dialog Ref:
     const abortForm = () => {
-        console.log('trying to open')
         confirmService.require({
             header: 'Are you sure?',
             message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
             accept: () => {
                 router.push('/');
-            },
-            reject: () => {
-                console.info('Rejected!');
             },
         })
     }
@@ -59,11 +60,14 @@
         title: '',
         description: '',
         location: '',
-        startDate: null as Date | null,
+        startDate: null,
         endDate: null as Date | null,
-        channelId: '',
         rsvps: new Map(),
         recurrence: null as any,
+        channelId: '',
+        postTime: null,
+        postDay: null,
+        nativeEvents: false,
     });
 
     /** Form Options/Toggles */
@@ -87,13 +91,17 @@
             },
             'End Date must occur after Start Date.'
         ).optional().nullable(),
-        channelId: z.string().trim().min(5),
+
         rsvps: z.map(z.string(), z.object({
             name: z.string(),
             emoji: z.string(),
             capacity: z.number()
         })).nullish(),
-        recurrence: z.any()
+        recurrence: z.any(), // Add schema 
+        channelId: z.string().trim().min(5),
+        postTime: z.date(),
+        postDay: z.literal('Day of').or(z.literal('Day before')),
+        nativeEvents: z.boolean()
     })
 
 
@@ -125,10 +133,7 @@
 
     /** Form Field Validation Fn */
     function validateField(name: NewSessions_FieldNames, value: any) {
-
         const fieldSchema = formSchema?.shape[name];
-        if (!fieldSchema) return console.warn(`Cannot validate ${name}, no schema`);
-
         const result = safeParse(fieldSchema, value);
         if (!result.success) {
             const { errors: errs } = treeifyError(result.error);
@@ -236,6 +241,7 @@
                     class="flex px-6 w-full overflow-clip flex-1 justify-center items-center content-center flex-wrap">
 
                     <Transition name="slide" mode="out-in" :duration="0.5">
+                        <!-- FORM TABS -->
                         <KeepAlive>
                             <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
                                 v-model:title="formValues.title" v-model:description="formValues.description"
@@ -247,7 +253,9 @@
                             <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
                                 v-model:recurrence-enabled="formOptions.recurrenceEnabled" />
 
-                            <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField />
+                            <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
+                                v-model:channel-id="formValues.channelId" v-model:post-time="formValues.postTime"
+                                v-model:post-day="formValues.postDay" v-model:native-events="formValues.nativeEvents" />
                         </KeepAlive>
                     </Transition>
 
@@ -333,9 +341,3 @@
         @apply !bg-red-400/70 !border-red-400/30
     }
 </style>
-
-<!-- Notes:
- 
- - Fixing weird from tab/switcher sizing and styles.
-
--->

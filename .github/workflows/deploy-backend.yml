@@ -62,7 +62,7 @@ jobs:
           KOYEB_STATUS: ${{ steps.koyeb_deploy.outputs }}
         with:
           script: |
-            return true // # ! FIX ME LATER
+            return true; // # ! FIX ME LATER
             const deploymentId = Number(process.env.DEPLOYMENT_ID);
             const status = process.env.KOYEB_STATUS === 'success' ? 'success' : 'failure';
 

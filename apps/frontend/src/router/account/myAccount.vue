@@ -11,10 +11,24 @@
     import SignInCard from "./signInCard.vue";
     import DeleteData from "./deleteData.vue";
 
+    const clipboard = useClipboard();
+
     const auth = useAuthStore();
     const { userData, signedIn, user, refreshStatus } = storeToRefs(auth);
 
-    const avatarLoaded = ref(false)
+    const avatarLoaded = ref(false);
+
+    async function copyAccessToken() {
+        const token = await auth.getUserJWT();
+        if (!token) return alert('No access token!');
+        if (!clipboard.isSupported) {
+            alert(token);
+            console.info(`Clipboard isn't supported!`);
+        } else {
+            clipboard.copy(token);
+            alert('Copied to Clipboard!')
+        }
+    }
 
     // Account Deletion Visibility:
     const deleteDataInfoVisible = ref<boolean>(false);
@@ -77,7 +91,7 @@
 
 
                         <!-- Acc/Data Deletion Req Button -->
-                        <span @click="deleteDataInfoVisible = !deleteDataInfoVisible;"
+                        <span hidden @click="deleteDataInfoVisible = !deleteDataInfoVisible;"
                             class="flex opacity-35 flex-row gap-1 mt-2 items-center cursor-pointer active:bg-black/80 hover:bg-black/50 transition-all p-1.75 px-2 rounded-full">
                             <FileUserIcon class="m-auto p-auto" :size="15" />
                             <p class="text-xs"> Account / Data Deletion Requests </p>
@@ -87,13 +101,13 @@
                     </div>
                 </section>
 
-                <footer hidden
+                <footer
                     class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-zinc-400">
                     <p class="w-full sm:w-fit">
                         <b>UID:</b> {{ user?.id }}
                     </p>
-                    <a class="hover:underline sm:w-fit w-full font-medium">
-                        Account Deletion Request
+                    <a @click="copyAccessToken" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                        Copy Access Token
                     </a>
                 </footer>
             </div>

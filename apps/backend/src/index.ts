@@ -9,8 +9,9 @@ import path from "node:path";
 import { ExtendedClient } from './utils/types/extendedClient.js';
 
 
-const client = new ExtendedClient({ 
-	intents: [ 'Guilds', 'GuildMessages', 'DirectMessages', 'MessageContent'] });
+const client = new ExtendedClient({
+	intents: ['Guilds', 'GuildMessages', 'DirectMessages']
+});
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +19,7 @@ const __dirname = path.dirname(__filename);
 
 
 // --- [ File Loader Utility: ] ---
-function getAllFiles(dir:string, ext:string, fileList = []) {
+function getAllFiles(dir: string, ext: string, fileList = []) {
 	const files = fs.readdirSync(dir);
 	for (const file of files) {
 		const filePath = path.join(dir, file);
@@ -78,7 +79,7 @@ for (const file of eventFiles) {
 // ------- [ DEBUG - File Loader Utility: ] -------
 
 const debugFileLoader = global.outputDebug_InDepth // true;
-if(debugFileLoader) {
+if (debugFileLoader) {
 	console.log(`[✅] Loaded ${client.commands.size} command(s).`);
 	console.log(`[✅] Loaded ${client.buttons.size} button(s).`);
 	console.log(`[✅] Loaded ${eventFiles.length} event file(s).`);
@@ -87,7 +88,7 @@ if(debugFileLoader) {
 
 // ------- [ Login (via Token): ] -------
 
-if(process.env['ENVIRONMENT'] == 'development') {
+if (process.env['ENVIRONMENT'] == 'development') {
 	client.login(process.env['DEV_BOT_TOKEN']);
 } else {
 	client.login(process.env['DISCORD_BOT_TOKEN']);

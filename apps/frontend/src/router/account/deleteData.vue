@@ -24,11 +24,14 @@
             borderColor: 'var(--color-zinc-400)',
             hoverBorderColor: 'var(--color-red-300) !important',
             focusBorderColor: 'var(--color-red-400) !important',
+            placeholderColor: 'var(--color-zinc-400) !important',
+            color: 'var(--color-zinc-400) !important',
         },
         option: {
             selectedBackground: 'var(--color-red-400)',
             selectedFocusBackground: 'var(--color-red-400)',
-        }
+        },
+
     }
 
 
@@ -39,21 +42,33 @@
     const auth = useAuthStore()
     const { user, userData } = storeToRefs(auth);
 
+    // Owned Guild(s) Options:
+    const userOwnedGuilds = computed(() => {
+        const manageableGuilds: { [guildId: string]: { [key: string]: any } } = auth.userData?.['guilds']?.['manageable'] || {};
+        for (const [guildId, data] of Object.entries(manageableGuilds)) {
+
+        }
+
+        return Object.entries(manageableGuilds).filter(([guildId, data]) => {
+            if (data?.isOwner && data?.hasSessionsBot) return true;
+            else return false;
+        }).map(([guildId, data]) => {
+            return { name: data?.name, value: guildId, iconUrl: data?.icon }
+        })
+    })
+
     // Form/Checkbox Values:
     const deleteAccountData = ref<boolean>(false);
     const deleteServerData = ref<boolean>(false)
 
 
-    // ! Delete me:
-    function logUserData() {
-        console.info('User', auth.userData)
-    }
 
 </script>
 
 
 <template>
-    <Dialog v-model:visible="isVisible" modal class="m-10 max-w-130 ring-ring ring-3! overflow-auto! text-white/70!">
+    <Dialog v-model:visible="isVisible" modal
+        class="m-10 max-w-130 ring-ring ring-3! overflow-auto! text-zinc-300! flex!">
         <template #container="{ closeCallback }">
 
             <!-- Header -->
@@ -74,7 +89,7 @@
 
             <!-- Content -->
             <section
-                class="flex flex-col p-2 gap-0.75 flex-wrap items-center justify-start bg-black/15 w-full border-b-2 border-ring">
+                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-start bg-black/15 w-full border-b-2 border-ring">
                 <!-- Subheading / Top Info -->
                 <p>
                     As an individual you have certain rights over you personal information and if you wish to have it
@@ -87,10 +102,10 @@
 
 
 
-                <!-- Data Selection -->
+                <!-- Data Deletion Selection(s) -->
 
                 <!-- Check - Account Data -->
-                <div class="flex flex-row flex-wrap justify-start items-center gap-1 w-full">
+                <div class="flex flex-row flex-wrap justify-start items-center gap-1 w-full mb-1">
                     <Checkbox input-id="accountDataCheck" v-model="deleteAccountData" binary :dt="checkboxPT" />
                     <label for="accountDataCheck" class="font-medium relative bottom-px">
                         Account Data
@@ -113,9 +128,39 @@
 
 
                 <!-- Select: Pick Guild -->
-                <div class="flex flex-row flex-wrap justify-start items-center gap-1 w-full">
-                    <Select :dt="selectDT" class="w-50" :options="[1, 2, 3, 4, 5]" />
-                </div>
+                <span v-if="deleteServerData"
+                    class="w-full flex flex-col flex-wrap justify-center items-start gap-0.5 mb-1">
+                    <div
+                        class="bg-black/15 ring-1 ring-ring/50 mx-2 p-2 pt-0.25 rounded-md flex flex-col flex-wrap items-start justify-center">
+                        <label for="selectServer" class="font-medium">
+                            <p class=""> Server to Delete </p>
+                        </label>
+                        <p class="text-xs w-full opacity-50">
+                            Please select a server you own to request data deletion.
+                        </p>
+                        <Select label-id="selectServer" :dt="selectDT"
+                            class="max-w-75 mt-1 font-medium! placeholder:text-red-500!"
+                            placeholder="Select a Server..." :options="userOwnedGuilds">
+                            <!-- Selected -->
+                            <template #value="{ value, placeholder }" v-slot="a">
+                                <p v-if="!value" class="text-zinc-400!"> {{ placeholder }} </p>
+                                <div v-else
+                                    class="text-white w-full flex flex-row flex-nowrap gap-1.5 items-center justify-start">
+                                    <img :src="value?.iconUrl" class="size-5 ring-ring ring-2 rounded-full" />
+                                    <p class="text-wrap"> {{ value?.name }} </p>
+                                </div>
+                            </template>
+                            <!-- Options -->
+                            <template #option="{ option: { name, title, iconUrl }, selected }">
+                                <div class="text-white flex flex-row flex-wrap gap-1.5 items-center justify-center">
+                                    <img :src="iconUrl" class="size-5 ring-ring ring-2 rounded-full" />
+                                    <p> {{ name }}</p>
+                                </div>
+                            </template>
+
+                        </Select>
+                    </div>
+                </span>
 
 
 
@@ -124,9 +169,8 @@
 
             <!-- Warning -->
             <section
-                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-center bg-black/15 w-full border-b-2 border-ring">
-                <div @click="logUserData"
-                    class="text-sm opacity-75 bg-zinc-500/50 p-0.75 rounded-md inline w-fit font-medium">
+                class="flex flex-col p-2 gap-0.75 flex-wrap items-center justify-center bg-black/15 w-full border-b-2 border-ring">
+                <div class="text-sm opacity-75 bg-zinc-500/30 p-0.75 px-2.25 rounded-full inline w-fit font-medium">
                     <FileWarningIcon class="inline size-5 relative bottom-px" /> Please Note:
                 </div>
                 <p class="text-red-400 text-xs font-medium">

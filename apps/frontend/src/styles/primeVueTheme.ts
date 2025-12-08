@@ -194,8 +194,8 @@ const primePT: PrimeVuePTOptions = {
     },
     datepicker: {
         root: 'text-white!',
-        panel: 'bg-zinc-700! ',
-        header: 'bg-zinc-700! text-white!',
+        panel: 'bg-zinc-800! ',
+        header: 'bg-zinc-800! text-white!',
         day: 'hover:bg-black/35! text-white!',
         month: 'hover:bg-black/35! text-white!',
         year: 'hover:bg-black/35! text-white!',
