@@ -9,6 +9,9 @@
 
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
+    import axios, { type AxiosResponse } from 'axios';
+    import { APIResponse, type APIResponseValue, type ValueOf } from '@sessionsbot/shared';
+    import { API } from '@/utils/api';
 
     // Services:
     const confirmService = useConfirm()
@@ -19,6 +22,7 @@
     // ! Convert to Model
     const guildId = ref<string>('1379160686629880028');
 
+    const guildChannels = ref();
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -31,7 +35,7 @@
             return tabSelected.value = 'schedule';
         else if (tabSelected.value == 'schedule')
             return tabSelected.value = 'discord';
-    };
+    }
     function backTab() {
         if (tabSelected.value == 'rsvps')
             return tabSelected.value = 'information';
@@ -39,7 +43,7 @@
             return tabSelected.value = 'rsvps';
         else if (tabSelected.value == 'discord')
             return tabSelected.value = 'schedule';
-    };
+    }
 
     // Form Abort Confirm Dialog Ref:
     const abortForm = () => {
@@ -50,7 +54,7 @@
                 router.push('/');
             },
         })
-    }
+    };
 
     /** ACTION: Form Mode ("new" or "edit") */
     const formAction = ref<'new' | 'edit'>('new');
@@ -68,13 +72,13 @@
         postTime: null,
         postDay: null,
         nativeEvents: false,
-    });
+    })
 
     /** Form Options/Toggles */
     const formOptions = ref({
         rsvpsEnabled: false,
         recurrenceEnabled: false
-    })
+    });
 
 
     /** Form Resolver Schema */
@@ -91,16 +95,15 @@
             },
             'End Date must occur after Start Date.'
         ).optional().nullable(),
-
         rsvps: z.map(z.string(), z.object({
             name: z.string(),
             emoji: z.string(),
             capacity: z.number()
         })).nullish(),
         recurrence: z.any(), // Add schema 
-        channelId: z.string().trim().min(5),
-        postTime: z.date(),
-        postDay: z.literal('Day of').or(z.literal('Day before')),
+        channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.'),
+        postTime: z.date('Please enter a valid date.'),
+        postDay: z.literal('Day of').or(z.literal('Day before', 'Please select an option.')),
         nativeEvents: z.boolean()
     })
 
@@ -110,6 +113,7 @@
 
     /** WATCH: Invalid Fields -> Invalid Tabs */
     const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'location', 'startDate', 'endDate']
+    const discordFields: NewSessions_FieldNames[] = ['channelId', 'postTime', 'postDay', 'nativeEvents']
     watch(() => invalidFields.value, (v) => {
 
         const keys = new Set(v?.keys())
@@ -121,12 +125,22 @@
         } else invalidTabs.value.delete('information');
 
         // RSVP Tab:
+        if (keys.has('rsvps')) {
+            invalidTabs.value.add('rsvps');
+        }
 
         // Schedule Tab:
         if (keys.has('recurrence')) {
             invalidTabs.value.add('schedule');
         }
         else invalidTabs.value.delete('schedule');
+
+        // Discord Tab:
+        if (discordFields.some((fieldName) => keys.has(fieldName))) {
+            if (!invalidTabs.value.has('discord')) {
+                invalidTabs.value.add('discord');
+            }
+        } else invalidTabs.value.delete('discord');
 
     }, { deep: true })
 
@@ -141,6 +155,21 @@
         } else {
             invalidFields.value?.delete(name);
         }
+    };
+
+    /** Form Validation Fn */
+    function validateForm() {
+        const result = formSchema.safeParse(formValues.value)
+        if (result.success) {
+            return true
+        } else {
+            const { properties } = treeifyError(result.error);
+            for (const [fieldName, errData] of Object.entries(properties as any)) {
+                //@ts-expect-error
+                invalidFields.value.set(fieldName, errData?.errors)
+                console.log('Field Errs', fieldName, errData)
+            };
+        };
     }
 
 
@@ -158,10 +187,33 @@
         console.log('Form Submitted', formValues.value);
     }
 
-    /** On Page/Form Mount */
-    // onMounted(() => {
+    /** Fetch Guild Channels - Fn
+     * - Fires: On page/form mount
+     */
+    async function getGuildChannels() {
+        const channelRes = await API.get<APIResponseValue>(`/guilds/${guildId.value}/channels`, {
+            headers: { Authorization: `Bearer ${auth.session?.access_token}` }
+        });
+        const channelData = channelRes.data.success ? channelRes.data.data : undefined;
+        if (channelData) {
+            console.info('FOUND CHANNELS', channelData);
+            guildChannels.value = channelData;
+        } else {
+            console.error('CHANNELS NOT FOUND!', channelRes);
+        }
 
-    // })
+    }
+
+    /** On Page/Form Mount */
+    onMounted(async () => {
+        // Fetch guild's channels:
+        if (auth.signedIn) {
+            await getGuildChannels()
+        } else {
+            console.warn(`You're not signed in! - Cannot fetch channels! - Trying again`);
+            setTimeout(() => getGuildChannels(), 3_000)
+        }
+    })
 
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
@@ -255,7 +307,8 @@
 
                             <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
                                 v-model:channel-id="formValues.channelId" v-model:post-time="formValues.postTime"
-                                v-model:post-day="formValues.postDay" v-model:native-events="formValues.nativeEvents" />
+                                v-model:post-day="formValues.postDay" v-model:native-events="formValues.nativeEvents"
+                                v-model:guild-channels="guildChannels" />
                         </KeepAlive>
                     </Transition>
 
@@ -298,7 +351,7 @@
                         </Button>
 
 
-                        <Button v-else @click="submitForm()"
+                        <Button v-else @click="validateForm(), submitForm()"
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm font-medium"> Submit </p>

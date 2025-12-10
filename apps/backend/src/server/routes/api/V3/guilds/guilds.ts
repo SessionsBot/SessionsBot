@@ -1,7 +1,7 @@
 import axios from "axios";
 import express from "express";
 import logtail from "../../../../../utils/logs/logtail.js";
-import { APIResponse as reply } from "../../../../utils/responder.js";
+import { APIResponse as reply } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";

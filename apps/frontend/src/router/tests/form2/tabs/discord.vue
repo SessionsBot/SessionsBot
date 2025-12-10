@@ -6,14 +6,17 @@
     // Outgoing Emits:
     const emit = defineEmits<{
         validateField: [name: NewSessions_FieldNames, value: any],
-    }>();
+    }>()
 
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
-        validateField: (name: NewSessions_FieldNames, value: any) => void
-    }>();
+        validateField: (name: NewSessions_FieldNames, value: any) => void,
+    }>()
     const { invalidFields, validateField } = props;
+
+    // Guild Channels - Model:
+    const guildChannels = defineModel<any[]>('guildChannels');
 
     // Form Values:
     const channelId = defineModel<string>('channelId');
@@ -21,6 +24,28 @@
     const postDay = defineModel<string | any>('postDay');
     const nativeEvents = defineModel<string | any>('nativeEvents');
 
+    // Select Post Channel Options:
+    const selectChannelOpts = computed(() => {
+        if (!guildChannels || typeof guildChannels != typeof []) return [];
+        let channelCategories = <any>[];
+        guildChannels.value?.forEach((val) => {
+            if (val?.type == 4) {
+                // Find category's channels:
+                const catChannels = guildChannels.value?.filter((ch) => ch.parentId == val.id).sort((a, b) => a.rawPosition - b.rawPosition);
+                if (catChannels?.length) {
+                    channelCategories.push({
+                        name: val?.name,
+                        items: catChannels
+                    })
+                }
+
+            }
+        })
+        return channelCategories;
+    })
+
+
+    // Set/Toggle Post Day - Fn:
     const setPostDay = (opt: string) => {
         postDay.value = opt;
         validateField('postDay', opt)
@@ -41,7 +66,8 @@
                 <p> Post Channel </p>
             </label>
             <Select v-model="channelId" @value-change="(val) => validateField('channelId', val)" fluid
-                :options="['97840324993842345667253', '32895482394823948932472', '37892934762398345342876']" />
+                :options="selectChannelOpts" option-group-label="name" option-group-children="items"
+                :option-label="(opt) => opt?.name" :option-value="(opt) => opt?.id" />
             <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                 v-for="err in invalidFields.get('channelId') || []">
                 <p class="text-sm! pl-0.5">

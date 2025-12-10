@@ -1,7 +1,7 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
 import { useNavStore } from "../nav";
-import type { User, UserMetadata } from "@supabase/supabase-js";
+import type { Session, User, UserMetadata } from "@supabase/supabase-js";
 import axios, { AxiosError } from "axios";
 import { DateTime } from "luxon";
 import { TYPE, useToast } from "vue-toastification";
@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
         signedIn: false,
         userData: <UserMetadata | undefined>{},
         user: <User | undefined | null>undefined,
+        session: <Session | undefined | null>undefined,
         refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
         redirectAfterAuth: {
             get: () => {
@@ -143,7 +144,6 @@ export const useAuthStore = defineStore('auth', {
 
 })
 
-
 /****Util:** Supabase Auth Went Listener 
  * - Handles auth events and keeps user in `useAuthStore()` up to date. */
 export const watchAuth = async () => {
@@ -155,6 +155,7 @@ export const watchAuth = async () => {
         // Update auth store:
         store.signedIn = user ? true : false;
         store.user = user;
+        store.session = session;
         store.userData = user?.user_metadata || {};
 
         console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })

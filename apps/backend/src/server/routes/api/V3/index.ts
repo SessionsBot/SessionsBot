@@ -1,6 +1,6 @@
 // API V3 Sessions Bot - Internal Backend API Endpoints
 import express from "express";
-import { APIResponse } from "../../../utils/responder";
+import { APIResponse } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import core from "../../../../utils/core";
 

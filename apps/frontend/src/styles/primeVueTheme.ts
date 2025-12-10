@@ -212,7 +212,9 @@ const primePT: PrimeVuePTOptions = {
         // option: 'hover:bg-white/5!',
         list: 'bg-zinc-800!',
         label: 'text-white!',
-        optionLabel: 'text-white'
+        optionLabel: 'text-white',
+        optionGroupLabel: 'text-white bg-black/15 w-full h-full',
+        optionGroup: 'bg-black/20! rounded-md'
     },
     dialog: {
         root: 'bg-zinc-800! border-0!',

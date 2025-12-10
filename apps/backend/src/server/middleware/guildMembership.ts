@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import { APIResponse } from "../utils/responder.js";
+import { APIResponse } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import core from "../../utils/core.js";
 import logtail from "../../utils/logs/logtail";
