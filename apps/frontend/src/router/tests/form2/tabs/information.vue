@@ -4,18 +4,13 @@
     import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
 
-
-    // Outgoing Emits:
-    const emit = defineEmits<{
-        validateField: [name: NewSessions_FieldNames, value: any]
-    }>()
-
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
-        validateField: (name: NewSessions_FieldNames, value: any) => void
+        validateField: (name: NewSessions_FieldNames) => void,
+        validateFields: (fields: NewSessions_FieldNames[]) => void
     }>();
-    const { invalidFields, validateField } = props;
+    const { invalidFields, validateField, validateFields } = props;
 
     // Form Values:
     const title = defineModel<string>('title');
@@ -33,21 +28,19 @@
 
     // Field Auto Validation:
     watch(() => title.value, (val) => {
-        validateField('title', val);
+        validateField('title');
     })
     watch(() => description.value, (val) => {
-        validateField('description', val);
+        validateField('description');
     })
     watch(() => location.value, (val) => {
-        validateField('location', val);
+        validateField('location');
     })
     watch(startDate, (val) => {
-        validateField('startDate', val);
-        validateField('endDate', endDate.value);
+        validateFields(['startDate', 'endDate']);
     })
     watch(endDate, (val) => {
-        validateField('startDate', startDate.value);
-        validateField('endDate', val);
+        validateFields(['startDate', 'endDate']);
     })
 
 </script>
@@ -114,9 +107,9 @@
                 <ClockIcon :size="17" />
                 <p> Start Time </p>
             </label>
-            <DatePicker name="startDate" v-model="startDate" fluid date-format="m/d/y" :step-minute="5"
-                class=" flex w-full" :show-time="true" hour-format="12" :max-date="maxSelectDate"
-                :min-date="minSelectDate" :invalid="invalidFields.has('startDate')" />
+            <DatePicker name="startDate" v-model="startDate" fluid date-format="m/d/y" class=" flex w-full"
+                :show-time="true" hour-format="12" :max-date="maxSelectDate" :min-date="minSelectDate"
+                :invalid="invalidFields.has('startDate')" />
             <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                 v-for="err in invalidFields.get('startDate') || []">
                 <p class="text-sm! pl-0.5">
@@ -133,7 +126,7 @@
                 <Clock8Icon :size="17" />
                 <p> End Time </p>
             </label>
-            <DatePicker name="endDate" v-model="endDate" fluid date-format="m/d/y" :step-minute="5" class="w-full flex "
+            <DatePicker name="endDate" v-model="endDate" fluid date-format="m/d/y" class="w-full flex "
                 :show-time="true" hour-format="12" :max-date="maxSelectDate" :min-date="startDate || minSelectDate"
                 :invalid="invalidFields.has('endDate')" />
             <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400! hover:bg-white/5"

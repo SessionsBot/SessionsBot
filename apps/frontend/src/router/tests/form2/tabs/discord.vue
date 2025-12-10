@@ -3,17 +3,13 @@
     import type { NewSessions_FieldNames } from '../sesForm.vue';
 
 
-    // Outgoing Emits:
-    const emit = defineEmits<{
-        validateField: [name: NewSessions_FieldNames, value: any],
-    }>()
-
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
-        validateField: (name: NewSessions_FieldNames, value: any) => void,
+        validateField: (name: NewSessions_FieldNames) => void,
+        validateFields: (fields: NewSessions_FieldNames[]) => void
     }>()
-    const { invalidFields, validateField } = props;
+    const { invalidFields, validateField, validateFields } = props;
 
     // Guild Channels - Model:
     const guildChannels = defineModel<any[]>('guildChannels');
@@ -27,28 +23,23 @@
     // Select Post Channel Options:
     const selectChannelOpts = computed(() => {
         if (!guildChannels || typeof guildChannels != typeof []) return [];
-        let channelCategories = <any>[];
+        let channelCategories: any[] = [];
         guildChannels.value?.forEach((val) => {
             if (val?.type == 4) {
-                // Find category's channels:
                 const catChannels = guildChannels.value?.filter((ch) => ch.parentId == val.id).sort((a, b) => a.rawPosition - b.rawPosition);
                 if (catChannels?.length) {
-                    channelCategories.push({
-                        name: val?.name,
-                        items: catChannels
-                    })
+                    channelCategories.push({ name: val?.name, items: catChannels })
                 }
-
             }
         })
         return channelCategories;
-    })
+    });
 
 
     // Set/Toggle Post Day - Fn:
     const setPostDay = (opt: string) => {
         postDay.value = opt;
-        validateField('postDay', opt)
+        validateFields(['postDay', 'postTime']);
     }
 
 
@@ -65,7 +56,7 @@
                 <BaselineIcon :size="17" />
                 <p> Post Channel </p>
             </label>
-            <Select v-model="channelId" @value-change="(val) => validateField('channelId', val)" fluid
+            <Select v-model="channelId" @value-change="(val) => validateField('channelId')" fluid
                 :options="selectChannelOpts" option-group-label="name" option-group-children="items"
                 :option-label="(opt) => opt?.name" :option-value="(opt) => opt?.id" />
             <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
@@ -109,7 +100,7 @@
                 <p> Post Time </p>
             </label>
             <DatePicker input-id="postTime" time-only fluid class="w-full!" hour-format="12"
-                @value-change="(val) => validateField('postTime', val)" v-model="postTime" />
+                @value-change="() => { validateFields(['postTime', 'startDate']) }" v-model="postTime" />
             <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                 v-for="err in invalidFields.get('postTime') || []">
                 <p class="text-sm! pl-0.5">
@@ -121,7 +112,7 @@
         <!-- INPUT: Native Events -->
         <div class="flex flex-row gap-1 w-full items-start">
             <ToggleSwitch input-id="recurrenceEnabled" v-model="nativeEvents" class="scale-85"
-                @value-change="(val) => validateField('nativeEvents', val)" />
+                @value-change="(val) => validateField('nativeEvents')" />
             <label for="recurrenceEnabled" class="gap-0.25 flex-row items-center">
                 <p class="inline!"> Native Discord Events </p>
             </label>

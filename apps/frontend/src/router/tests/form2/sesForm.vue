@@ -102,7 +102,27 @@
         })).nullish(),
         recurrence: z.any(), // Add schema 
         channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.'),
-        postTime: z.date('Please enter a valid date.'),
+        postTime: z.date('Please enter a valid date.').refine(
+            (v) => {
+                const postDay = formValues.value.postDay
+                if (postDay == "Day before") {
+                    console.info('day before');
+                    return true;
+                }
+                const hrs = v.getHours();
+                const mins = v.getMinutes()
+                const startDate = (formValues.value.startDate) as Date;
+                if (!startDate) {
+                    console.info('no start date');
+                    return true;
+                }
+                const dayOfTime = new Date(startDate);
+                dayOfTime.setHours(hrs, mins);
+                console.log('validating:', (dayOfTime <= startDate), { dayOfTime, startDate })
+                return (dayOfTime <= startDate)
+            },
+            `Post Time must occur before or at event Start Time if posting "Day of".`
+        ),
         postDay: z.literal('Day of').or(z.literal('Day before', 'Please select an option.')),
         nativeEvents: z.boolean()
     })
@@ -142,13 +162,14 @@
             }
         } else invalidTabs.value.delete('discord');
 
-    }, { deep: true })
+    }, { deep: true });
 
 
     /** Form Field Validation Fn */
-    function validateField(name: NewSessions_FieldNames, value: any) {
+    function validateField(name: NewSessions_FieldNames) {
         const fieldSchema = formSchema?.shape[name];
-        const result = safeParse(fieldSchema, value);
+        const fieldValue = formValues.value[name];
+        const result = safeParse(fieldSchema, fieldValue);
         if (!result.success) {
             const { errors: errs } = treeifyError(result.error);
             invalidFields.value?.set(name, errs);
@@ -156,6 +177,13 @@
             invalidFields.value?.delete(name);
         }
     };
+
+    /** Form FIELD(s) Validation Fn */
+    function validateFields(fields: NewSessions_FieldNames[]) {
+        for (const fieldName of fields) {
+            validateField(fieldName);
+        }
+    }
 
     /** Form Validation Fn */
     function validateForm() {
@@ -296,8 +324,9 @@
                         <!-- FORM TABS -->
                         <KeepAlive>
                             <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
-                                v-model:title="formValues.title" v-model:description="formValues.description"
-                                v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate" />
+                                :validateFields v-model:title="formValues.title"
+                                v-model:description="formValues.description" v-model:start-date="formValues.startDate"
+                                v-model:end-date="formValues.endDate" />
 
                             <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
                                 v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
@@ -306,8 +335,9 @@
                                 v-model:recurrence-enabled="formOptions.recurrenceEnabled" />
 
                             <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
-                                v-model:channel-id="formValues.channelId" v-model:post-time="formValues.postTime"
-                                v-model:post-day="formValues.postDay" v-model:native-events="formValues.nativeEvents"
+                                :validateFields v-model:channel-id="formValues.channelId"
+                                v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
+                                v-model:native-events="formValues.nativeEvents"
                                 v-model:guild-channels="guildChannels" />
                         </KeepAlive>
                     </Transition>

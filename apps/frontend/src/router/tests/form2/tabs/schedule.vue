@@ -6,15 +6,10 @@
     import type { ValueOf } from '@sessionsbot/shared';
 
 
-    // Outgoing Emits:
-    const emit = defineEmits<{
-        validateField: [name: NewSessions_FieldNames, value: any]
-    }>();
-
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
-        validateField: (name: NewSessions_FieldNames, value: any) => void
+        validateField: (name: NewSessions_FieldNames) => void
     }>();
     const { invalidFields, validateField } = props;
 
