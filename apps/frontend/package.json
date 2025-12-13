@@ -20,6 +20,7 @@
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/vite": "^4.1.15",
     "@vueuse/core": "^14.0.0",
+    "@vvo/tzdb": "^6.198.0",
     "axios": "^1.13.2",
     "lucide-vue-next": "^0.548.0",
     "luxon": "^3.7.2",

@@ -1,10 +1,11 @@
 <script lang="ts" setup>
     import { CalendarDaysIcon, CalendarRangeIcon, CalendarSyncIcon, CalendarX2Icon, CalendarXIcon, Clock8Icon, RefreshCcwDotIcon, TextInitialIcon } from 'lucide-vue-next';
-    import z, { safeParse, treeifyError, type infer } from 'zod'
+    import z, { number, prettifyError, safeParse, treeifyError, type infer } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { ToggleSwitch } from 'primevue';
     import type { ValueOf } from '@sessionsbot/shared';
-
+    import { Frequency, RRule, ALL_WEEKDAYS, Weekday } from 'rrule'
+    import InputTitle from '../labels/inputTitle.vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -13,20 +14,20 @@
     }>();
     const { invalidFields, validateField } = props;
 
+
     // Recurrence Enabled Toggle:
     const recurrenceEnabled = defineModel<boolean>('recurrenceEnabled');
-
     // End Repeat Date Toggle:
     const endRepeatDateEnabled = ref(false)
-
     // End Repeat Count Toggle:
     const endRepeatCountEnabled = ref(false)
 
+
     // Local Form Schema:
     const localFormSchema = z.object({
-        frequency: z.string().trim(),
-        interval: z.number(),
-        weekdays: z.any(),
+        frequency: z.union([z.enum(['Daily', 'Weekly', 'Monthly', 'Yearly'], { error: '' }), z.enum(Frequency, 'Please select a valid frequency.')]),
+        interval: z.number().min(1, "Interval must be greater than or equal to 1."),
+        weekdays: z.array(z.any()).optional().nullish().default([]),
         endRepeatDate: z.nullish(z.date()),
         endRepeatCount: z.nullish(z.number().min(1))
     });
@@ -34,25 +35,27 @@
     // Local Form Ref:
     const localForm = ref({
         formValues: <LocalForm_ValueType>{
-            frequency: <'Daily' | 'Weekly' | 'Monthly' | 'Yearly'>'',
-            interval: 0,
+            frequency: '' as any,
+            interval: '' as any,
             endRepeatDate: null,
             endRepeatCount: null,
         },
         invalidFields: new Map<LocalForm_FieldName | undefined, string[]>(),
         validateField: (name: LocalForm_FieldName, value: any) => {
             const fieldSchema = localFormSchema.shape?.[name];
-            if (!fieldSchema) console.warn('Missing field schema', { name, value });
-
             const validateResult = safeParse(fieldSchema, value);
             if (!validateResult.success) {
                 const errs = treeifyError(validateResult.error).errors;
+                console.warn('INPUT ERROR', name, errs)
                 localForm.value.invalidFields.set(name, errs);
             } else {
                 localForm.value.invalidFields.delete(name);
             }
         },
-    });
+    })
+
+    // Field Validation:
+    const validateLocalField = (name: LocalForm_FieldName, value: any) => localForm.value.validateField(name, value);
 
     // Local Form - TYPES:
     type LocalForm_ValueType = z.infer<typeof localFormSchema> & { frequency: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly' }
@@ -62,82 +65,82 @@
     // Dynamic Interval Suffix
     const intervalSuffix = computed(() => {
         const pluralEnd = ((Number(localForm.value.formValues.interval) || 0) > 1) ? 's' : '';
-        if (localForm.value.formValues.frequency == 'Daily') {
+        if (localForm.value.formValues.frequency == Frequency.DAILY as any) {
             return ' Day' + pluralEnd;
-        } else if (localForm.value.formValues.frequency == 'Weekly') {
+        } else if (localForm.value.formValues.frequency === Frequency.WEEKLY as any) {
             return ' Week' + pluralEnd;
-        } else if (localForm.value.formValues.frequency == 'Monthly') {
+        } else if (localForm.value.formValues.frequency === Frequency.MONTHLY as any) {
             return ' Month' + pluralEnd;
-        } else if (localForm.value.formValues.frequency == 'Yearly') {
+        } else if (localForm.value.formValues.frequency === Frequency.YEARLY as any) {
             return ' Year' + pluralEnd;
-        };
+        } else return '';
     });
 
+
     // Weekday Selection
-    const weekdayOptions = [
-        { name: 'Mo', value: 'Monday' },
-        { name: 'Tu', value: 'Tuesday' },
-        { name: 'We', value: 'Wednesday' },
-        { name: 'Th', value: 'Thursday' },
-        { name: 'Fr', value: 'Friday' },
-        { name: 'Sa', value: 'Saturday' },
-        { name: 'Su', value: 'Sunday' },
-    ];
-    const weekdaysSelected: Ref<Set<'Su' | 'Mo' | 'Tu' | 'We' | 'Th' | 'Fr' | 'Sa'>> = ref(new Set());
-    function toggleWeekday(name: string) {
-        if (name == 'Su') {
-            if (weekdaysSelected.value.has('Su')) return weekdaysSelected.value.delete('Su');
-            else return weekdaysSelected.value.add('Su');
-        } else if (name == 'Mo') {
-            if (weekdaysSelected.value.has('Mo')) return weekdaysSelected.value.delete('Mo');
-            else return weekdaysSelected.value.add('Mo');
-        } else if (name == 'Tu') {
-            if (weekdaysSelected.value.has('Tu')) return weekdaysSelected.value.delete('Tu');
-            else return weekdaysSelected.value.add('Tu');
-        } else if (name == 'We') {
-            if (weekdaysSelected.value.has('We')) return weekdaysSelected.value.delete('We');
-            else return weekdaysSelected.value.add('We');
-        } else if (name == 'Th') {
-            if (weekdaysSelected.value.has('Th')) return weekdaysSelected.value.delete('Th');
-            else return weekdaysSelected.value.add('Th');
-        } else if (name == 'Fr') {
-            if (weekdaysSelected.value.has('Fr')) return weekdaysSelected.value.delete('Fr');
-            else return weekdaysSelected.value.add('Fr');
-        } else if (name == 'Sa') {
-            if (weekdaysSelected.value.has('Sa')) return weekdaysSelected.value.delete('Sa');
-            else return weekdaysSelected.value.add('Sa');
-        }
+    const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const;
+    type WD = (typeof WEEKDAYS)[number];
+    const weekdaysSelected: Ref<Set<WD>> = ref(new Set());
+    function toggleWeekday(weekday: WD) {
+        weekdaysSelected.value.has(weekday)
+            ? weekdaysSelected.value.delete(weekday)
+            : weekdaysSelected.value.add(weekday);
+
+        const r = Array.from(weekdaysSelected?.value?.keys())?.map((i) => Weekday?.fromStr(i))
+        console.log('Weekdays Result', r)
+        localForm.value.formValues.weekdays = r;
+        validateLocalField('weekdays', r);
     };
+    function clearWeekdays() {
+        weekdaysSelected.value.clear();
+        localForm.value.formValues.weekdays = [];
+    }
 
-    // Field Auto Validation:
-    watch(() => localForm.value.formValues.frequency, (val) => {
-        localForm.value.validateField('frequency', val)
-    })
-    watch(() => localForm.value.formValues.interval, (val) => {
-        localForm.value.validateField('interval', val)
-    })
 
-    watch(() => localForm.value.formValues.weekdays, (val) => {
-        localForm.value.validateField('weekdays', val)
-    })
-    watch(() => localForm.value.formValues.endRepeatDate, (val) => {
-        localForm.value.validateField('endRepeatDate', val)
-    })
-    watch(() => localForm.value.formValues.endRepeatCount, (val) => {
-        localForm.value.validateField('endRepeatCount', val)
-    })
     // Tab Btn - Invalidation:
     watch(localForm.value.invalidFields, (val) => {
-        console.info('local invalid fields changed!', val)
         if (val.size >= 1) {
-            console.log('errs found')
             return invalidFields.set('recurrence', ['Session recurrence is invalid!']);
         } else {
-            console.log('errs NOT found')
             return invalidFields.delete('recurrence');
         }
     })
 
+
+    // Watch EACH Input -> Create RRULE String:
+    const rruleText = ref<string>()
+    watch(localForm.value.formValues, (v) => {
+        const validate = safeParse(localFormSchema, v)
+        if (validate.success) {
+            // Confirm Required Inputs:
+            if ((
+                !v.frequency && v.frequency != 0) ||
+                !v.interval
+            ) return;
+
+            // Create Recurrence RRule:
+            const newRule = new RRule({
+                freq: v.frequency as any,
+                interval: v.interval,
+                byweekday: v.weekdays || undefined,
+                count: v.endRepeatCount,
+                until: v.endRepeatDate
+            });
+            rruleText.value = newRule.toText();
+
+            console.info('RRULE CREATED', { result: newRule, text: newRule.toText(), string: newRule.toString() });
+        } else {
+            // Errors Found - Add to Invalid MSGs:
+            const { properties } = treeifyError(validate.error);
+            for (const [fieldName, fieldErrs] of Object.entries(properties as any)) {
+                const errs = fieldErrs as any;
+                localForm.value.invalidFields.set(fieldName as any, errs?.errors as any)
+
+            }
+            console.info('Form Invalid - No RRule created or updated', validate)
+        }
+
+    })
 
 </script>
 
@@ -161,12 +164,14 @@
                 <!-- INPUT: Frequency -->
                 <div class="flex flex-col gap-1 w-full items-start"
                     :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('frequency') }">
-                    <label for="frequency" class="flex flex-row gap-0.75 items-center">
-                        <CalendarDaysIcon :size="17" />
-                        <p> Frequency </p>
-                    </label>
-                    <Select name="frequency" :options="['Daily', 'Weekly', 'Monthly', 'Yearly']" fluid
-                        v-model="localForm.formValues['frequency']"
+                    <InputTitle fieldTitle="Frequency" required :icon="CalendarDaysIcon" />
+                    <Select name="frequency" :options="[
+                        { name: 'Daily', value: Frequency.DAILY },
+                        { name: 'Weekly', value: Frequency.WEEKLY },
+                        { name: 'Monthly', value: Frequency.MONTHLY },
+                        { name: 'Yearly', value: Frequency.YEARLY }
+                    ]" option-label="name" option-value="value" fluid v-model="localForm.formValues['frequency']"
+                        @value-change="(v) => { validateLocalField('frequency', v); clearWeekdays(); localForm.formValues.interval = 1; }"
                         :invalid="localForm.invalidFields.has('frequency')" />
                     <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                         v-for="err in localForm.invalidFields.get('frequency') || []">
@@ -177,16 +182,12 @@
                 </div>
 
                 <!-- INPUT: Interval -->
-                <div v-if="localForm.formValues.frequency != 'Weekly'" class="flex flex-col gap-1 w-full items-start"
+                <div class="flex flex-col gap-1 w-full items-start"
                     :class="{ 'text-red-400! ring-red-400 border-red-400!': localForm.invalidFields.has('interval') }">
-                    <label for="interval" class="flex flex-row gap-0.75 items-center">
-                        <RefreshCcwDotIcon :size="17" />
-                        <p> Interval </p>
-                    </label>
-                    <InputNumber :disabled="localForm.formValues.frequency == '' as any"
-                        :invalid="localForm.invalidFields.has('interval')"
-                        v-model="localForm.formValues.interval as any" inputId="horizontal-buttons" showButtons
-                        :step="1" :min="1" :suffix="intervalSuffix" fluid
+                    <InputTitle fieldTitle="Interval" required :icon="RefreshCcwDotIcon" />
+                    <InputNumber :invalid="localForm.invalidFields.has('interval')"
+                        @value-change="(v) => validateLocalField('interval', v)" v-model="localForm.formValues.interval"
+                        inputId="horizontal-buttons" showButtons :step="1" :min="1" :suffix="intervalSuffix" fluid
                         :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"
                         :class="{ 'border-red-400!': localForm.invalidFields.has('interval') }">
 
@@ -200,19 +201,26 @@
                 </div>
 
                 <!-- INPUT: Weekdays -->
-                <div v-else class="flex flex-col gap-1 w-full items-start"
+                <div v-if="localForm.formValues.frequency == Frequency.WEEKLY as any"
+                    class="flex flex-col gap-1 w-full items-start"
                     :class="{ 'text-red-400! ring-red-400 border-red-400!': localForm.invalidFields.has('weekdays') }">
-                    <label for="weekdays" class="flex flex-row gap-0.75 items-center">
-                        <CalendarRangeIcon :size="17" />
-                        <p> Weekdays </p>
-                    </label>
+                    <InputTitle fieldTitle="Weekdays" :icon="CalendarRangeIcon" />
+
                     <!-- Selection Input -->
                     <div class="gap-3 p-3 w-full h-fit flex flex-wrap justify-start items-center content-center">
 
-                        <Button class="weekdayBtn" v-for="{ name, value } in weekdayOptions" unstyled :title="value"
-                            :class="{ 'bg-indigo-500/70! border-white!': weekdaysSelected.has(name as any) }"
-                            @click="toggleWeekday(name)">
-                            <p class="text-sm font-medium"> {{ value }} </p>
+                        <Button class="weekdayBtn" v-for="{ name, value } in [
+                            { value: 'MO', name: 'Monday' },
+                            { value: 'TU', name: 'Tuesday' },
+                            { value: 'WE', name: 'Wednesday' },
+                            { value: 'TH', name: 'Thursday' },
+                            { value: 'FR', name: 'Friday' },
+                            { value: 'SA', name: 'Saturday' },
+                            { value: 'SU', name: 'Sunday' },
+                        ]" unstyled :title="value.toString()"
+                            :class="{ 'bg-indigo-500/70! border-white!': weekdaysSelected.has(value as any) }"
+                            @click="toggleWeekday(value as any)">
+                            <p class="text-sm font-medium"> {{ name }} </p>
                         </Button>
 
                     </div>
@@ -226,7 +234,9 @@
 
                 <!-- INPUT: End Repeat Date - Toggle -->
                 <div class="flex gap-1 flex-wrap my-2 mb-0.75 flex-row w-full items-center justify-start">
-                    <ToggleSwitch input-id="endRepeatDateEnabled" v-model="endRepeatDateEnabled" class="scale-85" />
+                    <ToggleSwitch input-id="endRepeatDateEnabled" @value-change="(v) => {
+                        if (!v) { localForm.formValues.endRepeatDate = null }
+                    }" v-model="endRepeatDateEnabled" class="scale-85" />
                     <label for="endRepeatDateEnabled" class="block gap-0.25 flex-row items-center">
                         <p class="inline!"> End Repeat Date </p>
                     </label>
@@ -236,12 +246,11 @@
                 <Transition name="zoom" :duration=".75" mode="out-in">
                     <div v-if="endRepeatDateEnabled" class="flex flex-col gap-1 w-full items-start"
                         :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('endRepeatDate') }">
-                        <label for="endRepeatDate" class="flex flex-row gap-0.75 items-center">
-                            <CalendarX2Icon :size="17" />
-                            <p> End Repeat Date </p>
-                        </label>
+
+                        <InputTitle fieldTitle="End Repeat Date" :icon="CalendarX2Icon" />
                         <DatePicker name="endRepeatDate" v-model="localForm.formValues.endRepeatDate" fluid
-                            date-format="m/d/y" class="w-full flex " :min-date="new Date()"
+                            date-format="m/d/y" class="w-full flex " show-clear :min-date="new Date()"
+                            @value-change="(v) => validateLocalField('endRepeatDate', v)"
                             :invalid="localForm.invalidFields.has('endRepeatDate')" />
                         <Message unstyled
                             class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400! hover:bg-white/5"
@@ -256,7 +265,9 @@
 
                 <!-- INPUT: Max Repeat Count - Toggle -->
                 <div class="flex gap-1 flex-wrap my-2 mb-0.75 flex-row w-full items-center justify-start">
-                    <ToggleSwitch input-id="endRepeatCountEnabled" v-model="endRepeatCountEnabled" class="scale-85" />
+                    <ToggleSwitch input-id="endRepeatCountEnabled" @value-change="(v) => {
+                        if (!v) { localForm.formValues.endRepeatCount = null }
+                    }" v-model="endRepeatCountEnabled" class="scale-85" />
                     <label for="endRepeatCountEnabled" class="block gap-0.25 flex-row items-center">
                         <p class="inline!"> Max Repeat Count </p>
                     </label>
@@ -266,13 +277,12 @@
                 <Transition name="zoom" :duration=".75" mode="out-in">
                     <div v-if="endRepeatCountEnabled" class="flex flex-col gap-1 w-full items-start"
                         :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('endRepeatCount') }">
-                        <label for="endRepeatCount" class="flex flex-row gap-0.75 items-center">
-                            <CalendarSyncIcon :size="17" />
-                            <p> Max Repeat Count </p>
-                        </label>
+                        <InputTitle fieldTitle="Max Repeat Count" required :icon="CalendarSyncIcon" />
+
                         <InputNumber :invalid="localForm.invalidFields.has('endRepeatCount')"
+                            @value-change="(v) => validateLocalField('endRepeatCount', v)"
                             v-model="localForm.formValues.endRepeatCount as any" inputId="horizontal-buttons"
-                            showButtons :step="1" :min="1" suffix=" Repeats" fluid
+                            showButtons show-clear :step="1" :min="1" suffix=" Repeats" fluid
                             :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"
                             :class="{ 'border-red-400!': localForm.invalidFields.has('endRepeatCount') }" />
 
@@ -286,7 +296,17 @@
                     </div>
                 </Transition>
 
+                <!-- RRULE - Info Text -->
+                <div class="flex w-full gap-2 flex-wrap mb-2 flex-col items-start justify-center">
 
+                    <p class="opacity-50 w-full"> <span class="pi pi-info-circle relative top-[2px]" /> This
+                        session
+                        will repeat: </p>
+                    <p class="ml-1.5 mt-0.5 bg-yellow-500/40 text-sm px-2 py-0.5 rounded-md ring-2 ring-white/50">
+                        {{ rruleText || 'Add more information to fields...' }}
+                    </p>
+
+                </div>
 
             </section>
         </Transition>

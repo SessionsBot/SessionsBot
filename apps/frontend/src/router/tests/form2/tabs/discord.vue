@@ -1,6 +1,8 @@
 <script lang="ts" setup>
     import { BaselineIcon, ClockArrowUpIcon, CalendarArrowUpIcon } from 'lucide-vue-next';
     import type { NewSessions_FieldNames } from '../sesForm.vue';
+    import InputTitle from '../labels/inputTitle.vue';
+    import InputErrors from '../labels/inputErrors.vue';
 
 
     // Incoming Props/Models:
@@ -19,7 +21,7 @@
     const postTime = defineModel<string | any>('postTime');
     const postDay = defineModel<string | any>('postDay');
     const nativeEvents = defineModel<string | any>('nativeEvents');
-
+    const postInThread = defineModel<string | any>('postInThread');
     // Select Post Channel Options:
     const selectChannelOpts = computed(() => {
         if (!guildChannels || typeof guildChannels != typeof []) return [];
@@ -52,28 +54,18 @@
         <!-- INPUT: Post Channel -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('channelId') }">
-            <label for="postChannel" class="required-field flex flex-row gap-0.75 items-center">
-                <BaselineIcon :size="17" />
-                <p> Post Channel </p>
-            </label>
+            <InputTitle fieldTitle="Post Channel" required :icon="BaselineIcon" />
             <Select v-model="channelId" @value-change="(val) => validateField('channelId')" fluid
                 :options="selectChannelOpts" option-group-label="name" option-group-children="items"
                 :option-label="(opt) => opt?.name" :option-value="(opt) => opt?.id" />
-            <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
-                v-for="err in invalidFields.get('channelId') || []">
-                <p class="text-sm! pl-0.5">
-                    {{ err || 'Invalid Input!' }}
-                </p>
-            </Message>
+            <InputErrors fieldName="channelId" :invalidFields />
+
         </div>
 
         <!-- INPUT: Post Day -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('postDay') }">
-            <label for="postDay" class="required-field flex flex-row gap-0.75 items-center">
-                <CalendarArrowUpIcon :size="17" />
-                <p> Post Day </p>
-            </label>
+            <InputTitle fieldTitle="Post Day" required :icon="CalendarArrowUpIcon" />
             <!-- Selection Input -->
             <div class="gap-3 p-1 px-0 w-full h-fit flex flex-wrap justify-start items-center content-center">
 
@@ -83,40 +75,37 @@
                 </Button>
 
             </div>
+            <InputErrors fieldName="postDay" :invalidFields />
 
-            <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
-                v-for="err in invalidFields.get('postDay') || []">
-                <p class="text-sm! pl-0.5">
-                    {{ err || 'Invalid Input!' }}
-                </p>
-            </Message>
         </div>
 
         <!-- INPUT: Post Time -->
         <div class="flex relative bottom-1 flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('postTime') }">
-            <label for="postTime" class="required-field flex flex-row gap-0.75 items-center">
-                <ClockArrowUpIcon :size="17" />
-                <p> Post Time </p>
-            </label>
+            <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" />
             <DatePicker input-id="postTime" time-only fluid class="w-full!" hour-format="12"
                 @value-change="() => { validateFields(['postTime', 'startDate']) }" v-model="postTime" />
-            <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
-                v-for="err in invalidFields.get('postTime') || []">
-                <p class="text-sm! pl-0.5">
-                    {{ err || 'Invalid Input!' }}
-                </p>
-            </Message>
+            <InputErrors fieldName="postTime" :invalidFields />
+        </div>
+
+        <!-- INPUT: Post in Thread -->
+        <div class="flex flex-row gap-1 w-full items-start">
+            <ToggleSwitch input-id="postInThread" v-model="postInThread" class="scale-85"
+                @value-change="(val) => validateField('postInThread')" />
+            <label for="postInThread" class="gap-0.25 flex-row items-center">
+                <p class="inline!"> Post in Thread </p>
+            </label>
         </div>
 
         <!-- INPUT: Native Events -->
         <div class="flex flex-row gap-1 w-full items-start">
-            <ToggleSwitch input-id="recurrenceEnabled" v-model="nativeEvents" class="scale-85"
+            <ToggleSwitch input-id="nativeEvents" v-model="nativeEvents" class="scale-85"
                 @value-change="(val) => validateField('nativeEvents')" />
-            <label for="recurrenceEnabled" class="gap-0.25 flex-row items-center">
+            <label for="nativeEvents" class="gap-0.25 flex-row items-center">
                 <p class="inline!"> Native Discord Events </p>
             </label>
         </div>
+
     </main>
 </template>
 

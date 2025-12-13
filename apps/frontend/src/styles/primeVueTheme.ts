@@ -177,6 +177,12 @@ const customPreset = definePreset(Aura, {
                 }
             `
         },
+        autocomplete: {
+            option: {
+                focusBackground: 'none',
+                selectedBackground: 'none'
+            }
+        }
     },
 
 
@@ -215,6 +221,15 @@ const primePT: PrimeVuePTOptions = {
         optionLabel: 'text-white',
         optionGroupLabel: 'text-white bg-black/15 w-full h-full',
         optionGroup: 'bg-black/20! rounded-md'
+    },
+    autocomplete: {
+        dropdown: 'border-2! border-l-1! invalid:border-red-400!',
+        overlay: 'overflow-x-auto!',
+        list: 'bg-zinc-800!',
+        listContainer: 'overflow-y-scroll! overflow-x-auto! ring-2! ring-ring! rounded-md!',
+        option: 'text-white! bg-none! hover:bg-black/15! focus:bg-black/15! rounded-md!',
+        emptyMessage: 'text-white!',
+        searchResultMessage: 'text-white!',
     },
     dialog: {
         root: 'bg-zinc-800! border-0!',

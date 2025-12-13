@@ -1,20 +1,19 @@
 <script lang="ts" setup>
     import { zodResolver } from '@primevue/forms/resolvers/zod';
-    import z from 'zod';
+    import z, { ZodObject } from 'zod';
     import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
     import EmojiPicker from 'vue3-emoji-picker'
     import 'vue3-emoji-picker/css'
     import type { PopoverMethods } from 'primevue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
+    import InputTitle from '../../labels/inputTitle.vue'
 
     // Services:
     const confirm = useConfirm();
 
-    // Main Panel Visibility
+    // Main Panel Visibility & Mode
     const isVisible = defineModel<boolean>('isVisible');
-
-    // Panel "Action" Mode
     const actionMode = ref<'Edit' | 'New'>('New')
 
     // Editing - RSVP ID to edit:
@@ -26,20 +25,23 @@
     // Emoji Picker - Ref
     const emojiPickerPORef = ref<PopoverMethods>(null as any);
 
-    // Form Schema & Restraints:
-    const maxRsvpCapacity = ref(10);
-    const RsvpFormSchema = z.object({
-        name: z.string("Invalid Title").trim().min(1, "Title must be at least 1 character.").max(32, "Title cannot exceed 32 characters."),
-        emoji: z.emoji(),
-        capacity: z.number().min(1).max(maxRsvpCapacity.value)
-    })
-
     // Form v-modal Values:
     const RsvpFormValues = ref({
         name: '',
         emoji: '',
         capacity: 1
     })
+
+    // Form Schema & Restraints:
+    const maxRsvpCapacity = ref(10);
+
+    const RsvpFormSchema = z.object({
+        name: z.string("Invalid Title").trim().min(1, "Title must be at least 1 character.").max(32, "Title cannot exceed 32 characters."),
+        emoji: z.string().regex(/^\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*$/u, "Please enter a valid emoji.").normalize(),
+        capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! Upgrade your bot for higher limits!`)
+    })
+
+
 
 
     // Reset RSVP Form:
@@ -149,10 +151,7 @@
             <!-- INPUT: Title -->
             <div class="flex flex-col gap-1 w-full items-start"
                 :class="{ 'text-red-400! ring-red-400!': $form.name?.invalid }">
-                <label for="name" class="required-field flex flex-row gap-0.75 items-center">
-                    <BaselineIcon :size="17" />
-                    <p> Title </p>
-                </label>
+                <InputTitle fieldTitle="Title" :icon="BaselineIcon" required />
                 <inputText name="name" fluid v-model="RsvpFormValues.name" />
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                     v-for="err in $form?.name?.errors || []">
@@ -166,10 +165,7 @@
             <!-- INPUT: Emoji -->
             <div class="flex flex-col gap-1 w-full items-start"
                 :class="{ 'text-red-400! ring-red-400!': $form.emoji?.invalid }">
-                <label for="emoji" class="required-field flex flex-row gap-0.75 items-center">
-                    <SmileIcon :size="17" />
-                    <p> Emoji </p>
-                </label>
+                <InputTitle fieldTitle="Emoji" :icon="SmileIcon" required />
                 <!-- Emoji Input -->
                 <div class="relative w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
                     <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1 bg-red-500!" />
@@ -199,10 +195,7 @@
             <!-- INPUT: Capacity -->
             <div class="flex flex-col gap-1 w-full items-start"
                 :class="{ 'text-red-400! ring-red-400!': $form.capacity?.invalid }">
-                <label for="capacity" class="required-field flex flex-row gap-0.75 items-center">
-                    <UsersRoundIcon :size="17" />
-                    <p> Capacity </p>
-                </label>
+                <InputTitle fieldTitle="Capacity" :icon="UsersRoundIcon" required />
                 <InputNumber name="capacity" v-model="RsvpFormValues.capacity" inputId="horizontal-buttons" showButtons
                     :step="1" :min="1" fluid
                     :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"

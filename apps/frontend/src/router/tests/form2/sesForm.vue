@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import z, { safeParse, treeifyError } from 'zod'
+    import z, { regex, safeParse, treeifyError } from 'zod'
     import { ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
@@ -66,11 +66,13 @@
         location: '',
         startDate: null,
         endDate: null as Date | null,
+        timeZone: '',
         rsvps: new Map(),
         recurrence: null as any,
         channelId: '',
         postTime: null,
         postDay: null,
+        postInThread: true,
         nativeEvents: false,
     })
 
@@ -80,12 +82,11 @@
         recurrenceEnabled: false
     });
 
-
     /** Form Resolver Schema */
     const formSchema = z.object({
-        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.'),
-        description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').optional().nullish(),
-        location: z.url('Invalid Url').startsWith('https://', 'Url must start with: "https://".').trim().optional().nullish().or(z.literal(['', ``, ""])),
+        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
+        description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').normalize().optional().nullish(),
+        location: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().or(z.literal("")),
         startDate: z.date('Please enter a valid date.').refine((v) => v?.getTime() >= new Date().getTime(), 'Date has already occurred.'),
         endDate: z.date('Please enter a valid date.').refine(
             (v) => {
@@ -95,13 +96,18 @@
             },
             'End Date must occur after Start Date.'
         ).optional().nullable(),
-        rsvps: z.map(z.string(), z.object({
+        timeZone: z.object({
             name: z.string(),
-            emoji: z.string(),
+            value: z.string()
+        }, 'Please select a valid Time Zone.').transform((o) => o.value),
+        rsvps: z.map(z.string(), z.object({
+            // 2nd Level - See RsvpPanel Schema
+            name: z.string().normalize(),
+            emoji: z.nullish(z.emoji("Please enter a valid emoji.")).or(z.literal("")),
             capacity: z.number()
         })).nullish(),
-        recurrence: z.any(), // Add schema 
-        channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.'),
+        recurrence: z.any(), // ! ADD SCHEMA
+        channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.').normalize(),
         postTime: z.date('Please enter a valid date.').refine(
             (v) => {
                 const postDay = formValues.value.postDay
@@ -124,7 +130,9 @@
             `Post Time must occur before or at event Start Time if posting "Day of".`
         ),
         postDay: z.literal('Day of').or(z.literal('Day before', 'Please select an option.')),
-        nativeEvents: z.boolean()
+        postInThread: z.boolean(),
+        nativeEvents: z.boolean(),
+
     })
 
 
@@ -195,7 +203,7 @@
             for (const [fieldName, errData] of Object.entries(properties as any)) {
                 //@ts-expect-error
                 invalidFields.value.set(fieldName, errData?.errors)
-                console.log('Field Errs', fieldName, errData)
+                // console.log('Field Errs', fieldName, errData)
             };
         };
     }
@@ -279,7 +287,7 @@
 
                         <!-- Abort/Delete Session - Button -->
                         <Button unstyled @click="abortForm()"
-                            class="p-2 hover:bg-red-400/20 active:scale-95 cursor-pointer transition-all rounded-full">
+                            class="p-2 hover:bg-red-400/15 active:scale-95 cursor-pointer transition-all rounded-lg">
                             <Trash2Icon class="opacity-40 size-5" />
                         </Button>
                     </section>
@@ -325,8 +333,9 @@
                         <KeepAlive>
                             <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
                                 :validateFields v-model:title="formValues.title"
-                                v-model:description="formValues.description" v-model:start-date="formValues.startDate"
-                                v-model:end-date="formValues.endDate" />
+                                v-model:description="formValues.description" v-model:location="formValues.location"
+                                v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate"
+                                v-model:time-zone="formValues.timeZone" />
 
                             <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
                                 v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
@@ -338,6 +347,7 @@
                                 :validateFields v-model:channel-id="formValues.channelId"
                                 v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
                                 v-model:native-events="formValues.nativeEvents"
+                                v-model:post-in-thread="formValues.postInThread"
                                 v-model:guild-channels="guildChannels" />
                         </KeepAlive>
                     </Transition>
@@ -423,4 +433,6 @@
     .formTabBtn-invalid, .formTabBtn-invalid:hover {
         @apply !bg-red-400/70 !border-red-400/30
     }
+
+
 </style>
