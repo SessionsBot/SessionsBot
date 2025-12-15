@@ -3,7 +3,7 @@ import { supabase } from "../../utils/database/supabase.js";
 import { APIResponse as reply } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import logtail from "../../utils/logs/logtail.js";
-import { User } from "@supabase/supabase-js";
+import { AuthError, User } from "@supabase/supabase-js";
 
 export interface authorizedRequest extends Request {
     auth: {
@@ -19,7 +19,8 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         const authToken = req.headers?.authorization?.split(' ')?.[1];
         // Fetch auth user from token:
         const { data: { user: authUser }, error: fetchUserErr } = await supabase.auth.getUser(authToken);
-        if (fetchUserErr || !authUser) return new reply(res).failure('Invalid Auth Token!', HttpStatusCode.Unauthorized);
+        if (fetchUserErr) return new reply(res).failure({ message: 'Invalid Auth Token!', error: fetchUserErr }, HttpStatusCode.Unauthorized);
+        if (!authUser) return new reply(res).failure('Failed to fetch user!', HttpStatusCode.InternalServerError);
         // Found User via Token - Get Profile:
         const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle()
         if (fetchProfileErr || !userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);

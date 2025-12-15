@@ -22,6 +22,15 @@
     // End Repeat Count Toggle:
     const endRepeatCountEnabled = ref(false)
 
+    // Recurrence RRule String:
+    const recurrence = defineModel<string>('recurrence');
+    const RRuleText = computed(() => {
+        if (!recurrence.value) return 'Add more info to fields!';
+        const rule = RRule.fromString(recurrence.value);
+        if (rule.isFullyConvertibleToText()) {
+            return rule.toText();
+        } else return 'Not Text-able?'
+    })
 
     // Local Form Schema:
     const localFormSchema = z.object({
@@ -108,7 +117,7 @@
 
 
     // Watch EACH Input -> Create RRULE String:
-    const rruleText = ref<string>()
+
     watch(localForm.value.formValues, (v) => {
         const validate = safeParse(localFormSchema, v)
         if (validate.success) {
@@ -126,9 +135,11 @@
                 count: v.endRepeatCount,
                 until: v.endRepeatDate
             });
-            rruleText.value = newRule.toText();
+            if (newRule) {
+                // Assign to form values:
+                recurrence.value = newRule.toString();
+            }
 
-            console.info('RRULE CREATED', { result: newRule, text: newRule.toText(), string: newRule.toString() });
         } else {
             // Errors Found - Add to Invalid MSGs:
             const { properties } = treeifyError(validate.error);
@@ -303,7 +314,7 @@
                         session
                         will repeat: </p>
                     <p class="ml-1.5 mt-0.5 bg-yellow-500/40 text-sm px-2 py-0.5 rounded-md ring-2 ring-white/50">
-                        {{ rruleText || 'Add more information to fields...' }}
+                        {{ RRuleText || 'Add more information to fields...' }}
                     </p>
 
                 </div>

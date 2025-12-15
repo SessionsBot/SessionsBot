@@ -20,7 +20,7 @@
     // Form Values:
     const title = defineModel<string>('title');
     const description = defineModel<string>('description');
-    const location = defineModel<string>('location');
+    const url = defineModel<string>('url');
     const startDate = defineModel<Date>('startDate');
     const endDate = defineModel<Date>('endDate');
     const timeZone = defineModel<object | string>('timeZone');
@@ -60,7 +60,7 @@
         <!-- INPUT: Title -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('title') }">
-            <InputTitle fieldTitle="Title" required :icon="BaselineIcon" :showHelp="{ path: '/' }" />
+            <InputTitle fieldTitle="Title" required :icon="BaselineIcon" />
             <inputText name="title" fluid v-model="title" @focusout="validateField('title')"
                 :invalid="invalidFields.has('title')" />
             <InputErrors fieldName="title" :invalidFields />
@@ -77,13 +77,13 @@
         </div>
 
 
-        <!-- INPUT: Location -->
+        <!-- INPUT: url -->
         <div class="flex flex-col gap-1 w-full items-start"
-            :class="{ 'text-red-400! ring-red-400!': invalidFields.has('location') }">
-            <InputTitle fieldTitle="Location" :icon="LinkIcon" />
-            <inputText name="location" fluid v-model="location" @focusout="validateField('location')"
-                :invalid="invalidFields.has('location')" />
-            <InputErrors fieldName="location" :invalidFields />
+            :class="{ 'text-red-400! ring-red-400!': invalidFields.has('url') }">
+            <InputTitle fieldTitle="Url" :icon="LinkIcon" :show-help="{ path: '/' }" />
+            <inputText name="url" fluid v-model="url" @focusout="validateField('url')"
+                :invalid="invalidFields.has('url')" />
+            <InputErrors fieldName="url" :invalidFields />
         </div>
 
 
@@ -113,7 +113,7 @@
         <!-- INPUT: Time Zone -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('timeZone') }">
-            <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" />
+            <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '/' }" />
             <AutoComplete class="w-full" v-model="timeZone" @option-select="validateField('timeZone')"
                 @clear="validateField('timeZone')" :invalid="invalidFields.has('timeZone')"
                 :suggestions="timeZoneSuggestions" @complete="timeZoneSearch" forceSelection option-label="name"

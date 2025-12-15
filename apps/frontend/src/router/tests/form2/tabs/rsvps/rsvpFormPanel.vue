@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { zodResolver } from '@primevue/forms/resolvers/zod';
-    import z, { ZodObject } from 'zod';
+    import z, { ZodError, ZodObject } from 'zod';
     import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
     import EmojiPicker from 'vue3-emoji-picker'
@@ -35,10 +35,13 @@
     // Form Schema & Restraints:
     const maxRsvpCapacity = ref(10);
 
+
     const RsvpFormSchema = z.object({
         name: z.string("Invalid Title").trim().min(1, "Title must be at least 1 character.").max(32, "Title cannot exceed 32 characters."),
-        emoji: z.string().regex(/^\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*$/u, "Please enter a valid emoji.").normalize(),
-        capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! Upgrade your bot for higher limits!`)
+        emoji: z.string()
+            .regex(/^\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*$/u, "Please enter a valid emoji.")
+            .or(z.literal("")),
+        capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! <br> Upgrade your bot for higher limits!`)
     })
 
 
@@ -101,16 +104,22 @@
     const submitRsvpForm = (e: FormSubmitEvent) => {
         if (e.valid) {
             // Valid Submission:
-            const { name, emoji, capacity } = e.values;
+            let { name, emoji, capacity } = e.values;
+            // Empty Emoji String -> Null
+            if (emoji?.trim() == "") {
+                emoji = null;
+            }
+            // If creating new:
             if (actionMode.value == 'New') {
                 emits('addRsvp', { name, emoji, capacity });
                 isVisible.value = false;
                 return
             }
+            // If editing existing:
             if (actionMode.value == 'Edit' && editingId.value) {
                 emits('editRsvp', editingId.value, { name, emoji, capacity });
                 isVisible.value = false;
-            } else console.warn('Invalid RSVP Id to edit...');
+            }
         }
 
     }
@@ -165,7 +174,7 @@
             <!-- INPUT: Emoji -->
             <div class="flex flex-col gap-1 w-full items-start"
                 :class="{ 'text-red-400! ring-red-400!': $form.emoji?.invalid }">
-                <InputTitle fieldTitle="Emoji" :icon="SmileIcon" required />
+                <InputTitle fieldTitle="Emoji" :icon="SmileIcon" />
                 <!-- Emoji Input -->
                 <div class="relative w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
                     <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1 bg-red-500!" />
@@ -203,8 +212,7 @@
 
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                     v-for="err in $form?.capacity?.errors || []">
-                    <p class="text-sm! pl-0.5">
-                        {{ err?.message || 'Invalid Input!' }}
+                    <p class="text-sm! pl-0.5" v-html="err?.message || 'Invalid Input'">
                     </p>
                 </Message>
             </div>

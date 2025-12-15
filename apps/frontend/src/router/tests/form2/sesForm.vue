@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import z, { regex, safeParse, treeifyError } from 'zod'
-    import { ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon } from 'lucide-vue-next';
+    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
@@ -10,8 +10,11 @@
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
     import axios, { type AxiosResponse } from 'axios';
-    import { APIResponse, type APIResponseValue, type ValueOf } from '@sessionsbot/shared';
+    import { APIResponse, type API_SessionTemplateBodyInterface, type APIResponseValue, type Database, type ValueOf } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
+    import { RRule } from 'rrule';
+    import { title } from 'process';
+    import { DateTime } from 'luxon';
 
     // Services:
     const confirmService = useConfirm()
@@ -21,7 +24,7 @@
     // Guild Id & Data:
     // ! Convert to Model
     const guildId = ref<string>('1379160686629880028');
-
+    // ! Convert to Model
     const guildChannels = ref();
 
     // Form Tab Control:
@@ -63,7 +66,7 @@
     const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
         title: '',
         description: '',
-        location: '',
+        url: '',
         startDate: null,
         endDate: null as Date | null,
         timeZone: '',
@@ -74,7 +77,7 @@
         postDay: null,
         postInThread: true,
         nativeEvents: false,
-    })
+    });
 
     /** Form Options/Toggles */
     const formOptions = ref({
@@ -86,7 +89,7 @@
     const formSchema = z.object({
         title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
         description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').normalize().optional().nullish(),
-        location: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().or(z.literal("")),
+        url: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().or(z.literal("")),
         startDate: z.date('Please enter a valid date.').refine((v) => v?.getTime() >= new Date().getTime(), 'Date has already occurred.'),
         endDate: z.date('Please enter a valid date.').refine(
             (v) => {
@@ -106,25 +109,22 @@
             emoji: z.nullish(z.emoji("Please enter a valid emoji.")).or(z.literal("")),
             capacity: z.number()
         })).nullish(),
-        recurrence: z.any(), // ! ADD SCHEMA
+        recurrence: z.nullish(z.string()), // ! ADD SCHEMA
         channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.').normalize(),
         postTime: z.date('Please enter a valid date.').refine(
             (v) => {
                 const postDay = formValues.value.postDay
                 if (postDay == "Day before") {
-                    console.info('day before');
                     return true;
                 }
                 const hrs = v.getHours();
                 const mins = v.getMinutes()
                 const startDate = (formValues.value.startDate) as Date;
                 if (!startDate) {
-                    console.info('no start date');
                     return true;
                 }
                 const dayOfTime = new Date(startDate);
                 dayOfTime.setHours(hrs, mins);
-                console.log('validating:', (dayOfTime <= startDate), { dayOfTime, startDate })
                 return (dayOfTime <= startDate)
             },
             `Post Time must occur before or at event Start Time if posting "Day of".`
@@ -140,10 +140,9 @@
     const invalidFields = ref<Map<NewSessions_FieldNames, string[]>>(new Map())
 
     /** WATCH: Invalid Fields -> Invalid Tabs */
-    const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'location', 'startDate', 'endDate']
+    const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'url', 'startDate', 'endDate']
     const discordFields: NewSessions_FieldNames[] = ['channelId', 'postTime', 'postDay', 'nativeEvents']
     watch(() => invalidFields.value, (v) => {
-
         const keys = new Set(v?.keys())
         // Info Tab:
         if (infoFields.some((fieldName) => keys.has(fieldName))) {
@@ -151,25 +150,21 @@
                 invalidTabs.value.add('information');
             }
         } else invalidTabs.value.delete('information');
-
         // RSVP Tab:
         if (keys.has('rsvps')) {
             invalidTabs.value.add('rsvps');
         }
-
         // Schedule Tab:
         if (keys.has('recurrence')) {
             invalidTabs.value.add('schedule');
         }
         else invalidTabs.value.delete('schedule');
-
         // Discord Tab:
         if (discordFields.some((fieldName) => keys.has(fieldName))) {
             if (!invalidTabs.value.has('discord')) {
                 invalidTabs.value.add('discord');
             }
         } else invalidTabs.value.delete('discord');
-
     }, { deep: true });
 
 
@@ -185,7 +180,6 @@
             invalidFields.value?.delete(name);
         }
     };
-
     /** Form FIELD(s) Validation Fn */
     function validateFields(fields: NewSessions_FieldNames[]) {
         for (const fieldName of fields) {
@@ -193,33 +187,106 @@
         }
     }
 
-    /** Form Validation Fn */
-    function validateForm() {
-        const result = formSchema.safeParse(formValues.value)
-        if (result.success) {
-            return true
-        } else {
-            const { properties } = treeifyError(result.error);
-            for (const [fieldName, errData] of Object.entries(properties as any)) {
-                //@ts-expect-error
-                invalidFields.value.set(fieldName, errData?.errors)
-                // console.log('Field Errs', fieldName, errData)
-            };
-        };
-    }
-
 
     /** Form Submission Function */
     async function submitForm() {
         // Apply Options:
         if (!formOptions.value.rsvpsEnabled) {
-            // Rsvps Disabled:
             formValues.value.rsvps = null;
         }
         if (!formOptions.value.recurrenceEnabled) {
-            // Recurrence Disabled:
             formValues.value.recurrence = null;
         }
+
+        // Validate Form:
+        const result = formSchema.safeParse(formValues.value);
+        if (!result.success) {
+            // Invalid Submission - Errors Found:
+            const { properties } = treeifyError(result.error);
+            for (const [fieldName, errData] of Object.entries(properties as any)) {
+                //@ts-expect-error
+                invalidFields.value.set(fieldName, errData?.errors)
+            };
+            return console.warn('Invalid Submission!', result);
+        } else {
+            // Valid Submission - Prepare Req for API:
+            let { data } = result;
+            // Set empty strings to null:
+            for (const [field, fieldData] of Object.entries(data)) {
+                if (typeof fieldData == 'string' && fieldData.trim() == '') {
+                    //@ts-expect-error
+                    data[field] = null;
+                }
+            };
+
+            // Date/Time/Zones -> Helper Fn(s):
+            function utcInZone(date: Date, zone: string) {
+                const base = DateTime.fromJSDate(date);
+                return DateTime.fromObject({
+                    year: base.year,
+                    month: base.month,
+                    day: base.day,
+                    hour: base.hour,
+                    minute: base.minute,
+                    second: 0,
+                    millisecond: 0
+                }, { zone }).toUTC()
+            }
+            function getDurationMs() {
+                if (!data.endDate) return null;
+                else {
+
+                    const start = utcInZone(data.startDate, data.timeZone);
+                    const end = utcInZone(data.endDate, data.timeZone);
+                    return (end.toMillis() - start.toMillis());
+                }
+            }
+            function getPostOffsetMs() {
+                const post = DateTime.fromJSDate(data.postTime)
+                const start = DateTime.fromJSDate(data.startDate)
+                const base = DateTime.fromObject(
+                    {
+                        year: start.year,
+                        month: start.month,
+                        day: start.day,
+                        hour: post.hour,
+                        minute: post.minute,
+                    },
+                    { zone: data.timeZone }
+                )
+                const final = data.postDay === 'Day before'
+                    ? base.minus({ days: 1 })
+                    : base
+                const postTimeUtc = final.toUTC()
+                const startTimeUtc = utcInZone(data.startDate, data.timeZone);
+                const difMs = postTimeUtc.diff(startTimeUtc, 'milliseconds').milliseconds
+                return difMs
+            }
+
+            // Create Request Body:
+            const bodyData = {
+                data: <API_SessionTemplateBodyInterface>{
+                    guild_id: guildId.value,
+                    title: data.title,
+                    description: data.description,
+                    url: data.url,
+                    starts_at_utc: utcInZone(data.startDate, data.timeZone).toISO(),
+                    duration_ms: getDurationMs(),
+                    time_zone: data.timeZone,
+                    rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
+                    rrule: data.recurrence,
+                    channel_id: data.channelId,
+                    post_before_ms: getPostOffsetMs(),
+                    native_events: data.nativeEvents,
+                    post_in_thread: data.postInThread,
+                }
+            };
+
+            console.info('REQ BODY DATA', bodyData);
+            const r = await API.post(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+            console.info(`REQ Response`, r.data);
+        }
+
         console.log('Form Submitted', formValues.value);
     }
 
@@ -244,7 +311,7 @@
     onMounted(async () => {
         // Fetch guild's channels:
         if (auth.signedIn) {
-            await getGuildChannels()
+            await getGuildChannels();
         } else {
             console.warn(`You're not signed in! - Cannot fetch channels! - Trying again`);
             setTimeout(() => getGuildChannels(), 3_000)
@@ -333,7 +400,7 @@
                         <KeepAlive>
                             <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
                                 :validateFields v-model:title="formValues.title"
-                                v-model:description="formValues.description" v-model:location="formValues.location"
+                                v-model:description="formValues.description" v-model:url="formValues.url"
                                 v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate"
                                 v-model:time-zone="formValues.timeZone" />
 
@@ -341,7 +408,8 @@
                                 v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
 
                             <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
-                                v-model:recurrence-enabled="formOptions.recurrenceEnabled" />
+                                v-model:recurrence-enabled="formOptions.recurrenceEnabled"
+                                v-model:recurrence="formValues.recurrence" />
 
                             <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
                                 :validateFields v-model:channel-id="formValues.channelId"
@@ -357,10 +425,10 @@
 
                 <!-- Form Footer -->
                 <div
-                    class="w-full flex flex-row-reverse items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
+                    class="w-full flex flex-row items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
 
                     <!-- Created By - Badge -->
-                    <div hidden class="flex gap-1 items-center flex-row ml-1 text-sm">
+                    <div v-if="false" class="flex gap-1 items-center flex-row ml-1 text-sm">
                         <p> Created By: </p>
                         <!-- User Name/Icon -->
                         <a :href="'https://discord.com/users/' + auth?.userData?.id"
@@ -371,8 +439,21 @@
                         </a>
                     </div>
 
+                    <!-- Invalid Fields - Badge -->
+                    <div class="flex justify-center items-center p-2 overflow-clip">
+
+                        <Transition name="slide" mode="out-in">
+                            <span v-if="invalidFields.size >= 1"
+                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-500/70 drop-shadow-sm rounded-md">
+                                <AlertCircleIcon :stroke-width="2.75" :size="14" />
+                                <p class="text-xs font-medium"> Fix invalid fields! </p>
+                            </span>
+                        </Transition>
+
+                    </div>
+
                     <!-- Tab/Submit Btns -->
-                    <div class="flex justify-end items-center content-center gap-3 p-2">
+                    <div class="flex flex-1 justify-end items-center content-center gap-3 p-2">
 
                         <!-- Back Tab Button -->
                         <Button v-if="tabSelected != 'information'" @click="backTab()"
@@ -391,7 +472,7 @@
                         </Button>
 
 
-                        <Button v-else @click="validateForm(), submitForm()"
+                        <Button v-else @click="submitForm()"
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm font-medium"> Submit </p>

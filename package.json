@@ -6,7 +6,9 @@
     "apps/*",
     "packages/*"
   ],
-  "scripts": {},
+  "scripts": {
+    "db:gen-types": "npx supabase gen types typescript --project-id nrhesahngnvomojthnta > packages/shared/types/database/supabase.ts"
+  },
   "author": "",
   "license": "ISC"
 }

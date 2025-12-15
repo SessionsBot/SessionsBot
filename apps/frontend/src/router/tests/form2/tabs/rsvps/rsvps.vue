@@ -38,6 +38,13 @@
     // Rsvp Dialog Panel:
     const rsvpDialogVisible = ref(false);
 
+    function listRsvps() {
+        const obj = Object.fromEntries(rsvps.value ?? [])
+        const text = JSON.stringify(obj)
+        console.info('Rsvps', { obj, text })
+        // im having a hard time converting this RSVP map to honestly anything else... but my end goal is JSON text?
+    };
+
 </script>
 
 
@@ -100,7 +107,7 @@
                 </div>
 
                 <!-- Add Rsvp Btn -->
-                <Button unstyled :disabled="!rsvpsEnabled" @click="rsvpDialogVisible = !rsvpDialogVisible"
+                <Button unstyled :disabled="!rsvpsEnabled" @click="rsvpDialogVisible = !rsvpDialogVisible; listRsvps()"
                     class="bg-zinc-600 py-0.75 px-2.25 pl-1.25 my-3 mx-3 rounded-lg transition-all cursor-pointer font-medium hover:bg-zinc-700 flex items-center flex-row">
                     <PlusIcon class="size-5 p-0.5" />
                     <p class="text-sm"> Add </p>

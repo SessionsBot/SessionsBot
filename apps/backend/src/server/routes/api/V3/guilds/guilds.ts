@@ -6,6 +6,7 @@ import verifyToken, { authorizedRequest } from "../../../../middleware/verifyTok
 import { verifyGuildAdmin } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";
 import { ChannelType } from "discord.js";
+import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 
@@ -46,6 +47,10 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: a
         return new reply(res).failure(err, 500)
     }
 })
+
+
+// Sessions Endpoints:
+guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
 
 
 // Export Router:
