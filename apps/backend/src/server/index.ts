@@ -4,6 +4,7 @@ import corsMiddleware from "./middleware/cors.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
 import { HttpStatusCode } from "axios";
+import { APIResponse } from "@sessionsbot/shared";
 
 /** Main backend web server instance for Sessions Bot. */
 const app = express()
@@ -27,13 +28,11 @@ app.listen(PORT, () => {
 // 404 - Not Found / Unknown Routes:
 app.use((req, res) => {
     // Return not found - as response:
-    return res.status(404).json({
+    return new APIResponse(res).failure({
         message: 'NOT FOUND',
-        statusCode: 404,
-        success: false,
         server_version: core.botVersion,
         api_version: 3,
         git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7)
-    })
+    }, 404);
     // return res.redirect(core.urls.mainSite + '/api-not-found')
 });

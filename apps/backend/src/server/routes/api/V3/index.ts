@@ -6,6 +6,7 @@ import core from "../../../../utils/core";
 
 import authRouter from './auth/auth.js'
 import guildsRouter from "./guilds/guilds";
+import systemRouter from "./system/system";
 
 // Create Router
 const apiRouter = express.Router();
@@ -18,6 +19,7 @@ apiRouter.all('/', (req, res) => {
 // Nested Routes:
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/guilds', guildsRouter);
+apiRouter.use('/system', systemRouter);
 
 
 // - Export Router:

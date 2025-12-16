@@ -49,7 +49,7 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: a
 })
 
 
-// Sessions Endpoints:
+// Session Template - Endpoints:
 guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
 
 
