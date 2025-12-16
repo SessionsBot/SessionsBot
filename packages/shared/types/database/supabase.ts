@@ -16,31 +16,25 @@ export type Database = {
     Tables: {
       guilds: {
         Row: {
-          accent_color: string
-          created_at: string
           id: string
-          member_count: string
+          joined_at: string
+          member_count: number
           name: string
           owner_id: string
-          time_zone: string
         }
         Insert: {
-          accent_color: string
-          created_at?: string
           id: string
-          member_count: string
+          joined_at?: string
+          member_count: number
           name: string
           owner_id: string
-          time_zone?: string
         }
         Update: {
-          accent_color?: string
-          created_at?: string
           id?: string
-          member_count?: string
+          joined_at?: string
+          member_count?: number
           name?: string
           owner_id?: string
-          time_zone?: string
         }
         Relationships: []
       }

@@ -10,7 +10,7 @@
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
     import axios, { type AxiosResponse } from 'axios';
-    import { APIResponse, type API_SessionTemplateBodyInterface, type APIResponseValue, type Database, type ValueOf } from '@sessionsbot/shared';
+    import { APIResponse, type API_SessionTemplateBodyInterface, type APIResponseValue, type Database } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { RRule } from 'rrule';
     import { title } from 'process';

@@ -2,7 +2,6 @@ import { definePreset } from "@primeuix/themes";
 import Aura from '@primeuix/themes/aura';
 import type { AuraBaseTokenSections } from "@primeuix/themes/aura/base";
 import type { ButtonTokenSections } from "@primeuix/themes/types/button";
-import type { ValueOf } from "@sessionsbot/shared";
 import type { PrimeVueConfiguration, PrimeVuePTOptions } from "primevue";
 
 

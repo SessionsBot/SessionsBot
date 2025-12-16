@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { externalUrls } from "@/stores/nav";
 import Homepage from "./homepage/homepage.vue";
 import NotFound from "./notFound.vue";
 import MyAccount from "./account/myAccount.vue";
-import { externalUrls } from "@/stores/nav";
 import PrivacyPolicy from "./privacyPolicy.vue";
 import TermsAndConditions from "./termsAndConditions.vue";
 import Test_Form1 from "./tests/form1/testing.vue";
 import Test_Form2 from "./tests/form2/sesForm.vue";
-import { useAuthStore } from "@/stores/auth";
+import Dashboard from "./dashboard/dashboard.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,7 +24,11 @@ const router = createRouter({
       path: "/",
       component: Homepage,
     },
-
+    {
+      name: "Dashboard",
+      path: "/dashboard",
+      component: Dashboard,
+    },
     {
       name: "Account",
       path: "/account",
@@ -48,12 +52,12 @@ const router = createRouter({
       component: TermsAndConditions
     },
 
+    // Extra Routes:
     {
       name: "Testing Form 1",
       path: "/test/1",
       component: Test_Form1,
     },
-
     {
       name: "Testing Form 2",
       path: "/test/2",

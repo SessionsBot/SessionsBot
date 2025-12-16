@@ -101,13 +101,17 @@
                     </div>
                 </section>
 
-                <footer
+                <footer v-if="user?.app_metadata?.roles?.includes('admin')"
                     class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-zinc-400">
                     <p class="w-full sm:w-fit">
                         <b>UID:</b> {{ user?.id }}
                     </p>
                     <a @click="copyAccessToken" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                         Copy Access Token
+                    </a>
+                    <a @click="console.log(auth.session, auth.user)"
+                        class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                        Log User/Session Data
                     </a>
                 </footer>
             </div>

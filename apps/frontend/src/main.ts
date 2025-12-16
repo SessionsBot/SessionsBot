@@ -9,7 +9,7 @@ import App from './App.vue'
 
 import { toastOptions } from './utils/toaster';
 import primeVueConfig from './styles/primeVueTheme';
-import router from './router'
+import router from './router/router'
 
 
 // Import CSS:

@@ -3,7 +3,6 @@
     import z, { number, prettifyError, safeParse, treeifyError, type infer } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { ToggleSwitch } from 'primevue';
-    import type { ValueOf } from '@sessionsbot/shared';
     import { Frequency, RRule, ALL_WEEKDAYS, Weekday } from 'rrule'
     import InputTitle from '../labels/inputTitle.vue';
 
