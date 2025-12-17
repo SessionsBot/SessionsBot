@@ -29,7 +29,11 @@ const verifyGuildMember = async (req: authorizedRequest, res: Response, next: Ne
     }
 }
 
-/** Verifies that the authenticated user from request is a ADMIN member of the Discord Guild.*/
+/** Verifies that the authenticated user from request is a ADMIN member of the Discord Guild.
+ * @IMPORTANT **Relies on:**
+ * - verifyToken being called before `this`
+ * - `guildId` available within req params 
+*/
 const verifyGuildAdmin = async (req: authorizedRequest, res: Response, next: NextFunction) => {
     try {
         // Get user & guild from request:

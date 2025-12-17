@@ -20,7 +20,13 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req
         const guildFetch = await core.botClient.guilds.fetch(guildId);
         const channelFetch = await guildFetch.channels.fetch();
         // Return result data:
-        const guildChannels = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory));
+        const guildChannels = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory))
+            .forEach((v) => {
+                if (v.type == ChannelType.GuildText) {
+                    const isSendable = v.isSendable();
+                    return v['sendable'] = isSendable;
+                }
+            })
         return new reply(res).success(guildChannels)
 
     } catch (err) {

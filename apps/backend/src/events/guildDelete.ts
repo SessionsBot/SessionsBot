@@ -1,5 +1,5 @@
 import { Events, Guild } from "discord.js";
-import dbManager from "../utils/database/manager/databaseManager.js";
+import dbManager from "../utils/database/manager";
 import discordLog from "../utils/logs/discordLog.js";
 import { Log } from "../utils/logs/logtail.js";
 

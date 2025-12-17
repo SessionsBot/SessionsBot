@@ -24,7 +24,7 @@ class dbResult {
 
 
 /** **Util:** Database Manager for various supabase database actions. */
-const dbManager = {
+export default {
 
     guilds: {
         /** Adds a NEW guild to the `Guilds` database table. */
@@ -76,4 +76,4 @@ const dbManager = {
 }
 
 
-export default dbManager;
+// export default dbManager;

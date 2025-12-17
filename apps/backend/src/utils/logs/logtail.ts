@@ -1,36 +1,25 @@
 import { Logtail } from "@logtail/node";
+import LogCategories from './categories'
 const ENVIRONMENT = process.env['ENVIRONMENT'];
 const sourceToken = process.env['LOGTAIL_SOURCE_TOKEN'];
 const ingestingHost = process.env['LOGTAIL_INGESTING_HOST'];
 
-// Pre-Defined Log Categories:
-const logCategories = {
-    Auth: { name: 'Auth', emoji: '👤' },
-    Guilds: { name: 'Guilds', emoji: '👥' },
-    Api: { name: 'API', emoji: '🌐' },
-    Bot: { name: 'Bot', emoji: '🤖' },
-    Database: { name: 'Database', emoji: '📦' },
-    Schedule: { name: 'Schedule', emoji: '🔁' },
-    Unknown: { name: 'Unknown', emoji: '❓' },
-} as const;
+type categoryName = keyof typeof LogCategories;
 
-type categoryName = keyof typeof logCategories;
-type logLevel = 'info' | 'warn' | 'error' | 'debug';
 
 /**  Logger Utility - Predefined Class */
 export class Log {
-
-    private logTitle: string
+    private logTitle: string;
 
     constructor(category: categoryName) {
         // Get Log Category Data/Title:
-        const categoryData = logCategories[category];
+        const categoryData = LogCategories[category];
         if (categoryData.name == 'Unknown') {
             this.logTitle = `[${categoryData.emoji}]`
         } else {
             this.logTitle = `[${categoryData.emoji} ${categoryData.name}]`
         }
-    }
+    };
 
     /** Info level log */
     info(text: string, extra?: object) {
@@ -48,7 +37,6 @@ export class Log {
     error(text: string, extra?: object) {
         logtail().error(`${this.logTitle} - ${text}`, extra);
     }
-
 }
 
 /** Local logger tool to be using in development environment. */

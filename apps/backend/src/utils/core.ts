@@ -5,14 +5,14 @@ const core = {
     /** Current running Sessions Bot version. */
     botVersion: pkg.version,
     /** Currently logged in client instance. */
-    botClient:<ExtendedClient> null,
+    botClient: <ExtendedClient>null,
 
     /** Default core colors in default hex format. */
     colors: {
         /** Default core colors in default hex format. */
         plain: {
             success: '#6dc441',
-            error: '#d43f37', 
+            error: '#d43f37',
             warning: '#fc8c03',
             yellow: '#e3f542',
             blue: '#4287f5',
@@ -20,7 +20,7 @@ const core = {
             gray: '#585858'
         },
         /** Returns a converted 0x hex color number from a provided core color. */
-        getOxColor: (colorName:'success'|'error'|'yellow'|'warning'|'blue'|'purple'|'gray') => {
+        getOxColor: (colorName: 'success' | 'error' | 'yellow' | 'warning' | 'blue' | 'purple' | 'gray') => {
             const reqColor = core.colors.plain?.[colorName]
             const convertedColor = Number(reqColor.replace('#', "0x"));
             return convertedColor
@@ -28,7 +28,7 @@ const core = {
     },
 
     /** Custom emoji strings formatted for use within Discord. - (loaded by script) */
-    emojiStrings: <{[cmdName: string]: string}> {
+    emojiStrings: <{ [cmdName: string]: string }>{
         sessions: ':null:',
         sessionsWText: ':null:'
     },
@@ -42,7 +42,7 @@ const core = {
         docs: {
             root: `https://docs.sessionsbot.fyi`,
             requiredBotPermissions: `https://docs.sessionsbot.fyi/getting-started#required-bot-permissions`,
-            sigupChannelsInfo: 'https://docs.sessionsbot.fyi/server-config#signup-channel'
+            signupChannelsInfo: 'https://docs.sessionsbot.fyi/server-config#signup-channel'
         },
         inviteBot: `https://invite.sessionsbot.fyi`,
         discordServer: 'https://discord.gg/dKp5HZPjCg',

@@ -1,2 +1,3 @@
-import DatabaseManager from './databaseManager';
-export default DatabaseManager;
+import dbManager from './dbManager';
+
+export default dbManager;

@@ -3,14 +3,11 @@ import core from '../core.js'
 export default async () => {
     // Fetch App Emojis:
     const fetch = await core.botClient.application.emojis.fetch();
-    const botEmojis = {};
-
+    const botEmojis: { [emojiName: string]: string } = {};
     // Map Emojis:
-    for(const [id, data] of fetch){
+    for (const [id, data] of fetch) {
         botEmojis[data.name] = `<:${data.name}:${id}>`;
     }
-
     // Assign to core:
-    core.emojiStrings = botEmojis;
-    
+    return core.emojiStrings = botEmojis;
 }

@@ -32,8 +32,8 @@ function getAllFiles(dir: string, ext: string, fileList = []) {
 	return fileList;
 }
 
-// + Initialize Commands:
 
+// + Initialize Commands:
 client.commands = new Collection();
 const commandFiles = getAllFiles(path.join(__dirname, 'commands'), '');
 for (const filePath of commandFiles) {
@@ -47,10 +47,8 @@ for (const filePath of commandFiles) {
 
 
 // + Initialize Buttons:
-
 client.buttons = new Collection();
 const buttonFiles = getAllFiles(path.join(__dirname, 'buttons'), '');
-
 for (const filePath of buttonFiles) {
 	const { default: button } = await import(pathToFileURL(filePath).href);
 	if ('data' in button && 'execute' in button) {
@@ -62,9 +60,7 @@ for (const filePath of buttonFiles) {
 
 
 // + Initialize Events
-
 const eventFiles = fs.readdirSync(path.join(__dirname, 'events')).filter(file => file.endsWith(''));
-
 for (const file of eventFiles) {
 	const filePath = path.join(__dirname, 'events', file);
 	const { default: event } = await import(pathToFileURL(filePath).href);
@@ -76,9 +72,8 @@ for (const file of eventFiles) {
 }
 
 
-// ------- [ DEBUG - File Loader Utility: ] -------
-
-const debugFileLoader = global.outputDebug_InDepth // true;
+// - DEBUG - File Loader Utility:
+const debugFileLoader = false;
 if (debugFileLoader) {
 	console.log(`[✅] Loaded ${client.commands.size} command(s).`);
 	console.log(`[✅] Loaded ${client.buttons.size} button(s).`);
@@ -96,5 +91,4 @@ if (process.env['ENVIRONMENT'] == 'development') {
 
 
 // ------- [ Web Server (api): ] -------
-
 import './server/index.js';
