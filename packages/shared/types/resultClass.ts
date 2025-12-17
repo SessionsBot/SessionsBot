@@ -1,38 +1,23 @@
-// Result Class
-export class SuccessResult<dataType> {
-    /**  Weather the request was successful or not. */
-    public success: true ;
-    /** The resulting data returned from the request. */
-    public data: dataType ;
-        
-    constructor(data:dataType){
-        this.success = true ;
-        this.data = data ;
+/***BASIC & CUSTOMIZABLE* `Result` class to pass back data between functions with types. */
+export class Result<ty> {
+
+    constructor(custom: ty) {
+        return custom
     }
-}
 
-export class ErrorResult {
-    /**  Weather the request was successful or not. */
-    public success: false
-
-    /** Stringed message for related error. */
-    public message: string
-
-    /** Raw js/node error or throw that triggered this failure.*/
-    public rawError: Error|Object
-
-    constructor(message:string, rawError?:Error|Object){
-        this.message = message
-        this.rawError = rawError || undefined
+    static success<d, e>(data: d, extra?: e) {
+        return {
+            success: true,
+            data,
+            extra
+        }
     }
-}
 
-
-export class BasicResult<t> {
-    public success: boolean
-    public data: t
-    constructor(success:boolean, data:t) {
-            this.success = success
-            this.data = data
+    static failure<err, ext>(error: err, extra?: ext) {
+        return {
+            success: false,
+            error,
+            extra
+        }
     }
 }

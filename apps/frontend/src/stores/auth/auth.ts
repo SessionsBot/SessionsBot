@@ -1,13 +1,9 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
-import { useNavStore } from "../nav";
 import type { Session, User, UserMetadata } from "@supabase/supabase-js";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { DateTime } from "luxon";
-import { TYPE, useToast } from "vue-toastification";
-import { CheckSquare2, MessageSquareWarning, TimerReset } from "lucide-vue-next";
-import type { RouteRecordRaw } from "vue-router";
-import { BasicResult, BasicResult as result } from "@sessionsbot/shared"
+
 import type { ResyncResult } from "./authTypes";
 
 

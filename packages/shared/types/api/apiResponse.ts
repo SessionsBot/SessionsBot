@@ -59,7 +59,4 @@ export class APIResponse {
             }
         })
     };
-
-    public sendSuccess = this.success;
-    public sendFailure = this.failure;
 }

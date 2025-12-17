@@ -3,7 +3,7 @@ import core from "../core.js"
 // import guildManager from "../database/guildManager.js";
 import logtail from "../logs/logtail.js";
 import sendWithFallback from "./sendWithFallback.js";
-import { ErrorResult, SuccessResult } from "@sessionsbot/shared";
+import { Result } from "@sessionsbot/shared";
 
 /** Full array of every permission that must be granted to SessionsBot within guilds/signup channels. */
 const requiredBotPerms: PermissionsString[] = [
@@ -31,7 +31,7 @@ export const sendPermissionAlert = async (guildId: string) => {
 
         // Check Cooldown:
         if (canAlert(guildId)) startCooldown(guildId);
-        else return new ErrorResult('COOLDOWN', null);
+        else return Result.failure('COOLDOWN', null);
 
         // Fetch guild:
         const result = await guildManager.fetchGuildData(guildId)
@@ -127,13 +127,13 @@ export const sendPermissionAlert = async (guildId: string) => {
 
             const sendResult = await sendWithFallback(guildId, msg)
             if (!sendResult.success) throw sendResult;
-            return new SuccessResult({ missingGlobalPerms, missingSignupChannelPerms })
+            return Result.success({ missingGlobalPerms, missingSignupChannelPerms })
         }
 
 
     } catch (err) {
         // Log Error:
         logtail.warn('[!!] Failed to run PERMISSION CHECKS for guild! - See Details', { err });
-        return new ErrorResult('Failed to run permission checks for guild!', err)
+        return Result.failure('Failed to run permission checks for guild!', err)
     }
 }

@@ -2,7 +2,6 @@ import { ContainerBuilder, SeparatorBuilder, TextDisplayBuilder, SectionBuilder,
 import core from "../../core.js"
 import { DateTime } from "luxon"
 import logtail from "../../logs/logtail.js";
-// import { ErrorResult, SuccessResult, GuildDocData, ValueOf, SessionRsvps, GuildSessionData } from "@sessionsbot/shared";
 // import getSessionDayPath from "../../database/utils/getSessionDayPath.js";
 
 /** Creates a signup panel msg container from a session id, data, and optional accent color. */
@@ -93,7 +92,7 @@ export const createSessionSignupContainer = (guildId: string, guildDocData: Guil
         })
 
         // Return Built Message:
-        return new SuccessResult(build);
+        return { build };
 
     } catch (err) {
         // Log & return failure:
