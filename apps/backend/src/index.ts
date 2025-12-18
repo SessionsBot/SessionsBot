@@ -19,14 +19,15 @@ const __dirname = path.dirname(__filename);
 
 
 // --- [ File Loader Utility: ] ---
-function getAllFiles(dir: string, ext: string, fileList = []) {
+function getAllFiles(dir: string, fileList = []) {
+	if (!fs.existsSync(dir)) return fileList;
+
 	const files = fs.readdirSync(dir);
-	if (!files) return [];
 	for (const file of files) {
 		const filePath = path.join(dir, file);
 		if (fs.statSync(filePath).isDirectory()) {
-			getAllFiles(filePath, ext, fileList); // Recurse into subfolder
-		} else if (file.endsWith(ext)) {
+			getAllFiles(filePath, fileList); // Recurse into subfolder
+		} else if (file.endsWith('.js') || file.endsWith('.ts')) {
 			fileList.push(filePath);
 		}
 	}
@@ -36,7 +37,7 @@ function getAllFiles(dir: string, ext: string, fileList = []) {
 
 // + Initialize Commands:
 client.commands = new Collection();
-const commandFiles = getAllFiles(path.join(__dirname, 'commands'), '');
+const commandFiles = getAllFiles(path.join(__dirname, 'commands'));
 for (const filePath of commandFiles) {
 	const { default: command } = await import(pathToFileURL(filePath).href);
 	if ('data' in command && 'execute' in command) {
@@ -49,7 +50,7 @@ for (const filePath of commandFiles) {
 
 // + Initialize Buttons:
 client.buttons = new Collection();
-const buttonFiles = getAllFiles(path.join(__dirname, 'buttons'), '');
+const buttonFiles = getAllFiles(path.join(__dirname, 'buttons'));
 for (const filePath of buttonFiles) {
 	const { default: button } = await import(pathToFileURL(filePath).href);
 	if ('data' in button && 'execute' in button) {
@@ -61,11 +62,10 @@ for (const filePath of buttonFiles) {
 
 
 // + Initialize Events
-const eventFiles = fs.readdirSync(path.join(__dirname, 'events')).filter(file => file.endsWith(''));
-for (const file of eventFiles) {
-	const filePath = path.join(__dirname, 'events', file);
+const eventFiles = getAllFiles(path.join(__dirname, 'events'));
+for (const filePath of eventFiles) {
 	const { default: event } = await import(pathToFileURL(filePath).href);
-	if (event.once) {
+	if (event?.once) {
 		client.once(event.name, (...args) => event.execute(...args));
 	} else {
 		client.on(event.name, (...args) => event.execute(...args));
