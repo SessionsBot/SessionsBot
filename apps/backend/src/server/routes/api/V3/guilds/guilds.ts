@@ -12,22 +12,24 @@ const guildsRouter = express.Router({ mergeParams: true });
 
 
 // GET/FETCH - Guild Channels:
+// OPT: body param for "only sendable" channels
 guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
     try {
         // Parse req:
         const guildId = req.params['guildId'];
+        const only_sendable = req.body?.only_sendable
         // Fetch guild channels:
         const guildFetch = await core.botClient.guilds.fetch(guildId);
         const channelFetch = await guildFetch.channels.fetch();
         // Return result data:
-        const guildChannels = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory))
-            .forEach((v) => {
-                if (v.type == ChannelType.GuildText) {
-                    const isSendable = v.isSendable();
-                    return v['sendable'] = isSendable;
-                }
-            })
-        return new reply(res).success(guildChannels)
+        let result;
+        if (only_sendable) {
+            result = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory) && ch.isSendable());
+        } else {
+            result = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory));
+        }
+
+        return new reply(res).success(result)
 
     } catch (err) {
         // Log & Return Error:

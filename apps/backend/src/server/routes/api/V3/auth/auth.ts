@@ -5,7 +5,7 @@ import logtail from "../../../../../utils/logs/logtail.js";
 import { APIResponse as reply } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
-import { AuthError } from "./authTypes.js";
+import { AuthError } from "./authErrTypes.js";
 import { fetchUserDiscordData, updateAuthUser } from "./authUtils.js";
 
 // ! BEFORE PRODUCTION:

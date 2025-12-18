@@ -63,7 +63,7 @@
             <span
                 class="bg-zinc-500/50 italic font-medium border-2 border-x-1 borderColor text-shadow-sm text-shadow-black/40 p-1 h-full flex items-center">
 
-                {{ DateTime.fromISO(user?.app_metadata?.last_synced).toRelative() }}
+                {{ DateTime.fromISO(user?.app_metadata?.last_synced as string)?.toRelative() }}
 
             </span>
             <!-- Refresh Button -->

@@ -1,27 +1,20 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
-    // import type { UserGuildData, UserGuilds } from '@sessionsbot/shared';
+    import SelectServer from './selectServer.vue';
+    import ServerDashboard from './serverDashboard.vue';
 
-    // Services:
-    const auth = useAuthStore();
-
-    // User Data:
-    const availableGuilds = computed(() => {
-        return auth.user?.user_metadata?.guilds;
-    })
-
-    // Guild Data:
-    const selectedGuild = ref<string>();
-
+    const selectedGuildId = ref<string>()
 
 </script>
 
 
 <template>
     <main class="justify-center items-center">
-        <p>
 
-        </p>
+        <SelectServer v-if="!selectedGuildId" @selectServer="(id) => selectedGuildId = id" />
+
+        <ServerDashboard v-else-if="selectedGuildId" :selectedGuildId />
+
     </main>
 </template>
 

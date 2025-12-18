@@ -19,7 +19,7 @@
     const avatarLoaded = ref(false);
 
     async function copyAccessToken() {
-        const token = await auth.getUserJWT();
+        const token = auth.session?.access_token;
         if (!token) return alert('No access token!');
         if (!clipboard.isSupported) {
             alert(token);
@@ -101,7 +101,7 @@
                     </div>
                 </section>
 
-                <footer v-if="user?.app_metadata?.roles?.includes('admin')"
+                <footer v-if="user?.user_metadata.username == 'scrixt'"
                     class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-zinc-400">
                     <p class="w-full sm:w-fit">
                         <b>UID:</b> {{ user?.id }}

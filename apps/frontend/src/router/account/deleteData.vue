@@ -44,17 +44,14 @@
 
     // Owned Guild(s) Options:
     const userOwnedGuilds = computed(() => {
-        const manageableGuilds: { [guildId: string]: { [key: string]: any } } = auth.userData?.['guilds']?.['manageable'] || {};
-        for (const [guildId, data] of Object.entries(manageableGuilds)) {
-
-        }
-
-        return Object.entries(manageableGuilds).filter(([guildId, data]) => {
-            if (data?.isOwner && data?.hasSessionsBot) return true;
-            else return false;
-        }).map(([guildId, data]) => {
-            return { name: data?.name, value: guildId, iconUrl: data?.icon }
-        })
+        const manageableGuilds = auth.userData?.guilds.manageable;
+        return manageableGuilds?.filter(g => g.isOwner && g.hasSessionsBot)?.map((g) => {
+            return {
+                name: g.name,
+                value: g.id,
+                iconUrl: g.icon
+            }
+        });
     })
 
     // Form/Checkbox Values:

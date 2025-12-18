@@ -32,7 +32,7 @@ body {
 }
 
 #app {
-  background: radial-gradient(circle at top, hsl(244, 43%, 19%) 0%, #111827 60%);
+  /* background: radial-gradient(circle at top, hsl(244, 43%, 19%) 0%, #111827 60%); */
   @apply min-h-full w-full max-w-full flex flex-col flex-wrap flex-1 relative;
   display: flex;
   flex-direction: column;

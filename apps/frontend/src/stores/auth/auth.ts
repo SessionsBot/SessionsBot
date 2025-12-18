@@ -1,19 +1,21 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
-import type { Session, User, UserMetadata } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
-
 import type { ResyncResult } from "./authTypes";
+import type { AppUser, AppUserMetadata } from "@sessionsbot/shared";
+import type { Router } from "vue-router";
+import router from "@/router/router";
 
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         signedIn: false,
-        userData: <UserMetadata | undefined>{},
-        user: <User | undefined | null>undefined,
-        session: <Session | undefined | null>undefined,
+        user: <AppUser | undefined>undefined,
+        userData: <AppUserMetadata | undefined>undefined,
+        session: <Session | undefined>undefined,
         refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
         redirectAfterAuth: {
             get: () => {
@@ -39,31 +41,29 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async signOut() {
+            // Clear Store State:
             this.signedIn = false;
-            this.userData = {};
+            this.user = undefined;
+            this.userData = undefined;
+            this.session = undefined;
+            this.refreshStatus = 'idle';
+            this.redirectAfterAuth.clear();
+            // Signout w/ Supabase
             const { error } = await supabase.auth.signOut()
             if (error) console.warn('[👤] - FAILED TO SIGN OUT', error);
         },
-
-
-
-        async getUserJWT() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            return session?.access_token
-        },
-
 
         async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult<any>> {
 
             try {
                 // Check/set cooldown
-                if (this.$state.refreshStatus != 'idle') {
+                if (this.refreshStatus != 'idle') {
                     // Already Refreshing - return
                     return {
                         success: false,
                         data: { reason: 'BUSY', message: 'Already refreshing.. please wait!' }
                     }
-                } else this.$state.refreshStatus = 'busy';
+                } else this.refreshStatus = 'busy';
 
                 // Check for recent refresh
                 if (this.user?.app_metadata?.last_synced) {
@@ -72,7 +72,7 @@ export const useAuthStore = defineStore('auth', {
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
                     const remainingWaitMins = Math.floor(15 - minsFromLastSync) >= 1 ? Math.floor(15 - minsFromLastSync) : '1>';
                     if (minsFromLastSync < 15) { // within past 15 mins - not allowed:
-                        this.$state.refreshStatus = 'failed';
+                        this.refreshStatus = 'failed';
                         // COOLDOWN - Return
                         return {
                             success: false,
@@ -98,7 +98,7 @@ export const useAuthStore = defineStore('auth', {
                         refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || 'null'
                     });
                     await supabase.auth.refreshSession();
-                    this.$state.refreshStatus = 'succeeded';
+                    this.refreshStatus = 'succeeded';
                     console.info('✅ - REFRESHED AUTH SESSION!');
 
                     // Return Success
@@ -114,7 +114,7 @@ export const useAuthStore = defineStore('auth', {
             } catch (err: any) {
 
                 // Failed Discord Refresh:
-                this.$state.refreshStatus = 'failed';
+                this.refreshStatus = 'failed';
                 console.warn('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
 
                 // Redirect new sign in after wait:
@@ -133,7 +133,7 @@ export const useAuthStore = defineStore('auth', {
 
             } finally {
                 // Reset refresh busy flag:
-                setTimeout(() => this.$state.refreshStatus = 'idle', 3_000);
+                setTimeout(() => this.refreshStatus = 'idle', 3_000);
             }
         },
     },
@@ -150,9 +150,9 @@ export const watchAuth = async () => {
         const user = session?.user;
         // Update auth store:
         store.signedIn = user ? true : false;
-        store.user = user;
-        store.session = session;
-        store.userData = user?.user_metadata || {};
+        store.user = user as any;
+        store.session = session as any;
+        store.userData = user?.user_metadata as any;
 
         console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
 
@@ -160,13 +160,13 @@ export const watchAuth = async () => {
         const redirectPath = store.redirectAfterAuth.get();
         if (event == 'INITIAL_SESSION' && redirectPath) {
             console.info('INITIAL SESSION with after auth redirect to:', redirectPath);
-            const router = useRouter();
             router.push(redirectPath);
             store.redirectAfterAuth.clear();
         }
 
         // Check for outdated Discord Data:
         if (store.signedIn && user) {
+            // Get last synced w/ Discord Date:
             const lastSyncISO = user.app_metadata?.last_synced;
             const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
             if (lastSyncDate && lastSyncDate.isValid) {

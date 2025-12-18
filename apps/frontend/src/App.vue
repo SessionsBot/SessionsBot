@@ -7,16 +7,12 @@
   import { useNavStore } from './stores/nav';
   import { useAuthStore, watchAuth } from './stores/auth/auth';
 
-  // Auth Store:
-  const auth = useAuthStore();
-  // Nav store:
+  // Services:
   const nav = useNavStore();
-
 
   // // Reactive Header Height:
   const headerRef = ref();
   const headerHeight = computed(() => headerRef.value?.['headerHeight'] ?? 0)
-
 
   // On App Mount:
   onMounted(async () => {

@@ -1,14 +1,16 @@
 import axios from 'axios';
 import core from "../../../../../utils/core.js";
 import { supabase } from '../../../../../utils/database/supabase.js';
-import { AuthError } from './authTypes';
+import { AuthError } from './authErrTypes.js';
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
 
-const BOT_ADMIN_UIDs = process.env["BOT_ADMIN_USER_IDS"]?.split(",") ?? [];
+const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") ?? [];
+
+console.info('BOT ADMINS', BOT_ADMIN_UIDs)
 
 /** Fetch FRESH Discord Data for a user by `accessToken`. */
 export async function fetchUserDiscordData(accessToken: string) {
-    // 4. Get Discord - USER Data:
+    // 1. Get Discord - USER Data:
     const userResponse = await axios.get("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${accessToken}` } });
     const userData: APIUser = userResponse?.data;
     if (!userData) return new AuthError('fetchUser', { source: 'Discord user data fetch from token.' });
@@ -23,7 +25,7 @@ export async function fetchUserDiscordData(accessToken: string) {
     };
     if (!userDataMapped.email) return new AuthError('missingEmail');
 
-    // 5. Get DISCORD - User's Guilds - Map:
+    // 2. Get DISCORD - User's Guilds - Map:
     const botGuilds = await core.botClient.guilds.fetch();
     const botGuildsIds = botGuilds.map((g) => g.id);
     const ADMINISTRATOR = 0x00000008;
@@ -41,27 +43,29 @@ export async function fetchUserDiscordData(accessToken: string) {
         hasSessionsBot: botGuildsIds.includes(g?.id),
     }));
     const manageableGuildsMapped = userGuildsMapped.filter((guild) => {
-        const permissions = BigInt(guild?.["permissions_new"] ?? guild.permissions);
+        const permissions = BigInt(guild.permissions);
         return (permissions & BigInt(ADMINISTRATOR)) !== 0n || (permissions & BigInt(MANAGE_GUILD)) !== 0n;
     });
 
     return { user: userDataMapped, guilds: { all: userGuildsMapped, manageable: manageableGuildsMapped } };
 }
 
+
 /** Updates/Creates an auth user and their data within users and profiles inside DB. */
 export async function updateAuthUser(userData: any, guildsData: any, accessToken: string, refreshToken: string, tokenExp: number) {
     try {
-        // Get User's "APP ROLES":
-        const appRoles = () => {
-            const isBotAdmin = BOT_ADMIN_UIDs.includes(userData?.id);
-            if (isBotAdmin) return ['user', 'admin'];
-            else return ['user'];
+        // Util: Get User's "APP ROLES":
+        const appRoles = (discordId: string) => {
+            return BOT_ADMIN_UIDs.includes(discordId)
+                ? ['user', 'admin']
+                : ['user'];
         };
 
         // Search for Existing User:
         const { data: foundProfile, error: fetchErr } = await supabase.from('profiles').select('*').eq("discord_id", userData?.id).maybeSingle();
         if (fetchErr) throw new AuthError('fetchUser', { fetchErr });
-        if (foundProfile) { // Existing User Found - UPDATE:
+        if (foundProfile) {
+            // - Existing User Found - UPDATE:
             // Update User Data - PROFILE:
             const userUid = foundProfile?.id;
             const { data: updProfile, error: updateProfileErr } = await supabase.from('profiles')
@@ -81,7 +85,7 @@ export async function updateAuthUser(userData: any, guildsData: any, accessToken
             const { data: { user: updUser }, error: updateUserErr } = await supabase.auth.admin.updateUserById(userUid, {
                 email: userData.email,
                 app_metadata: {
-                    roles: appRoles(),
+                    roles: appRoles(userData?.id),
                     last_synced: new Date().toISOString(),
                 },
                 user_metadata: {
@@ -94,13 +98,14 @@ export async function updateAuthUser(userData: any, guildsData: any, accessToken
             // Return User/Profile:
             return { user: updUser, profile: updProfile }
 
-        } else { // NO Existing User Found - CREATE:
+        } else {
+            // + NO Existing User Found - CREATE:
             // Create new - auth USER:
             const { data: { user: newUser }, error: createUserErr } = await supabase.auth.admin.createUser({
                 email: userData.email,
                 email_confirm: true,
                 app_metadata: {
-                    roles: appRoles(),
+                    roles: appRoles(userData?.id),
                     last_synced: new Date().toISOString()
                 },
                 user_metadata: {
