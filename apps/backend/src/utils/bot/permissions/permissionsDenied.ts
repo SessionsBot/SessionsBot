@@ -1,16 +1,10 @@
-import { ButtonStyle, ComponentType, ContainerBuilder, PermissionsString, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
-import core from "../core.js"
+import { ButtonStyle, ComponentType, ContainerBuilder, PermissionFlagsBits, PermissionsString, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import core from "../../core.js"
 // import guildManager from "../database/guildManager.js";
-import logtail from "../logs/logtail.js";
-import sendWithFallback from "./sendWithFallback.js";
+import logtail from "../../logs/logtail.js";
+import sendWithFallback from "../sendWithFallback.js";
 import { Result } from "@sessionsbot/shared";
-
-/** Full array of every permission that must be granted to SessionsBot within guilds/signup channels. */
-const requiredBotPerms: PermissionsString[] = [
-    "CreatePrivateThreads", "CreatePublicThreads", "EmbedLinks", "ManageChannels",
-    "ManageMessages", "ManageThreads", "MentionEveryone", "ReadMessageHistory",
-    "SendMessages", "SendMessagesInThreads", "ViewChannel"
-]
+import { requiredBotPermsStrings } from './required'
 
 export const isBotPermissionError = (err: any) => {
     return [50013, 50001, 50007].includes(err?.code);
@@ -38,7 +32,7 @@ export const sendPermissionAlert = async (guildId: string) => {
         // Check Global Perms:
         const botRole = guild.roles.botRoleFor(core.botClient.user);
         const globalPermsGranted = botRole.permissions.toArray();
-        for (const perm of requiredBotPerms) {
+        for (const perm of requiredBotPermsStrings) {
             if (!globalPermsGranted.includes(perm)) missingGlobalPerms.push(perm)
         }
 
@@ -78,7 +72,7 @@ export const sendPermissionAlert = async (guildId: string) => {
                 components: <any>[
                     new TextDisplayBuilder({ content: `# ❗ I'm Missing Required Permissions!` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `## All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPerms.join(', ')}\` ` }),
+                    new TextDisplayBuilder({ content: `## All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPermsStrings.join(', ')}\` ` }),
                     new SeparatorBuilder(),
                     ...permErrorSources(),
                     new TextDisplayBuilder({ content: `-# [Read Documentation](${core.urls.docs.requiredBotPermissions}) | [Get Support](${core.urls.support.serverInvite}) | [Support Resources](${core.urls.support.onlineResources})` })

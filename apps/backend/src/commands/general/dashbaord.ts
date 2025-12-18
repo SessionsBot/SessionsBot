@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, CommandInteraction, ComponentType, ContainerBuilder, InteractionContextType, MessageFlags, PermissionFlagsBits, PermissionsBitField, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandChannelOption, TextDisplayBuilder } from "discord.js";
 import logtail from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
-import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissionsDenied.js";
+import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 import { defaultFooterText } from "../../utils/bot/messageBuilders/basic.js";
 
 

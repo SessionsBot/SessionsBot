@@ -1,7 +1,7 @@
 import { ButtonStyle, ChannelType, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandChannelOption, TextDisplayBuilder } from "discord.js";
 import logtail from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
-import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissionsDenied.js";
+import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 
 
 export default {

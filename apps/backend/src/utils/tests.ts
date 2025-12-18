@@ -2,7 +2,7 @@ import { ButtonStyle, ComponentType, ContainerBuilder, ActionRowBuilder, ButtonB
 import core from "./core.js";
 import discordLog from "./logs/discordLog.js";
 import { DateTime } from "luxon";
-import { sendPermissionAlert } from "./bot/permissionsDenied.js";
+import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
 
 
 const guildId = process.env["GUILD_ID_DEVELOPMENT"]

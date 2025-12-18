@@ -7,28 +7,28 @@ import { verifyGuildAdmin } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";
 import { ChannelType } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
+import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 
 
 // GET/FETCH - Guild Channels:
-// OPT: body param for "only sendable" channels
 guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
     try {
         // Parse req:
         const guildId = req.params['guildId'];
-        const only_sendable = req.body?.only_sendable
         // Fetch guild channels:
         const guildFetch = await core.botClient.guilds.fetch(guildId);
         const channelFetch = await guildFetch.channels.fetch();
+        const filteredChannels = channelFetch.filter(ch => (ch.type == ChannelType.GuildText || ch.type == ChannelType.GuildCategory))
         // Return result data:
-        let result;
-        if (only_sendable) {
-            result = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory) && ch.isSendable());
-        } else {
-            result = channelFetch.filter((ch) => (ch.type == ChannelType.GuildText) || (ch.type == ChannelType.GuildCategory));
+        let result = {
+            sendable: filteredChannels.filter(ch => {
+                const perms = ch.permissionsFor(guildFetch.members.me)
+                return (ch.isSendable() && perms?.has(requiredBotPermsStrings, true))
+            }),
+            all: filteredChannels
         }
-
         return new reply(res).success(result)
 
     } catch (err) {
