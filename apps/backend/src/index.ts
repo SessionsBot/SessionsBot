@@ -21,6 +21,7 @@ const __dirname = path.dirname(__filename);
 // --- [ File Loader Utility: ] ---
 function getAllFiles(dir: string, ext: string, fileList = []) {
 	const files = fs.readdirSync(dir);
+	if (!files) return [];
 	for (const file of files) {
 		const filePath = path.join(dir, file);
 		if (fs.statSync(filePath).isDirectory()) {
