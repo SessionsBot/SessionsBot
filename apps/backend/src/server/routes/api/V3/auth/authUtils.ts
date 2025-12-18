@@ -3,6 +3,7 @@ import core from "../../../../../utils/core.js";
 import { supabase } from '../../../../../utils/database/supabase.js';
 import { AuthError } from './authErrTypes.js';
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
+import { AppUserGuildData, AppUserGuilds } from '@sessionsbot/shared';
 
 const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") ?? [];
 
@@ -52,7 +53,7 @@ export async function fetchUserDiscordData(accessToken: string) {
 
 
 /** Updates/Creates an auth user and their data within users and profiles inside DB. */
-export async function updateAuthUser(userData: any, guildsData: any, accessToken: string, refreshToken: string, tokenExp: number) {
+export async function updateAuthUser(userData: any, guildsData: AppUserGuilds, accessToken: string, refreshToken: string, tokenExp: number) {
     try {
         // Util: Get User's "APP ROLES":
         const appRoles = (discordId: string) => {
@@ -76,6 +77,7 @@ export async function updateAuthUser(userData: any, guildsData: any, accessToken
                     discord_access_token: accessToken,
                     discord_refresh_token: refreshToken,
                     discord_token_expires_at: new Date(Date.now() + tokenExp * 1000).toISOString(),
+                    manageable_guild_ids: guildsData.manageable.map((g) => g.id)
                 })
                 .eq('id', userUid)
                 .select().single()
@@ -127,6 +129,7 @@ export async function updateAuthUser(userData: any, guildsData: any, accessToken
                     discord_refresh_token: refreshToken,
                     discord_token_expires_at: new Date(Date.now() + tokenExp * 1000).toISOString(),
                     created_at: new Date().toISOString(),
+                    manageable_guild_ids: guildsData.manageable.map((g) => g.id)
                 })
                 .select();
             if (!newProfile || createProfileErr) throw new AuthError('createUser', { newProfile, createProfileErr, userData });

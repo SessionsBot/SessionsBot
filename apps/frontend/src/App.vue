@@ -12,7 +12,7 @@
 
   // // Reactive Header Height:
   const headerRef = ref();
-  const headerHeight = computed(() => headerRef.value?.['headerHeight'] ?? 0)
+  const headerHeight = computed(() => Number(headerRef.value?.['headerHeight']) ?? 0)
 
   // On App Mount:
   onMounted(async () => {
@@ -23,21 +23,20 @@
 
 <template>
 
-  <!-- Site Header -->
-  <SiteHeader ref="headerRef" />
+  <div class="flex flex-col min-h-screen">
+    <SiteHeader ref="headerRef" />
 
-  <span class="flex flex-col flex-1 overflow-x-clip! max-w-screen!"
-    :class="{ 'overflow-y-clip! max-h-screen!': nav.navOpen }">
-    <RouterView v-slot="{ Component }">
-      <Transition name="slide" mode="out-in">
-        <!-- Main Body Component -->
-        <component :style="{ marginTop: headerHeight ? headerHeight + 'px' : '0 px' }"
-          class="max-w-screen! overflow-x-clip min-w-[300px] flex flex-1 flex-wrap" :is="Component" />
-      </Transition>
-    </RouterView>
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <RouterView v-slot="{ Component }">
+        <Transition name="slide" mode="out-in">
+          <component class="flex-1 w-full" :is="Component"
+            :style="{ marginTop: headerHeight ? headerHeight + 'px' : '0px' }" />
+        </Transition>
+      </RouterView>
+    </div>
 
     <SiteFooter />
-  </span>
+  </div>
 
   <!-- Confirm Dialog -->
   <PV_Dialog />

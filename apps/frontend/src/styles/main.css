@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 @import "tailwindcss";
 
@@ -17,6 +17,7 @@
   --color-ring: var(--color-zinc-600);
 
   --font-rubik: "Rubik";
+  --font-Nunito: "Nunito";
   --font-cutLetters: "Protest Guerrilla";
   --default-font-family: var(--font-rubik);
 }
@@ -26,7 +27,7 @@ body {
   background: var(--color-zinc-900);
   /* background: radial-gradient(circle at top, #1e1b4b 0%, #111827 60%); */
   color: white;
-  font-family: var(--font-rubik) !important;
+  font-family: var(--font-Nunito) !important;
   box-sizing: border-box;
   color-scheme: dark;
 }

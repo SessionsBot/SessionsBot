@@ -24,11 +24,19 @@
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {
         root: {
-            background: `var(--color-zinc-500)`,
-            borderColor: `var(--color-zinc-500)`,
+            background: `var(--color-zinc-700)`,
+            borderColor: `var(--color-zinc-700)`,
             focusBorderColor: `var(--color-zinc-400)`,
             hoverBorderColor: `var(--color-zinc-400)`,
-            checkedHoverBorderColor: `var(--color-zinc-400)`,
+            checkedHoverBorderColor: `var(--color-indigo-400)`,
+            checkedBackground: `var(--color-indigo-400)`,
+            checkedBorderColor: `var(--color-indigo-400)`,
+            checkedHoverBackground: `var(--color-indigo-400)`,
+        },
+        icon: {
+            checkedColor: 'black',
+            checkedHoverColor: 'black',
+            color: 'black',
         }
     }
     const saveGuildChoiceEnabled = ref<boolean>();
@@ -56,6 +64,7 @@
 
     onBeforeMount(() => {
         const choice = savedGuildChoice.clear()
+        // ! Before Production: Switch back over
         // if (choice) emits('selectServer', choice)
     });
 
@@ -64,24 +73,25 @@
 
 
 <template>
-    <main class="flex justify-center items-center w-full! ">
+    <main class="flex justify-center items-center w-full! flex-1">
 
         <section
-            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring/25 w-full max-w-150 sm:rounded-sm">
+            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full max-w-150 sm:rounded-sm">
 
             <!-- Ready to Go - Server Selection -->
             <span v-if="guildsWSession?.length" class="w-full flex flex-col items-center justify-center">
-                <p class="font-bold text-2xl p-5 pb-0"> Select a Server: </p>
+                <p class="font-black text-2xl p-5 pb-0"> Select a Server: </p>
                 <p class="p-5 pt-0 opacity-70"> Ready to go, already has Sessions Bot.</p>
-                <div class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-white/5">
+                <div
+                    class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-white/5 border-y-2 border-ring">
                     <!-- Guilds List -->
                     <span
                         class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
 
                         <Button v-for="guild of guildsWSession" @click="selectReadyServer(guild?.id)" unstyled
-                            class="bg-black/40 grow hover:bg-black/20 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
+                            class="bg-black/40 grow hover:bg-black/20 hover:ring-1 ring-indigo-400 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
                             <img :src="guild?.icon" class="size-11 rounded-full ring-2 ring-ring" />
-                            <p> {{ guild.name }} </p>
+                            <p class="font-semibold"> {{ guild.name }} </p>
                         </Button>
                     </span>
 
@@ -123,9 +133,9 @@
                 <!-- Basic - Invite Button -->
                 <a :href="externalUrls.inviteBot">
                     <Button unstyled
-                        class="px-2 mb-5 py-1.25 rounded-sm drop-shadow-md bg-emerald-600 hover:bg-emerald-600/80 transition-all cursor-pointer flex flex-row gap-1 items-center justify-center">
-                        <i class="pi pi-discord" />
-                        <p class="font-medium text-sm relative top-px"> Invite the Bot </p>
+                        class="px-2 mb-5 py-1.25 rounded-sm drop-shadow-md bg-zinc-500/80 hover:bg-indigo-500 transition-all cursor-pointer flex flex-row gap-1.25 items-center justify-center">
+                        <i class="pi pi-discord drop-shadow-sm" />
+                        <p class="font-medium text-sm text-shadow-sm"> Invite the Bot </p>
                     </Button>
                 </a>
                 <!-- All Not Yet Added Manageable Server List -->
