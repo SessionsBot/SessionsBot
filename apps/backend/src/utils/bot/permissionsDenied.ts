@@ -27,16 +27,13 @@ const startCooldown = (guildId: string) => {
 export const sendPermissionAlert = async (guildId: string) => {
     try {
         let missingGlobalPerms: PermissionsString[] = [];
-        let missingSignupChannelPerms: { [signupChannelId: string]: PermissionsString[] } = {};
 
         // Check Cooldown:
         if (canAlert(guildId)) startCooldown(guildId);
         else return Result.failure('COOLDOWN', null);
 
         // Fetch guild:
-        const result = await guildManager.fetchGuildData(guildId)
-        const guildData = result.success ? result.data.docData : null;
-        const guild = result.success ? result.data.guildFetch : null;
+        const guild = await core.botClient.guilds.fetch(guildId)
 
         // Check Global Perms:
         const botRole = guild.roles.botRoleFor(core.botClient.user);
@@ -45,19 +42,8 @@ export const sendPermissionAlert = async (guildId: string) => {
             if (!globalPermsGranted.includes(perm)) missingGlobalPerms.push(perm)
         }
 
-        // Check Each Signup Channel:
-        for (const [channelId, channelData] of Object.entries(guildData.configuration.signupChannels)) {
-            missingSignupChannelPerms[channelId] = [];
-            const channel = await guild.channels.fetch(channelId);
-            const grantedPerms = channel.permissionsFor(guild.members.me).toArray()
-            // Confirm each req perm is granted in this channel:
-            for (const perm of requiredBotPerms) {
-                if (!grantedPerms.includes(perm)) missingSignupChannelPerms[channelId].push(perm)
-            }
-        }
-
         // Send Permissions Alert if Required:
-        const insufficientPermissions = (missingGlobalPerms.length >= 1 || Object.entries(missingSignupChannelPerms).some(chn => chn[1].length >= 1))
+        const insufficientPermissions = (missingGlobalPerms.length >= 1)
 
         if (insufficientPermissions) {
 
@@ -69,8 +55,8 @@ export const sendPermissionAlert = async (guildId: string) => {
                     response.push(new SectionBuilder({
                         components: <any>[
                             new TextDisplayBuilder({
-                                content: `### 🌍  GLOBALLY - *Bot Role*
-                            \n**How to Fix**: \n> You can easily resolve this issue by re-inviting Session Bot to your server with the "Re-Invite" button. This will refresh the permissions granted to the bot within this server. \n**Missing Permissions:** \n> ${missingGlobalPerms.length ? ('- `' + missingGlobalPerms.join('`\n> - `') + '`') : '`- ✔ NONE`'}`
+                                content: `### 🌍  Missing Bot Role Permissions:
+                            \n> ${missingGlobalPerms.length ? ('- `' + missingGlobalPerms.join('`\n> - `') + '`') : '`- ✔ NONE`'} \n**How to Fix**: \n> You can easily resolve this issue by re-inviting Session Bot to your server with the "Re-Invite" button. This will refresh the permissions granted to the bot within this server. \n-# --- or --- \n> You can also manually reassign permissions to the bot's role within your Server Settings > Roles > <@&${botRole.id}> > Permissions > (manually reassign).`
                             })
                         ],
                         accessory: {
@@ -81,30 +67,6 @@ export const sendPermissionAlert = async (guildId: string) => {
                         }
                     }))
                     response.push(new SeparatorBuilder())
-                }
-
-                // SignupChannel Perms Info
-                if (Object.entries(missingSignupChannelPerms).some(chn => chn[1].length >= 1)) {
-                    // For each channel missing perms:
-                    for (const [channelId, missingPerms] of Object.entries(missingSignupChannelPerms)) {
-                        if (missingPerms.length) {
-                            response.push(new SectionBuilder({
-                                components: <any>[
-                                    new TextDisplayBuilder({
-                                        content: `### 📝 Signup Channel - <#${channelId}>
-                                        \n**How to Fix**: \n> You can easily resolve this issue by granting Session Bot **EACH** of its required permissions within <#${channelId}>'s channel settings. Make sure theres no permission overwrites causing issues here! \n**Missing Permissions:** \n> ${missingPerms.length ? ('- `' + missingPerms.join('`\n> - `') + '`') : '- `✔ NONE`'}`
-                                    })
-                                ],
-                                accessory: {
-                                    type: ComponentType.Button,
-                                    style: ButtonStyle.Link,
-                                    url: core.urls.support.serverInvite,
-                                    label: `💬 Get Support`
-                                }
-                            }))
-                            response.push(new SeparatorBuilder())
-                        }
-                    }
                 }
 
                 if (!response.length) response.push(new SeparatorBuilder())
@@ -118,8 +80,6 @@ export const sendPermissionAlert = async (guildId: string) => {
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `## All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPerms.join(', ')}\` ` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `## 🔎 Where Im Missing Permissions:` }),
-                    new SeparatorBuilder(),
                     ...permErrorSources(),
                     new TextDisplayBuilder({ content: `-# [Read Documentation](${core.urls.docs.requiredBotPermissions}) | [Get Support](${core.urls.support.serverInvite}) | [Support Resources](${core.urls.support.onlineResources})` })
                 ]
@@ -127,7 +87,9 @@ export const sendPermissionAlert = async (guildId: string) => {
 
             const sendResult = await sendWithFallback(guildId, msg)
             if (!sendResult.success) throw sendResult;
-            return Result.success({ missingGlobalPerms, missingSignupChannelPerms })
+            return Result.success({ missingGlobalPerms })
+        } else {
+            return Result.failure('No missing permission(s) found!');
         }
 
 

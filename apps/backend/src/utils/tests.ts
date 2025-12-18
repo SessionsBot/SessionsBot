@@ -2,12 +2,10 @@ import { ButtonStyle, ComponentType, ContainerBuilder, ActionRowBuilder, ButtonB
 import core from "./core.js";
 import discordLog from "./logs/discordLog.js";
 import { DateTime } from "luxon";
+import { sendPermissionAlert } from "./bot/permissionsDenied.js";
 
 
 const guildId = process.env["GUILD_ID_DEVELOPMENT"]
-const channelId = '1413653266931122186';
-
-const testSignupChannelId = '1430465764619714590';
 
 
 export default {
@@ -18,9 +16,8 @@ export default {
                 console.info('--- \n[i] Running Development Tests!');
                 // Test here..\
 
-                // const fetchGuild = await guildManager.fetchGuildData(guildId)
-                // if(!fetchGuild.success) throw 'Failed to fetch guild for test..';
-                // const {docData, guildFetch:guild} = fetchGuild.data;
+                // const result = await sendPermissionAlert(guildId);
+                // console.info(result)
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

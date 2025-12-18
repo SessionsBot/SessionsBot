@@ -5,17 +5,17 @@ export class Result<ty> {
         return custom
     }
 
-    static success<d, e>(data: d, extra?: e) {
+    static success<d, e>(data: d, extra?: e | undefined) {
         return {
-            success: true,
+            success: true as true,
             data,
             extra
         }
     }
 
-    static failure<err, ext>(error: err, extra?: ext) {
+    static failure<err, ext>(error: err, extra?: ext | undefined) {
         return {
-            success: false,
+            success: false as false,
             error,
             extra
         }

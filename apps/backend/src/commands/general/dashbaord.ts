@@ -19,17 +19,23 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 💻 Visit your Bot Dashboard \n Click on the button below to access your bots main dashboard page. This is where you can create and configure your servers sessions/events!` }),
+                    new TextDisplayBuilder({ content: `### 💻 Visit your Bot Dashboard \nClick on the button below to access your bots main dashboard page. This is where you can create and configure your servers sessions/events!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
                                 url: `${core.urls.mainSite}/dashboard`,
-                                label: 'Visit Dashboard'
+                                label: '⚙️ Visit Dashboard'
+                            }),
+                            new ButtonBuilder({
+                                style: ButtonStyle.Link,
+                                url: `${core.urls.docs.root}`,
+                                label: '📖 Visit Documentation'
                             })
                         ]
                     }),
+                    new SeparatorBuilder(),
                     defaultFooterText({ showHelpLink: true })
                 ]
             });
