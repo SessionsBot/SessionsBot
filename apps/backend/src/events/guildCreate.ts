@@ -43,5 +43,3 @@ export default {
         }
     }
 }
-
-console.debug('I need a welcome msg!')

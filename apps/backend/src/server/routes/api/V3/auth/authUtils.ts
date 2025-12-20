@@ -7,8 +7,6 @@ import { AppUserGuildData, AppUserGuilds } from '@sessionsbot/shared';
 
 const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") ?? [];
 
-console.info('BOT ADMINS', BOT_ADMIN_UIDs)
-
 /** Fetch FRESH Discord Data for a user by `accessToken`. */
 export async function fetchUserDiscordData(accessToken: string) {
     // 1. Get Discord - USER Data:

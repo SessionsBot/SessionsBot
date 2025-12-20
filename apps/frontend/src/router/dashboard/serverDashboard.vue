@@ -8,6 +8,8 @@
     import SessionsTab from './tabs/sessions.vue';
     import CalendarTab from './tabs/calendar.vue'
 
+    import SessionForm from './components/sessionForm/sesForm.vue'
+
 
     // Define Incoming Props:
     const props = defineProps<{
@@ -45,6 +47,11 @@
     function openTab(tab: DashboardTabName) { currentTab.value = tab };
 
 
+    // SessionForm Panel Visibility:
+    const sessionsFormVisible = ref(false);
+    provide('sessionsFormVisible', sessionsFormVisible)
+
+
     // Before Mount:
     onBeforeMount(async () => {
         // Load Channels:
@@ -55,6 +62,7 @@
 
 
 <template>
+    <!-- Main Page Content -->
     <div class="flex flex-row flex-1 w-full h-full" :class="{ 'flex-col!': isSmallScreen }">
 
         <nav
@@ -78,6 +86,9 @@
             <CalendarTab v-if="currentTab == 'Calendar'" />
         </div>
     </div>
+
+    <!-- Dialogs/Forms -->
+    <SessionForm :sessions-form-visible="sessionsFormVisible" :guildId="selectedGuildId" :guildChannels />
 
 </template>
 

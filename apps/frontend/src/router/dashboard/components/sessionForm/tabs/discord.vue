@@ -3,6 +3,7 @@
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import InputTitle from '../labels/inputTitle.vue';
     import InputErrors from '../labels/inputErrors.vue';
+    import type { AppUserGuilds } from '@sessionsbot/shared';
 
 
     // Incoming Props/Models:
@@ -14,7 +15,7 @@
     const { invalidFields, validateField, validateFields } = props;
 
     // Guild Channels - Model:
-    const guildChannels = defineModel<any[]>('guildChannels');
+    const guildChannels = defineModel<{ all: any, sendable: any }>('guildChannels');
 
     // Form Values:
     const channelId = defineModel<string>('channelId');
@@ -26,9 +27,9 @@
     const selectChannelOpts = computed(() => {
         if (!guildChannels || typeof guildChannels != typeof []) return [];
         let channelCategories: any[] = [];
-        guildChannels.value?.forEach((val) => {
+        guildChannels.value?.all.forEach((val: any) => {
             if (val?.type == 4) {
-                const catChannels = guildChannels.value?.filter((ch) => ch.parentId == val.id).sort((a, b) => a.rawPosition - b.rawPosition);
+                const catChannels = guildChannels.value?.sendable?.filter((ch: any) => ch.parentId == val.id).sort((a: any, b: any) => a.rawPosition - b.rawPosition);
                 if (catChannels?.length) {
                     channelCategories.push({ name: val?.name, items: catChannels })
                 }
@@ -43,7 +44,6 @@
         postDay.value = opt;
         validateFields(['postDay', 'postTime']);
     }
-
 
 </script>
 

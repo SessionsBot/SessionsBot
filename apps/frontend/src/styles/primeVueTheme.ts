@@ -231,7 +231,7 @@ const primePT: PrimeVuePTOptions = {
         searchResultMessage: 'text-white!',
     },
     dialog: {
-        root: 'bg-zinc-800! border-0!',
+        root: 'bg-zinc-800! border-0! text-white!',
     }
 
 }

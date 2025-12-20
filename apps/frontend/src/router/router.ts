@@ -5,8 +5,6 @@ import NotFound from "./notFound.vue";
 import MyAccount from "./account/myAccount.vue";
 import PrivacyPolicy from "./privacyPolicy.vue";
 import TermsAndConditions from "./termsAndConditions.vue";
-import Test_Form1 from "./tests/form1/testing.vue";
-import Test_Form2 from "./tests/form2/sesForm.vue";
 import Dashboard from "./dashboard/dashboard.vue";
 
 const router = createRouter({
@@ -53,16 +51,7 @@ const router = createRouter({
     },
 
     // Extra Routes:
-    {
-      name: "Testing Form 1",
-      path: "/test/1",
-      component: Test_Form1,
-    },
-    {
-      name: "Testing Form 2",
-      path: "/test/2",
-      component: Test_Form2,
-    },
+
 
     // External Links:
     {

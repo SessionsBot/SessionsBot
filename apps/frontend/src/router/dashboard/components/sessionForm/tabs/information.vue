@@ -81,7 +81,8 @@
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('url') }">
             <InputTitle fieldTitle="Url" :icon="LinkIcon" :show-help="{ path: '/' }" />
-            <inputText name="url" fluid v-model="url" @focusout="validateField('url')"
+            <inputText name="url" fluid v-model="url"
+                @focusin="() => { if (!url || url.trim() == '') { url = `https://` } }" @focusout="validateField('url')"
                 :invalid="invalidFields.has('url')" />
             <InputErrors fieldName="url" :invalidFields />
         </div>

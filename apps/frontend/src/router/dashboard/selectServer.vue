@@ -76,7 +76,7 @@
     <main class="flex justify-center items-center w-full! flex-1">
 
         <section
-            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full max-w-150 sm:rounded-sm">
+            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full mx-10 max-w-150 rounded-sm">
 
             <!-- Ready to Go - Server Selection -->
             <span v-if="guildsWSession?.length" class="w-full flex flex-col items-center justify-center">
@@ -109,7 +109,7 @@
 
                     <!-- Resync Info -->
                     <span class="flex w-full">
-                        <p class="opacity-70 text-xs text-center w-full">
+                        <p class="opacity-70 mx-5 text-xs text-center w-full">
                             Not seeing the server you're looking for?
                             Refresh your data on your
                             <span class="text-sky-500 cursor-pointer hover:underline" @click="router.push('/account')">

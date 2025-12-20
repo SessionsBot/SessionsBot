@@ -5,27 +5,29 @@
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
     import DiscordTab from './tabs/discord.vue';
-    import { KeepAlive, Transition, type Component } from 'vue';
-
+    import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import axios, { type AxiosResponse } from 'axios';
-    import { APIResponse, type API_SessionTemplateBodyInterface, type APIResponseValue, type Database } from '@sessionsbot/shared';
+    import { type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
-    import { RRule } from 'rrule';
-    import { title } from 'process';
     import { DateTime } from 'luxon';
 
     // Services:
-    const confirmService = useConfirm()
-    const router = useRouter()
-    const auth = useAuthStore()
+    const confirmService = useConfirm();
+    const auth = useAuthStore();
 
-    // Guild Id & Data:
-    // ! Convert to Model
-    const guildId = ref<string>('1379160686629880028');
-    // ! Convert to Model
-    const guildChannels = ref();
+    // Incoming Props / Models:
+    const sessionsFormVisible = inject<Ref<boolean>>('sessionsFormVisible')
+    const guildId = defineModel<string>('guildId');
+    const guildChannels = defineModel<any>('guildChannels');
+
+    // Watch -> Form Opening:
+    watch(() => sessionsFormVisible?.value, (v) => {
+        if (v) {
+            // Is opening:
+            tabSelected.value = 'information'
+        }
+    })
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -46,7 +48,7 @@
             return tabSelected.value = 'rsvps';
         else if (tabSelected.value == 'discord')
             return tabSelected.value = 'schedule';
-    }
+    };
 
     // Form Abort Confirm Dialog Ref:
     const abortForm = () => {
@@ -54,9 +56,10 @@
             header: 'Are you sure?',
             message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
             accept: () => {
-                router.push('/');
+                //@ts-expect-error
+                sessionsFormVisible.value = false
             },
-        })
+        });
     };
 
     /** ACTION: Form Mode ("new" or "edit") */
@@ -143,7 +146,7 @@
     const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'url', 'startDate', 'endDate']
     const discordFields: NewSessions_FieldNames[] = ['channelId', 'postTime', 'postDay', 'nativeEvents']
     watch(() => invalidFields.value, (v) => {
-        const keys = new Set(v?.keys())
+        const keys = new Set(v?.keys());
         // Info Tab:
         if (infoFields.some((fieldName) => keys.has(fieldName))) {
             if (!invalidTabs.value.has('information')) {
@@ -193,10 +196,10 @@
         // Apply Options:
         if (!formOptions.value.rsvpsEnabled) {
             formValues.value.rsvps = null;
-        }
+        };
         if (!formOptions.value.recurrenceEnabled) {
             formValues.value.recurrence = null;
-        }
+        };
 
         // Validate Form:
         const result = formSchema.safeParse(formValues.value);
@@ -282,41 +285,19 @@
                 }
             };
 
-            console.info('REQ BODY DATA', bodyData);
-            const r = await API.post(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-            console.info(`REQ Response`, r.data);
+            const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+            if (r.status < 300) {
+                // Success!
+                console.log('Session Created', r.data.data)
+                if (sessionsFormVisible) {
+                    // Close form
+                    sessionsFormVisible.value = false;
+                }
+            } else { console.warn('Request Failed!', r) }
         }
 
         console.log('Form Submitted', formValues.value);
     }
-
-    /** Fetch Guild Channels - Fn
-     * - Fires: On page/form mount
-     */
-    async function getGuildChannels() {
-        const channelRes = await API.get<APIResponseValue>(`/guilds/${guildId.value}/channels`, {
-            headers: { Authorization: `Bearer ${auth.session?.access_token}` }
-        });
-        const channelData = channelRes.data.success ? channelRes.data.data : undefined;
-        if (channelData) {
-            console.info('FOUND CHANNELS', channelData);
-            guildChannels.value = channelData;
-        } else {
-            console.error('CHANNELS NOT FOUND!', channelRes);
-        }
-
-    }
-
-    /** On Page/Form Mount */
-    onMounted(async () => {
-        // Fetch guild's channels:
-        if (auth.signedIn) {
-            await getGuildChannels();
-        } else {
-            console.warn(`You're not signed in! - Cannot fetch channels! - Trying again`);
-            setTimeout(() => getGuildChannels(), 3_000)
-        }
-    })
 
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
@@ -327,14 +308,14 @@
 
 
 <template>
-    <main class="justify-center items-center">
+    <!-- Form Background -->
+    <Dialog v-bind:visible="sessionsFormVisible" modal class="max-w-[90%]! max-h-[90%]!">
 
-        <!-- Form Background -->
-        <div class=" p-15 gap-2 w-full flex flex-wrap justify-center items-center content-center">
 
+        <template #container="{ closeCallback }">
             <!-- Form Card -->
             <div
-                class="bg-zinc-900 ring-ring ring-2 rounded-md gap-2 w-full max-w-180 flex flex-col  justify-center items-center content-center">
+                class="bg-zinc-900 ring-ring ring-2 rounded-md gap-2 w-full max-w-130 flex flex-nowrap flex-col overflow-auto">
 
                 <!-- Form Header/Tab Bar -->
                 <div class="flex flex-col items-center justify-start w-full">
@@ -361,7 +342,7 @@
 
                     <!-- Tab Bar -->
                     <section
-                        class="flex flex-wrap bg-zinc-800/20 justify-center px-5 py-6 items-center content-center gap-1.75 p-2 w-full bg-black/05  ring-2 ring-ring">
+                        class="flex flex-wrap bg-zinc-800/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full bg-black/05  ring-2 ring-ring">
                         <!-- Information Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'information'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'information', 'formTabBtn-invalid': invalidTabs.has('information') }">
@@ -393,7 +374,7 @@
 
                 <!-- Form Page/Tab View -->
                 <section
-                    class="flex px-6 w-full overflow-clip flex-1 justify-center items-center content-center flex-wrap">
+                    class="flex flex-nowrap flex-col grow px-6 w-full overflow-x-clip justify-center items-center content-center">
 
                     <Transition name="slide" mode="out-in" :duration="0.5">
                         <!-- FORM TABS -->
@@ -444,9 +425,9 @@
 
                         <Transition name="slide" mode="out-in">
                             <span v-if="invalidFields.size >= 1"
-                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-500/70 drop-shadow-sm rounded-md">
+                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-400/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
-                                <p class="text-xs font-medium"> Fix invalid fields! </p>
+                                <p class="text-xs font-bold"> Fix invalid fields! </p>
                             </span>
                         </Transition>
 
@@ -484,19 +465,20 @@
                 </div>
 
             </div>
+        </template>
 
-        </div>
 
-    </main>
+
+    </Dialog>
 </template>
 
 
 <style scoped>
 
-    @reference '../../../styles/main.css';
+    @reference '@/styles/main.css';
 
     .formTabBtn {
-        @apply bg-zinc-600 flex-1 !h-full gap-px border-ring border-2 p-1.5 px-20 font-semibold rounded-md flex flex-col justify-center items-center content-center cursor-pointer transition-colors
+        @apply bg-zinc-600 flex-1 gap-px border-ring border-2 p-1.5 px-10 font-semibold rounded-md flex flex-col justify-center items-center content-center cursor-pointer transition-colors
     }
 
     .formTabBtn:hover {
