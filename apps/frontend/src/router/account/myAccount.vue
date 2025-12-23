@@ -41,12 +41,12 @@
 
             <!-- Main Account Panel -->
             <div v-if="auth.signedIn"
-                class="flex flex-col w-[80%] max-w-170 bg-zinc-400/20 justify-center items-center content-center ring-2 ring-zinc-400 m-5 rounded-md overflow-clip">
+                class="flex flex-col w-[80%] max-w-170 bg-zinc-700 justify-center items-center content-center ring-2 ring-ring m-5 rounded-md overflow-clip">
                 <!-- Panel Header -->
                 <header
-                    class="bg-white/2.5 gap-1.5 p-3 px-2 w-full flex flex-row flex-wrap justify-start items-center content-center border-b-2 border-zinc-400">
+                    class="bg-black/50 gap-1.5 p-3 px-2 w-full flex flex-row flex-wrap justify-start items-center content-center border-b-2 border-ring">
                     <UserCircle2Icon />
-                    <p class="font-medium">My Account</p>
+                    <p class="font-bold">My Account</p>
                 </header>
                 <!-- Main Section -->
                 <section class="flex flex-col sm:gap-0 sm:flex-row justify-evenly items-center bg-black/40 p-2 w-full">
@@ -71,7 +71,7 @@
                             <Skeleton v-if="!avatarLoaded"
                                 class="sm:size-40 !size-35 rounded-md ring-3 ring-zinc-400" />
                             <img @load="(e) => avatarLoaded = true" :src="userData?.avatar"
-                                class="sm:size-40 size-35 rounded-md ring-3 ring-zinc-400"
+                                class="sm:size-40 size-35 rounded-md ring-3 shadow-md ring-zinc-400"
                                 :class="{ 'hidden': !avatarLoaded }" />
 
                         </span>
@@ -102,7 +102,7 @@
                 </section>
 
                 <footer v-if="user?.app_metadata.roles.includes('admin')"
-                    class="bg-white/0.5 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-zinc-400">
+                    class="bg-black/45 text-white/45 text-[11px] text-center gap-1 p-1.5 px-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-t-2 border-ring">
                     <p class="w-full sm:w-fit">
                         <b>UID:</b> {{ user?.id }}
                     </p>
@@ -130,6 +130,6 @@
     @reference '../../styles/main.css';
 
     .userDataField {
-        @apply ml-2.5 mb-0.5 opacity-70 font-medium text-sm bg-zinc-400/40 rounded-md p-0.5 px-1;
+        @apply ml-2.5 mb-0.5 opacity-70 font-medium text-sm bg-zinc-400/30 rounded-md p-0.5 px-1;
     }
 </style>

@@ -46,29 +46,29 @@
 
 
 <template>
-    <div class="text-xs mt-2 flex flex-row flex-wrap items-center content-center justify-center">
+    <div class="text-xs mt-2 flex flex-row flex-wrap items-center content-center justify-center shadow-md">
         <!-- Title -->
         <span
-            class="flex bg-indigo-500/65 border-2 border-r borderColor rounded-l-md flex-row gap-1 items-center p-1 h-full">
+            class="flex bg-indigo-500/65 h-6.5 border-1 border-r borderColor rounded-l-md flex-row gap-1 items-center p-1">
             <i class="pi pi-discord drop-shadow-sm drop-shadow-black/60  scale-90 ml-1 mr-0.5" />
             <p class="mr-0.5 drop-shadow-sm drop-shadow-black/60 font-bold "> Last Synced</p>
         </span>
         <!-- SIDE: Last Sync & Refresh Btn -->
-        <div class="flex flex-row gap-0 h-7 flex-nowrap rounded-r-md overflow-clip transition-all" :class="{
+        <div class="flex flex-row h-6.5 gap-0 flex-nowrap rounded-r-md overflow-clip transition-all" :class="{
             'bg-zinc-600/60! hover:bg-zinc-600/60! active:bg-zinc-600/60! opacity-55': (auth.$state.refreshStatus == 'busy'),
             'bg-red-700/70! hover:bg-red-700/70! active:bg-red-700/70!': (auth.$state.refreshStatus == 'failed'),
             'bg-green-700/70! hover:bg-green-700/70! active:bg-green-700/70!': (auth.$state.refreshStatus == 'succeeded'),
         }">
             <!-- Last Synced Time Elapsed -->
             <span
-                class="bg-zinc-500/50 italic font-bold border-2 border-x-1 borderColor drop-shadow-sm drop-shadow-black/60 p-1 h-full flex items-center">
+                class="bg-zinc-500/50 italic font-bold border-1 border-x-0 borderColor drop-shadow-sm drop-shadow-black/60 p-1 h-full flex items-center">
 
                 {{ DateTime.fromISO(user?.app_metadata?.last_synced as string)?.toRelative() }}
 
             </span>
             <!-- Refresh Button -->
             <Button unstyled title="Refresh Account Data"
-                class="px-1 border-2 border-l borderColor rounded-r-md flex items-center justify-center cursor-pointer bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 disabled:cursor-not-allowed h-full transition-all"
+                class="px-1 border-1 border-l borderColor rounded-r-md flex items-center justify-center cursor-pointer overflow-clip bg-zinc-500/50 hover:bg-zinc-600/60 active:bg-zinc-500/70 disabled:cursor-not-allowed h-full transition-all"
                 :disabled="auth.$state.refreshStatus != 'idle'" @click="async () => attemptDataResync()">
                 <RefreshCcwIcon class="size-4" :class="{ 'animate-spin': (auth.$state.refreshStatus == 'busy'), }" />
             </Button>
@@ -81,7 +81,7 @@
     @reference "../../styles/main.css";
 
     .borderColor {
-        @apply border-ring
+        @apply border-zinc-500
     }
 
 </style>

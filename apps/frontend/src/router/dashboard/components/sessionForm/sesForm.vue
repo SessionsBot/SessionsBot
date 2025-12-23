@@ -11,23 +11,16 @@
     import { type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
+    import { getTimeZones } from '@vvo/tzdb';
 
     // Services:
-    const confirmService = useConfirm();
-    const auth = useAuthStore();
+    const confirmService = useConfirm()
+    const auth = useAuthStore()
 
     // Incoming Props / Models:
     const sessionsFormVisible = inject<Ref<boolean>>('sessionsFormVisible')
     const guildId = defineModel<string>('guildId');
     const guildChannels = defineModel<any>('guildChannels');
-
-    // Watch -> Form Opening:
-    watch(() => sessionsFormVisible?.value, (v) => {
-        if (v) {
-            // Is opening:
-            tabSelected.value = 'information'
-        }
-    })
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -40,7 +33,7 @@
             return tabSelected.value = 'schedule';
         else if (tabSelected.value == 'schedule')
             return tabSelected.value = 'discord';
-    }
+    };
     function backTab() {
         if (tabSelected.value == 'rsvps')
             return tabSelected.value = 'information';
@@ -51,19 +44,22 @@
     };
 
     // Form Abort Confirm Dialog Ref:
-    const abortForm = () => {
+    function abortForm() {
         confirmService.require({
             header: 'Are you sure?',
             message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
             accept: () => {
-                //@ts-expect-error
-                sessionsFormVisible.value = false
-            },
+                resetFrom();
+                if (sessionsFormVisible) {
+                    sessionsFormVisible.value = false
+                };
+            }
         });
     };
 
     /** ACTION: Form Mode ("new" or "edit") */
     const formAction = ref<'new' | 'edit'>('new');
+    const editingId = ref<string>();
 
     /** Form Values - (v-modeled) */
     const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
@@ -138,13 +134,12 @@
 
     })
 
-
     /** Form's Invalid Fields */
     const invalidFields = ref<Map<NewSessions_FieldNames, string[]>>(new Map())
 
     /** WATCH: Invalid Fields -> Invalid Tabs */
-    const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'url', 'startDate', 'endDate']
-    const discordFields: NewSessions_FieldNames[] = ['channelId', 'postTime', 'postDay', 'nativeEvents']
+    const infoFields: NewSessions_FieldNames[] = ['title', 'description', 'url', 'startDate', 'endDate', 'timeZone']
+    const discordFields: NewSessions_FieldNames[] = ['channelId', 'postTime', 'postDay', 'postInThread', 'nativeEvents']
     watch(() => invalidFields.value, (v) => {
         const keys = new Set(v?.keys());
         // Info Tab:
@@ -188,6 +183,116 @@
         for (const fieldName of fields) {
             validateField(fieldName);
         }
+    }
+
+
+    /** Resets the form to all defaults/no errors. */
+    function resetFrom() {
+        // Reset Invalid Fields
+        invalidFields.value.clear();
+        // Reset Form Values
+        formValues.value = {
+            title: '',
+            description: '',
+            url: '',
+            startDate: null,
+            endDate: null as Date | null,
+            timeZone: '',
+            rsvps: new Map(),
+            recurrence: null as any,
+            channelId: '',
+            postTime: null,
+            postDay: null,
+            postInThread: true,
+            nativeEvents: false,
+        }
+        // Reset Form Options:
+        formOptions.value = {
+            recurrenceEnabled: false,
+            rsvpsEnabled: false
+        }
+
+        // Reset Selected Tab:
+        tabSelected.value = 'information';
+        // Reset Edit Data:
+        editingId.value = undefined;
+        formAction.value = 'new';
+    }
+
+    /** Starts an existing session template edit */
+    function startNewEdit(data: API_SessionTemplateBodyInterface) {
+        // Assign Editing Id:
+        if (!data.id) return console.warn('Invalid Session Template Id - For Edit', data?.id);
+        editingId.value = data.id;
+
+        // Set Mode:
+        formAction.value = 'edit';
+
+        // Prepare API Data for Form:
+        // RSVP Util: JSON -> Maped Object:
+        function mapRsvps(rsvpJSON: any) {
+            const parsed = JSON.parse(String(rsvpJSON));
+            const rsvpMap = new Map<string, {
+                name: string;
+                emoji: string | null;
+                capacity: number;
+            }>(Object.entries(parsed));
+            return rsvpMap;
+        }
+        // Date Util: UTC to Time in Local:
+        function isoTzToLocalDate(isoString: string, zone: string, addMs?: number) {
+            let iso = DateTime.fromISO(isoString, { zone });
+            if (addMs) {
+                iso = iso.plus({ milliseconds: addMs });
+            }
+            const local = iso.toJSDate();
+            return local;
+        };
+        // Date Util: Get Post Day:
+        function determinePostDay(startDateIso: string, postBeforeMs: number, zone: string) {
+            const startDate = DateTime.fromISO(startDateIso, { zone })
+            const postDate = DateTime.fromISO(startDateIso, { zone }).plus({ milliseconds: postBeforeMs })
+            const difHours = Math.abs(startDate.diff(postDate, 'hours').hours)
+            return difHours >= 24 ? 'Day before' : 'Day of';
+        }
+        // Zone Util: Name -> Zone Selected Obj:
+        function getZoneSelected(zoneName: string) {
+            const tzs = getTimeZones({ includeUtc: true });
+            const selected = tzs.find(z => z.name == zoneName)
+            if (selected) {
+                const offsetHrs = (selected.rawOffsetInMinutes / 60)
+                return {
+                    name: `${selected.alternativeName} - ${selected.mainCities[0] || ''} (${offsetHrs}:00)`,
+                    value: selected?.name
+                }
+            } else return null
+        }
+
+        // Set Form Data:
+        formValues.value = {
+            title: data.title,
+            description: data.description ?? '',
+            url: data.url ?? null,
+            startDate: isoTzToLocalDate(data.starts_at_utc, data.time_zone),
+            endDate: data.duration_ms ? isoTzToLocalDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
+            timeZone: getZoneSelected(data.time_zone),
+            rsvps: data?.rsvps ? mapRsvps(data.rsvps) : null,
+            recurrence: data.rrule,
+            channelId: data.channel_id,
+            postTime: isoTzToLocalDate(data.starts_at_utc, data.time_zone, data.post_before_ms),
+            postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
+            postInThread: data.post_in_thread,
+            nativeEvents: data.native_events
+        }
+        // Set Form Options:
+        if (data.rsvps) formOptions.value.rsvpsEnabled = true;
+        if (data.rrule) formOptions.value.recurrenceEnabled = true;
+
+        // Open Form:
+        if (sessionsFormVisible) {
+            sessionsFormVisible.value = true;
+        }
+
     }
 
 
@@ -285,15 +390,36 @@
                 }
             };
 
-            const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-            if (r.status < 300) {
-                // Success!
-                console.log('Session Created', r.data.data)
-                if (sessionsFormVisible) {
-                    // Close form
-                    sessionsFormVisible.value = false;
-                }
-            } else { console.warn('Request Failed!', r) }
+            if (formAction.value == 'new') {
+                // Create New Session - Send Request
+                const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                if (r.status < 300) {
+                    // Success!
+                    console.log('Session Created', r.data.data)
+                    // Reset Form
+                    resetFrom();
+                    // Close Form
+                    if (sessionsFormVisible) {
+                        sessionsFormVisible.value = false;
+                    }
+                } else { console.warn('Request Failed!', r) }
+            } else if (formAction.value == 'edit') {
+                // Edit Existing Session - Send Request
+                bodyData.data.id = editingId.value;
+                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                if (r.status < 300) {
+                    // Success!
+                    console.log('Session Edited', r.data.data)
+                    // Reset Form
+                    resetFrom();
+                    // Close Form
+                    if (sessionsFormVisible) {
+                        sessionsFormVisible.value = false;
+                    }
+                } else { console.warn('Request Failed!', r) }
+            }
+
+
         }
 
         console.log('Form Submitted', formValues.value);
@@ -302,6 +428,10 @@
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
     export type NewSessions_FieldNames = keyof NewSession_ValueTypes
+
+    // Define Exposed:
+    defineExpose({ startNewEdit })
+
 
 </script>
 
@@ -330,7 +460,7 @@
                         <!-- Edit Session - Title -->
                         <span v-if="formAction == 'edit'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarCogIcon />
-                            <p class="font-medium text-lg"> Edit Session </p>
+                            <p class="font-medium text-lg"> Edit Schedule </p>
                         </span>
 
                         <!-- Abort/Delete Session - Button -->

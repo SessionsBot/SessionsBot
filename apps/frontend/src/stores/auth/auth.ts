@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult<any>> {
-            const refreshCooldownInMins = 15;
+            const refreshCooldownInMins = 2;
             try {
                 // Check/set cooldown
                 if (this.refreshStatus != 'idle') {
@@ -70,13 +70,13 @@ export const useAuthStore = defineStore('auth', {
                     // Get last sync date:
                     const lastSyncDate = DateTime.fromISO(this.user.app_metadata?.last_synced);
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
-                    const remainingWaitMins = Math.floor(refreshCooldownInMins - minsFromLastSync) >= 1 ? Math.floor(refreshCooldownInMins - minsFromLastSync) : '1>';
+                    const remainingWaitMins = Math.floor(refreshCooldownInMins - minsFromLastSync) >= 1 ? Math.floor(refreshCooldownInMins - minsFromLastSync) + ' mins' : Math.floor((refreshCooldownInMins - minsFromLastSync) * 60) + ' secs';
                     if (minsFromLastSync < refreshCooldownInMins) { // within past 15 mins - not allowed:
                         this.refreshStatus = 'failed';
                         // COOLDOWN - Return
                         return {
                             success: false,
-                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least ${refreshCooldownInMins} minuets before each refresh. (Remaining: ${remainingWaitMins} mins)` }
+                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least ${refreshCooldownInMins} minuets before each refresh. (Remaining: ${remainingWaitMins})` }
                         };
                     };
                 } else throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };

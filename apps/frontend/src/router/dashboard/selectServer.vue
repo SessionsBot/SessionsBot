@@ -73,7 +73,7 @@
 
 
 <template>
-    <main class="flex justify-center items-center w-full! flex-1">
+    <div class="flex justify-center items-center w-full! flex-1">
 
         <section
             class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full mx-10 max-w-150 rounded-sm">
@@ -89,7 +89,7 @@
                         class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
 
                         <Button v-for="guild of guildsWSession" @click="selectReadyServer(guild?.id)" unstyled
-                            class="bg-black/40 grow hover:bg-black/20 hover:ring-1 ring-indigo-400 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
+                            class="bg-black/40 grow hover:bg-black/20 hover:ring-[2px] ring-indigo-400/80 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
                             <img :src="guild?.icon" class="size-11 rounded-full ring-2 ring-ring" />
                             <p class="font-semibold"> {{ guild.name }} </p>
                         </Button>
@@ -124,7 +124,7 @@
 
 
             <!-- Invite-able - Guilds Selection Area -->
-            <span v-if="guildsWOSession?.length" class="w-full flex flex-col items-center justify-center">
+            <span class="w-full flex flex-col items-center justify-center">
                 <!-- Subheading - Invite Bot -->
                 <p class="font-bold text-lg p-4 pb-0" :class="{ 'text-3xl!': !guildsWSession?.length }">
                     {{ guildsWSession?.length ? 'Or' : '' }} Invite Sessions Bot
@@ -139,7 +139,7 @@
                     </Button>
                 </a>
                 <!-- All Not Yet Added Manageable Server List -->
-                <div hidden
+                <div v-if="guildsWOSession" hidden
                     class="flex flex-wrap flex-row gap-2 justify-center items-center w-full bg-white/5 p-4 max-h-50 overflow-auto">
 
                     <Button hidden v-for="guild of guildsWOSession.slice(0, maxWOSessionsLength)" unstyled
@@ -177,7 +177,7 @@
 
         </section>
 
-    </main>
+    </div>
 </template>
 
 

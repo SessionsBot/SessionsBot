@@ -3,7 +3,7 @@
     import z, { number, prettifyError, safeParse, treeifyError, type infer } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { ToggleSwitch } from 'primevue';
-    import { Frequency, RRule, ALL_WEEKDAYS, Weekday } from 'rrule'
+    import { Frequency, RRule, ALL_WEEKDAYS, Weekday, type WeekdayStr } from 'rrule'
     import InputTitle from '../labels/inputTitle.vue';
 
     // Incoming Props/Models:
@@ -26,14 +26,12 @@
     const RRuleText = computed(() => {
         if (!recurrence.value) return 'Add more info to fields!';
         const rule = RRule.fromString(recurrence.value);
-        if (rule.isFullyConvertibleToText()) {
-            return rule.toText();
-        } else return 'Not Text-able?'
+        return rule?.toText()
     })
 
     // Local Form Schema:
     const localFormSchema = z.object({
-        frequency: z.union([z.enum(['Daily', 'Weekly', 'Monthly', 'Yearly'], { error: '' }), z.enum(Frequency, 'Please select a valid frequency.')]),
+        frequency: z.enum(Frequency),
         interval: z.number().min(1, "Interval must be greater than or equal to 1."),
         weekdays: z.array(z.any()).optional().nullish().default([]),
         endRepeatDate: z.nullish(z.date()),
@@ -66,7 +64,7 @@
     const validateLocalField = (name: LocalForm_FieldName, value: any) => localForm.value.validateField(name, value);
 
     // Local Form - TYPES:
-    type LocalForm_ValueType = z.infer<typeof localFormSchema> & { frequency: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly' }
+    type LocalForm_ValueType = z.infer<typeof localFormSchema>
     type LocalForm_FieldName = keyof LocalForm_ValueType;
 
 
@@ -95,7 +93,6 @@
             : weekdaysSelected.value.add(weekday);
 
         const r = Array.from(weekdaysSelected?.value?.keys())?.map((i) => Weekday?.fromStr(i))
-        console.log('Weekdays Result', r)
         localForm.value.formValues.weekdays = r;
         validateLocalField('weekdays', r);
     };
@@ -116,9 +113,8 @@
 
 
     // Watch EACH Input -> Create RRULE String:
-
     watch(localForm.value.formValues, (v) => {
-        const validate = safeParse(localFormSchema, v)
+        const validate = safeParse(localFormSchema, v);
         if (validate.success) {
             // Confirm Required Inputs:
             if ((
@@ -151,6 +147,36 @@
         }
 
     })
+
+    // Watch recurrence/rrule -> On EDIT -> Load Options:
+    watch(() => recurrence.value, (v) => {
+        if (v) {
+            // Get Editing RRule
+            const rule = RRule.fromString(v)
+            // Set freq:
+            localForm.value.formValues.frequency = rule.options.freq
+            // Set interval:
+            localForm.value.formValues.interval = rule.options.interval
+            // Set weekdays:
+            if (rule.origOptions.byweekday) {
+                for (const dayNum of rule.options.byweekday) {
+                    const d = ALL_WEEKDAYS[dayNum] as WeekdayStr;
+                    weekdaysSelected.value.add(d);
+                }
+                localForm.value.formValues.weekdays = rule.origOptions.byweekday as any;
+            }
+            // Set End Repeat Date:
+            if (rule.origOptions.until) {
+                endRepeatDateEnabled.value = true;
+                localForm.value.formValues.endRepeatDate = rule.origOptions.until
+            }
+            // Set Max Repeat Count:
+            if (rule.origOptions.count) {
+                endRepeatCountEnabled.value = true;
+                localForm.value.formValues.endRepeatCount = rule.origOptions.count
+            }
+        }
+    }, { deep: true, immediate: true })
 
 </script>
 

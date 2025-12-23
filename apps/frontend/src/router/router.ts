@@ -6,6 +6,7 @@ import MyAccount from "./account/myAccount.vue";
 import PrivacyPolicy from "./privacyPolicy.vue";
 import TermsAndConditions from "./termsAndConditions.vue";
 import Dashboard from "./dashboard/dashboard.vue";
+import Support from "./support/support.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,12 @@ const router = createRouter({
     },
 
     // Information:
+    {
+      name: "Support",
+      path: '/support',
+      alias: ['/help', '/faq'],
+      component: Support
+    },
 
 
     // More Resources:
