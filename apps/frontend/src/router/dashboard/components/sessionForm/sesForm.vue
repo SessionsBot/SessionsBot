@@ -12,15 +12,22 @@
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Services:
-    const confirmService = useConfirm()
-    const auth = useAuthStore()
+    const confirmService = useConfirm();
+    const auth = useAuthStore();
+    const dashboard = useDashboardStore();
 
-    // Incoming Props / Models:
-    const sessionsFormVisible = inject<Ref<boolean>>('sessionsFormVisible')
-    const guildId = defineModel<string>('guildId');
-    const guildChannels = defineModel<any>('guildChannels');
+    // Form Visibility:
+    const sessionsFormVisible = computed({
+        get: () => dashboard.sessionForm.visible,
+        set: (v) => (dashboard.sessionForm.visible = v),
+    })
+
+    // Guild Id:
+    const guildId = computed(() => dashboard.guild.id)
+
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -43,26 +50,34 @@
             return tabSelected.value = 'schedule';
     };
 
-    // Form Abort Confirm Dialog Ref:
-    function abortForm() {
-        confirmService.require({
-            header: 'Are you sure?',
-            message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
-            accept: () => {
-                resetFrom();
-                if (sessionsFormVisible) {
-                    sessionsFormVisible.value = false
-                };
-            }
-        });
-    };
-
     /** ACTION: Form Mode ("new" or "edit") */
     const formAction = ref<'new' | 'edit'>('new');
     const editingId = ref<string>();
 
+    // EVENT: Watch for Editing Session Payload:
+    watch(() => dashboard.sessionForm.editPayload, (payload) => {
+        if (payload) {
+            startNewEdit(payload as any);
+        }
+    })
+
     /** Form Values - (v-modeled) */
     const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
+        title: '',
+        description: '',
+        url: '',
+        startDate: null,
+        endDate: null as Date | null,
+        timeZone: '',
+        rsvps: new Map(),
+        recurrence: null as any,
+        channelId: '',
+        postTime: null,
+        postDay: null,
+        postInThread: true,
+        nativeEvents: false,
+    });
+    const formDefaults = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
         title: '',
         description: '',
         url: '',
@@ -128,7 +143,7 @@
             },
             `Post Time must occur before or at event Start Time if posting "Day of".`
         ),
-        postDay: z.literal('Day of').or(z.literal('Day before', 'Please select an option.')),
+        postDay: z.literal(['Day before', 'Day of'], 'Please select an option.'),
         postInThread: z.boolean(),
         nativeEvents: z.boolean(),
 
@@ -186,26 +201,31 @@
     }
 
 
+    // Form Abort Confirm Dialog Ref:
+    function abortForm() {
+        if (formValues.value != formDefaults.value) {
+            confirmService.require({
+                header: 'Are you sure?',
+                message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
+                accept: () => {
+                    resetFrom();
+                    sessionsFormVisible.value = false;
+                }
+            });
+        } else {
+            // Auto Close - Blank Form:
+            resetFrom();
+            sessionsFormVisible.value = false;
+        }
+
+    };
+
     /** Resets the form to all defaults/no errors. */
     function resetFrom() {
         // Reset Invalid Fields
         invalidFields.value.clear();
         // Reset Form Values
-        formValues.value = {
-            title: '',
-            description: '',
-            url: '',
-            startDate: null,
-            endDate: null as Date | null,
-            timeZone: '',
-            rsvps: new Map(),
-            recurrence: null as any,
-            channelId: '',
-            postTime: null,
-            postDay: null,
-            postInThread: true,
-            nativeEvents: false,
-        }
+        formValues.value = formDefaults.value;
         // Reset Form Options:
         formOptions.value = {
             recurrenceEnabled: false,
@@ -215,6 +235,7 @@
         // Reset Selected Tab:
         tabSelected.value = 'information';
         // Reset Edit Data:
+        dashboard.sessionForm.editPayload = null;
         editingId.value = undefined;
         formAction.value = 'new';
     }
@@ -289,9 +310,8 @@
         if (data.rrule) formOptions.value.recurrenceEnabled = true;
 
         // Open Form:
-        if (sessionsFormVisible) {
-            sessionsFormVisible.value = true;
-        }
+        sessionsFormVisible.value = true;
+
 
     }
 
@@ -399,9 +419,8 @@
                     // Reset Form
                     resetFrom();
                     // Close Form
-                    if (sessionsFormVisible) {
-                        sessionsFormVisible.value = false;
-                    }
+                    sessionsFormVisible.value = false;
+
                 } else { console.warn('Request Failed!', r) }
             } else if (formAction.value == 'edit') {
                 // Edit Existing Session - Send Request
@@ -413,9 +432,8 @@
                     // Reset Form
                     resetFrom();
                     // Close Form
-                    if (sessionsFormVisible) {
-                        sessionsFormVisible.value = false;
-                    }
+                    sessionsFormVisible.value = false;
+
                 } else { console.warn('Request Failed!', r) }
             }
 
@@ -429,8 +447,6 @@
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
     export type NewSessions_FieldNames = keyof NewSession_ValueTypes
 
-    // Define Exposed:
-    defineExpose({ startNewEdit })
 
 
 </script>
@@ -455,12 +471,12 @@
                         <!-- New Session - Title -->
                         <span v-if="formAction == 'new'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarPlusIcon />
-                            <p class="font-medium text-lg"> New Session </p>
+                            <p class="font-bold text-lg"> New Session </p>
                         </span>
                         <!-- Edit Session - Title -->
                         <span v-if="formAction == 'edit'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarCogIcon />
-                            <p class="font-medium text-lg"> Edit Schedule </p>
+                            <p class="font-bold text-lg"> Edit Schedule </p>
                         </span>
 
                         <!-- Abort/Delete Session - Button -->
@@ -526,8 +542,7 @@
                                 :validateFields v-model:channel-id="formValues.channelId"
                                 v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
                                 v-model:native-events="formValues.nativeEvents"
-                                v-model:post-in-thread="formValues.postInThread"
-                                v-model:guild-channels="guildChannels" />
+                                v-model:post-in-thread="formValues.postInThread" />
                         </KeepAlive>
                     </Transition>
 
@@ -570,7 +585,7 @@
                         <Button v-if="tabSelected != 'information'" @click="backTab()"
                             class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-zinc-500 hover:bg-zinc-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
-                            <p class="text-sm mx-0.75 font-normal"> Back </p>
+                            <p class="text-sm mx-0.75 font-medium"> Back </p>
                             <ArrowLeft hidden :stroke-width="'2'" :size="17" />
                         </Button>
 
@@ -578,7 +593,7 @@
                         <Button v-if="tabSelected != 'discord'" @click="nextTab()"
                             class="gap-0.25! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-indigo-500 hover:bg-indigo-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
-                            <p class="text-sm font-medium"> Next </p>
+                            <p class="text-sm font-bold"> Next </p>
                             <ArrowRight :stroke-width="'3'" :size="17" />
                         </Button>
 
@@ -586,7 +601,7 @@
                         <Button v-else @click="submitForm()"
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
-                            <p class="text-sm font-medium"> Submit </p>
+                            <p class="text-sm font-bold"> Submit </p>
                             <CheckIcon :stroke-width="'4'" :size="17" class="scale-90" />
                         </Button>
 

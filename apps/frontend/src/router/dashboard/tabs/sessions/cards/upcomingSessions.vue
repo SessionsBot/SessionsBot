@@ -3,17 +3,61 @@
     import type { API_SessionTemplateBodyInterface } from "@sessionsbot/shared/zodSchemas";
     import { DateTime } from "luxon";
     import { getTimeZones } from "@vvo/tzdb";
-    import { ArrowBigDownIcon, Calendar1Icon, CalendarSyncIcon, FilterIcon, PencilIcon, Trash2Icon, UserCheck2Icon, UserX2Icon } from "lucide-vue-next";
-    import type { UseAsyncStateReturn } from "@vueuse/core";
+    import { ArrowBigDownIcon, Calendar1Icon, CalendarSyncIcon, FilterIcon, MotorbikeIcon, PencilIcon, Trash2Icon, UserCheck2Icon, UserX2Icon } from "lucide-vue-next";
+    import { motion, stagger, type Variants } from 'motion-v'
+    import useDashboardStore from "@/stores/dashboard/dashboard";
 
-    // Incoming Props:
-    const props = defineProps<{
-        sessionTemplates: Database['public']['Tables']['session_templates']['Row'][] | undefined
-    }>();
+
+    // Services:
+    const dashboard = useDashboardStore();
+
+    // Guild/Session Templates Data:
+    const sessionTemplates = computed(() => dashboard.guild.sessionTemplates);
 
     // Session Form Control
-    const sessionsFormVisible = inject<Ref<boolean>>('sessionsFormVisible');
-    const startSessionFormEdit = inject<(data: API_SessionTemplateBodyInterface) => void>('startSessionFormEdit');
+    const sessionsFormVisible = computed({
+        get: () => dashboard.sessionForm.visible,
+        set: (v) => (dashboard.sessionForm.visible = v)
+    })
+    const startSessionFormEdit = dashboard.startNewSessionFormEdit
+
+    // Session List - Animation Variants:
+    const sessionListVariants = {
+        hidden: {},
+        visible: {
+            transition: {
+                delayChildren: stagger(0.2, { from: "first" }),
+            },
+        }
+    }
+    const sessionItemVariants = {
+        hidden: { opacity: 0, scale: 0 },
+        visible: {
+            opacity: 1, scale: 1, transition: {
+                duration: 0.15,
+
+            }
+        }
+    }
+    const sessionItemExtraVariants = {
+        hidden: { opacity: 0, scale: 1, y: 15 },
+        visible: {
+            opacity: 1, scale: 1, y: 0, transition: {
+                duration: 0.25,
+            },
+        }
+    }
+
+    // Util: Has RSVPs Boolean Fn:
+    function hasRsvps(session: API_SessionTemplateBodyInterface) {
+        if (!session.rsvps) return false;
+        try {
+            const json = JSON.parse(String(session.rsvps));
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
 
 </script>
 
@@ -44,10 +88,10 @@
         </div>
 
         <!-- Content - Sessions List -->
-        <div v-if="sessionTemplates" class="flex bg-black/15 gap-4.5 p-3.5 flex-col w-full justify-start items-center">
-
+        <motion.ul :variants="sessionListVariants" initial="hidden" animate="visible" v-if="sessionTemplates"
+            class="flex bg-black/15 gap-4.5 p-3.5 flex-col w-full justify-start items-center">
             <!-- Session Card / Row Item: -->
-            <div v-for="session in sessionTemplates"
+            <motion.li :variants="sessionItemVariants" v-for="session in sessionTemplates" :key="session.id"
                 class="flex flex-wrap gap-1 items-center ring-2 w-full ring-ring bg-white/5 p-1 rounded-md">
                 <!-- Card Cover Content -->
                 <div class="flex flex-row flex-wrap justify-center items-start grow-4 p-1 gap-2">
@@ -87,7 +131,8 @@
 
                         <!-- RSVPs Icon -->
                         <div class="sessionDataBadge">
-                            <UserCheck2Icon v-if="JSON.parse(session?.rsvps as any)" :size="16" />
+                            <!-- @vue-expect-error -->
+                            <UserCheck2Icon v-if="hasRsvps(session)" :size="16" />
                             <UserX2Icon v-else :size="16" />
                         </div>
 
@@ -112,22 +157,23 @@
                     </Button>
 
                 </div>
+            </motion.li>
 
-
-            </div>
             <!-- Trailing / End of Sessions Text -->
-            <div v-if="sessionTemplates?.length" class="w-full gap-0.5 flex flex-col items-center justify-center">
+            <motion.li :variants="sessionItemExtraVariants" v-if="sessionTemplates?.length"
+                class="w-full gap-0.5 flex flex-col items-center justify-center">
                 <div class="h-1 my-0.5 w-22 bg-ring/70 rounded-full" />
-                <p class="italic opacity-30"> Thats all!</p>
-            </div>
+                <p class="italic opacity-30"> Thats all for now!</p>
+            </motion.li>
 
             <!-- No Sessions Found - Card -->
-            <div v-if="!sessionTemplates?.length">
+            <motion.li :variants="sessionItemExtraVariants" v-if="!sessionTemplates?.length">
                 <div class="flex bg-white/5 p-1 my-5 rounded-md ring-2 ring-ring/50">
                     <p class="opacity-70 p-1 px-3.75"> No upcoming sessions.. </p>
                 </div>
-            </div>
-        </div>
+            </motion.li>
+
+        </motion.ul>
 
     </div>
 </template>

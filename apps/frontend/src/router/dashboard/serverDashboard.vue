@@ -1,85 +1,37 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
     import { useNavStore } from '@/stores/nav';
-    import { API } from '@/utils/api';
-    import type { API_SessionTemplateBodyInterface, APIResponseValue } from '@sessionsbot/shared';
-    import { BellRingIcon, CalendarDaysIcon, ClipboardListIcon, UserCheckIcon } from 'lucide-vue-next';
-    import dashboardNavButton from './components/dashboardNavButton.vue'
+    import type { API_SessionTemplateBodyInterface } from '@sessionsbot/shared';
     import SessionsTab from './tabs/sessions/sessions.vue';
     import CalendarTab from './tabs/calendar.vue'
-
     import SessionForm from './components/sessionForm/sesForm.vue'
-    import type { MaybeElementRef } from '@vueuse/core';
+    import DashboardNav from './dashboardNav.vue'
     import { supabase } from '@/utils/supabase';
-
-
-    // Incoming Props:
-    const props = defineProps<{
-        selectedGuildId: string | undefined
-    }>()
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { useGuildChannels } from '@/stores/dashboard/guildChannels';
+    import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
 
     // Services:
     const auth = useAuthStore();
     const nav = useNavStore();
+    const dashboard = useDashboardStore();
 
     // Window Size:
     const { width: screenWidth } = useWindowSize();
     const isSmallScreen = computed(() => screenWidth.value < 640)
 
-    // Guild - From User Data:
-    const userGuildData = computed(() => {
-        if (!props.selectedGuildId) return null;
-        return auth.userData?.guilds.manageable.find((g) => (g.id == props.selectedGuildId))
-    })
+    // Guild - Selected Id:
+    const selectedGuildId = computed(() => dashboard.guild.id)
     // Guild - Channels:
-    const { isReady: guildChannelsReady, state: guildChannels } = useAsyncState(async () => {
-        const { data: ChannelsResult } = await API.get<APIResponseValue>(`/guilds/${props.selectedGuildId}/channels`, { headers: { Authorization: `Bearer ${auth?.session?.access_token}` } })
-        if (!ChannelsResult?.success) {
-            return null;
-        } else {
-            return ChannelsResult.data as { all: any, sendable: any };
-        }
-    },
-        null,
-        { immediate: true }
-    );
+    const channels = useGuildChannels();
     // Guild - Session Templates:
-    const { isReady: sessionTemplatesReady, state: sessionTemplates } = useAsyncState(async () => {
-        if (!props.selectedGuildId) throw 'No guild id provided for fetch!';
-        const { data, error } = await supabase.from('session_templates')
-            .select('*')
-            .eq('guild_id', props.selectedGuildId)
-            .select()
-        if (!data || error) {
-            console.error(`Failed to load guild session templates`, error, { data })
-            return [];
-        }
-        else return data;
-    },
-        undefined,
-        { immediate: true }
-    )
+    const templates = useSessionTemplates()
 
     // Data Ready - Flag:
     const allDataReady = computed(() => {
-        const checks = [guildChannelsReady, sessionTemplatesReady];
+        const checks = [channels.isReady, templates.isReady];
         return checks.every((s) => s.value == true)
     })
-
-    // Tab Viewing:
-    export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'Subscription';
-    const currentTab = ref<DashboardTabName>('Sessions');
-    function openTab(tab: DashboardTabName) { currentTab.value = tab };
-
-
-    // Session Form Panel Visibility:
-    const sessionsFormVisible = ref(false);
-    const sessionFormRef = ref();
-    const startSessionFormEdit = (data: API_SessionTemplateBodyInterface) => {
-        sessionFormRef.value?.startNewEdit(data)
-    }
-    provide('sessionsFormVisible', sessionsFormVisible);
-    provide('startSessionFormEdit', startSessionFormEdit);
 
 
 </script>
@@ -99,40 +51,22 @@
             </div>
 
             <!-- Main Page Content -->
-            <div v-else class="flex flex-row flex-1 w-full h-full" :class="{ 'flex-col!': isSmallScreen }">
+            <div v-else class="flex flex-row grow w-full h-full">
 
                 <!-- Nav Menu(s) -->
-                <nav
-                    class="flex flex-col min-w-11 sm:min-w-min! bg-zinc-900 sm:border-r-2 sm:border-b-0 border-ring/30 border-b-2">
-                    <aside class="flex flex-col p-3 gap-2 grow"
-                        :class="{ 'flex-row! items-center justify-center p-1 gap-1': isSmallScreen }">
-                        <dashboardNavButton name="Sessions" :icon="ClipboardListIcon" :isSmallScreen
-                            @openTab="openTab" />
-                        <dashboardNavButton name="Calendar" :icon="CalendarDaysIcon" :isSmallScreen
-                            @openTab="openTab" />
-                        <dashboardNavButton name="Notifications" :icon="BellRingIcon" :isSmallScreen
-                            @openTab="openTab" />
-                        <dashboardNavButton name="Subscription" :icon="UserCheckIcon" :isSmallScreen
-                            @openTab="openTab" />
-                    </aside>
-                    <div class="hidden sm:flex gap-1 p-1 items-center justify-center">
-                        <p class="text-sm text-white/70 hover:text-sky-400/80 hover:underline cursor-pointer">
-                            Need Help?
-                        </p>
-                    </div>
-                </nav>
+                <DashboardNav :isSmallScreen />
 
-                <!-- Content/Tab Area -->
+                <!-- Content/Tab View Area -->
                 <div class="flex w-full flex-col grow">
-                    <SessionsTab v-if="currentTab == 'Sessions'" :guildId="selectedGuildId" :sessionTemplates />
-                    <CalendarTab v-if="currentTab == 'Calendar'" />
+                    <SessionsTab v-if="dashboard.tabs.current == 'Sessions'" />
+                    <CalendarTab v-if="dashboard.tabs.current == 'Calendar'" />
                 </div>
+
             </div>
         </Transition>
 
         <!-- Dialogs/Forms -->
-        <SessionForm ref="sessionFormRef" :sessions-form-visible="sessionsFormVisible" :guildId="selectedGuildId"
-            :guildChannels />
+        <SessionForm />
 
     </div>
 

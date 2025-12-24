@@ -5,13 +5,15 @@ import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
 import type { AppUser, AppUserMetadata } from "@sessionsbot/shared";
-import type { Router } from "vue-router";
 import router from "@/router/router";
 
+/** Debug Auth - Boolean 🏁 */
+const debugAuth = false;
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
     state: () => ({
+        authReady: false,
         signedIn: false,
         user: <AppUser | undefined>undefined,
         userData: <AppUserMetadata | undefined>undefined,
@@ -147,17 +149,19 @@ export const watchAuth = async () => {
         // Get current auth user 
         const user = session?.user;
         // Update auth store:
+        store.authReady = true;
         store.signedIn = user ? true : false;
         store.user = user as any;
         store.session = session as any;
         store.userData = user?.user_metadata as any;
 
-        console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
+        if (debugAuth) {
+            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
+        }
 
         // If Initial Session w/ Redirect after Auth:
         const redirectPath = store.redirectAfterAuth.get();
         if (event == 'INITIAL_SESSION' && redirectPath) {
-            console.info('INITIAL SESSION with after auth redirect to:', redirectPath);
             router.push(redirectPath);
             store.redirectAfterAuth.clear();
         }

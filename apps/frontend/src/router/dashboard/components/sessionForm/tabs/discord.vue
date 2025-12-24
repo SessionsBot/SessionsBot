@@ -4,6 +4,7 @@
     import InputTitle from '../labels/inputTitle.vue';
     import InputErrors from '../labels/inputErrors.vue';
     import type { AppUserGuilds } from '@sessionsbot/shared';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
 
 
     // Incoming Props/Models:
@@ -15,7 +16,8 @@
     const { invalidFields, validateField, validateFields } = props;
 
     // Guild Channels - Model:
-    const guildChannels = defineModel<{ all: any, sendable: any }>('guildChannels');
+    const dashboard = useDashboardStore();
+    const guildChannels = computed(() => dashboard.guild.channels);
 
     // Form Values:
     const channelId = defineModel<string>('channelId');

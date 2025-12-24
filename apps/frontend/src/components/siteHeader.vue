@@ -33,7 +33,7 @@
 
 <template>
     <header ref="headerRef"
-        class="flex flex-col border-b-2 z-5 drop-shadow-2xl drop-shadow-black/40 border-white/5 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
+        class="flex flex-col border-b-2 z-5 drop-shadow-2xl drop-shadow-black/40 border-white/5 border-b-white/0 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
         <div
             class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse">
         </div>

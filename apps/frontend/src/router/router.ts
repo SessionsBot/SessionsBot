@@ -7,6 +7,7 @@ import PrivacyPolicy from "./privacyPolicy.vue";
 import TermsAndConditions from "./termsAndConditions.vue";
 import Dashboard from "./dashboard/dashboard.vue";
 import Support from "./support/support.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,10 +28,18 @@ const router = createRouter({
       name: "Dashboard",
       path: "/dashboard",
       component: Dashboard,
+      beforeEnter: () => {
+        const auth = useAuthStore();
+        if (!auth.signedIn && auth.authReady) {
+          // Auto prompt sign in:
+          auth.signIn('/dashboard')
+        }
+      }
     },
     {
       name: "Account",
       path: "/account",
+      alias: ['/my-account', '/profile', '/signin', '/sign-in', '/login', '/log-in'],
       component: MyAccount,
     },
 

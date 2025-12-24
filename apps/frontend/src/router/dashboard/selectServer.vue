@@ -1,13 +1,16 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
     import { externalUrls, useNavStore } from '@/stores/nav';
     import type { CheckboxDesignTokens } from '@primeuix/themes/types/checkbox';
     import { defaultWindow } from '@vueuse/core';
+    import { UserCircle2Icon } from 'lucide-vue-next';
 
     // Services:
     const auth = useAuthStore();
     const nav = useNavStore();
     const router = useRouter();
+    const dashboard = useDashboardStore();
 
     // User Guilds
     const guildsWSession = computed(() => auth.userData?.guilds.manageable.filter(g => g.hasSessionsBot));
@@ -16,10 +19,6 @@
     }));
     const maxWOSessionsLength = 4;
 
-    // Define Emits
-    const emits = defineEmits<{
-        selectServer: [guildId: string],
-    }>();
 
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {
@@ -59,13 +58,22 @@
             console.info('Saving future guild choice')
             savedGuildChoice.set(guildId);
         };
-        return emits('selectServer', guildId);
+        return dashboard.guild.id = guildId;
     }
 
+    // Still Loading Alert:
+    const showStillLoadingCard = ref(false)
+
+    // Not Signed In - EXTRA Guard:
     onBeforeMount(() => {
-        const choice = savedGuildChoice.clear()
-        // ! Before Production: Switch back over
-        // if (choice) emits('selectServer', choice)
+        setTimeout(() => {
+            if (!auth.signedIn) {
+                router.push('/account');
+            }
+        }, 700)
+        setTimeout(() => {
+            showStillLoadingCard.value = true
+        }, 2000)
     });
 
 
@@ -74,9 +82,10 @@
 
 <template>
     <div class="flex justify-center items-center w-full! flex-1">
-
+        <!-- Select Server - Authenticated -->
         <section
-            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full mx-10 max-w-150 rounded-sm">
+            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full m-10 max-w-150 rounded-sm"
+            v-if="auth.signedIn">
 
             <!-- Ready to Go - Server Selection -->
             <span v-if="guildsWSession?.length" class="w-full flex flex-col items-center justify-center">
@@ -173,6 +182,28 @@
 
 
             <!-- Syncing and Search Options -->
+
+
+        </section>
+
+        <!-- Loading - Not Signed In -->
+        <section v-else>
+
+            <div class="bg-black/40 max-w-75 p-5 rounded-md text-white/70 flex items-center justify-center flex-col">
+                <ProgressSpinner stroke-width="5" class="size-12!" />
+                <span v-if="showStillLoadingCard" class="flex items-center justify-center flex-col">
+                    <p class="pt-0.5 font-bold"> Still Loading? </p>
+                    <p class="text-sm"> You might want to refresh this page or ensure your logged into
+                        an account. </p>
+                    <RouterLink to="/account" class="pt-2">
+                        <Button unstyled
+                            class="bg-zinc-700/40 hover:bg-zinc-700/60 p-1 py-0.5 cursor-pointer active:scale-95 transition-all rounded-md flex gap-0.75 flex-row items-center justify-center">
+                            <UserCircle2Icon :size="19" :stroke-width="1.5" />
+                            <p> My account </p>
+                        </Button>
+                    </RouterLink>
+                </span>
+            </div>
 
 
         </section>

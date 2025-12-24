@@ -5,7 +5,8 @@
 
 
 <template>
-    <ConfirmDialog class="mx-5 border-none!">
+    <!-- Default Dialog - Headless w/ Question Icon - Red Confirm Button -->
+    <ConfirmDialog class="mx-7 border-none!">
         <template #container="{ message, acceptCallback, rejectCallback }">
             <div class="flex ring-3 ring-zinc-700 flex-col items-center p-8 bg-zinc-900 text-white rounded max-w-120">
                 <div
@@ -24,6 +25,7 @@
         </template>
 
     </ConfirmDialog>
+
 </template>
 
 
