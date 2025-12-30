@@ -1,5 +1,8 @@
 import { DateTime } from "luxon";
-import { RRule } from 'rrule'
+import * as RRulePkg from "rrule";
+const { RRule } = RRulePkg;
+
+
 
 // -------[  FRONTEND --> BACKEND UTILITIES  ]-------
 
@@ -89,7 +92,7 @@ export function calculateNextPostUTC(start: Date, zone: string, post_before_ms: 
         }
     } else {
         // Determine rule dates:
-        const next = rule.after(today.toJSDate(), true)
+        const next = rule.after(now.toJSDate(), true)
         if (!next) return null;
         const nextPost = DateTime.fromJSDate(next).setZone(zone).set({ hour: first.hour, minute: first.minute, second: 0, millisecond: 0 }).plus({ millisecond: post_before_ms })
         if ((nextPost.toSeconds() + bufferSecs) <= now.toSeconds()) return null;
