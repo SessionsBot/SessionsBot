@@ -1,39 +1,58 @@
 <script setup lang="ts">
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { BellRingIcon, CalendarDaysIcon, ClipboardListIcon, MoveLeftIcon, UserCheckIcon } from 'lucide-vue-next';
-    import dashboardNavButton from './components/dashboardNavButton.vue';
-
-    // Incoming Props:
-    const props = defineProps<{
-        isSmallScreen: boolean;
-    }>();
+    import dashboardNavButton from './dashboardNavButton.vue';
 
     // Services:
     const dashboard = useDashboardStore();
 
-    // Nav States:
-    const isExpanded = ref(false);
-    const isModeled = ref(false);
-
-    watch(isExpanded, (expanded) => {
-        if (expanded) {
-            if (props.isSmallScreen) {
-                isModeled.value = true
-            } else {
-                isModeled.value = false
-            }
-        }
+    // Screen Size:
+    const isSmallScreen = computed(() => {
+        const { width: screenWidth } = useWindowSize();
+        return screenWidth.value < 640
     })
 
-    watch(() => props.isSmallScreen, (small) => {
-        if (small) {
-            isExpanded.value = false;
-            isModeled.value = true;
+    // Nav States:
+    const isExpanded = computed(() => dashboard.nav.expanded);
+    const isModeled = computed(() => dashboard.nav.modeled);
+
+    // Nav Utils:
+    function openNav() {
+        const nav = dashboard.nav;
+        if (isSmallScreen) {
+            nav.modeled = true;
+            dashboard.scrollLock = true;
         } else {
-            isExpanded.value = true;
-            isModeled.value = false;
+            nav.modeled = false;
+            dashboard.scrollLock = false;
         }
-    }, { immediate: true })
+        nav.expanded = true;
+    }
+    function closeNav() {
+        const nav = dashboard.nav;
+        dashboard.scrollLock = false;
+        nav.modeled = false;
+        nav.expanded = false;
+    }
+    function toggleNav() {
+        if (dashboard.nav.expanded) {
+            closeNav()
+        } else {
+            openNav()
+        }
+    }
+
+    watch(isSmallScreen, (small) => {
+        const nav = dashboard.nav;
+        if (small) {
+            nav.expanded = false;
+            nav.modeled = true;
+        } else {
+            nav.expanded = true;
+            nav.modeled = false;
+            dashboard.scrollLock = false;
+        }
+    }, { immediate: true });
 
 </script>
 
@@ -44,7 +63,7 @@
     }">
 
         <!-- Expander Button -->
-        <button unstyled @click="isExpanded = !isExpanded"
+        <button unstyled @click="toggleNav()"
             class="p-0.5 top-0 w-full h-8 flex flex-row items-end justify-center bg-white/7 hover:bg-white/11 transition-all rounded-md rounded-t-none cursor-pointer">
             <div :class="{ 'rotate-y-180!': isExpanded }" class="transition-all">
                 <svg class="text-white/60" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -64,10 +83,10 @@
         <!-- Tab/Nav Buttons -->
         <aside class="flex flex-col p-3 grow gap-2 w-full min-w-fit!"
             :class="{ 'items-center justify-start p-1 gap-1': !isExpanded }">
-            <dashboardNavButton name="Sessions" :icon="ClipboardListIcon" v-model:isExpanded="isExpanded" :isModeled />
-            <dashboardNavButton name="Calendar" :icon="CalendarDaysIcon" v-model:isExpanded="isExpanded" :isModeled />
-            <dashboardNavButton name="Notifications" :icon="BellRingIcon" v-model:isExpanded="isExpanded" :isModeled />
-            <dashboardNavButton name="Subscription" :icon="UserCheckIcon" v-model:isExpanded="isExpanded" :isModeled />
+            <dashboardNavButton name="Sessions" :icon="ClipboardListIcon" :closeNav />
+            <dashboardNavButton name="Calendar" :icon="CalendarDaysIcon" :closeNav />
+            <dashboardNavButton name="Notifications" :icon="BellRingIcon" :closeNav />
+            <dashboardNavButton name="Subscription" :icon="UserCheckIcon" :closeNav />
         </aside>
 
         <!-- Nav Footer -->
@@ -100,7 +119,7 @@
 
     <!-- Blur Model -->
     <Transition name="fade" :duration="0.45">
-        <div v-if="isExpanded && isModeled" @click="isExpanded = false; isModeled = false"
+        <div v-if="isExpanded && isModeled" @click="closeNav"
             class="absolute z-2 inset-0 w-full h-full grow flex bg-black/10 backdrop-blur-2xl transition-all" />
     </Transition>
 </template>

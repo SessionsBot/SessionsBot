@@ -3,7 +3,6 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { externalUrls, useNavStore } from '@/stores/nav';
     import type { CheckboxDesignTokens } from '@primeuix/themes/types/checkbox';
-    import { defaultWindow } from '@vueuse/core';
     import { UserCircle2Icon } from 'lucide-vue-next';
 
     // Services:
@@ -17,7 +16,6 @@
     const guildsWOSession = computed(() => auth.userData?.guilds.manageable.filter(g => !g.hasSessionsBot).sort((a, b) => {
         return (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0);
     }));
-    const maxWOSessionsLength = 4;
 
 
     // Saved Guild Choice In Future:
@@ -39,24 +37,13 @@
         }
     }
     const saveGuildChoiceEnabled = ref<boolean>();
-    class savedGuildChoice {
-        static saveKey = 'SGC_Dashboard'
-        static get() {
-            return sessionStorage.getItem(savedGuildChoice.saveKey)
-        }
-        static set(guildId: string) {
-            return sessionStorage.setItem(savedGuildChoice.saveKey, guildId)
-        }
-        static clear() {
-            return sessionStorage.removeItem(savedGuildChoice.saveKey)
-        }
-    };
 
     // Select Ready Server fn:
     function selectReadyServer(guildId: string) {
         if (saveGuildChoiceEnabled.value) {
-            console.info('Saving future guild choice')
-            savedGuildChoice.set(guildId);
+            dashboard.saveGuildSelection.set(guildId);
+        } else {
+            dashboard.saveGuildSelection.clear();
         };
         return dashboard.guild.id = guildId;
     }
@@ -65,12 +52,7 @@
     const showStillLoadingCard = ref(false)
 
     // Not Signed In - EXTRA Guard:
-    onBeforeMount(() => {
-        setTimeout(() => {
-            if (!auth.signedIn) {
-                router.push('/account');
-            }
-        }, 700)
+    onMounted(() => {
         setTimeout(() => {
             showStillLoadingCard.value = true
         }, 2000)
@@ -97,7 +79,8 @@
                     <span
                         class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
 
-                        <Button v-for="guild of guildsWSession" @click="selectReadyServer(guild?.id)" unstyled
+                        <Button v-for="guild of guildsWSession" :title="guild.name"
+                            @click="selectReadyServer(guild?.id)" unstyled
                             class="bg-black/40 grow hover:bg-black/20 hover:ring-[2px] ring-indigo-400/80 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
                             <img :src="guild?.icon" class="size-11 rounded-full ring-2 ring-ring" />
                             <p class="font-semibold"> {{ guild.name }} </p>
@@ -108,8 +91,7 @@
                     <!-- Save Choice Check -->
                     <span class="w-full flex flex-row gap-1 items-center justify-center">
                         <Checkbox size="small" class="scale-90" binary input-id="rememberGuild"
-                            v-model="saveGuildChoiceEnabled" :dt="checkboxDT"
-                            @value-change="(c) => { if (!c) { savedGuildChoice.clear() } }" />
+                            v-model="saveGuildChoiceEnabled" :dt="checkboxDT" />
                         <label for="rememberGuild" class="text-xs">
                             Remember my choice for next time
                         </label>
@@ -121,8 +103,8 @@
                         <p class="opacity-70 mx-5 text-xs text-center w-full">
                             Not seeing the server you're looking for?
                             Refresh your data on your
-                            <span class="text-sky-500 cursor-pointer hover:underline" @click="router.push('/account')">
-                                account</span>
+                            <RouterLink to="/account" class="text-sky-500 cursor-pointer hover:underline">
+                                account</RouterLink>
                             page.
                         </p>
                     </span>
@@ -147,36 +129,6 @@
                         <p class="font-medium text-sm text-shadow-sm"> Invite the Bot </p>
                     </Button>
                 </a>
-                <!-- All Not Yet Added Manageable Server List -->
-                <div v-if="guildsWOSession" hidden
-                    class="flex flex-wrap flex-row gap-2 justify-center items-center w-full bg-white/5 p-4 max-h-50 overflow-auto">
-
-                    <Button hidden v-for="guild of guildsWOSession.slice(0, maxWOSessionsLength)" unstyled
-                        @click="(e) => { defaultWindow?.open(externalUrls.inviteBot) }"
-                        class="bg-black/40 grow hover:bg-black/20 cursor-pointer transition-all p-4 rounded-sm flex flex-row gap-1 justify-center items-center flex-nowrap">
-                        <img :src="guild?.icon" class="size-5 rounded-full ring-2 ring-ring" />
-                        <p class="p-1 text-nowrap"> {{ guild.name }} </p>
-                    </Button>
-
-                    <span v-if="(guildsWOSession.length - maxWOSessionsLength) >= 1"
-                        class="flex justify-center items-center flex-col p-2 pb-0 w-full">
-                        <p class="font-medium text-sm"> + {{ guildsWOSession.length - maxWOSessionsLength }} More
-                            Server(s) </p>
-                    </span>
-
-                    <Button unstyled
-                        class="px-2 py-1.25 rounded-md drop-shadow-md active:scale-95 bg-indigo-500 hover:bg-indigo-400 transition-all cursor-pointer flex flex-row gap-1 items-center justify-center">
-                        <i class="pi pi-discord" />
-                        <p> Invite the Bot</p>
-                    </Button>
-
-                    <!-- Resync Info -->
-                    <span class="flex w-full">
-                        <p class="text-xs opacity-45 text-center w-full"> (click any to proceed) </p>
-                    </span>
-
-                </div>
-
 
             </span>
 

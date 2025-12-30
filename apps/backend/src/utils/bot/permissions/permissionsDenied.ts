@@ -2,7 +2,7 @@ import { ButtonStyle, ComponentType, ContainerBuilder, PermissionFlagsBits, Perm
 import core from "../../core.js"
 // import guildManager from "../database/guildManager.js";
 import logtail from "../../logs/logtail.js";
-import sendWithFallback from "../sendWithFallback.js";
+import sendWithFallback from "../messages/sendWithFallback.js";
 import { Result } from "@sessionsbot/shared";
 import { requiredBotPermsStrings } from './required'
 

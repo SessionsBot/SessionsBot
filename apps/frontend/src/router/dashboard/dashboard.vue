@@ -7,12 +7,20 @@
     const dashboard = useDashboardStore();
     const selectedGuildId = computed(() => dashboard.guild.id);
 
+    // ON - Initial Full Page Mount:
+    onMounted(() => {
+        // Load Saved "Guild Selection":
+        const choice = dashboard.saveGuildSelection.get();
+        if (choice) dashboard.guild.id = choice;
+    })
+
 </script>
 
 
 <template>
-    <div class="flex flex-col w-full h-full flex-1 items-center">
-        <Transition name="zoom" :duration="2" mode="out-in" leaveToClass="zoomDashboardOut">
+    <div class="flex flex-col w-full h-full flex-1 items-center"
+        :class="{ 'max-w-screen! max-h-screen! overflow-clip!': dashboard.scrollLock }">
+        <Transition name="zoom" mode="out-in">
             <SelectServer v-if="!selectedGuildId" />
             <ServerDashboard v-else />
         </Transition>
@@ -21,11 +29,4 @@
 </template>
 
 
-<style scoped>
-
-    .zoomDashboardOut {
-        scale: 0;
-        background: red
-    }
-
-</style>
+<style scoped></style>

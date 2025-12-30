@@ -7,21 +7,21 @@
     const props = defineProps<{
         name: DashboardTabName,
         icon: Component,
-        isModeled: boolean
+        closeNav: () => void
     }>();
-    const isExpanded = defineModel<boolean>('isExpanded')
+    const isExpanded = computed(() => dashboard.nav.expanded)
 
     // Services:
     const dashboard = useDashboardStore();
 
     // Is Active Tab - Boolean
-    const isActiveTab = computed(() => dashboard.tabs.current == props.name)
+    const isActiveTab = computed(() => dashboard.nav.currentTab == props.name)
 
 
 </script>
 
 <template>
-    <Button unstyled :title="props.name" @click="dashboard.tabs.current = props.name, isExpanded = false"
+    <Button unstyled :title="props.name" @click="dashboard.nav.currentTab = props.name, props.closeNav()"
         class="flex flex-row w-full min-w-fit! flex-nowrap justify-center items-center gap-0.75 rounded-sm hover:bg-white/15 bg-white/5 transition-all cursor-pointer"
         :class="{
             'bg-indigo-400/30!': isActiveTab,

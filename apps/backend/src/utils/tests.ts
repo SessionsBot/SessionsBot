@@ -3,6 +3,7 @@ import core from "./core.js";
 import discordLog from "./logs/discordLog.js";
 import { DateTime } from "luxon";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
+import { initTemplateCreationScheduler } from "./database/schedules/createFromTemplates.js";
 
 
 const guildId = process.env["GUILD_ID_DEVELOPMENT"]
@@ -18,6 +19,7 @@ export default {
 
                 // const result = await sendPermissionAlert(guildId);
                 // console.info(result)
+                initTemplateCreationScheduler();
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

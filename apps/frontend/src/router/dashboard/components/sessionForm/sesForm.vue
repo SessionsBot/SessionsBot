@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import z, { regex, safeParse, treeifyError } from 'zod'
-    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon } from 'lucide-vue-next';
+    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
@@ -8,11 +8,13 @@
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import { type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { calculateNextPostUTC, dbIsoUtcToFormDate, determinePostDay, getDurationMs, getPostOffsetMsFromJs, mapRsvps, utcDateFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import LoadingIcon from '@/components/icons/loadingIcon.vue';
+    import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
 
     // Services:
     const confirmService = useConfirm();
@@ -59,39 +61,29 @@
         if (payload) {
             startNewEdit(payload as any);
         }
-    })
+    });
 
     /** Form Values - (v-modeled) */
-    const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
-        title: '',
-        description: '',
-        url: '',
-        startDate: null,
-        endDate: null as Date | null,
-        timeZone: '',
-        rsvps: new Map(),
-        recurrence: null as any,
-        channelId: '',
-        postTime: null,
-        postDay: null,
-        postInThread: true,
-        nativeEvents: false,
-    });
-    const formDefaults = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>({
-        title: '',
-        description: '',
-        url: '',
-        startDate: null,
-        endDate: null as Date | null,
-        timeZone: '',
-        rsvps: new Map(),
-        recurrence: null as any,
-        channelId: '',
-        postTime: null,
-        postDay: null,
-        postInThread: true,
-        nativeEvents: false,
-    });
+    function createFormDefaults() {
+        return {
+            title: '',
+            description: '',
+            url: '',
+            startDate: null,
+            endDate: null,
+            timeZone: '',
+            rsvps: new Map(),
+            recurrence: null,
+            channelId: '',
+            postTime: null,
+            postDay: null,
+            postInThread: true,
+            nativeEvents: false,
+        }
+    }
+
+    const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>(createFormDefaults())
+    const formDefaults = ref(createFormDefaults())
 
     /** Form Options/Toggles */
     const formOptions = ref({
@@ -103,13 +95,18 @@
     const formSchema = z.object({
         title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
         description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').normalize().optional().nullish(),
-        url: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().or(z.literal("")),
-        startDate: z.date('Please enter a valid date.').refine((v) => v?.getTime() >= new Date().getTime(), 'Date has already occurred.'),
+        url: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().nullish().or(z.literal("")),
+        startDate: z.date('Please enter a valid date.').refine((v) => {
+            if (formAction.value == 'edit') return true;
+            else return v?.getTime() >= new Date().getTime()
+        },
+            'Date has already occurred.'
+        ),
         endDate: z.date('Please enter a valid date.').refine(
             (v) => {
                 const startDate = (formValues?.value?.startDate) as Date
                 const now = new Date();
-                return (v >= now && v >= startDate)
+                return ((v >= now || formAction.value == 'edit') && v >= startDate)
             },
             'End Date must occur after Start Date.'
         ).optional().nullable(),
@@ -225,7 +222,7 @@
         // Reset Invalid Fields
         invalidFields.value.clear();
         // Reset Form Values
-        formValues.value = formDefaults.value;
+        formValues.value = createFormDefaults();
         // Reset Form Options:
         formOptions.value = {
             recurrenceEnabled: false,
@@ -242,6 +239,12 @@
 
     /** Starts an existing session template edit */
     function startNewEdit(data: API_SessionTemplateBodyInterface) {
+
+        // BEFORE PRODUCTION - NOTE:
+        // - Maybe alter / change the start and end dates to represent
+        // the next occurrence rather than the first start date on creation
+        // to fix various ui and validation bugs
+
         // Assign Editing Id:
         if (!data.id) return console.warn('Invalid Session Template Id - For Edit', data?.id);
         editingId.value = data.id;
@@ -249,33 +252,6 @@
         // Set Mode:
         formAction.value = 'edit';
 
-        // Prepare API Data for Form:
-        // RSVP Util: JSON -> Maped Object:
-        function mapRsvps(rsvpJSON: any) {
-            const parsed = JSON.parse(String(rsvpJSON));
-            const rsvpMap = new Map<string, {
-                name: string;
-                emoji: string | null;
-                capacity: number;
-            }>(Object.entries(parsed));
-            return rsvpMap;
-        }
-        // Date Util: UTC to Time in Local:
-        function isoTzToLocalDate(isoString: string, zone: string, addMs?: number) {
-            let iso = DateTime.fromISO(isoString, { zone });
-            if (addMs) {
-                iso = iso.plus({ milliseconds: addMs });
-            }
-            const local = iso.toJSDate();
-            return local;
-        };
-        // Date Util: Get Post Day:
-        function determinePostDay(startDateIso: string, postBeforeMs: number, zone: string) {
-            const startDate = DateTime.fromISO(startDateIso, { zone })
-            const postDate = DateTime.fromISO(startDateIso, { zone }).plus({ milliseconds: postBeforeMs })
-            const difHours = Math.abs(startDate.diff(postDate, 'hours').hours)
-            return difHours >= 24 ? 'Day before' : 'Day of';
-        }
         // Zone Util: Name -> Zone Selected Obj:
         function getZoneSelected(zoneName: string) {
             const tzs = getTimeZones({ includeUtc: true });
@@ -294,13 +270,13 @@
             title: data.title,
             description: data.description ?? '',
             url: data.url ?? null,
-            startDate: isoTzToLocalDate(data.starts_at_utc, data.time_zone),
-            endDate: data.duration_ms ? isoTzToLocalDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
+            startDate: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone),
+            endDate: data.duration_ms ? dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
             timeZone: getZoneSelected(data.time_zone),
             rsvps: data?.rsvps ? mapRsvps(data.rsvps) : null,
             recurrence: data.rrule,
             channelId: data.channel_id,
-            postTime: isoTzToLocalDate(data.starts_at_utc, data.time_zone, data.post_before_ms),
+            postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.post_before_ms),
             postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
             postInThread: data.post_in_thread,
             nativeEvents: data.native_events
@@ -311,13 +287,15 @@
 
         // Open Form:
         sessionsFormVisible.value = true;
-
-
     }
 
 
     /** Form Submission Function */
+    const submitBusy = ref(false);
     async function submitForm() {
+        // Mark Submit Busy:
+        submitBusy.value = true;
+
         // Apply Options:
         if (!formOptions.value.rsvpsEnabled) {
             formValues.value.rsvps = null;
@@ -335,6 +313,9 @@
                 //@ts-expect-error
                 invalidFields.value.set(fieldName, errData?.errors)
             };
+            // Mark Submit Un-Busy:
+            submitBusy.value = false;
+            // Return Invalid Submission:
             return console.warn('Invalid Submission!', result);
         } else {
             // Valid Submission - Prepare Req for API:
@@ -347,50 +328,6 @@
                 }
             };
 
-            // Date/Time/Zones -> Helper Fn(s):
-            function utcInZone(date: Date, zone: string) {
-                const base = DateTime.fromJSDate(date);
-                return DateTime.fromObject({
-                    year: base.year,
-                    month: base.month,
-                    day: base.day,
-                    hour: base.hour,
-                    minute: base.minute,
-                    second: 0,
-                    millisecond: 0
-                }, { zone }).toUTC()
-            }
-            function getDurationMs() {
-                if (!data.endDate) return null;
-                else {
-
-                    const start = utcInZone(data.startDate, data.timeZone);
-                    const end = utcInZone(data.endDate, data.timeZone);
-                    return (end.toMillis() - start.toMillis());
-                }
-            }
-            function getPostOffsetMs() {
-                const post = DateTime.fromJSDate(data.postTime)
-                const start = DateTime.fromJSDate(data.startDate)
-                const base = DateTime.fromObject(
-                    {
-                        year: start.year,
-                        month: start.month,
-                        day: start.day,
-                        hour: post.hour,
-                        minute: post.minute,
-                    },
-                    { zone: data.timeZone }
-                )
-                const final = data.postDay === 'Day before'
-                    ? base.minus({ days: 1 })
-                    : base
-                const postTimeUtc = final.toUTC()
-                const startTimeUtc = utcInZone(data.startDate, data.timeZone);
-                const difMs = postTimeUtc.diff(startTimeUtc, 'milliseconds').milliseconds
-                return difMs
-            }
-
             // Create Request Body:
             const bodyData = {
                 data: <API_SessionTemplateBodyInterface>{
@@ -398,15 +335,34 @@
                     title: data.title,
                     description: data.description,
                     url: data.url,
-                    starts_at_utc: utcInZone(data.startDate, data.timeZone).toISO(),
-                    duration_ms: getDurationMs(),
+                    starts_at_utc: utcDateFromJs(data.startDate, data.timeZone).toISO(),
+                    duration_ms: data?.endDate ? getDurationMs(
+                        utcDateFromJs(data.startDate, data.timeZone),
+                        utcDateFromJs(data.endDate, data.timeZone)
+                    ) : null,
                     time_zone: data.timeZone,
                     rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
                     rrule: data.recurrence,
                     channel_id: data.channelId,
-                    post_before_ms: getPostOffsetMs(),
+                    post_before_ms: getPostOffsetMsFromJs({
+                        startDate: data.startDate,
+                        postTime: data.postTime,
+                        postDay: data.postDay,
+                        zone: data.timeZone
+                    }),
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
+                    next_post_utc: calculateNextPostUTC(
+                        data.startDate,
+                        data.timeZone,
+                        getPostOffsetMsFromJs({
+                            startDate: data.startDate,
+                            postTime: data.postTime,
+                            postDay: data.postDay,
+                            zone: data.timeZone
+                        }),
+                        data.recurrence
+                    )?.toISO()
                 }
             };
 
@@ -439,8 +395,12 @@
 
 
         }
-
+        // Mark Submit Un-Busy:
+        submitBusy.value = false;
         console.log('Form Submitted', formValues.value);
+
+        // Reload Dashboard Templates:
+        useSessionTemplates().execute()
     }
 
     // Exported Types:
@@ -480,9 +440,11 @@
                         </span>
 
                         <!-- Abort/Delete Session - Button -->
-                        <Button unstyled @click="abortForm()"
-                            class="p-2 hover:bg-red-400/15 active:scale-95 cursor-pointer transition-all rounded-lg">
-                            <Trash2Icon class="opacity-40 size-5" />
+                        <Button unstyled @click="abortForm()" :disabled="submitBusy"
+                            class="p-0.5 hover:bg-red-400/15 active:scale-95 cursor-pointer transition-all rounded-lg"
+                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitBusy }">
+                            <XIcon v-if="!submitBusy" class="p-px text-white/70" />
+                            <LoadingIcon v-else class="size-5" />
                         </Button>
                     </section>
 
@@ -554,7 +516,7 @@
                     class="w-full flex flex-row items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
 
                     <!-- Created By - Badge -->
-                    <div v-if="false" class="flex gap-1 items-center flex-row ml-1 text-sm">
+                    <div hidden class="flex gap-1 items-center flex-row ml-1 text-sm">
                         <p> Created By: </p>
                         <!-- User Name/Icon -->
                         <a :href="'https://discord.com/users/' + auth?.userData?.id"
@@ -597,12 +559,13 @@
                             <ArrowRight :stroke-width="'3'" :size="17" />
                         </Button>
 
-
-                        <Button v-else @click="submitForm()"
+                        <!-- Submit Form Button -->
+                        <Button v-else @click="submitForm()" :disabled="submitBusy"
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
-                            unstyled>
+                            :class="{ 'bg-zinc-600! opacity-80! scale-95! cursor-progress!': submitBusy }" unstyled>
                             <p class="text-sm font-bold"> Submit </p>
-                            <CheckIcon :stroke-width="'4'" :size="17" class="scale-90" />
+                            <LoadingIcon class="size-5! animate-pulse!" v-if="submitBusy" />
+                            <CheckIcon v-else :stroke-width="'4'" :size="17" class="scale-90" />
                         </Button>
 
                     </div>

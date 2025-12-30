@@ -71,7 +71,7 @@ export default {
                 return dbResult.success({ message: `Successfully deleted guild!`, guildId })
             }
         },
-    }
+    },
 
 }
 

@@ -5,20 +5,14 @@
     import SessionsTab from './tabs/sessions/sessions.vue';
     import CalendarTab from './tabs/calendar.vue'
     import SessionForm from './components/sessionForm/sesForm.vue'
-    import DashboardNav from './dashboardNav.vue'
+    import DashboardNav from './components/nav/dashboardNav.vue'
     import { supabase } from '@/utils/supabase';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useGuildChannels } from '@/stores/dashboard/guildChannels';
     import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
 
     // Services:
-    const auth = useAuthStore();
-    const nav = useNavStore();
     const dashboard = useDashboardStore();
-
-    // Window Size:
-    const { width: screenWidth } = useWindowSize();
-    const isSmallScreen = computed(() => screenWidth.value < 640)
 
     // Guild - Selected Id:
     const selectedGuildId = computed(() => dashboard.guild.id)
@@ -54,12 +48,12 @@
             <div v-else class="flex flex-row grow w-full h-full">
 
                 <!-- Nav Menu(s) -->
-                <DashboardNav :isSmallScreen />
+                <DashboardNav />
 
                 <!-- Content/Tab View Area -->
                 <div class="flex w-full flex-col grow">
-                    <SessionsTab v-if="dashboard.tabs.current == 'Sessions'" />
-                    <CalendarTab v-if="dashboard.tabs.current == 'Calendar'" />
+                    <SessionsTab v-if="dashboard.nav.currentTab == 'Sessions'" />
+                    <CalendarTab v-if="dashboard.nav.currentTab == 'Calendar'" />
                 </div>
 
             </div>

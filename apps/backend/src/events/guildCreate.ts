@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, Events, Guild, TextDisplayBuilder } from "discord.js";
 import { Log } from "../utils/logs/logtail";
 import core from "../utils/core";
-import sendWithFallback from "../utils/bot/sendWithFallback";
+import sendWithFallback from "../utils/bot/messages/sendWithFallback";
 import discordLog from "../utils/logs/discordLog";
 import dbManager from "../utils/database/manager";
 

@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, CommandInter
 import logtail from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
-import { defaultFooterText } from "../../utils/bot/messageBuilders/basic.js";
+import { defaultFooterText } from "../../utils/bot/messages/basic.js";
 
 
 export default {

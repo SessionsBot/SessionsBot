@@ -2,7 +2,7 @@ import { BaseInteraction, Events, Interaction, MessageFlags } from "discord.js";
 import logtail from "../utils/logs/logtail.js"
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import { isBotPermissionError, sendPermissionAlert } from "../utils/bot/permissions/permissionsDenied.js";
-import { genericErrorMsg } from "../utils/bot/messageBuilders/basic.js";
+import { genericErrorMsg } from "../utils/bot/messages/basic.js";
 import core from "../utils/core.js";
 
 export default {

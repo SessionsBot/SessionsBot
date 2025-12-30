@@ -1,7 +1,8 @@
 import { ChannelType, ContainerBuilder, MessageFlags } from "discord.js";
-import core from "../core.js";
-import logtail from "../logs/logtail.js";
+
 import { Result } from "@sessionsbot/shared";
+import core from "../../core";
+import logtail from "../../logs/logtail";
 
 /** Used to send *"critical"* type messages that deserve to desperately be delivered. Such as permission and setup alerts. */
 export default async (guildId: string, messageContent: ContainerBuilder) => {

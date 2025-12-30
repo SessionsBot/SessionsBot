@@ -84,6 +84,7 @@ export type Database = {
           id: string
           last_post_utc: string | null
           native_events: boolean
+          next_post_utc: string
           post_before_ms: number
           post_in_thread: boolean
           rrule: string | null
@@ -102,6 +103,7 @@ export type Database = {
           id?: string
           last_post_utc?: string | null
           native_events?: boolean
+          next_post_utc: string
           post_before_ms: number
           post_in_thread?: boolean
           rrule?: string | null
@@ -120,6 +122,7 @@ export type Database = {
           id?: string
           last_post_utc?: string | null
           native_events?: boolean
+          next_post_utc?: string
           post_before_ms?: number
           post_in_thread?: boolean
           rrule?: string | null
@@ -129,46 +132,70 @@ export type Database = {
           title?: string
           url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "session_templates_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sessions: {
         Row: {
           created_at: string
           description: string | null
-          duration_ms: string
-          guild: string
+          duration_ms: number
+          event_id: string | null
+          guild_id: string
           id: string
-          name: string
-          starts_at_ms: string
+          starts_at_ms: number
+          template_id: string
+          thread_id: string | null
           time_zone: string
+          title: string
           url: string | null
         }
         Insert: {
           created_at?: string
           description?: string | null
-          duration_ms: string
-          guild: string
+          duration_ms: number
+          event_id?: string | null
+          guild_id: string
           id: string
-          name: string
-          starts_at_ms: string
+          starts_at_ms: number
+          template_id: string
+          thread_id?: string | null
           time_zone: string
+          title: string
           url?: string | null
         }
         Update: {
           created_at?: string
           description?: string | null
-          duration_ms?: string
-          guild?: string
+          duration_ms?: number
+          event_id?: string | null
+          guild_id?: string
           id?: string
-          name?: string
-          starts_at_ms?: string
+          starts_at_ms?: number
+          template_id?: string
+          thread_id?: string | null
           time_zone?: string
+          title?: string
           url?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "sessions_guild_fkey"
-            columns: ["guild"]
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_guild_id_fkey"
+            columns: ["guild_id"]
             isOneToOne: false
             referencedRelation: "guilds"
             referencedColumns: ["id"]

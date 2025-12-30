@@ -3,7 +3,7 @@
     import type { API_SessionTemplateBodyInterface } from "@sessionsbot/shared/zodSchemas";
     import { DateTime } from "luxon";
     import { getTimeZones } from "@vvo/tzdb";
-    import { ArrowBigDownIcon, Calendar1Icon, CalendarSyncIcon, FilterIcon, MotorbikeIcon, PencilIcon, Trash2Icon, UserCheck2Icon, UserX2Icon } from "lucide-vue-next";
+    import { ArrowBigDown, ArrowBigDownIcon, Calendar1Icon, CalendarSyncIcon, FilterIcon, MotorbikeIcon, PencilIcon, Trash2Icon, UserCheck2Icon, UserX2Icon } from "lucide-vue-next";
     import { motion, stagger, type Variants } from 'motion-v'
     import useDashboardStore from "@/stores/dashboard/dashboard";
 
@@ -90,6 +90,7 @@
         <!-- Content - Sessions List -->
         <motion.ul :variants="sessionListVariants" initial="hidden" animate="visible" v-if="sessionTemplates"
             class="flex bg-black/15 gap-4.5 p-3.5 flex-col w-full justify-start items-center">
+
             <!-- Session Card / Row Item: -->
             <motion.li :variants="sessionItemVariants" v-for="session in sessionTemplates" :key="session.id"
                 class="flex flex-wrap gap-1 items-center ring-2 w-full ring-ring bg-white/5 p-1 rounded-md">
@@ -102,7 +103,8 @@
                         <p class="bg-indigo-500 font-bold rounded-md p-0.5 py-0.25"> {{ session.title }} </p>
                         <!-- Time & Zone -->
                         <div class="flex font-bold flex-row flex-nowrap gap-0 items-start justify-center">
-                            <p class="bg-black/25 text-white/75 text-sm rounded-md rounded-tr-none p-0.5">
+                            <p :title="DateTime.fromISO(session.starts_at_utc, { zone: session.time_zone }).toFormat('F')"
+                                class="bg-black/25 text-white/75 text-sm rounded-md rounded-tr-none p-0.5">
                                 {{ DateTime
                                     .fromISO(session.starts_at_utc, { zone: session.time_zone })
                                     .toLocaleString(DateTime.TIME_SIMPLE)
@@ -136,8 +138,30 @@
                             <UserX2Icon v-else :size="16" />
                         </div>
 
-
                     </div>
+
+                    <!-- More Info Accordion -->
+                    <Accordion class="w-full bg-zinc-900! ">
+                        <AccordionPanel value="1">
+                            <AccordionHeader v-slot="ctx" :pt="{ root: 'bg-zinc-900! p-1! rounded-md!' }">
+                                <p class="text-white/70 font-bold">
+                                    Details
+                                </p>
+                            </AccordionHeader>
+                            <AccordionContent
+                                :pt="{ root: 'bg-zinc-900! text-white! p-0!', contentWrapper: 'p-0!', content: 'bg-zinc-700!' }"
+                                class="p-1! text-white/70!">
+
+                                <p v-html="JSON.stringify(session.meta, null, 2) || 'Failed'"
+                                    class="flex w-full min-h-fit! wrap-break-word text-white!">
+
+                                </p>
+
+                            </AccordionContent>
+                        </AccordionPanel>
+                    </Accordion>
+
+
                 </div>
 
                 <!-- Session/Template Buttons -->
