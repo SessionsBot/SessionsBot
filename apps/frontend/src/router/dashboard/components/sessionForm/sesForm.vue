@@ -8,7 +8,7 @@
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import { calculateNextPostUTC, dbIsoUtcToFormDate, determinePostDay, getDurationMs, getPostOffsetMsFromJs, mapRsvps, utcDateFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { calculateNextPostUTC, dbIsoUtcToFormDate, determinePostDay, getPostOffsetMsFromJs, mapRsvps, utcDateFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -336,10 +336,9 @@
                     description: data.description,
                     url: data.url,
                     starts_at_utc: utcDateFromJs(data.startDate, data.timeZone).toISO(),
-                    duration_ms: data?.endDate ? getDurationMs(
-                        utcDateFromJs(data.startDate, data.timeZone),
-                        utcDateFromJs(data.endDate, data.timeZone)
-                    ) : null,
+                    duration_ms: data?.endDate
+                        ? (utcDateFromJs(data.endDate, data.timeZone).toMillis() - utcDateFromJs(data.startDate, data.timeZone).toMillis())
+                        : null,
                     time_zone: data.timeZone,
                     rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
                     rrule: data.recurrence,
@@ -352,17 +351,17 @@
                     }),
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
-                    next_post_utc: calculateNextPostUTC(
-                        data.startDate,
-                        data.timeZone,
-                        getPostOffsetMsFromJs({
+                    next_post_utc: calculateNextPostUTC({
+                        firstDate: utcDateFromJs(data.startDate, data.timeZone),
+                        zone: data.timeZone,
+                        post_before_ms: getPostOffsetMsFromJs({
                             startDate: data.startDate,
                             postTime: data.postTime,
                             postDay: data.postDay,
                             zone: data.timeZone
                         }),
-                        data.recurrence
-                    )?.toISO()
+                        rrule: data?.recurrence
+                    })?.toISO()
                 }
             };
 

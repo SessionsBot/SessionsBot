@@ -84,7 +84,7 @@ export type Database = {
           id: string
           last_post_utc: string | null
           native_events: boolean
-          next_post_utc: string
+          next_post_utc: string | null
           post_before_ms: number
           post_in_thread: boolean
           rrule: string | null
@@ -103,7 +103,7 @@ export type Database = {
           id?: string
           last_post_utc?: string | null
           native_events?: boolean
-          next_post_utc: string
+          next_post_utc?: string | null
           post_before_ms: number
           post_in_thread?: boolean
           rrule?: string | null
@@ -122,7 +122,7 @@ export type Database = {
           id?: string
           last_post_utc?: string | null
           native_events?: boolean
-          next_post_utc?: string
+          next_post_utc?: string | null
           post_before_ms?: number
           post_in_thread?: boolean
           rrule?: string | null
@@ -163,7 +163,7 @@ export type Database = {
           duration_ms: number
           event_id?: string | null
           guild_id: string
-          id: string
+          id?: string
           starts_at_ms: number
           template_id: string
           thread_id?: string | null

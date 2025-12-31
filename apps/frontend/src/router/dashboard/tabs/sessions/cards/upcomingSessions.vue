@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import type { Database } from "@sessionsbot/shared";
+    import { calculateNextPostUTC, dbIsoUtcToDateTime, dbIsoUtcToFormDate, getTemplateMeta, type Database } from "@sessionsbot/shared";
     import type { API_SessionTemplateBodyInterface } from "@sessionsbot/shared/zodSchemas";
     import { DateTime } from "luxon";
     import { getTimeZones } from "@vvo/tzdb";
@@ -152,10 +152,18 @@
                                 :pt="{ root: 'bg-zinc-900! text-white! p-0!', contentWrapper: 'p-0!', content: 'bg-zinc-700!' }"
                                 class="p-1! text-white/70!">
 
-                                <p v-html="JSON.stringify(session.meta, null, 2) || 'Failed'"
-                                    class="flex w-full min-h-fit! wrap-break-word text-white!">
+                                <Button @click="console.log(calculateNextPostUTC({
+                                    firstDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone),
+                                    zone: session.time_zone,
+                                    post_before_ms: session.post_before_ms,
+                                    rrule: session.rrule
+                                })?.setZone(session.time_zone))">
+                                    Log Next UTC
+                                </Button>
 
-                                </p>
+                                <Button @click="console.log(getTemplateMeta(session as any))">
+                                    Log META
+                                </Button>
 
                             </AccordionContent>
                         </AccordionPanel>
