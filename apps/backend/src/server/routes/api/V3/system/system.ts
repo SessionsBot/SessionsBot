@@ -1,8 +1,9 @@
 import axios from 'axios';
 import express from 'express';
 import { APIResponse as Reply } from '@sessionsbot/shared'
-import { Log } from '../../../../../utils/logs/logtail';
+import { useLogger } from '../../../../../utils/logs/logtail';
 
+const createLog = useLogger();
 
 const systemRouter = express.Router({ mergeParams: true })
 
@@ -43,7 +44,7 @@ systemRouter.all('/status', async (req, res) => {
 
     } catch (err) {
         // Return failure:
-        new Log('Api').warn('Failed to fetch system statuses!', { err });
+        createLog.for('Api').warn('Failed to fetch system statuses!', { err });
         return new Reply(res).failure(`Failed to fetch system statuses`, 500);
     }
 })

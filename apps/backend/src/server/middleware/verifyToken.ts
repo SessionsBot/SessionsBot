@@ -2,8 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { supabase } from "../../utils/database/supabase.js";
 import { APIResponse as reply } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
-import logtail from "../../utils/logs/logtail.js";
+import { useLogger } from "../../utils/logs/logtail.js";
 import { AuthError, User } from "@supabase/supabase-js";
+
+const createLog = useLogger();
 
 export interface authorizedRequest extends Request {
     auth: {
@@ -34,7 +36,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 
     } catch (err) {
         // Log and return error:
-        logtail.warn('🔑 - Auth Token Verification Failure - See Details..', { err });
+        createLog.for('Api').warn('🔑 - Auth Token Verification Failure - See Details..', { err });
         return new reply(res).failure('An error occurred while verifying user auth token.', 500)
     }
 }

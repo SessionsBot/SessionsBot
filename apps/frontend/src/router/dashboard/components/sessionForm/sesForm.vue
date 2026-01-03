@@ -352,18 +352,19 @@
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
                     next_post_utc: calculateNextPostUTC({
-                        firstDate: utcDateFromJs(data.startDate, data.timeZone),
+                        startDate: utcDateFromJs(data.startDate, data.timeZone),
                         zone: data.timeZone,
-                        post_before_ms: getPostOffsetMsFromJs({
+                        postOffsetMs: getPostOffsetMsFromJs({
                             startDate: data.startDate,
                             postTime: data.postTime,
                             postDay: data.postDay,
                             zone: data.timeZone
                         }),
-                        rrule: data?.recurrence
+                        rrule: data?.recurrence,
                     })?.toISO()
                 }
             };
+
 
             if (formAction.value == 'new') {
                 // Create New Session - Send Request

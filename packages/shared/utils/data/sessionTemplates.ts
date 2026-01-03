@@ -1,14 +1,26 @@
 import { DateTime } from "luxon";
-import * as RRulePkg from "rrule";
 import type { Database } from "../../types";
-const { RRule } = RRulePkg;
+
+// Env Safe - RRule Package Imports:
+import * as rrule from "rrule";
+type RRuleExports = {
+    RRule: typeof import("rrule").RRule;
+    rrulestr: typeof import("rrule").rrulestr;
+    datetime: typeof import("rrule").datetime;
+};
+// Runtime-safe resolution
+const resolved: RRuleExports = (rrule as any).default
+    ? (rrule as any).default // Backend / Node / tsx
+    : (rrule as any); // Frontend / Vite / ESM
+export const { RRule, rrulestr, datetime } = resolved;
+
 
 
 
 // -------[  FRONTEND --> BACKEND UTILITIES  ]-------
 
 
-// Date/Time/Zones -> Helper Fn(s):
+/** Converts a local JavaScript `Date` to a `DateTime` in the UTC zone. */
 export function utcDateFromJs(date: Date, zone: string) {
     const base = DateTime.fromJSDate(date);
     return DateTime.fromObject({
@@ -20,6 +32,8 @@ export function utcDateFromJs(date: Date, zone: string) {
     }, { zone }).startOf('minute').toUTC()
 }
 
+
+/** Calculates the post offset in milliseconds from provided template data */
 export function getPostOffsetMsFromJs(opts: {
     startDate: Date
     postTime: Date
@@ -68,7 +82,8 @@ export function getPostOffsetMsFromJs(opts: {
 
 // -------[  BACKEND --> FRONTEND UTILITIES  ]-------
 
-
+/** Converts a database ISO string to a JavaScript `Date` in LOCAL zone 
+ * @note Includes time from ISO in specified zone. (overrides local zone) */
 export function dbIsoUtcToFormDate(
     isoUtc: string,
     zone: string,
@@ -89,6 +104,7 @@ export function dbIsoUtcToFormDate(
 }
 
 
+/** Converts a database ISO string to a `DateTime` in specified zone. */
 export function dbIsoUtcToDateTime(
     isoUtc: string,
     zone: string,
@@ -104,6 +120,7 @@ export function dbIsoUtcToDateTime(
 }
 
 
+/** Determines template's "Post Day" from inputs such as startIso, offset, and zone.  */
 export function determinePostDay(startIso: string, offsetMs: number, zone: string) {
     const start = DateTime.fromISO(startIso, { zone: 'utc' }).setZone(zone);
     const post = start.plus({ milliseconds: offsetMs })
@@ -113,6 +130,7 @@ export function determinePostDay(startIso: string, offsetMs: number, zone: strin
 }
 
 
+/** Maps RSVPs from `JSON` string data from database.  */
 export function mapRsvps(rsvpJSON: any) {
     const parsed = JSON.parse(String(rsvpJSON));
     const rsvpMap = new Map<string, {
@@ -127,67 +145,122 @@ export function mapRsvps(rsvpJSON: any) {
 
 // -------[  HYBRID --> SESSION TEMPLATES  ]-------
 
-
-export function buildRule(rrule: string, start: DateTime): RRulePkg.RRule {
+/** Builds an `RRule` from RRule string and origin start time from template.*/
+export function buildRule(rrule: string, start: DateTime): rrule.RRule {
     const base = RRule.fromString(rrule);
+    const startUTC = start.toUTC().startOf('minute')
     return new RRule({
         ...base.options,
-        dtstart: start.toJSDate(),
+        byhour: startUTC.hour,
+        byminute: startUTC.minute,
+        bysecond: 0,
+        dtstart: datetime(startUTC.year, startUTC.month, startUTC.day, startUTC.hour, startUTC.minute, 0),
+        tzid: 'UTC'
     });
 }
 
-
+/** Calculate the next UCT Post Time for a session template. 
+ * @returns A `DateTime` of the next post time after `referenceDate` in UTC. */
 export function calculateNextPostUTC(opts: {
-    firstDate: DateTime,
+    /** `DateTime` of the templates FIRST start date in UTC. */
+    startDate: DateTime,
+    /** The post offset in milliseconds as negative number from session start time. */
+    postOffsetMs: number,
+    /** The time zone string assigned to this session/dates */
     zone: string,
-    post_before_ms: number,
+    /** The `RRule` recurrence string for session repeats, if any. */
     rrule?: string | null,
-    fromDate?: DateTime
-    includeBuffer?: boolean
-}): DateTime | null {
-    // Get options
-    let { firstDate, zone, post_before_ms, rrule, fromDate, includeBuffer } = opts;
-    const bufferSecs = includeBuffer ? (5 * 60) : 0; // 5 mins / 0 secs
-    firstDate = firstDate.setZone(zone);
-    fromDate = fromDate?.setZone(zone);
+    /** The reference `DateTime` to only search for next post dates ***AFTER***(and including) this date, if undefined defaults to current time in zone. 
+     * @note `zone` should be set to 'utc'!
+    */
+    referenceDate?: DateTime
+}) {
+    // Get Options:
+    let { startDate, postOffsetMs, zone, rrule, referenceDate = DateTime.now().toUTC() } = opts;
+    startDate = startDate
+        .startOf('minute')
+        .toUTC();
+    referenceDate = referenceDate
+        .startOf('minute')
+        .toUTC();
 
-    // Get dates
-    let now = DateTime.now().setZone(zone);
-    if (fromDate) {
-        now = fromDate.setZone(zone);
-    }
-    // Get recurrence:
-    const rule = rrule ? buildRule(rrule, firstDate) : null
+    // FIRST possible post ever
+    const firstPostUtc = startDate.plus({ milliseconds: postOffsetMs }).startOf('minute');
 
-    // If no rule/recurrence:
-    if (!rule) {
-        // No REPEATS - If last post < past today:
-        const post = firstDate
-            .plus({ millisecond: post_before_ms })
-            .toUTC()
-            .startOf('minute')
-        if ((post.toSeconds() + bufferSecs) <= now.toSeconds()) {
-            // last post already occurred
-            return null
-        } else {
-            return post
-        }
-    } else {
-        // REPEATS - Determine rule dates:
-        const next = rule.after(now.toJSDate(), true)
-        if (!next) return null;
-        const nextPost = DateTime.fromJSDate(next, { zone: 'utc' })
-            .setZone(zone)
-            .set({ hour: firstDate.hour, minute: firstDate.minute }) // !? maybe err here ?
-            .plus({ millisecond: post_before_ms })
-            .startOf('minute')
-            .toUTC();
-        if ((nextPost.toSeconds() + bufferSecs) <= now.toSeconds()) return null;
-        else return nextPost
+    // ---- ONE-TIME TEMPLATE ----
+    if (!rrule) {
+        return firstPostUtc > referenceDate ? firstPostUtc : null;
     }
+
+    // ---- RECURRING TEMPLATE ----
+    const rule = buildRule(rrule, startDate);
+
+    // Search RRule for next start -> post:
+    const searchFrom = DateTime
+        .max(firstPostUtc, referenceDate)
+        .startOf('minute')
+    const nextStartJs = rule.after(datetime(searchFrom.year, searchFrom.month, searchFrom.day, searchFrom.hour, searchFrom.minute, 0), true);
+    if (!nextStartJs) return null;
+
+    // Get Post from next Start Date:
+    let nextStartUtc = DateTime.fromJSDate(nextStartJs).toUTC();
+    console.info('NEXT UTC DATA', { rule, postOffsetMins: (postOffsetMs / 1000) / 60, nextStartJs, nextStartUtc })
+    return nextStartUtc.plus({ milliseconds: postOffsetMs }).startOf('minute');
+}
+
+/** Calculate the LAST UCT Post Time for a session template, effectively its expiration. 
+ * @returns A `DateTime` of the templates "expiration date" in UTC. (will be deleted from *db* past this date) */
+export function calculateExpiresAtUTC(opts: {
+    startDate: DateTime
+    postOffsetMs: number
+    zone: string
+    rrule?: string | null
+}) {
+    let { startDate, postOffsetMs, rrule } = opts;
+
+    startDate = startDate.startOf('minute').toUTC();
+
+    // First post ever
+    const firstPostUtc = startDate.plus({ milliseconds: postOffsetMs });
+
+    // ---- ONE-TIME TEMPLATE ----
+    if (!rrule) {
+        return firstPostUtc;
+    }
+
+    const rule = buildRule(rrule, startDate);
+    const { count, until } = rule.options;
+
+    // ---- INFINITE TEMPLATE ----
+    if (!count && !until) {
+        return null;
+    }
+
+    let lastStartJs: Date | null = null;
+
+    if (until) {
+        lastStartJs = rule.before(until, true);
+    } else if (count) {
+        const all = rule.all();
+        lastStartJs = all.at(-1) ?? null;
+    }
+
+    if (!lastStartJs) return null;
+
+    const lastStartUtc = DateTime
+        .fromJSDate(lastStartJs)
+        .toUTC()
+        .startOf('minute');
+
+    return lastStartUtc
+        .plus({ milliseconds: postOffsetMs })
+        .startOf('minute');
 }
 
 
+
+// ! IGNORE FOR NOW - OLD LOGIC (maybe some good stuff lol)
+/** Parses template data from database and returns relevant information related to its states/occurrences. */
 export function getTemplateMeta(t: Database['public']['Tables']['session_templates']['Row']) {
 
     // Get dates:
@@ -284,7 +357,7 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
             if (postDate.toSeconds() < nowInZone.toSeconds()) {
                 continue;
             }
-
+            // Compute/Assign Closest Date:
             else {
                 const curDif = (closestDate.toSeconds() - nowInZone.toSeconds())
                 const thisDif = (postDate.toSeconds() - nowInZone.toSeconds())
@@ -296,19 +369,6 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
         return closestDate;
     }
 
-    // See any issues with this logic that computes the template/sessions schedules next POST time?
-    // or any refinements I should/will appreatice later to have made?
-    // ill use this as I load my session templates from db -> compute its meta -> post (internally) AND update the db for its "Next Post time utc"
-    // but.... my mind is definitely already thinking about this stuff...:
-    // if I do run a cron that fetches all templates by that "next_post_utc" field...
-    // ill need to make sure that this util it ALWAYS giving back the correct next post time to save in DB... and also
-    // the timing will have to be right for when I decide to actually scan / re-save its next post time of course too...
-    // so please help me weed out any mix ups related/similar to that stuff.... cause if my cron "creation schedule" runs every 5 mins
-    // (proably from random times due to server startup or I could define like each 5 mins of the hour? not sure which so I favor? I wouldnt want a huge logic / post /save load on each 5 min interval ofc)
-    // but to ensure that no post time accidently dosent get created -> saved -> and then post obvi... that would break the WHOLE session / repeat / logic....
-    // questions make sense? feel free to ask more questions to claify
-
-
     return {
         /** Contains the templates FIRST start/post date(s)
          * @note could be outdated from edits/recurrence */
@@ -319,9 +379,10 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
         rule,
         /** `Boolean` representing weather this session will be posted in its selected time zone today. */
         postsToday: postsToday(),
-        /** `Object` containing this session templates next post times, from current time in zone. (if any) */
+        /** `DateTime` containing this session templates next post time, from current time in selected zone. (if any) */
         nextPost: nextPost(),
-        /** `Boolean` if this session template has already past its last post date in its time zone. */
+        /** `Boolean` if this session template has already past its last post date in its time zone. 
+         * @note this will mark the template for deletion */
         templateOutdated: templateOutdated(),
     }
 }

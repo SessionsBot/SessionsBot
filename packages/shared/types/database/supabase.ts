@@ -80,6 +80,7 @@ export type Database = {
           created_at: string
           description: string | null
           duration_ms: number | null
+          expires_at_utc: string | null
           guild_id: string
           id: string
           last_post_utc: string | null
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_ms?: number | null
+          expires_at_utc?: string | null
           guild_id: string
           id?: string
           last_post_utc?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_ms?: number | null
+          expires_at_utc?: string | null
           guild_id?: string
           id?: string
           last_post_utc?: string | null

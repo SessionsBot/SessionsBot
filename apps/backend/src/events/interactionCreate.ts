@@ -1,9 +1,11 @@
 import { BaseInteraction, Events, Interaction, MessageFlags } from "discord.js";
-import logtail from "../utils/logs/logtail.js"
+import { useLogger } from "../utils/logs/logtail.js"
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import { isBotPermissionError, sendPermissionAlert } from "../utils/bot/permissions/permissionsDenied.js";
 import { genericErrorMsg } from "../utils/bot/messages/basic.js";
 import core from "../utils/core.js";
+
+const createLog = useLogger();
 
 export default {
 	name: Events.InteractionCreate,
@@ -14,7 +16,7 @@ export default {
 		if (interaction.isChatInputCommand()) {
 			const command = botClient.commands.get(interaction.commandName);
 
-			if (!command) return logtail.warn(`No command matching ${interaction.commandName} was found.`);
+			if (!command) return createLog.for('Bot').error(`No command matching ${interaction.commandName} was found.`)
 			try {
 				// Execute Command:
 				await command.execute(interaction);
@@ -23,7 +25,7 @@ export default {
 				// Check for Bot Permission Error:
 				if (isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
 				// Log
-				logtail.warn('Command Interaction Error - See Details', { error, interaction });
+				createLog.for('Bot').warn('Command Interaction Error - See Details', { error, interaction });
 				// Respond with Alert
 				const alertMsg = genericErrorMsg({
 					reasonDesc: `The </${interaction?.commandName}:${interaction?.commandId}> command has **FAILED** execution! Confirm inputs *(if any)* and try again!`
@@ -54,7 +56,7 @@ export default {
 				// Check for Bot Permission Error:
 				if (isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
 				// Log
-				logtail.warn('Button Interaction Error - See Details', { error, interaction });
+				createLog.for('Bot').warn('Button Interaction Error - See Details', { error, interaction });
 				// Respond with Alert:
 				const alertMsg = genericErrorMsg({
 					reasonDesc: `This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${core.urls.statusPage}) or contact support!`
@@ -80,7 +82,7 @@ export default {
 			} catch (error) {
 				// Check for Bot Permission Error:
 				// if(isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
-				logtail.warn('Auto-complete Interaction Error - See Details', { error, interaction });
+				createLog.for('Bot').warn('Auto-complete Interaction Error - See Details', { error, interaction });
 			}
 		}
 

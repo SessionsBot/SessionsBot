@@ -3,11 +3,11 @@ import core from "./core.js";
 import discordLog from "./logs/discordLog.js";
 import { DateTime } from "luxon";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
-import { initTemplateCreationScheduler } from "./database/schedules/createFromTemplates.js";
+import { initTemplateCreationScheduler } from "./database/schedules/templates.js";
+import { useLogger } from "./logs/logtail.js";
 
-
+const createLog = useLogger();
 const guildId = process.env["GUILD_ID_DEVELOPMENT"]
-
 
 export default {
     /** Runs on bot startup in DEVELOPMENT environments only. */
@@ -19,6 +19,7 @@ export default {
 
                 // const result = await sendPermissionAlert(guildId);
                 // console.info(result)
+
                 initTemplateCreationScheduler();
 
                 // End testing..

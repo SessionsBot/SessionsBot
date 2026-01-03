@@ -1,43 +1,15 @@
 import { Logtail } from "@logtail/node";
 import LogCategories from './categories'
-const ENVIRONMENT = process.env['ENVIRONMENT'];
-const sourceToken = process.env['LOGTAIL_SOURCE_TOKEN'];
-const ingestingHost = process.env['LOGTAIL_INGESTING_HOST'];
+import { keyof } from "zod";
 
+// Env Variables:
+const environment: string = process.env['ENVIRONMENT'];
+const isProduction = (environment == "production");
+const sourceToken: string = isProduction ? process.env['LOGTAIL_SOURCE_TOKEN'] : process.env['DEV_LOGTAIL_SOURCE_TOKEN'];
+const ingestingHost: string = isProduction ? process.env['LOGTAIL_INGESTING_HOST'] : process.env['DEV_LOGTAIL_INGESTING_HOST'];
+
+// Types:
 type categoryName = keyof typeof LogCategories;
-
-
-/**  Logger Utility - Predefined Class */
-export class Log {
-    private logTitle: string;
-
-    constructor(category: categoryName) {
-        // Get Log Category Data/Title:
-        const categoryData = LogCategories[category];
-        if (categoryData.name == 'Unknown') {
-            this.logTitle = `[${categoryData.emoji}]`
-        } else {
-            this.logTitle = `[${categoryData.emoji} ${categoryData.name}]`
-        }
-    };
-
-    /** Info level log */
-    info(text: string, extra?: object) {
-        logtail().info(`${this.logTitle} - ${text}`, extra);
-    }
-    /** Debug level log */
-    debug(text: string, extra?: object) {
-        logtail().debug(`${this.logTitle} - ${text}`, extra);
-    }
-    /** Warning level log */
-    warn(text: string, extra?: object) {
-        logtail().warn(`${this.logTitle} - ${text}`, extra);
-    }
-    /** Error level log */
-    error(text: string, extra?: object) {
-        logtail().error(`${this.logTitle} - ${text}`, extra);
-    }
-}
 
 /** Local logger tool to be using in development environment. */
 class DevLogger {
@@ -52,19 +24,44 @@ class DevLogger {
 /** `Utility` - **Send logs to internal cloud log storage!** 📃
  * 
  * DEV Environment → Logs locally using console */
-const logtail = (): DevLogger => {
+const logtail = () => {
 
-    if (ENVIRONMENT !== 'development') {
-        return new Logtail(sourceToken || '', {
-            endpoint: ingestingHost,
-            sendLogsToConsoleOutput: true,
+    return new Logtail(sourceToken || '', {
+        endpoint: ingestingHost,
+        sendLogsToConsoleOutput: true,
+        sendLogsToBetterStack: isProduction,
+    });
 
-        });
+}
 
-    } else { // dev environment - log locally:
-        return new DevLogger()
+/** Factory Function - Use to create/save logs with pre-defined category prefixes. 
+ * @example // Definition:
+ * const createLog = useLogger();
+ * // Usage Example:
+ * createLog.for('Database').info('This is a log message!', {extra: any}) */
+export function useLogger() {
+    return {
+
+        /** Creates a new log within a specified category. */
+        for: (
+            /** Provide the category to create a new log for. */
+            category: categoryName
+        ) => {
+            const logTitle = `${LogCategories[category].emoji} ${LogCategories[category].name}`
+            return {
+                /** Creates an `Info` level log. */
+                info: (msg: string, extra?: object) => logtail().info(`[${logTitle}] - ${msg}`, extra),
+                /** Creates an `Debug` level log. */
+                debug: (msg: string, extra?: object) => logtail().debug(`[${logTitle}] - ${msg}`, extra),
+                /** Creates an `Warn` level log. */
+                warn: (msg: string, extra?: object) => logtail().warn(`[${logTitle}] - ${msg}`, extra),
+                /** Creates an `Error` level log. */
+                error: (msg: string, extra?: object) => logtail().error(`[${logTitle}] - ${msg}`, extra),
+            }
+        },
+        /** Uses Logtail's native `flush()` method. */
+        // flush: () => logtail().flush()
     }
-
 }
 
 export default logtail()

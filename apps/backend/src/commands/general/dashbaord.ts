@@ -1,9 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, CommandInteraction, ComponentType, ContainerBuilder, InteractionContextType, MessageFlags, PermissionFlagsBits, PermissionsBitField, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandChannelOption, TextDisplayBuilder } from "discord.js";
-import logtail from "../../utils/logs/logtail.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
+import { useLogger } from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 import { defaultFooterText } from "../../utils/bot/messages/basic.js";
 
+const createLog = useLogger();
 
 export default {
     // Command Definition:
@@ -50,7 +51,7 @@ export default {
             // Check for Bot Permission Error:
             if (isBotPermissionError(err)) sendPermissionAlert(interaction.guildId)
             // Log failure
-            logtail.warn(`The support command failed during an interaction... see details`, { interaction, err })
+            createLog.for('Bot').warn(`The /dashboard command failed during an interaction... see details`, { interaction, err });
         }
     }
 }

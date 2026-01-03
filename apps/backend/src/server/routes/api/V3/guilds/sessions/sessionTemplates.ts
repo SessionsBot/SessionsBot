@@ -2,10 +2,12 @@ import express from 'express';
 import { verifyGuildAdmin } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
 import { API_SessionTemplateBodySchema, Database, APIResponse as reply } from '@sessionsbot/shared';
-import logtail, { Log } from '../../../../../../utils/logs/logtail';
+import logtail, { useLogger } from '../../../../../../utils/logs/logtail';
 import * as z from 'zod';
 import { HttpStatusCode } from 'axios';
 import { supabase } from '../../../../../../utils/database/supabase';
+
+const createLog = useLogger();
 
 // Create Router:
 // path: `https://ApiRoot.any/api/guilds/:guildId/sessions/templates`;
@@ -29,7 +31,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: auth
             const { data: newSession, error: saveError } = await supabase.from('session_templates').insert(sessionData).select('*').single()
             if (saveError || !newSession) {
                 // Return Failure:
-                new Log('Api').warn('Failed to Save - New Session Template', { data: sessionData, saveError });
+                createLog.for('Api').warn('Failed to Save - New Session Template', { data: sessionData, saveError });
                 return new reply(res).failure({ reason: "Failed to Save - New Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
@@ -40,7 +42,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: auth
     } catch (err) {
         // Log & Return Err:
         const errTxt = `Failed to create a new session template!`;
-        new Log('Api').warn(errTxt, { err, body: req.body, from: 'Caught Error!' });
+        createLog.for('Api').warn(errTxt, { err, body: req.body, from: 'Caught Error!' });
         return new reply(res).failure(errTxt);
     }
 })
@@ -67,7 +69,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: aut
 
             if (saveError || !ExtSession) {
                 // Return Failure:
-                new Log('Api').warn('Failed to Edit - Existing Session Template', { data: sessionData, saveError });
+                createLog.for('Api').warn('Failed to Edit - Existing Session Template', { data: sessionData, saveError });
                 return new reply(res).failure({ reason: "Failed to Edit - Existing Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
@@ -78,7 +80,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: aut
     } catch (err) {
         // Log & Return Err:
         const errTxt = `Failed to edit existing session template!`;
-        new Log('Api').warn(errTxt, { err, body: req.body, from: 'Caught Error!' });
+        createLog.for('Api').warn(errTxt, { err, body: req.body, from: 'Caught Error!' });
         return new reply(res).failure(errTxt);
     }
 })

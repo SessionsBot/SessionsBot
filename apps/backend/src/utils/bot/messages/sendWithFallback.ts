@@ -2,7 +2,8 @@ import { ChannelType, ContainerBuilder, MessageFlags } from "discord.js";
 
 import { Result } from "@sessionsbot/shared";
 import core from "../../core";
-import logtail from "../../logs/logtail";
+import { useLogger } from "../../logs/logtail";
+const createLog = useLogger();
 
 /** Used to send *"critical"* type messages that deserve to desperately be delivered. Such as permission and setup alerts. */
 export default async (guildId: string, messageContent: ContainerBuilder) => {
@@ -56,7 +57,7 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
 
     } catch (err) {
         // Log and return failure:
-        logtail.error(`[⚠] - Failed to desperately send a message to guild ${guildId}`, { err });
+        createLog.for('Bot').error(`Failed to desperately send a message to guild ${guildId}`, { err });
         return Result.failure('Failed to desperately send message to  guild...', err);
     }
 }

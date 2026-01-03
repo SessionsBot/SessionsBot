@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from "express"
 import { APIResponse } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import core from "../../utils/core.js";
-import logtail from "../../utils/logs/logtail";
+import { useLogger } from "../../utils/logs/logtail";
 import { authorizedRequest } from "./verifyToken.js";
 
+const createLog = useLogger();
 
 /** Verifies that the authenticated user from request is a member of the Discord Guild.*/
 const verifyGuildMember = async (req: authorizedRequest, res: Response, next: NextFunction) => {
@@ -24,7 +25,7 @@ const verifyGuildMember = async (req: authorizedRequest, res: Response, next: Ne
 
     } catch (err) {
         // Log & return error:
-        logtail.warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
+        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
         return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${req?.params?.guildId}`);
     }
 }
@@ -54,7 +55,7 @@ const verifyGuildAdmin = async (req: authorizedRequest, res: Response, next: Nex
 
     } catch (err) {
         // Log & return error:
-        logtail.warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
+        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
         return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${req?.params?.guildId}`);
     }
 }

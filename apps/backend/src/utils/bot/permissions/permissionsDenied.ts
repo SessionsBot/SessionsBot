@@ -1,10 +1,12 @@
 import { ButtonStyle, ComponentType, ContainerBuilder, PermissionFlagsBits, PermissionsString, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import core from "../../core.js"
 // import guildManager from "../database/guildManager.js";
-import logtail from "../../logs/logtail.js";
+import { useLogger } from "../../logs/logtail.js";
 import sendWithFallback from "../messages/sendWithFallback.js";
 import { Result } from "@sessionsbot/shared";
-import { requiredBotPermsStrings } from './required'
+import { requiredBotPermsStrings } from './required';
+
+const createLog = useLogger();
 
 export const isBotPermissionError = (err: any) => {
     return [50013, 50001, 50007].includes(err?.code);
@@ -89,7 +91,7 @@ export const sendPermissionAlert = async (guildId: string) => {
 
     } catch (err) {
         // Log Error:
-        logtail.warn('[!!] Failed to run PERMISSION CHECKS for guild! - See Details', { err });
+        createLog.for('Bot').warn('[!!] Failed to run PERMISSION CHECKS for guild! - See Details', { err });
         return Result.failure('Failed to run permission checks for guild!', err)
     }
 }

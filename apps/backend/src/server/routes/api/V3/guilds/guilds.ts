@@ -1,6 +1,6 @@
 import axios from "axios";
 import express from "express";
-import logtail from "../../../../../utils/logs/logtail.js";
+import { useLogger } from "../../../../../utils/logs/logtail.js";
 import { APIResponse as reply } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin } from "../../../../middleware/guildMembership.js";
@@ -10,7 +10,7 @@ import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
-
+const createLog = useLogger();
 
 // GET/FETCH - Guild Channels:
 guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
@@ -33,7 +33,7 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req
 
     } catch (err) {
         // Log & Return Error:
-        logtail.warn(`[🌐] API REQ - Failed to fetch guild channels!`, { err, actorId: req.auth.user.id });
+        createLog.for('Api').warn(`Failed to fetch guild channels!`, { err, actorId: req.auth.user.id });
         return new reply(res).failure(err, 500)
     }
 });
@@ -51,7 +51,7 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: a
         return new reply(res).success(guildRoles)
     } catch (err) {
         // Log & Return Error:
-        logtail.warn(`[🌐] API REQ - Failed to fetch guild roles!`, { err, actorId: req.auth.user.id });
+        createLog.for('Api').warn(`Failed to fetch guild roles!`, { err, actorId: req.auth.user.id });
         return new reply(res).failure(err, 500)
     }
 })

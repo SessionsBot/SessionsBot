@@ -153,9 +153,9 @@
                                 class="p-1! text-white/70!">
 
                                 <Button @click="console.log(calculateNextPostUTC({
-                                    firstDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone),
+                                    startDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone).toUTC(),
                                     zone: session.time_zone,
-                                    post_before_ms: session.post_before_ms,
+                                    postOffsetMs: session.post_before_ms,
                                     rrule: session.rrule
                                 })?.setZone(session.time_zone))">
                                     Log Next UTC
