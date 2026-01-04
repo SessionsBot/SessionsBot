@@ -3,8 +3,10 @@
     import z, { number, prettifyError, safeParse, treeifyError, type infer } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { ToggleSwitch } from 'primevue';
-    import { Frequency, RRule, ALL_WEEKDAYS, Weekday, type WeekdayStr } from 'rrule'
+    import { Frequency, RRule, ALL_WEEKDAYS, Weekday, datetime, type WeekdayStr } from 'rrule'
     import InputTitle from '../labels/inputTitle.vue';
+    import { DateTime } from 'luxon';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -12,6 +14,8 @@
         validateField: (name: NewSessions_FieldNames) => void
     }>();
     const { invalidFields, validateField } = props;
+
+    const dashboard = useDashboardStore();
 
 
     // Recurrence Enabled Toggle:
@@ -122,16 +126,25 @@
                 !v.interval
             ) return;
 
+            const endDate = v.endRepeatDate
+                ? DateTime.fromJSDate(v.endRepeatDate)
+                    .startOf('day')
+                : null;
+
             // Create Recurrence RRule:
             const newRule = new RRule({
                 freq: v.frequency as any,
                 interval: v.interval,
                 byweekday: v.weekdays || undefined,
                 count: v.endRepeatCount,
-                until: v.endRepeatDate
+                until: endDate
+                    ? datetime(endDate.year, endDate.month, endDate.day)
+                    : undefined,
+                // tzid: 'UTC'
             });
             if (newRule) {
                 // Assign to form values:
+                console.info('CREATED RULE', newRule, newRule.toString())
                 recurrence.value = newRule.toString();
             }
 
@@ -149,10 +162,12 @@
     })
 
     // Watch recurrence/rrule -> On EDIT -> Load Options:
-    watch(() => recurrence.value, (v) => {
-        if (v) {
+    watch(() => dashboard.sessionForm.editPayload, (payload) => {
+        if (payload) {
+            const ruleText = payload?.rrule
+            if (!ruleText) return;
             // Get Editing RRule
-            const rule = RRule.fromString(v)
+            const rule = RRule.fromString(ruleText)
             // Set freq:
             localForm.value.formValues.frequency = rule.options.freq
             // Set interval:
@@ -166,9 +181,14 @@
                 localForm.value.formValues.weekdays = rule.origOptions.byweekday as any;
             }
             // Set End Repeat Date:
-            if (rule.origOptions.until) {
+            if (rule.options.until) {
                 endRepeatDateEnabled.value = true;
-                localForm.value.formValues.endRepeatDate = rule.origOptions.until
+                localForm.value.formValues.endRepeatDate =
+                    DateTime
+                        .fromJSDate(rule.options.until)
+                        .toLocal()
+                        .startOf('day')
+                        .toJSDate();
             }
             // Set Max Repeat Count:
             if (rule.origOptions.count) {

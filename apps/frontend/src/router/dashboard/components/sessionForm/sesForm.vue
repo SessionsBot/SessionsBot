@@ -8,13 +8,14 @@
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import { calculateNextPostUTC, dbIsoUtcToFormDate, determinePostDay, getPostOffsetMsFromJs, mapRsvps, utcDateFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, mapRsvps, utcDateTimeFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/loadingIcon.vue';
     import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
+    import { datetime, RRule } from 'rrule';
 
     // Services:
     const confirmService = useConfirm();
@@ -29,7 +30,6 @@
 
     // Guild Id:
     const guildId = computed(() => dashboard.guild.id)
-
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -63,7 +63,7 @@
         }
     });
 
-    /** Form Values - (v-modeled) */
+    /** Form Value Defaults - Factory Fn */
     function createFormDefaults() {
         return {
             title: '',
@@ -81,7 +81,7 @@
             nativeEvents: false,
         }
     }
-
+    /** Form Values - (v-modeled) */
     const formValues = ref<NewSession_ValueTypes | { [field in NewSessions_FieldNames]: any }>(createFormDefaults())
     const formDefaults = ref(createFormDefaults())
 
@@ -265,6 +265,15 @@
             } else return null
         }
 
+        // Util: Determine Post Day from Template Data:
+        function determinePostDay(startIso: string, offsetMs: number, zone: string) {
+            const start = DateTime.fromISO(startIso, { zone: 'utc' }).setZone(zone);
+            const post = start.plus({ milliseconds: offsetMs })
+            return post.startOf('day') < start.startOf('day')
+                ? 'Day before'
+                : 'Day of'
+        }
+
         // Set Form Data:
         formValues.value = {
             title: data.title,
@@ -317,84 +326,192 @@
             submitBusy.value = false;
             // Return Invalid Submission:
             return console.warn('Invalid Submission!', result);
-        } else {
-            // Valid Submission - Prepare Req for API:
-            let { data } = result;
-            // Set empty strings to null:
-            for (const [field, fieldData] of Object.entries(data)) {
-                if (typeof fieldData == 'string' && fieldData.trim() == '') {
-                    //@ts-expect-error
-                    data[field] = null;
+        }
+        // Valid Submission - Prepare Req for API:
+        let { data } = result;
+        // Set empty strings to null:
+        for (const [field, fieldData] of Object.entries(data)) {
+            if (typeof fieldData == 'string' && fieldData.trim() == '') {
+                // @ts-expect-error
+                data[field] = null;
+            }
+        };
+
+        // Convert - Start Date:
+        const startUtc = utcDateTimeFromJs(data.startDate, data.timeZone)
+        const { hour: startHour, minute: startMinute } = DateTime.fromJSDate(data.startDate);
+
+        // Compute - Duration Ms:
+        const getDurationMs = () => {
+            const endDate = data.endDate
+            if (!endDate) return null;
+            const endUtc = utcDateTimeFromJs(endDate, data.timeZone);
+            return (endUtc.toMillis() - startUtc.toMillis())
+        }
+
+        // Compute - Post Offset Ms:
+        const getPostOffsetMs = () => {
+            let postInputUtc = utcDateTimeFromJs(data.postTime, data.timeZone)
+            let postUtc = startUtc.set({
+                hour: postInputUtc.hour,
+                minute: postInputUtc.minute
+            })
+            if (data.postDay == 'Day before') {
+                postUtc = postUtc.minus({ day: 1 });
+            }
+            return (postUtc.toMillis() - startUtc.toMillis())
+        }
+
+        // Re-Build - RRule:
+        const baseRule = data?.recurrence ? RRule.fromString(data.recurrence) : null;
+
+        const localStart = DateTime.fromJSDate(data.startDate)
+        const startDayUtc = startUtc.startOf('day')
+
+        const untilBase = baseRule?.options.until
+            ? DateTime
+                .fromJSDate(baseRule.options.until, { zone: data.timeZone })
+                .startOf('day')
+                .toUTC()
+            : null;
+
+        const rrule = baseRule
+            ? new RRule({
+                ...baseRule.origOptions,
+                dtstart: datetime(startDayUtc.year, startDayUtc.month, startDayUtc.day),
+                until: untilBase
+                    ? datetime(untilBase.year, untilBase.month, untilBase.day)
+                    : undefined,
+                tzid: 'UTC'
+            })
+            : null;
+
+
+        const nextStartJs = rrule ? rrule?.after(new Date(), true) : null;
+        const nextStart = nextStartJs
+            ? DateTime.fromJSDate(nextStartJs)
+                .setZone(data.timeZone)
+                .set({ hour: startHour, minute: startMinute })
+                .startOf('minute')
+            : null;
+        const nextStartUTC = nextStart ? nextStart.toUTC() : null;
+        const nextPost = nextStart ? nextStart.plus({ millisecond: getPostOffsetMs() }) : null;
+        const nextPostUtc = nextPost ? nextPost.toUTC() : null;
+        const nextPostInZone = nextPost ? nextPost.setZone(data.timeZone) : null;
+
+
+        const getUtcExpiresAtDate = () => {
+            let lastStartJs: Date | null = null;
+
+            if (!rrule) {
+                // No Recurrence:
+                console.info('No recurrence', { startUtc })
+                lastStartJs = startUtc
+                    .plus({ millisecond: getPostOffsetMs() })
+                    .toLocal()
+                    .toJSDate();
+            } else {
+                // Has Recurrence:
+                console.info('Recurrence!', { opts: rrule?.options })
+                const { until, count } = rrule.options
+                if (until) {
+                    // RRule End by Date:
+                    const last = rrule.before(until, true)
+                    lastStartJs = last ?? null;
+                } else if (count) {
+                    // RRule End by Count:
+                    const all = rrule.all();
+                    lastStartJs = all.at(-1) ?? null;
+                } else {
+                    // No RRule End / Expiration Date:
+                    lastStartJs = null
                 }
-            };
-
-            // Create Request Body:
-            const bodyData = {
-                data: <API_SessionTemplateBodyInterface>{
-                    guild_id: guildId.value,
-                    title: data.title,
-                    description: data.description,
-                    url: data.url,
-                    starts_at_utc: utcDateFromJs(data.startDate, data.timeZone).toISO(),
-                    duration_ms: data?.endDate
-                        ? (utcDateFromJs(data.endDate, data.timeZone).toMillis() - utcDateFromJs(data.startDate, data.timeZone).toMillis())
-                        : null,
-                    time_zone: data.timeZone,
-                    rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
-                    rrule: data.recurrence,
-                    channel_id: data.channelId,
-                    post_before_ms: getPostOffsetMsFromJs({
-                        startDate: data.startDate,
-                        postTime: data.postTime,
-                        postDay: data.postDay,
-                        zone: data.timeZone
-                    }),
-                    native_events: data.nativeEvents,
-                    post_in_thread: data.postInThread,
-                    next_post_utc: calculateNextPostUTC({
-                        startDate: utcDateFromJs(data.startDate, data.timeZone),
-                        zone: data.timeZone,
-                        postOffsetMs: getPostOffsetMsFromJs({
-                            startDate: data.startDate,
-                            postTime: data.postTime,
-                            postDay: data.postDay,
-                            zone: data.timeZone
-                        }),
-                        rrule: data?.recurrence,
-                    })?.toISO()
-                }
-            };
-
-
-            if (formAction.value == 'new') {
-                // Create New Session - Send Request
-                const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-                if (r.status < 300) {
-                    // Success!
-                    console.log('Session Created', r.data.data)
-                    // Reset Form
-                    resetFrom();
-                    // Close Form
-                    sessionsFormVisible.value = false;
-
-                } else { console.warn('Request Failed!', r) }
-            } else if (formAction.value == 'edit') {
-                // Edit Existing Session - Send Request
-                bodyData.data.id = editingId.value;
-                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-                if (r.status < 300) {
-                    // Success!
-                    console.log('Session Edited', r.data.data)
-                    // Reset Form
-                    resetFrom();
-                    // Close Form
-                    sessionsFormVisible.value = false;
-
-                } else { console.warn('Request Failed!', r) }
             }
 
+            // Convert Local JS End to Last Post in Zone -> UTC:
+            const lastStart = lastStartJs ? DateTime.fromJSDate(lastStartJs, { zone: data.timeZone }).startOf('day') : null;
+            let expiresAtUTC: DateTime | null = null
+            if (lastStart) {
+                // console.info('Before ZONE', lastStart)
+                const lastStartTime = lastStart.setZone(data.timeZone)
+                // console.info('Last Start in ZONE', lastStartTime)
+            }
+            const lastStartUTC = lastStart ? lastStart.toUTC() : null;
+            const expiresUTC = lastStartUTC ? lastStartUTC.plus({ millisecond: getPostOffsetMs() }) : null;
 
+            return expiresUTC ? expiresUTC : null;
         }
+
+        console.info('Prepared Data', {
+            rrule,
+            rruleString: rrule?.toString(),
+            startUtc: startUtc.toISO(),
+            durationMs: getDurationMs(),
+            postOffsetMs: getPostOffsetMs(),
+            nextDates: {
+                nextStartJs, nextStart, nextStartUTC, nextPost, nextPostUtc, nextPostInZone
+            },
+            expires_at_utc: getUtcExpiresAtDate(),
+            startHour, startMinute
+        })
+
+        return submitBusy.value = false;
+
+        /** 
+        // Create Request Body:
+        const bodyData = {
+            data: <API_SessionTemplateBodyInterface>{
+                guild_id: guildId.value,
+                title: data.title,
+                description: data.description,
+                url: data.url,
+                starts_at_utc: startUtc.toISO(),
+                start_hour: startHour,
+                start_minute: startMinute,
+                duration_ms: getDurationMs(),
+                time_zone: data.timeZone,
+                rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
+                rrule: rrule ? rrule.toString() : null,
+                channel_id: data.channelId,
+                post_before_ms: getPostOffsetMs(),
+                native_events: data.nativeEvents,
+                post_in_thread: data.postInThread,
+                next_post_utc: nextPostUtc ? nextPostUtc?.toISO() : null,
+                expires_at_utc: getUtcExpiresAtDate()?.toISO() ?? null,
+            }
+
+        };
+
+
+        if (formAction.value == 'new') {
+            // Create New Session - Send Request
+            const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+            if (r.status < 300) {
+                // Success!
+                console.log('Session Created', r.data.data)
+                // Reset Form
+                resetFrom();
+                // Close Form
+                sessionsFormVisible.value = false;
+
+            } else { console.warn('Request Failed!', r) }
+        } else if (formAction.value == 'edit') {
+            // Edit Existing Session - Send Request
+            bodyData.data.id = editingId.value;
+            const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+            if (r.status < 300) {
+                // Success!
+                console.log('Session Edited', r.data.data)
+                // Reset Form
+                resetFrom();
+                // Close Form
+                sessionsFormVisible.value = false;
+
+            } else { console.warn('Request Failed!', r) }
+        }
+         */
+
+
         // Mark Submit Un-Busy:
         submitBusy.value = false;
         console.log('Form Submitted', formValues.value);
@@ -403,11 +520,10 @@
         useSessionTemplates().execute()
     }
 
+
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
     export type NewSessions_FieldNames = keyof NewSession_ValueTypes
-
-
 
 </script>
 

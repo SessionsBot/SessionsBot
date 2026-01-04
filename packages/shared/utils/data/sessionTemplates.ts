@@ -19,65 +19,21 @@ export const { RRule, rrulestr, datetime } = resolved;
 
 // -------[  FRONTEND --> BACKEND UTILITIES  ]-------
 
-
-/** Converts a local JavaScript `Date` to a `DateTime` in the UTC zone. */
-export function utcDateFromJs(date: Date, zone: string) {
+/** Converts a local JavaScript (Form) `Date` to a `DateTime` in the UTC zone. 
+ * @note Trims to beginning of minute */
+export function utcDateTimeFromJs(date: Date, zone: string) {
     const base = DateTime.fromJSDate(date);
-    return DateTime.fromObject({
+    const start = DateTime.fromObject({
         year: base.year,
         month: base.month,
         day: base.day,
         hour: base.hour,
-        minute: base.minute,
-    }, { zone }).startOf('minute').toUTC()
+        minute: base.minute
+    })
+        .setZone(zone, { keepLocalTime: true })
+        .startOf('minute');
+    return start.toUTC();
 }
-
-
-/** Calculates the post offset in milliseconds from provided template data */
-export function getPostOffsetMsFromJs(opts: {
-    startDate: Date
-    postTime: Date
-    postDay: 'Day before' | 'Day of'
-    zone: string
-}): number {
-    const { startDate, postTime, postDay, zone } = opts
-    // Form DateTime Dates from JS:
-    const startBase = DateTime.fromJSDate(startDate)
-    const start = DateTime.fromObject(
-        {
-            year: startBase.year,
-            month: startBase.month,
-            day: startBase.day,
-            hour: startBase.hour,
-            minute: startBase.minute,
-            second: 0,
-            millisecond: 0
-        },
-        { zone }
-    )
-    const postBase = DateTime.fromJSDate(postTime)
-    let post = DateTime.fromObject(
-        {
-            year: start.year,
-            month: start.month,
-            day: start.day,
-            hour: postBase.hour,
-            minute: postBase.minute,
-            second: 0,
-            millisecond: 0
-        },
-        { zone }
-    )
-    // Apply Post Day Selection
-    if (postDay === 'Day before') {
-        post = post.minus({ days: 1 })
-    }
-    // Calculate Ms
-    const offsetMs = post.toUTC().toMillis() - start.toUTC().toMillis()
-    // Safety clamp
-    return Math.min(offsetMs, 0)
-}
-
 
 
 // -------[  BACKEND --> FRONTEND UTILITIES  ]-------
@@ -120,16 +76,6 @@ export function dbIsoUtcToDateTime(
 }
 
 
-/** Determines template's "Post Day" from inputs such as startIso, offset, and zone.  */
-export function determinePostDay(startIso: string, offsetMs: number, zone: string) {
-    const start = DateTime.fromISO(startIso, { zone: 'utc' }).setZone(zone);
-    const post = start.plus({ milliseconds: offsetMs })
-    return post.startOf('day') < start.startOf('day')
-        ? 'Day before'
-        : 'Day of'
-}
-
-
 /** Maps RSVPs from `JSON` string data from database.  */
 export function mapRsvps(rsvpJSON: any) {
     const parsed = JSON.parse(String(rsvpJSON));
@@ -142,10 +88,10 @@ export function mapRsvps(rsvpJSON: any) {
 }
 
 
-
 // -------[  HYBRID --> SESSION TEMPLATES  ]-------
 
-/** Builds an `RRule` from RRule string and origin start time from template.*/
+/** Builds an `RRule` from RRule string and origin start time from template.
+ * @deprecated - RRules should be stable enough to be built directly from string! *(fingers crossed)* */
 export function buildRule(rrule: string, start: DateTime): rrule.RRule {
     const base = RRule.fromString(rrule);
     const startUTC = start.toUTC().startOf('minute')
@@ -193,7 +139,9 @@ export function calculateNextPostUTC(opts: {
     }
 
     // ---- RECURRING TEMPLATE ----
-    const rule = buildRule(rrule, startDate);
+    // const rule = buildRule(rrule, startDate);
+    const rule = rrule ? RRule.fromString(rrule) : null;
+    if (!rule) return null;
 
     // Search RRule for next start -> post:
     const searchFrom = DateTime
@@ -204,7 +152,6 @@ export function calculateNextPostUTC(opts: {
 
     // Get Post from next Start Date:
     let nextStartUtc = DateTime.fromJSDate(nextStartJs).toUTC();
-    console.info('NEXT UTC DATA', { rule, postOffsetMins: (postOffsetMs / 1000) / 60, nextStartJs, nextStartUtc })
     return nextStartUtc.plus({ milliseconds: postOffsetMs }).startOf('minute');
 }
 
@@ -228,7 +175,10 @@ export function calculateExpiresAtUTC(opts: {
         return firstPostUtc;
     }
 
-    const rule = buildRule(rrule, startDate);
+    // const rule = buildRule(rrule, startDate);
+    const rule = rrule ? RRule.fromString(rrule) : null;
+    if (!rule) return null;
+
     const { count, until } = rule.options;
 
     // ---- INFINITE TEMPLATE ----
@@ -247,6 +197,8 @@ export function calculateExpiresAtUTC(opts: {
 
     if (!lastStartJs) return null;
 
+    console.info({ lastStartJs })
+
     const lastStartUtc = DateTime
         .fromJSDate(lastStartJs)
         .toUTC()
@@ -254,7 +206,8 @@ export function calculateExpiresAtUTC(opts: {
 
     return lastStartUtc
         .plus({ milliseconds: postOffsetMs })
-        .startOf('minute');
+        .startOf('minute')
+    // .plus({ hour: 12 }) // expiration buffer of 12 hours from last post
 }
 
 
@@ -271,7 +224,8 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
     }
 
     // Get recurrence(s):
-    const rule = t.rrule ? buildRule(t.rrule, first.date) : null;
+    // const rule = t.rrule ? buildRule(t.rrule, first.date) : null;
+    const rule = t.rrule ? RRule.fromString(t.rrule) : null;
     let recurrences: { next: DateTime, post: DateTime }[] = [];
     const recurrencesToInclude = 10;
     const getNextRecurrence = (from: DateTime) => {
@@ -287,7 +241,7 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
             if (!next.next ||
                 next?.next?.hasSame(first.date, 'day')
             ) break;
-            recurrences.push(next);
+            recurrences.push(next as any);
         }
     }
 
@@ -346,7 +300,7 @@ export function getTemplateMeta(t: Database['public']['Tables']['session_templat
             return first.post // .toUTC().toISO()
         }
         // OR - Find Next Upcoming Recurrence Post Date:
-        let closestDate: DateTime;
+        let closestDate: DateTime | null = null;
         for (const { post: postDate } of recurrences) {
             // If no base closest date:
             if (!closestDate) {

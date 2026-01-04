@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { calculateNextPostUTC, dbIsoUtcToDateTime, dbIsoUtcToFormDate, getTemplateMeta, type Database } from "@sessionsbot/shared";
+    import { calculateExpiresAtUTC, calculateNextPostUTC, dbIsoUtcToDateTime, dbIsoUtcToFormDate, getTemplateMeta, type Database } from "@sessionsbot/shared";
     import type { API_SessionTemplateBodyInterface } from "@sessionsbot/shared/zodSchemas";
     import { DateTime } from "luxon";
     import { getTimeZones } from "@vvo/tzdb";
@@ -133,7 +133,6 @@
 
                         <!-- RSVPs Icon -->
                         <div class="sessionDataBadge">
-                            <!-- @vue-expect-error -->
                             <UserCheck2Icon v-if="hasRsvps(session)" :size="16" />
                             <UserX2Icon v-else :size="16" />
                         </div>
@@ -161,8 +160,13 @@
                                     Log Next UTC
                                 </Button>
 
-                                <Button @click="console.log(getTemplateMeta(session as any))">
-                                    Log META
+                                <Button @click="console.log(calculateExpiresAtUTC({
+                                    startDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone).toUTC(),
+                                    postOffsetMs: session.post_before_ms,
+                                    zone: session.time_zone,
+                                    rrule: session.rrule
+                                })?.setZone(session.time_zone))">
+                                    Log Expiration
                                 </Button>
 
                             </AccordionContent>

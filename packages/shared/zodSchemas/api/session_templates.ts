@@ -3,13 +3,15 @@ import * as z from "zod";
 
 /** **API/Database Validation Schema** - Sessions Templates Table Row */
 type fields = keyof Database['public']['Tables']['session_templates']['Row'];
-export const API_SessionTemplateBodySchema = z.object(<Record<fields, any>>{
+export const API_SessionTemplateBodySchema = z.object({
     guild_id: z.string(),
     id: z.nullish(z.string()),
     title: z.string(),
     description: z.nullish(z.string()),
     url: z.nullish(z.url()),
     starts_at_utc: z.string(),
+    start_hour: z.number(),
+    start_minute: z.number(),
     duration_ms: z.nullish(z.number()),
     time_zone: z.string(),
     rsvps: z.nullish(z.json()),
