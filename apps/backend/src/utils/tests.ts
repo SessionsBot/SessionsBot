@@ -20,7 +20,7 @@ export default {
                 // const result = await sendPermissionAlert(guildId);
                 // console.info(result)
 
-                initTemplateCreationScheduler();
+                // initTemplateCreationScheduler();
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');
