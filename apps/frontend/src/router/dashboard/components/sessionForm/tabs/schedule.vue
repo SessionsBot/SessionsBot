@@ -138,7 +138,7 @@
                 byweekday: v.weekdays || undefined,
                 count: v.endRepeatCount,
                 until: endDate
-                    ? datetime(endDate.year, endDate.month, endDate.day)
+                    ? endDate.toJSDate() // datetime(endDate.year, endDate.month, endDate.day, 0, 0, 0)
                     : undefined,
                 // tzid: 'UTC'
             });
@@ -183,12 +183,12 @@
             // Set End Repeat Date:
             if (rule.options.until) {
                 endRepeatDateEnabled.value = true;
-                localForm.value.formValues.endRepeatDate =
-                    DateTime
-                        .fromJSDate(rule.options.until)
-                        .toLocal()
-                        .startOf('day')
-                        .toJSDate();
+                localForm.value.formValues.endRepeatDate = DateTime.fromJSDate(rule.options.until, { zone: 'utc' }).setZone(payload.time_zone).toJSDate()
+                // DateTime
+                //     .fromJSDate(rule.options.until)
+                //     .toLocal()
+                //     .startOf('day')
+                //     .toJSDate();
             }
             // Set Max Repeat Count:
             if (rule.origOptions.count) {

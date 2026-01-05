@@ -268,7 +268,7 @@
         // Util: Determine Post Day from Template Data:
         function determinePostDay(startIso: string, offsetMs: number, zone: string) {
             const start = DateTime.fromISO(startIso, { zone: 'utc' }).setZone(zone);
-            const post = start.plus({ milliseconds: offsetMs })
+            const post = start.minus({ milliseconds: offsetMs })
             return post.startOf('day') < start.startOf('day')
                 ? 'Day before'
                 : 'Day of'
@@ -349,57 +349,76 @@
             return (endUtc.toMillis() - startUtc.toMillis())
         }
 
+
         // Compute - Post Offset Ms:
         const getPostOffsetMs = () => {
-            let postInputUtc = utcDateTimeFromJs(data.postTime, data.timeZone)
-            let postUtc = startUtc.set({
-                hour: postInputUtc.hour,
-                minute: postInputUtc.minute
-            })
+            const postTimeInput = DateTime.fromJSDate(data.postTime);
+            const postTimeDate = startUtc
+                .setZone(data.timeZone) // session start in zone
+                .set({ hour: postTimeInput.hour, minute: postTimeInput.minute }) // apply chosen post time
+            let postUtc = postTimeDate.toUTC() // convert back to utc
             if (data.postDay == 'Day before') {
                 postUtc = postUtc.minus({ day: 1 });
             }
-            return (postUtc.toMillis() - startUtc.toMillis())
+            return (startUtc.toMillis() - postUtc.toMillis())
         }
+
 
         // Re-Build - RRule:
         const baseRule = data?.recurrence ? RRule.fromString(data.recurrence) : null;
-
-        const localStart = DateTime.fromJSDate(data.startDate)
-        const startDayUtc = startUtc.startOf('day')
-
-        const untilBase = baseRule?.options.until
-            ? DateTime
-                .fromJSDate(baseRule.options.until, { zone: data.timeZone })
-                .startOf('day')
-                .toUTC()
+        const untilInput = baseRule?.options?.until
+            ? DateTime.fromJSDate(baseRule?.options?.until)
             : null;
+        const untilInZone = untilInput
+            ? DateTime.fromObject(
+                { year: untilInput.year, month: untilInput.month, day: untilInput.day },
+                { zone: data.timeZone })
+                .endOf('day')
+            : null;
+        const untilUtc = untilInZone ? untilInZone.toUTC() : null;
 
         const rrule = baseRule
             ? new RRule({
                 ...baseRule.origOptions,
-                dtstart: datetime(startDayUtc.year, startDayUtc.month, startDayUtc.day),
-                until: untilBase
-                    ? datetime(untilBase.year, untilBase.month, untilBase.day)
+                dtstart: startUtc.toJSDate(),
+                until: untilUtc
+                    ? untilUtc.toJSDate()
                     : undefined,
-                tzid: 'UTC'
             })
             : null;
 
 
-        const nextStartJs = rrule ? rrule?.after(new Date(), true) : null;
-        const nextStart = nextStartJs
-            ? DateTime.fromJSDate(nextStartJs)
-                .setZone(data.timeZone)
-                .set({ hour: startHour, minute: startMinute })
-                .startOf('minute')
-            : null;
-        const nextStartUTC = nextStart ? nextStart.toUTC() : null;
-        const nextPost = nextStart ? nextStart.plus({ millisecond: getPostOffsetMs() }) : null;
-        const nextPostUtc = nextPost ? nextPost.toUTC() : null;
-        const nextPostInZone = nextPost ? nextPost.setZone(data.timeZone) : null;
+        // Compute - Next Post UTC:
+        let cursor = DateTime.now();
+        const getNextPostUtc = (): DateTime | null => {
+            while (true) {
+                const nextStartJs = rrule ? rrule.after(cursor.toJSDate(), true) : null;
+
+                if (nextStartJs) {
+                    const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: data.timeZone })
+                        .set({ hour: startHour, minute: startMinute }); // maintain intended time
+                    const nextPostInZone = nextStartInZone.minus({ millisecond: getPostOffsetMs() });
+                    // Confirm this post date is in future:
+                    if (nextPostInZone <= DateTime.now()) {
+                        console.info('This post was too early / already elapsed -> finding next');
+                        cursor = cursor.plus({ day: 1 })
+                        continue
+                    } else {
+                        console.info('NEXT DATES', { nextStartJs, nextStartInZone, nextPostInZone, nextPostUtc: nextPostInZone.toUTC() })
+                        return nextPostInZone.toUTC()
+                    }
+
+                } else {
+                    console.info('No nextStartJs -> no post utc...');
+                    return null;
+                };
+
+            };
+        };
+        const nextPostUtc = getNextPostUtc();
 
 
+        // FIX ME!!
         const getUtcExpiresAtDate = () => {
             let lastStartJs: Date | null = null;
 
@@ -407,7 +426,7 @@
                 // No Recurrence:
                 console.info('No recurrence', { startUtc })
                 lastStartJs = startUtc
-                    .plus({ millisecond: getPostOffsetMs() })
+                    .minus({ millisecond: getPostOffsetMs() })
                     .toLocal()
                     .toJSDate();
             } else {
@@ -416,8 +435,8 @@
                 const { until, count } = rrule.options
                 if (until) {
                     // RRule End by Date:
-                    const last = rrule.before(until, true)
-                    lastStartJs = last ?? null;
+                    lastStartJs = untilUtc ? rrule.before(until, false) : null;
+
                 } else if (count) {
                     // RRule End by Count:
                     const all = rrule.all();
@@ -428,18 +447,16 @@
                 }
             }
 
-            // Convert Local JS End to Last Post in Zone -> UTC:
-            const lastStart = lastStartJs ? DateTime.fromJSDate(lastStartJs, { zone: data.timeZone }).startOf('day') : null;
-            let expiresAtUTC: DateTime | null = null
-            if (lastStart) {
-                // console.info('Before ZONE', lastStart)
-                const lastStartTime = lastStart.setZone(data.timeZone)
-                // console.info('Last Start in ZONE', lastStartTime)
+            if (lastStartJs) {
+                const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: data.timeZone })
+                    .set({ hour: startHour, minute: startMinute }); // maintain intended time
+                const lastPostInZone = lastStartInZone.minus({ millisecond: getPostOffsetMs() });
+                const expiresAtUtc = lastPostInZone.toUTC();
+                return expiresAtUtc;
+            } else {
+                console.info('No expiration found / lastStartJs?')
+                return null;
             }
-            const lastStartUTC = lastStart ? lastStart.toUTC() : null;
-            const expiresUTC = lastStartUTC ? lastStartUTC.plus({ millisecond: getPostOffsetMs() }) : null;
-
-            return expiresUTC ? expiresUTC : null;
         }
 
         console.info('Prepared Data', {
@@ -448,16 +465,20 @@
             startUtc: startUtc.toISO(),
             durationMs: getDurationMs(),
             postOffsetMs: getPostOffsetMs(),
-            nextDates: {
-                nextStartJs, nextStart, nextStartUTC, nextPost, nextPostUtc, nextPostInZone
+            expiration: {
+                utc: getUtcExpiresAtDate(),
+                inZone: getUtcExpiresAtDate()?.setZone(data.timeZone)
             },
-            expires_at_utc: getUtcExpiresAtDate(),
+            post: {
+                utc: nextPostUtc,
+                inZone: nextPostUtc?.setZone(data.timeZone)
+            },
             startHour, startMinute
         })
 
-        return submitBusy.value = false;
 
-        /** 
+        // return submitBusy.value = false;
+
         // Create Request Body:
         const bodyData = {
             data: <API_SessionTemplateBodyInterface>{
@@ -476,7 +497,7 @@
                 post_before_ms: getPostOffsetMs(),
                 native_events: data.nativeEvents,
                 post_in_thread: data.postInThread,
-                next_post_utc: nextPostUtc ? nextPostUtc?.toISO() : null,
+                next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
                 expires_at_utc: getUtcExpiresAtDate()?.toISO() ?? null,
             }
 
@@ -509,7 +530,7 @@
 
             } else { console.warn('Request Failed!', r) }
         }
-         */
+
 
 
         // Mark Submit Un-Busy:
@@ -518,6 +539,7 @@
 
         // Reload Dashboard Templates:
         useSessionTemplates().execute()
+
     }
 
 
