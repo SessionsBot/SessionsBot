@@ -21,6 +21,7 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
+          subscription: Database["public"]["Enums"]["Pricing Plans"]
         }
         Insert: {
           id: string
@@ -28,6 +29,7 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
+          subscription?: Database["public"]["Enums"]["Pricing Plans"]
         }
         Update: {
           id?: string
@@ -35,6 +37,7 @@ export type Database = {
           member_count?: number
           name?: string
           owner_id?: string
+          subscription?: Database["public"]["Enums"]["Pricing Plans"]
         }
         Relationships: []
       }
@@ -74,6 +77,87 @@ export type Database = {
         }
         Relationships: []
       }
+      session_rsvp_slots: {
+        Row: {
+          capacity: number
+          emoji: string | null
+          guild_id: string
+          id: string
+          session_id: string
+          title: string
+        }
+        Insert: {
+          capacity: number
+          emoji?: string | null
+          guild_id: string
+          id?: string
+          session_id: string
+          title: string
+        }
+        Update: {
+          capacity?: number
+          emoji?: string | null
+          guild_id?: string
+          id?: string
+          session_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_rsvp_slots_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_rsvp_slots_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_rsvps: {
+        Row: {
+          created_at: string
+          id: number
+          rsvp_slot_id: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          rsvp_slot_id: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          rsvp_slot_id?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_rsvps_rsvp_slot_id_fkey"
+            columns: ["rsvp_slot_id"]
+            isOneToOne: false
+            referencedRelation: "session_rsvp_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_rsvps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_templates: {
         Row: {
           channel_id: string
@@ -90,6 +174,8 @@ export type Database = {
           post_in_thread: boolean
           rrule: string | null
           rsvps: Json | null
+          start_hour: number | null
+          start_minute: number | null
           starts_at_utc: string
           time_zone: string
           title: string
@@ -110,6 +196,8 @@ export type Database = {
           post_in_thread?: boolean
           rrule?: string | null
           rsvps?: Json | null
+          start_hour?: number | null
+          start_minute?: number | null
           starts_at_utc: string
           time_zone: string
           title: string
@@ -130,6 +218,8 @@ export type Database = {
           post_in_thread?: boolean
           rrule?: string | null
           rsvps?: Json | null
+          start_hour?: number | null
+          start_minute?: number | null
           starts_at_utc?: string
           time_zone?: string
           title?: string
@@ -147,42 +237,48 @@ export type Database = {
       }
       sessions: {
         Row: {
+          channel_id: string
           created_at: string
           description: string | null
-          duration_ms: number
+          duration_ms: number | null
           event_id: string | null
           guild_id: string
           id: string
+          signup_id: string
           starts_at_ms: number
-          template_id: string
+          template_id: string | null
           thread_id: string | null
           time_zone: string
           title: string
           url: string | null
         }
         Insert: {
+          channel_id: string
           created_at?: string
           description?: string | null
-          duration_ms: number
+          duration_ms?: number | null
           event_id?: string | null
           guild_id: string
           id?: string
+          signup_id: string
           starts_at_ms: number
-          template_id: string
+          template_id?: string | null
           thread_id?: string | null
           time_zone: string
           title: string
           url?: string | null
         }
         Update: {
+          channel_id?: string
           created_at?: string
           description?: string | null
-          duration_ms?: number
+          duration_ms?: number | null
           event_id?: string | null
           guild_id?: string
           id?: string
+          signup_id?: string
           starts_at_ms?: number
-          template_id?: string
+          template_id?: string | null
           thread_id?: string | null
           time_zone?: string
           title?: string
@@ -203,6 +299,13 @@ export type Database = {
             referencedRelation: "guilds"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "sessions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -213,7 +316,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      "Pricing Plans": "FREE" | "PREMIUM" | "ENTERPRISE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -340,6 +443,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      "Pricing Plans": ["FREE", "PREMIUM", "ENTERPRISE"],
+    },
   },
 } as const

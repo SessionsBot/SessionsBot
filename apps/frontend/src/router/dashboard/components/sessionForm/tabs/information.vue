@@ -4,7 +4,7 @@
     import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { getTimeZones, } from '@vvo/tzdb'
-    import type { AutoCompleteChangeEvent, AutoCompleteCompleteEvent, AutoCompleteEmitsOptions } from 'primevue';
+    import type { AutoCompleteChangeEvent, AutoCompleteCompleteEvent, AutoCompleteEmitsOptions, AutoCompleteOptionSelectEvent } from 'primevue';
     import InfoHelpButton from '../labels/infoHelpButton.vue';
     import InputTitle from '../labels/inputTitle.vue';
     import InputErrors from '../labels/inputErrors.vue';
@@ -49,6 +49,13 @@
             }
         })
         timeZoneSuggestions.value = result;
+    }
+    function selectTimeZone(e: AutoCompleteOptionSelectEvent) {
+        // Update TimeZone:
+        const { value } = e;
+        timeZone.value = value
+        // Validate Field:
+        validateField('timeZone');
     }
 
 </script>
@@ -115,10 +122,9 @@
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('timeZone') }">
             <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '/' }" />
-            <AutoComplete class="w-full" v-model="timeZone" @option-select="validateField('timeZone')"
-                @clear="validateField('timeZone')" :invalid="invalidFields.has('timeZone')"
-                :suggestions="timeZoneSuggestions" @complete="timeZoneSearch" forceSelection option-label="name"
-                show-clear fluid auto-option-focus />
+            <AutoComplete class="w-full" v-model="timeZone" @option-select="selectTimeZone"
+                :invalid="invalidFields.has('timeZone')" :suggestions="timeZoneSuggestions" @complete="timeZoneSearch"
+                forceSelection option-label="name" dropdown show-clear fluid auto-option-focus />
             <InputErrors fieldName="timeZone" :invalidFields />
         </div>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { calculateExpiresAtUTC, calculateNextPostUTC, dbIsoUtcToDateTime, dbIsoUtcToFormDate, getTemplateMeta, type Database } from "@sessionsbot/shared";
+    import { calculateExpiresAtUTC, calculateNextPostUTC, dbIsoUtcToDateTime } from "@sessionsbot/shared";
     import type { API_SessionTemplateBodyInterface } from "@sessionsbot/shared/zodSchemas";
     import { DateTime } from "luxon";
     import { getTimeZones } from "@vvo/tzdb";
@@ -133,7 +133,7 @@
 
                         <!-- RSVPs Icon -->
                         <div class="sessionDataBadge">
-                            <UserCheck2Icon v-if="hasRsvps(session)" :size="16" />
+                            <UserCheck2Icon v-if="hasRsvps(session as any)" :size="16" />
                             <UserX2Icon v-else :size="16" />
                         </div>
 
@@ -152,7 +152,7 @@
                                 class="p-1! text-white/70!">
 
                                 <Button @click="console.log(calculateNextPostUTC({
-                                    startDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone).toUTC(),
+                                    startDate: DateTime.fromISO(session.starts_at_utc, { zone: 'utc' }),
                                     zone: session.time_zone,
                                     postOffsetMs: session.post_before_ms,
                                     rrule: session.rrule

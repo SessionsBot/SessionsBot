@@ -182,13 +182,12 @@
             }
             // Set End Repeat Date:
             if (rule.options.until) {
+                const untilLocal = DateTime.fromJSDate(rule.options.until, { zone: payload.time_zone })
+                    .setZone('local', { keepLocalTime: true })
+                    .toJSDate();
                 endRepeatDateEnabled.value = true;
-                localForm.value.formValues.endRepeatDate = DateTime.fromJSDate(rule.options.until, { zone: 'utc' }).setZone(payload.time_zone).toJSDate()
-                // DateTime
-                //     .fromJSDate(rule.options.until)
-                //     .toLocal()
-                //     .startOf('day')
-                //     .toJSDate();
+                localForm.value.formValues.endRepeatDate = untilLocal;
+
             }
             // Set Max Repeat Count:
             if (rule.origOptions.count) {

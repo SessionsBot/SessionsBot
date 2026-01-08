@@ -81,15 +81,3 @@ export function useSessionTemplates() {
         templates: dashboard.guild.sessionTemplates
     }
 }
-
-// Exported Types:
-type DASHBOARD_Template = Database['public']['Tables']['session_templates']['Row'] & {
-    meta: {
-        hasStarted: boolean,
-        hasPosted: boolean,
-        isRecurring: boolean,
-        rule: RRule
-        thisMonthOccurrences: Date[] | null
-    }
-}
-export type DASHBOARD_Templates = DASHBOARD_Template[];

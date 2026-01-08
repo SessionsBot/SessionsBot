@@ -16,7 +16,6 @@ export const { RRule, rrulestr, datetime } = resolved;
 
 
 
-
 // -------[  FRONTEND --> BACKEND UTILITIES  ]-------
 
 /** Converts a local JavaScript (Form) `Date` to a `DateTime` in the UTC zone. 
@@ -112,7 +111,7 @@ export function calculateNextPostUTC(opts: {
     startDate: DateTime,
     /** The post offset in milliseconds as negative number from session start time. */
     postOffsetMs: number,
-    /** The time zone string assigned to this session/dates */
+    /** The time zone string assigned to this session/dates. */
     zone: string,
     /** The `RRule` recurrence string for session repeats, if any. */
     rrule?: string | null,
@@ -121,222 +120,94 @@ export function calculateNextPostUTC(opts: {
     */
     referenceDate?: DateTime
 }) {
-    // Get Options:
-    let { startDate, postOffsetMs, zone, rrule, referenceDate = DateTime.now().toUTC() } = opts;
-    startDate = startDate
-        .startOf('minute')
-        .toUTC();
-    referenceDate = referenceDate
-        .startOf('minute')
-        .toUTC();
+    // Assign Reference Default if Null:
+    if (!opts.referenceDate) opts.referenceDate = DateTime.now()
+    // Get Intended Start Time of Day:
+    const { hour: startHour, minute: startMinute } = opts.startDate.setZone(opts.zone)
 
-    // FIRST possible post ever
-    const firstPostUtc = startDate.plus({ milliseconds: postOffsetMs }).startOf('minute');
+    // Compute - Next Post UTC from Reference Date:
+    let cursor = DateTime.now();
+    let rule = opts.rrule ? RRule.fromString(opts.rrule) : null;
+    while (true) {
+        // Find Next Local Date in JS Date:
+        const nextStartJs = rule ? rule.after(cursor.toJSDate(), true) : null;
+        if (nextStartJs) {
+            // Create DateTime in Zone w/ Post Offset of next recurrence:
+            const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: opts.zone })
+                .set({ hour: startHour, minute: startMinute }); // maintain intended time
+            const nextPostInZone = nextStartInZone.minus({ millisecond: opts.postOffsetMs });
+            // Ensure this post date is past the specified `reference date`:
+            if (nextPostInZone.toSeconds() <= opts.referenceDate.toSeconds()) {
+                // This post was too early / already elapsed -> finding next
+                cursor = cursor.plus({ day: 1 })
+                continue
+            }
+            // Checks Passed - Return UTC Date:
+            return nextPostInZone.toUTC();
 
-    // ---- ONE-TIME TEMPLATE ----
-    if (!rrule) {
-        return firstPostUtc > referenceDate ? firstPostUtc : null;
-    }
+        } else {
+            // No Next Start Js?: - 
+            const firstPost = opts.startDate.plus({ millisecond: opts.postOffsetMs })
+            // Return First Post if not past now or null:
+            if (firstPost.toUTC().toSeconds() > DateTime.now().toSeconds()) {
+                return firstPost
+            } else return null;
+        };
 
-    // ---- RECURRING TEMPLATE ----
-    // const rule = buildRule(rrule, startDate);
-    const rule = rrule ? RRule.fromString(rrule) : null;
-    if (!rule) return null;
+    };
 
-    // Search RRule for next start -> post:
-    const searchFrom = DateTime
-        .max(firstPostUtc, referenceDate)
-        .startOf('minute')
-    const nextStartJs = rule.after(datetime(searchFrom.year, searchFrom.month, searchFrom.day, searchFrom.hour, searchFrom.minute, 0), true);
-    if (!nextStartJs) return null;
-
-    // Get Post from next Start Date:
-    let nextStartUtc = DateTime.fromJSDate(nextStartJs).toUTC();
-    return nextStartUtc.plus({ milliseconds: postOffsetMs }).startOf('minute');
 }
 
 /** Calculate the LAST UCT Post Time for a session template, effectively its expiration. 
  * @returns A `DateTime` of the templates "expiration date" in UTC. (will be deleted from *db* past this date) */
 export function calculateExpiresAtUTC(opts: {
-    startDate: DateTime
-    postOffsetMs: number
-    zone: string
-    rrule?: string | null
+    /** `DateTime` of the templates FIRST start date in UTC. */
+    startDate: DateTime,
+    /** The post offset in milliseconds as negative number from session start time. */
+    postOffsetMs: number,
+    /** The time zone string assigned to this session/dates. */
+    zone: string,
+    /** The `RRule` recurrence string for session repeats, if any. */
+    rrule?: string | null,
 }) {
-    let { startDate, postOffsetMs, rrule } = opts;
 
-    startDate = startDate.startOf('minute').toUTC();
+    const startUtc = opts.startDate.toUTC();
+    const startInZone = opts.startDate.setZone(opts.zone)
+    const { hour: startHour, minute: startMinute } = startInZone;
 
-    // First post ever
-    const firstPostUtc = startDate.plus({ milliseconds: postOffsetMs });
-
-    // ---- ONE-TIME TEMPLATE ----
-    if (!rrule) {
-        return firstPostUtc;
-    }
-
-    // const rule = buildRule(rrule, startDate);
-    const rule = rrule ? RRule.fromString(rrule) : null;
-    if (!rule) return null;
-
-    const { count, until } = rule.options;
-
-    // ---- INFINITE TEMPLATE ----
-    if (!count && !until) {
-        return null;
-    }
+    const rule = opts.rrule ? RRule.fromString(opts.rrule) : null;
 
     let lastStartJs: Date | null = null;
 
-    if (until) {
-        lastStartJs = rule.before(until, true);
-    } else if (count) {
-        const all = rule.all();
-        lastStartJs = all.at(-1) ?? null;
-    }
-
-    if (!lastStartJs) return null;
-
-    console.info({ lastStartJs })
-
-    const lastStartUtc = DateTime
-        .fromJSDate(lastStartJs)
-        .toUTC()
-        .startOf('minute');
-
-    return lastStartUtc
-        .plus({ milliseconds: postOffsetMs })
-        .startOf('minute')
-    // .plus({ hour: 12 }) // expiration buffer of 12 hours from last post
-}
-
-
-
-// ! IGNORE FOR NOW - OLD LOGIC (maybe some good stuff lol)
-/** Parses template data from database and returns relevant information related to its states/occurrences. */
-export function getTemplateMeta(t: Database['public']['Tables']['session_templates']['Row']) {
-
-    // Get dates:
-    const nowInZone = DateTime.now().setZone(t.time_zone);
-    const first = {
-        date: dbIsoUtcToDateTime(t.starts_at_utc, t.time_zone),
-        post: dbIsoUtcToDateTime(t.starts_at_utc, t.time_zone, t.post_before_ms)
-    }
-
-    // Get recurrence(s):
-    // const rule = t.rrule ? buildRule(t.rrule, first.date) : null;
-    const rule = t.rrule ? RRule.fromString(t.rrule) : null;
-    let recurrences: { next: DateTime, post: DateTime }[] = [];
-    const recurrencesToInclude = 10;
-    const getNextRecurrence = (from: DateTime) => {
-        const nextJs = rule ? rule.after(from.toJSDate(), false) : null;
-        const next = nextJs ? DateTime.fromJSDate(nextJs).setZone(t.time_zone).set({ hour: first.date.hour, minute: first.date.minute }).startOf('minute') : null;
-        const post = next ? next.plus({ millisecond: t.post_before_ms }) : null;
-        return { next, post }
-    }
-    if (rule) {
-        for (let i = 0; i < recurrencesToInclude; i++) {
-            let lastRepeat = recurrences.at(-1)
-            const next = getNextRecurrence(lastRepeat?.next || nowInZone);
-            if (!next.next ||
-                next?.next?.hasSame(first.date, 'day')
-            ) break;
-            recurrences.push(next as any);
-        }
-    }
-
-    // Get Bool Flags:
-    const postsToday = (): boolean => {
-        const fromRepeats = recurrences.some(r => r.post.hasSame(nowInZone, 'day'))
-        const postStartToday = (first.post.hasSame(nowInZone, 'day'))
-        return (fromRepeats || postStartToday)
-    }
-    const templateOutdated = (): boolean => {
-        const nowInZone = DateTime.now().setZone(t.time_zone);
-
-        // No recurrence (one-time template)
-        if (!rule) {
-            return nowInZone.toSeconds() >= first.post.toSeconds();
-        }
-
-        const { count, until } = rule.options;
-
-        // Infinite rule (no end)
-        if (!count && !until) {
-            return false;
-        }
-
-        // Finite rule -> determine LAST post date
-        let lastOccurrenceJs: Date | null = null;
-
+    if (!rule) {
+        // No Recurrence:
+        lastStartJs = startUtc
+            .minus({ millisecond: opts.postOffsetMs })
+            .toLocal()
+            .toJSDate();
+    } else {
+        // Has Recurrence:
+        const { until, count } = rule.options
         if (until) {
-            // last occurrence before or equal to UNTIL
-            lastOccurrenceJs = rule.before(until, true);
+            // RRule End by Date:
+            lastStartJs = rule.before(until, false);
         } else if (count) {
-            // COUNT-based rules must enumerate (safe because finite)
+            // RRule End by Count:
             const all = rule.all();
-            lastOccurrenceJs = all.at(-1) ?? null;
+            lastStartJs = all.at(-1) ?? null;
+        } else {
+            // No RRule End / Expiration Date:
+            lastStartJs = null
         }
-
-        if (!lastOccurrenceJs) return false;
-
-        const lastStart = DateTime
-            .fromJSDate(lastOccurrenceJs, { zone: 'utc' })
-            .setZone(t.time_zone)
-            .set({ hour: first.date.hour, minute: first.date.minute })
-            .startOf('minute');
-
-        const lastPost = lastStart.plus({ millisecond: t.post_before_ms });
-
-        // Outdated if now is on or after last post day
-        return nowInZone >= lastPost.startOf('day');
-    };
-
-    // Get Next UTC Post Date from Now:
-    const nextPost = () => {
-        // Determine if next post is from origin/first dates:
-        if (first.post.toSeconds() >= nowInZone.toSeconds()) {
-            // First/Origin post date will come first:
-            return first.post // .toUTC().toISO()
-        }
-        // OR - Find Next Upcoming Recurrence Post Date:
-        let closestDate: DateTime | null = null;
-        for (const { post: postDate } of recurrences) {
-            // If no base closest date:
-            if (!closestDate) {
-                closestDate = postDate;
-                continue;
-            }
-            // Skip past post dates:
-            if (postDate.toSeconds() < nowInZone.toSeconds()) {
-                continue;
-            }
-            // Compute/Assign Closest Date:
-            else {
-                const curDif = (closestDate.toSeconds() - nowInZone.toSeconds())
-                const thisDif = (postDate.toSeconds() - nowInZone.toSeconds())
-                if (thisDif < curDif) {
-                    closestDate = postDate;
-                }
-            }
-        }
-        return closestDate;
     }
 
-    return {
-        /** Contains the templates FIRST start/post date(s)
-         * @note could be outdated from edits/recurrence */
-        first,
-        /** Contains an array of the template's next `start` & `post` dates by its schedule, if any. */
-        recurrences,
-        /** Raw `RRule` schedule for this template that's currently used. */
-        rule,
-        /** `Boolean` representing weather this session will be posted in its selected time zone today. */
-        postsToday: postsToday(),
-        /** `DateTime` containing this session templates next post time, from current time in selected zone. (if any) */
-        nextPost: nextPost(),
-        /** `Boolean` if this session template has already past its last post date in its time zone. 
-         * @note this will mark the template for deletion */
-        templateOutdated: templateOutdated(),
+    if (lastStartJs) {
+        const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: opts.zone })
+            .set({ hour: startHour, minute: startMinute }); // maintain intended time
+        const lastPostInZone = lastStartInZone.minus({ millisecond: opts.postOffsetMs });
+        const expiresAtUtc = lastPostInZone.toUTC();
+        return expiresAtUtc;
+    } else {
+        return null;
     }
 }

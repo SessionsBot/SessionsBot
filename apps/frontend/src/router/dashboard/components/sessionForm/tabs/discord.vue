@@ -85,7 +85,7 @@
         <div class="flex relative bottom-1 flex-col gap-1 w-full items-start"
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('postTime') }">
             <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" />
-            <DatePicker input-id="postTime" time-only fluid class="w-full!" hour-format="12"
+            <DatePicker input-id="postTime" time-only fluid class="w-full!" :step-minute="5" hour-format="12"
                 @value-change="() => { validateFields(['postTime', 'startDate']) }" v-model="postTime" />
             <InputErrors fieldName="postTime" :invalidFields />
         </div>

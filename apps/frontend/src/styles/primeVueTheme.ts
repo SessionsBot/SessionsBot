@@ -222,7 +222,8 @@ const primePT: PrimeVuePTOptions = {
         optionGroup: 'bg-black/20! rounded-md'
     },
     autocomplete: {
-        dropdown: 'border-2! border-l-1! invalid:border-red-400!',
+        root: 'group group-hover:border-indigo-300! active:border-indigo-400! group-focus-within:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
+        dropdown: 'border-2! border-l-0! invalid:border-red-400! group-hover:border-indigo-300! group-focus-within:border-indigo-400! group-[.p-invalid]:border-red-400!',
         overlay: 'overflow-x-auto!',
         list: 'bg-zinc-800!',
         listContainer: 'overflow-y-scroll! overflow-x-auto! ring-2! ring-ring! rounded-md!',

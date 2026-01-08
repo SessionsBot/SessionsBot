@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import z, { regex, safeParse, treeifyError } from 'zod'
-    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
+    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, FileWarningIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
@@ -8,7 +8,7 @@
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import { dbIsoUtcToFormDate, mapRsvps, utcDateTimeFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToDateTime, dbIsoUtcToFormDate, mapRsvps, utcDateTimeFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -42,7 +42,7 @@
             return tabSelected.value = 'schedule';
         else if (tabSelected.value == 'schedule')
             return tabSelected.value = 'discord';
-    };
+    }
     function backTab() {
         if (tabSelected.value == 'rsvps')
             return tabSelected.value = 'information';
@@ -50,7 +50,7 @@
             return tabSelected.value = 'rsvps';
         else if (tabSelected.value == 'discord')
             return tabSelected.value = 'schedule';
-    };
+    }
 
     /** ACTION: Form Mode ("new" or "edit") */
     const formAction = ref<'new' | 'edit'>('new');
@@ -113,7 +113,7 @@
         timeZone: z.object({
             name: z.string(),
             value: z.string()
-        }, 'Please select a valid Time Zone.').transform((o) => o.value),
+        }, 'Please select a valid Time Zone.').transform(o => o.value),
         rsvps: z.map(z.string(), z.object({
             // 2nd Level - See RsvpPanel Schema
             name: z.string().normalize(),
@@ -144,7 +144,7 @@
         postInThread: z.boolean(),
         nativeEvents: z.boolean(),
 
-    })
+    });
 
     /** Form's Invalid Fields */
     const invalidFields = ref<Map<NewSessions_FieldNames, string[]>>(new Map())
@@ -167,15 +167,15 @@
         // Schedule Tab:
         if (keys.has('recurrence')) {
             invalidTabs.value.add('schedule');
-        }
-        else invalidTabs.value.delete('schedule');
+        } else invalidTabs.value.delete('schedule');
         // Discord Tab:
         if (discordFields.some((fieldName) => keys.has(fieldName))) {
             if (!invalidTabs.value.has('discord')) {
                 invalidTabs.value.add('discord');
             }
         } else invalidTabs.value.delete('discord');
-    }, { deep: true });
+    }, { deep: true }
+    )
 
 
     /** Form Field Validation Fn */
@@ -189,7 +189,7 @@
         } else {
             invalidFields.value?.delete(name);
         }
-    };
+    }
     /** Form FIELD(s) Validation Fn */
     function validateFields(fields: NewSessions_FieldNames[]) {
         for (const fieldName of fields) {
@@ -215,7 +215,7 @@
             sessionsFormVisible.value = false;
         }
 
-    };
+    }
 
     /** Resets the form to all defaults/no errors. */
     function resetFrom() {
@@ -285,7 +285,7 @@
             rsvps: data?.rsvps ? mapRsvps(data.rsvps) : null,
             recurrence: data.rrule,
             channelId: data.channel_id,
-            postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.post_before_ms),
+            postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, -data.post_before_ms),
             postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
             postInThread: data.post_in_thread,
             nativeEvents: data.native_events
@@ -300,246 +300,260 @@
 
 
     /** Form Submission Function */
-    const submitBusy = ref(false);
+    const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
+    const debugSubmit = false;
     async function submitForm() {
-        // Mark Submit Busy:
-        submitBusy.value = true;
+        try {
+            // Mark Submit Busy:
+            submitState.value = 'loading'
 
-        // Apply Options:
-        if (!formOptions.value.rsvpsEnabled) {
-            formValues.value.rsvps = null;
-        };
-        if (!formOptions.value.recurrenceEnabled) {
-            formValues.value.recurrence = null;
-        };
-
-        // Validate Form:
-        const result = formSchema.safeParse(formValues.value);
-        if (!result.success) {
-            // Invalid Submission - Errors Found:
-            const { properties } = treeifyError(result.error);
-            for (const [fieldName, errData] of Object.entries(properties as any)) {
-                //@ts-expect-error
-                invalidFields.value.set(fieldName, errData?.errors)
+            // Apply Options:
+            if (!formOptions.value.rsvpsEnabled) {
+                formValues.value.rsvps = null;
             };
-            // Mark Submit Un-Busy:
-            submitBusy.value = false;
-            // Return Invalid Submission:
-            return console.warn('Invalid Submission!', result);
-        }
-        // Valid Submission - Prepare Req for API:
-        let { data } = result;
-        // Set empty strings to null:
-        for (const [field, fieldData] of Object.entries(data)) {
-            if (typeof fieldData == 'string' && fieldData.trim() == '') {
-                // @ts-expect-error
-                data[field] = null;
-            }
-        };
+            if (!formOptions.value.recurrenceEnabled) {
+                formValues.value.recurrence = null;
+            };
 
-        // Convert - Start Date:
-        const startUtc = utcDateTimeFromJs(data.startDate, data.timeZone)
-        const { hour: startHour, minute: startMinute } = DateTime.fromJSDate(data.startDate);
-
-        // Compute - Duration Ms:
-        const getDurationMs = () => {
-            const endDate = data.endDate
-            if (!endDate) return null;
-            const endUtc = utcDateTimeFromJs(endDate, data.timeZone);
-            return (endUtc.toMillis() - startUtc.toMillis())
-        }
-
-
-        // Compute - Post Offset Ms:
-        const getPostOffsetMs = () => {
-            const postTimeInput = DateTime.fromJSDate(data.postTime);
-            const postTimeDate = startUtc
-                .setZone(data.timeZone) // session start in zone
-                .set({ hour: postTimeInput.hour, minute: postTimeInput.minute }) // apply chosen post time
-            let postUtc = postTimeDate.toUTC() // convert back to utc
-            if (data.postDay == 'Day before') {
-                postUtc = postUtc.minus({ day: 1 });
-            }
-            return (startUtc.toMillis() - postUtc.toMillis())
-        }
-
-
-        // Re-Build - RRule:
-        const baseRule = data?.recurrence ? RRule.fromString(data.recurrence) : null;
-        const untilInput = baseRule?.options?.until
-            ? DateTime.fromJSDate(baseRule?.options?.until)
-            : null;
-        const untilInZone = untilInput
-            ? DateTime.fromObject(
-                { year: untilInput.year, month: untilInput.month, day: untilInput.day },
-                { zone: data.timeZone })
-                .endOf('day')
-            : null;
-        const untilUtc = untilInZone ? untilInZone.toUTC() : null;
-
-        const rrule = baseRule
-            ? new RRule({
-                ...baseRule.origOptions,
-                dtstart: startUtc.toJSDate(),
-                until: untilUtc
-                    ? untilUtc.toJSDate()
-                    : undefined,
-            })
-            : null;
-
-
-        // Compute - Next Post UTC:
-        let cursor = DateTime.now();
-        const getNextPostUtc = (): DateTime | null => {
-            while (true) {
-                const nextStartJs = rrule ? rrule.after(cursor.toJSDate(), true) : null;
-
-                if (nextStartJs) {
-                    const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: data.timeZone })
-                        .set({ hour: startHour, minute: startMinute }); // maintain intended time
-                    const nextPostInZone = nextStartInZone.minus({ millisecond: getPostOffsetMs() });
-                    // Confirm this post date is in future:
-                    if (nextPostInZone <= DateTime.now()) {
-                        console.info('This post was too early / already elapsed -> finding next');
-                        cursor = cursor.plus({ day: 1 })
-                        continue
-                    } else {
-                        console.info('NEXT DATES', { nextStartJs, nextStartInZone, nextPostInZone, nextPostUtc: nextPostInZone.toUTC() })
-                        return nextPostInZone.toUTC()
-                    }
-
-                } else {
-                    console.info('No nextStartJs -> no post utc...');
-                    return null;
+            // Validate Form:
+            const result = formSchema.safeParse(formValues.value);
+            if (!result.success) {
+                // Invalid Submission - Errors Found:
+                const { properties } = treeifyError(result.error);
+                for (const [fieldName, errData] of Object.entries(properties as any)) {
+                    //@ts-expect-error
+                    invalidFields.value.set(fieldName, errData?.errors)
                 };
+                // Mark Submit Un-Busy:
+                submitState.value = 'failed';
+                // Return Invalid Submission:
+                return console.warn('Invalid Submission!', { result, values: formValues.value });
+            }
+
+            // Valid Submission - Prepare Req for API:
+            let { data } = result;
+            // Set empty strings to null:
+            for (const [field, fieldData] of Object.entries(data)) {
+                if (typeof fieldData == 'string' && fieldData.trim() == '') {
+                    // @ts-expect-error
+                    data[field] = null;
+                }
+            };
+            // Set empty rsvps to null:
+            if (!data.rsvps?.size) {
+                data.rsvps = null;
+            }
+
+            // Convert - Start Date:
+            const startUtc = utcDateTimeFromJs(data.startDate, data.timeZone)
+            const { hour: startHour, minute: startMinute } = DateTime.fromJSDate(data.startDate);
+
+            // Compute - Duration Ms:
+            const getDurationMs = () => {
+                const endDate = data.endDate
+                if (!endDate) return null;
+                const endUtc = utcDateTimeFromJs(endDate, data.timeZone);
+                return (endUtc.toMillis() - startUtc.toMillis())
+            }
+
+            // Compute - Post Offset Ms:
+            const getPostOffsetMs = () => {
+                const postTimeInput = DateTime.fromJSDate(data.postTime);
+                const postTimeDate = startUtc
+                    .setZone(data.timeZone) // session start in zone
+                    .set({ hour: postTimeInput.hour, minute: postTimeInput.minute }) // apply chosen post time
+                let postUtc = postTimeDate.toUTC() // convert back to utc
+                if (data.postDay == 'Day before') {
+                    postUtc = postUtc.minus({ day: 1 });
+                }
+                return (startUtc.toMillis() - postUtc.toMillis())
+            }
+
+
+            // Re-Build - RRule:
+            const baseRule = data?.recurrence ? RRule.fromString(data.recurrence) : null;
+            const untilInput = baseRule?.options?.until
+                ? DateTime.fromJSDate(baseRule?.options?.until)
+                : null;
+            const untilInZone = untilInput
+                ? DateTime.fromObject(
+                    { year: untilInput.year, month: untilInput.month, day: untilInput.day },
+                    { zone: data.timeZone })
+                    .endOf('day')
+                : null;
+            const untilUtc = untilInZone ? untilInZone.toUTC() : null;
+
+            const rrule = baseRule
+                ? new RRule({
+                    ...baseRule.origOptions,
+                    dtstart: startUtc.toJSDate(),
+                    until: untilUtc
+                        ? untilUtc.toJSDate()
+                        : undefined,
+                })
+                : null;
+
+
+            // Compute - Next Post UTC:
+            let cursor = DateTime.now();
+            const getNextPostUtc = (): DateTime | null => {
+                while (true) {
+                    // Find Next Local Date in JS Date:
+                    const nextStartJs = rrule ? rrule.after(cursor.toJSDate(), true) : null;
+                    if (nextStartJs) {
+                        // Create DateTime in Zone w/ Post Offset of next recurrence:
+                        const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: data.timeZone })
+                            .set({ hour: startHour, minute: startMinute }); // maintain intended time
+                        const nextPostInZone = nextStartInZone.minus({ millisecond: getPostOffsetMs() });
+                        // IF EDITING - Ensure this post date is past its last post date:
+                        if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                            const lastPostInZone = dbIsoUtcToDateTime(dashboard.sessionForm.editPayload.last_post_utc, data.timeZone)
+                            if (nextPostInZone <= lastPostInZone) {
+                                // This post was too early / already elapsed -> finding next
+                                cursor = cursor.plus({ day: 1 })
+                                continue
+                            }
+                        }
+                        // Checks Passed - Return UTC Date:
+                        return nextPostInZone.toUTC();
+
+                    } else {
+                        return null;
+                    };
+
+                };
+            };
+            const nextPostUtc = getNextPostUtc();
+
+
+            // FIX ME!!
+            const getUtcExpiresAtDate = () => {
+                let lastStartJs: Date | null = null;
+
+                if (!rrule) {
+                    // No Recurrence:
+                    lastStartJs = startUtc
+                        .minus({ millisecond: getPostOffsetMs() })
+                        .toLocal()
+                        .toJSDate();
+                } else {
+                    // Has Recurrence:
+                    const { until, count } = rrule.options
+                    if (until) {
+                        // RRule End by Date:
+                        lastStartJs = untilUtc ? rrule.before(until, false) : null;
+
+                    } else if (count) {
+                        // RRule End by Count:
+                        const all = rrule.all();
+                        lastStartJs = all.at(-1) ?? null;
+                    } else {
+                        // No RRule End / Expiration Date:
+                        lastStartJs = null
+                    }
+                }
+
+                if (lastStartJs) {
+                    const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: data.timeZone })
+                        .set({ hour: startHour, minute: startMinute }); // maintain intended time
+                    const lastPostInZone = lastStartInZone.minus({ millisecond: getPostOffsetMs() });
+                    const expiresAtUtc = lastPostInZone.toUTC();
+                    return expiresAtUtc;
+                } else {
+                    return null;
+                }
+            };
+
+
+            // If Debugging - Return
+            if (debugSubmit) {
+                console.info('Prepared Data', {
+                    rrule,
+                    rruleString: rrule?.toString(),
+                    startUtc: startUtc.toISO(),
+                    durationMs: getDurationMs(),
+                    postOffsetMs: getPostOffsetMs(),
+                    expiration: {
+                        utc: getUtcExpiresAtDate(),
+                        inZone: getUtcExpiresAtDate()?.setZone(data.timeZone)
+                    },
+                    post: {
+                        utc: nextPostUtc,
+                        inZone: nextPostUtc?.setZone(data.timeZone)
+                    },
+                    startHour, startMinute
+                });
+                submitState.value = 'idle';
+            }
+
+
+
+            // Create Request Body:
+            const bodyData = {
+                data: <API_SessionTemplateBodyInterface>{
+                    guild_id: guildId.value,
+                    title: data.title,
+                    description: data.description,
+                    url: data.url,
+                    starts_at_utc: startUtc.toISO(),
+                    start_hour: startHour,
+                    start_minute: startMinute,
+                    duration_ms: getDurationMs(),
+                    time_zone: data.timeZone,
+                    rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
+                    rrule: rrule ? rrule.toString() : null,
+                    channel_id: data.channelId,
+                    post_before_ms: getPostOffsetMs(),
+                    native_events: data.nativeEvents,
+                    post_in_thread: data.postInThread,
+                    next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
+                    expires_at_utc: getUtcExpiresAtDate()?.toISO() ?? null,
+                }
 
             };
-        };
-        const nextPostUtc = getNextPostUtc();
 
 
-        // FIX ME!!
-        const getUtcExpiresAtDate = () => {
-            let lastStartJs: Date | null = null;
+            if (formAction.value == 'new') {
+                // Create New Session - Send Request
+                const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                if (r.status < 300) {
+                    // Success!
+                    console.log('Session Created', r.data.data)
+                    // Reset Form
+                    resetFrom();
+                    // Close Form
+                    sessionsFormVisible.value = false;
 
-            if (!rrule) {
-                // No Recurrence:
-                console.info('No recurrence', { startUtc })
-                lastStartJs = startUtc
-                    .minus({ millisecond: getPostOffsetMs() })
-                    .toLocal()
-                    .toJSDate();
-            } else {
-                // Has Recurrence:
-                console.info('Recurrence!', { opts: rrule?.options })
-                const { until, count } = rrule.options
-                if (until) {
-                    // RRule End by Date:
-                    lastStartJs = untilUtc ? rrule.before(until, false) : null;
+                } else { console.warn('Request Failed!', r) }
+            } else if (formAction.value == 'edit') {
+                // Edit Existing Session - Send Request
+                bodyData.data.id = editingId.value;
+                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                if (r.status < 300) {
+                    // Success!
+                    console.log('Session Edited', r.data.data)
+                    // Reset Form
+                    resetFrom();
+                    // Close Form
+                    sessionsFormVisible.value = false;
 
-                } else if (count) {
-                    // RRule End by Count:
-                    const all = rrule.all();
-                    lastStartJs = all.at(-1) ?? null;
-                } else {
-                    // No RRule End / Expiration Date:
-                    lastStartJs = null
-                }
+                } else { console.warn('Request Failed!', r) }
             }
 
-            if (lastStartJs) {
-                const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: data.timeZone })
-                    .set({ hour: startHour, minute: startMinute }); // maintain intended time
-                const lastPostInZone = lastStartInZone.minus({ millisecond: getPostOffsetMs() });
-                const expiresAtUtc = lastPostInZone.toUTC();
-                return expiresAtUtc;
-            } else {
-                console.info('No expiration found / lastStartJs?')
-                return null;
-            }
+
+
+            // Mark Submit Un-Busy:
+            submitState.value = 'idle';
+            console.log('Form Submitted', formValues.value);
+
+            // Reload Dashboard Templates:
+            useSessionTemplates().execute()
+
+        } finally {
+            setTimeout(() => {
+                submitState.value = 'idle'
+            }, 1_500)
         }
-
-        console.info('Prepared Data', {
-            rrule,
-            rruleString: rrule?.toString(),
-            startUtc: startUtc.toISO(),
-            durationMs: getDurationMs(),
-            postOffsetMs: getPostOffsetMs(),
-            expiration: {
-                utc: getUtcExpiresAtDate(),
-                inZone: getUtcExpiresAtDate()?.setZone(data.timeZone)
-            },
-            post: {
-                utc: nextPostUtc,
-                inZone: nextPostUtc?.setZone(data.timeZone)
-            },
-            startHour, startMinute
-        })
-
-
-        // return submitBusy.value = false;
-
-        // Create Request Body:
-        const bodyData = {
-            data: <API_SessionTemplateBodyInterface>{
-                guild_id: guildId.value,
-                title: data.title,
-                description: data.description,
-                url: data.url,
-                starts_at_utc: startUtc.toISO(),
-                start_hour: startHour,
-                start_minute: startMinute,
-                duration_ms: getDurationMs(),
-                time_zone: data.timeZone,
-                rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
-                rrule: rrule ? rrule.toString() : null,
-                channel_id: data.channelId,
-                post_before_ms: getPostOffsetMs(),
-                native_events: data.nativeEvents,
-                post_in_thread: data.postInThread,
-                next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
-                expires_at_utc: getUtcExpiresAtDate()?.toISO() ?? null,
-            }
-
-        };
-
-
-        if (formAction.value == 'new') {
-            // Create New Session - Send Request
-            const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-            if (r.status < 300) {
-                // Success!
-                console.log('Session Created', r.data.data)
-                // Reset Form
-                resetFrom();
-                // Close Form
-                sessionsFormVisible.value = false;
-
-            } else { console.warn('Request Failed!', r) }
-        } else if (formAction.value == 'edit') {
-            // Edit Existing Session - Send Request
-            bodyData.data.id = editingId.value;
-            const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
-            if (r.status < 300) {
-                // Success!
-                console.log('Session Edited', r.data.data)
-                // Reset Form
-                resetFrom();
-                // Close Form
-                sessionsFormVisible.value = false;
-
-            } else { console.warn('Request Failed!', r) }
-        }
-
-
-
-        // Mark Submit Un-Busy:
-        submitBusy.value = false;
-        console.log('Form Submitted', formValues.value);
-
-        // Reload Dashboard Templates:
-        useSessionTemplates().execute()
-
     }
 
 
@@ -553,13 +567,13 @@
 
 <template>
     <!-- Form Background -->
-    <Dialog v-bind:visible="sessionsFormVisible" modal class="max-w-[90%]! max-h-[90%]!">
+    <Dialog append-to="body" v-bind:visible="sessionsFormVisible" modal block-scroll class="max-w-[90%]! max-h-[90%]!">
 
 
-        <template #container="{ closeCallback }">
+        <template #container="{ closeCallback, initDragCallback }">
             <!-- Form Card -->
             <div
-                class="bg-zinc-900 ring-ring ring-2 rounded-md gap-2 w-full max-w-130 flex flex-nowrap flex-col overflow-auto">
+                class="bg-zinc-900 ring-ring ring-2 rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
 
                 <!-- Form Header/Tab Bar -->
                 <div class="flex flex-col items-center justify-start w-full">
@@ -578,10 +592,10 @@
                         </span>
 
                         <!-- Abort/Delete Session - Button -->
-                        <Button unstyled @click="abortForm()" :disabled="submitBusy"
+                        <Button unstyled @click="abortForm()" :disabled="submitState != 'idle'"
                             class="p-0.5 hover:bg-red-400/15 active:scale-95 cursor-pointer transition-all rounded-lg"
-                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitBusy }">
-                            <XIcon v-if="!submitBusy" class="p-px text-white/70" />
+                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState == 'loading' }">
+                            <XIcon v-if="submitState == 'idle'" class="p-px text-white/70" />
                             <LoadingIcon v-else class="size-5" />
                         </Button>
                     </section>
@@ -617,41 +631,45 @@
                     </section>
                 </div>
 
+                <!-- SCROLL ZONE - Form Tab Area -->
+                <div class="flex flex-col w-full h-full grow overflow-auto">
+                    <!-- Form Page/Tab View -->
+                    <section
+                        class="flex flex-nowrap flex-col grow px-6 w-full overflow-x-clip justify-center items-center content-center">
 
-                <!-- Form Page/Tab View -->
-                <section
-                    class="flex flex-nowrap flex-col grow px-6 w-full overflow-x-clip justify-center items-center content-center">
+                        <Transition name="slide" mode="out-in" :duration="0.5">
+                            <!-- FORM TABS -->
+                            <KeepAlive>
+                                <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
+                                    :validateFields v-model:title="formValues.title"
+                                    v-model:description="formValues.description" v-model:url="formValues.url"
+                                    v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate"
+                                    v-model:time-zone="formValues.timeZone" />
 
-                    <Transition name="slide" mode="out-in" :duration="0.5">
-                        <!-- FORM TABS -->
-                        <KeepAlive>
-                            <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
-                                :validateFields v-model:title="formValues.title"
-                                v-model:description="formValues.description" v-model:url="formValues.url"
-                                v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate"
-                                v-model:time-zone="formValues.timeZone" />
+                                <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
+                                    v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
 
-                            <RsvpsTab v-else-if="tabSelected == 'rsvps'" :invalidFields :validateField
-                                v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
+                                <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
+                                    v-model:recurrence-enabled="formOptions.recurrenceEnabled"
+                                    v-model:recurrence="formValues.recurrence" />
 
-                            <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
-                                v-model:recurrence-enabled="formOptions.recurrenceEnabled"
-                                v-model:recurrence="formValues.recurrence" />
+                                <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
+                                    :validateFields v-model:channel-id="formValues.channelId"
+                                    v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
+                                    v-model:native-events="formValues.nativeEvents"
+                                    v-model:post-in-thread="formValues.postInThread" />
+                            </KeepAlive>
+                        </Transition>
 
-                            <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
-                                :validateFields v-model:channel-id="formValues.channelId"
-                                v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
-                                v-model:native-events="formValues.nativeEvents"
-                                v-model:post-in-thread="formValues.postInThread" />
-                        </KeepAlive>
-                    </Transition>
+                    </section>
 
-                </section>
 
+
+                </div>
 
                 <!-- Form Footer -->
                 <div
-                    class="w-full flex flex-row items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
+                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
 
                     <!-- Created By - Badge -->
                     <div hidden class="flex gap-1 items-center flex-row ml-1 text-sm">
@@ -698,12 +716,27 @@
                         </Button>
 
                         <!-- Submit Form Button -->
-                        <Button v-else @click="submitForm()" :disabled="submitBusy"
+                        <Button v-else @click="submitForm()" :disabled="submitState != 'idle'"
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
-                            :class="{ 'bg-zinc-600! opacity-80! scale-95! cursor-progress!': submitBusy }" unstyled>
-                            <p class="text-sm font-bold"> Submit </p>
-                            <LoadingIcon class="size-5! animate-pulse!" v-if="submitBusy" />
-                            <CheckIcon v-else :stroke-width="'4'" :size="17" class="scale-90" />
+                            :class="{
+                                'bg-zinc-600! opacity-80! scale-95! cursor-progress!': submitState == 'loading',
+                                'bg-red-400/70!  scale-100! cursor-not-allowed!': submitState == 'failed'
+                            }" unstyled>
+                            <div v-if="submitState == 'idle'"
+                                class="flex gap-0.75 flex-row items-center content-center justify-center">
+                                <p class="text-sm font-bold"> Submit </p>
+                                <CheckIcon :stroke-width="'4'" :size="17" class="scale-90" />
+                            </div>
+                            <div v-if="submitState == 'loading'"
+                                class="flex gap-0.75 flex-row items-center content-center justify-center">
+                                <p class="text-sm font-bold"> Submit </p>
+                                <LoadingIcon class="size-5! animate-pulse!" v-if="submitState == 'loading'" />
+                            </div>
+                            <div v-if="submitState == 'failed'"
+                                class="flex gap-0.75 flex-row items-center content-center justify-center">
+                                <p class="text-sm font-bold"> Failed </p>
+                                <TriangleAlertIcon :stroke-width="'3'" :size="17" class="scale-90" />
+                            </div>
                         </Button>
 
                     </div>
@@ -712,8 +745,6 @@
 
             </div>
         </template>
-
-
 
     </Dialog>
 </template>
