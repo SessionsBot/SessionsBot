@@ -4,7 +4,6 @@
     import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../../sesForm.vue';
     import RsvpPanel from './rsvpFormPanel.vue';
-    import { generateId } from '@sessionsbot/shared';
 
 
     // Incoming Props:
@@ -14,25 +13,32 @@
     }>();
     const { invalidFields, validateField } = props;
 
+
     // RSVP Panel Ref:
     const rsvpPanelRef = ref();
 
     // Form Values/Models:
     const rsvpsEnabled = defineModel<boolean>('rsvpsEnabled')
-    const rsvps = defineModel<Map<string, { name: string, emoji: string, capacity: number }>>('rsvps')
+    const rsvps = defineModel<RsvpSlotFormData[]>('rsvps', { default: [] });
 
     // Add New - RSVP:
+    type RsvpSlotFormData = { name: string, emoji: string, capacity: number, required_roles?: string[] }
     function addNewRsvp(data: { name: string, capacity: number, emoji: string }) {
-        const rsvpId = generateId.rsvp();
-        return rsvps.value?.set(rsvpId, data);
+        rsvps.value.push(data)
     }
     // Edit Existing - RSVP:
-    function editExistingRsvp(rsvpId: string, data: { name: string, capacity: number, emoji: string }) {
-        return rsvps.value?.set(rsvpId, data);
+    function editExistingRsvp(index: number, data: { name: string, capacity: number, emoji: string }) {
+        // return localRsvps.value?.set(rsvpId, data);
+        if (rsvps.value) {
+            rsvps.value[index] = data;
+        }
     }
     // Delete Existing - RSVP:
-    function deleteExistingRsvp(rsvpId: string) {
-        return rsvps.value?.delete(rsvpId);
+    function deleteExistingRsvp(index: number) {
+        // return localRsvps.value?.delete(rsvpId);
+        if (rsvps.value) {
+            rsvps.value.splice(index, 1);
+        }
     }
 
     // Rsvp Dialog Panel:
@@ -60,18 +66,18 @@
                     class="flex gap-0 flex-wrap bg-black/25 items-center justify-center content-center flex-col min-w-full min-h-15 border-ring border-b-2">
 
                     <!-- No RSVPs Added -->
-                    <div v-if="(rsvps?.size || 0) <= 0"
+                    <div v-if="(rsvps?.length || 0) <= 0"
                         class=" bg-white/5 gap-0.75 py-2.25 opacity-55 px-4 min-w-full rounded-md flex flex-row  items-center content-center justify-center drop-shadow-md drop-shadow-black">
                         <FileQuestionMarkIcon class="size-5" />
                         <p class="text-sm font-medium"> No RSVPs</p>
                     </div>
 
                     <!-- Current RSVP Options -->
-                    <div v-if="(rsvps?.size || 0) >= 1"
+                    <div v-if="(rsvps?.length || 0) >= 1"
                         class="gap-3 p-4 min-w-full flex flex-wrap items-center justify-center col-1">
 
                         <!-- RSVP Item Card -->
-                        <div v-for="[id, { name, emoji, capacity }] in rsvps?.entries()"
+                        <div v-for="[id, { name, emoji, capacity, required_roles }] in rsvps?.entries()"
                             class="gap-1.25 p-1.25 w-fit flex flex-nowrap flex-col justify-between items-center bg-white/5 ring-ring ring-2 rounded-md">
 
                             <!-- RSVP Data -->
@@ -87,7 +93,7 @@
 
                             <!-- Edit RSVP Button -->
                             <Button unstyled
-                                @click="() => { rsvpPanelRef.startRsvpEdit(id, { name, emoji, capacity }) }"
+                                @click="() => { rsvpPanelRef.startRsvpEdit(id, { name, emoji, capacity, required_roles }) }"
                                 class="p-1.25 gap-1 hover:bg-amber-400/10 w-full active:scale-95 rounded-md transition-all cursor-pointer flex flex-row flex-nowrap min-w-fit! items-center justify-center">
                                 <p class="text-sm font-bold"> Edit </p>
                                 <Edit3Icon :size="15" fill="white" class="relative bottom-px" />

@@ -72,7 +72,7 @@
             startDate: null,
             endDate: null,
             timeZone: '',
-            rsvps: new Map(),
+            rsvps: [],
             recurrence: null,
             channelId: '',
             postTime: null,
@@ -114,11 +114,12 @@
             name: z.string(),
             value: z.string()
         }, 'Please select a valid Time Zone.').transform(o => o.value),
-        rsvps: z.map(z.string(), z.object({
+        rsvps: z.array(z.object({
             // 2nd Level - See RsvpPanel Schema
             name: z.string().normalize(),
             emoji: z.nullish(z.emoji("Please enter a valid emoji.")).or(z.literal("")),
-            capacity: z.number()
+            capacity: z.number(),
+            required_roles: z.array(z.string()).nullish()
         })).nullish(),
         recurrence: z.nullish(z.string()), // ! ADD SCHEMA
         channelId: z.string('Please select a valid Post Channel.').trim().min(5, 'Please select a valid Post Channel.').normalize(),
@@ -244,6 +245,7 @@
         // - Maybe alter / change the start and end dates to represent
         // the next occurrence rather than the first start date on creation
         // to fix various ui and validation bugs
+        // ALSO - Fix display of selected post channel whn edit begins
 
         // Assign Editing Id:
         if (!data.id) return console.warn('Invalid Session Template Id - For Edit', data?.id);
@@ -282,7 +284,7 @@
             startDate: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone),
             endDate: data.duration_ms ? dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
             timeZone: getZoneSelected(data.time_zone),
-            rsvps: data?.rsvps ? mapRsvps(data.rsvps) : null,
+            rsvps: data?.rsvps ? mapRsvps(data.rsvps) : [],
             recurrence: data.rrule,
             channelId: data.channel_id,
             postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, -data.post_before_ms),
@@ -340,7 +342,7 @@
                 }
             };
             // Set empty rsvps to null:
-            if (!data.rsvps?.size) {
+            if (!data.rsvps?.length) {
                 data.rsvps = null;
             }
 
@@ -426,7 +428,7 @@
             const nextPostUtc = getNextPostUtc();
 
 
-            // FIX ME!!
+            // Compute - Expiration Date UTC (last post time):
             const getUtcExpiresAtDate = () => {
                 let lastStartJs: Date | null = null;
 
@@ -481,9 +483,10 @@
                         utc: nextPostUtc,
                         inZone: nextPostUtc?.setZone(data.timeZone)
                     },
-                    startHour, startMinute
+                    startHour, startMinute,
+                    rsvps: data.rsvps
                 });
-                submitState.value = 'idle';
+                return submitState.value = 'idle';
             }
 
 
@@ -500,7 +503,7 @@
                     start_minute: startMinute,
                     duration_ms: getDurationMs(),
                     time_zone: data.timeZone,
-                    rsvps: data?.rsvps ? JSON.stringify(Object.fromEntries(data.rsvps)) : null,
+                    rsvps: data?.rsvps?.length ? JSON.stringify(data.rsvps) : null,
                     rrule: rrule ? rrule.toString() : null,
                     channel_id: data.channelId,
                     post_before_ms: getPostOffsetMs(),
@@ -517,9 +520,7 @@
                 // Create New Session - Send Request
                 const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
                 if (r.status < 300) {
-                    // Success!
-                    console.log('Session Created', r.data.data)
-                    // Reset Form
+                    // Success! - Reset Form
                     resetFrom();
                     // Close Form
                     sessionsFormVisible.value = false;
@@ -530,9 +531,7 @@
                 bodyData.data.id = editingId.value;
                 const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
                 if (r.status < 300) {
-                    // Success!
-                    console.log('Session Edited', r.data.data)
-                    // Reset Form
+                    // Success! - Reset Form
                     resetFrom();
                     // Close Form
                     sessionsFormVisible.value = false;
@@ -544,7 +543,7 @@
 
             // Mark Submit Un-Busy:
             submitState.value = 'idle';
-            console.log('Form Submitted', formValues.value);
+            // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
             useSessionTemplates().execute()

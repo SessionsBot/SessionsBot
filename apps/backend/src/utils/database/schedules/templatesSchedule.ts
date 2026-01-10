@@ -2,13 +2,13 @@ import { calculateNextPostUTC, mapRsvps } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
-import core from "../../core";
-import { sendPermissionAlert } from "../../bot/permissions/permissionsDenied";
-import { timeToUntilString } from "rrule/dist/esm/dateutil";
+import core, { urls } from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg } from "../../bot/messages/sessionSignup";
-import { MessageFlags } from "discord.js";
+import { MessageFlags, ModalAssertions } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
+import { genericErrorMsg } from "../../bot/messages/basic";
+import sendWithFallback from "../../bot/messages/sendWithFallback";
 
 const createLog = useLogger();
 
@@ -40,7 +40,7 @@ async function executeTemplateCreationSchedule() {
         // Return Templates:
         return data;
     }
-    const fromUTC = DateTime.now().toUTC() // .plus({ minute: 5 })
+    const fromUTC = DateTime.now().toUTC();
     const templateFetch = await getTemplates(fromUTC);
     if (!templateFetch) return;
 
@@ -66,50 +66,64 @@ async function executeTemplateCreationSchedule() {
                 continue
             }
             // For each Session Template in Channel Queue:
-            for (const t of templates) {
+            const sortedTemplates = templates.sort((a, b) => DateTime.fromISO(a.starts_at_utc).toSeconds() - DateTime.fromISO(b.starts_at_utc).toSeconds())
+            for (const t of sortedTemplates) {
                 // Get Vars:
                 const sessionStart = DateTime.fromISO(t.next_post_utc).plus({ millisecond: t.post_before_ms });
-                const sessionRsvps = t.rsvps ? mapRsvps(t.rsvps) : null;
+                const templateRsvps = t.rsvps ? mapRsvps(t.rsvps) : null;
 
                 // Save/Create new Session from Template:
-                const { error: saveErr, data: session } = await supabase.from('sessions').insert({
+                const { error: createSessionErr, data: session } = await supabase.from('sessions').insert({
                     title: t.title,
                     description: t.description,
                     url: t.url,
                     time_zone: t.time_zone,
-                    starts_at_ms: sessionStart.toMillis(),
+                    starts_at_utc: sessionStart.toISO(),
                     duration_ms: t.duration_ms,
                     guild_id: t.guild_id,
                     template_id: t.id,
                     channel_id: t.channel_id,
                     signup_id: '0'
                 }).select().single();
-
-                // On Save Error:
-                if (saveErr || !session) {
-                    createLog.for('Database').error('FAILED TO SAVE/CREATE - New Session - See Details...', { template: t, err: saveErr, session });
+                // If Create/Save Error - Continue:
+                if (createSessionErr || !session) {
+                    createLog.for('Database').error('FAILED TO SAVE/CREATE - New Session - See Details...', { template: t, err: createSessionErr, session });
                     continue;
                 }
 
                 // Create RSVP DB Rows:
-                if (sessionRsvps) {
-                    for (const [id, data] of sessionRsvps) {
+                let abortTemplateFromRsvpErr = false;
+                if (templateRsvps) {
+                    for (const data of templateRsvps) {
                         const { error: rsvpSaveErr } = await supabase.from('session_rsvp_slots').insert({
                             title: data.name,
                             emoji: data.emoji,
                             capacity: data.capacity,
+                            roles_required: data.requiredRoles,
                             session_id: session.id,
                             guild_id: guildId
-                        })
+                        }).select('*').single()
                         if (rsvpSaveErr) {
-                            createLog.for('Database').error('FAILED TO SAVE - RSVP SLOT - See Details..', { session, guildId, templateId: t.id, rsvpSaveErr, rsvpData: { id, data } });
+                            abortTemplateFromRsvpErr = true;
+                            // RSVP Save FAILED:
+                            createLog.for('Database').error('FAILED TO SAVE - RSVP SLOT - See Details..', { session, guildId, templateId: t.id, rsvpSaveErr, rsvpData: data });
+                            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \nTemplate Id: \`${t.id}\` \`Guild Id: \`${t.guild_id}\`` })
+                            // Delete Created Session
+                            await supabase.from('sessions').delete().eq('id', session.id);
+                            // Send Failure Message:
+                            sendWithFallback(guildId, errMsg);
+                            break;
                         }
+                    }
+                    if (abortTemplateFromRsvpErr) {
+                        continue;
                     }
                 }
 
                 // Post to Discord:
+                const signupMsgContent = await buildSessionSignupMsg({ session })
                 const signupMsg = await channel.send({
-                    components: [buildSessionSignupMsg(t, session.id)],
+                    components: [signupMsgContent],
                     flags: MessageFlags.IsComponentsV2
                 })
 
@@ -150,11 +164,14 @@ async function executeTemplateCreationSchedule() {
 
 /** Initializes the session template creation schedule.
  * @runs every 5 mins of each hour */
-export async function initTemplateCreationScheduler() {
+export async function initTemplateCreationScheduler(opts: { runOnExecution?: boolean }) {
     console.info(`(i) Initializing Template Creation Scheduler! - At: ${DateTime.now().toFormat('F')}`)
     sessionTemplateCreationCron = cron.schedule(`*/5 * * * *`, executeTemplateCreationSchedule, {
         timezone: 'UTC', name: 'template_creation'
     })
 
-    console.log(sessionTemplateCreationCron.getNextRun())
+    if (opts.runOnExecution) {
+        console.info(`(i) Running Session Template Creation Schedule Early..`)
+        sessionTemplateCreationCron.execute()
+    }
 }

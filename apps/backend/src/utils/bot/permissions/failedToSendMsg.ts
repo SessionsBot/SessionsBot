@@ -7,6 +7,7 @@ import sendWithFallback from "../messages/sendWithFallback";
 
 const createLog = useLogger();
 
+/** Should be called when the bot cannot post a `Session Signup` message due to **PERMISSIONS**! */
 export async function sendFailedToPostSessionAlert(guildId: string, channelId: string, templateIds: string[]) {
     // Get Vars:
     const { botClient: bot, colors, urls } = core;

@@ -12,7 +12,13 @@ import { PrimeVueResolver } from '@primevue/auto-import-resolver';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'iconify-icon'
+        }
+      }
+    }),
     vueDevTools(),
     tailwindcss(),
     AutoImport({

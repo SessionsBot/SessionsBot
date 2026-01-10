@@ -56,7 +56,7 @@
             const validateResult = safeParse(fieldSchema, value);
             if (!validateResult.success) {
                 const errs = treeifyError(validateResult.error).errors;
-                console.warn('INPUT ERROR', name, errs)
+                // console.warn('INPUT ERROR', name, errs)
                 localForm.value.invalidFields.set(name, errs);
             } else {
                 localForm.value.invalidFields.delete(name);
@@ -144,7 +144,7 @@
             });
             if (newRule) {
                 // Assign to form values:
-                console.info('CREATED RULE', newRule, newRule.toString())
+                // console.info('CREATED RULE', newRule, newRule.toString())
                 recurrence.value = newRule.toString();
             }
 

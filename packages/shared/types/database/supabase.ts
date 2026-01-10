@@ -83,6 +83,7 @@ export type Database = {
           emoji: string | null
           guild_id: string
           id: string
+          roles_required: string[] | null
           session_id: string
           title: string
         }
@@ -91,6 +92,7 @@ export type Database = {
           emoji?: string | null
           guild_id: string
           id?: string
+          roles_required?: string[] | null
           session_id: string
           title: string
         }
@@ -99,6 +101,7 @@ export type Database = {
           emoji?: string | null
           guild_id?: string
           id?: string
+          roles_required?: string[] | null
           session_id?: string
           title?: string
         }
@@ -245,7 +248,7 @@ export type Database = {
           guild_id: string
           id: string
           signup_id: string
-          starts_at_ms: number
+          starts_at_utc: string | null
           template_id: string | null
           thread_id: string | null
           time_zone: string
@@ -261,7 +264,7 @@ export type Database = {
           guild_id: string
           id?: string
           signup_id: string
-          starts_at_ms: number
+          starts_at_utc?: string | null
           template_id?: string | null
           thread_id?: string | null
           time_zone: string
@@ -277,7 +280,7 @@ export type Database = {
           guild_id?: string
           id?: string
           signup_id?: string
-          starts_at_ms?: number
+          starts_at_utc?: string | null
           template_id?: string | null
           thread_id?: string | null
           time_zone?: string

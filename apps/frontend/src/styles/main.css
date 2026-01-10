@@ -48,3 +48,10 @@ body {
 .scroll-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Edge */
 }
+
+
+iconify-icon {
+  display: inline-block !important;
+  width: 1em;
+  height: 1em;
+}

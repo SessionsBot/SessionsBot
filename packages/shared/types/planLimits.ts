@@ -22,7 +22,7 @@ export const PlanLimits: Record<PlanName, PlanLimitValues> = {
   },
   ENTERPRISE: {
     MAX_SCHEDULES: Infinity,
-    MAX_RSVP_SLOTS: 7,
+    MAX_RSVP_SLOTS: 10,
     MAX_RSVP_CAPACITY: Infinity,
     ALLOW_NOTIFICATIONS: true
   },

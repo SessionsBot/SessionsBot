@@ -27,6 +27,11 @@ export const genericErrorMsg = ({
                         style: ButtonStyle.Link,
                         label: `💬 Get Support`,
                         url: core.urls.support.serverInvite
+                    }),
+                    new ButtonBuilder({
+                        style: ButtonStyle.Link,
+                        label: `📚 More Resources`,
+                        url: core.urls.support.onlineResources
                     })
                 ]
             }),

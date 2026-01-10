@@ -157,6 +157,33 @@ const customPreset = definePreset(Aura, {
                 focusColor: 'var(--color-white)',
             },
         },
+        multiselect: {
+            root: {
+                color: 'var(--color-white)',
+                background: `var(--color-zinc-800)`,
+                focusBorderColor: 'var(--color-indigo-400)',
+                invalidBorderColor: 'var(--color-red-400)',
+                hoverBorderColor: 'var(--color-indigo-300)',
+                focusRing: {
+                    color: 'var(--color-indigo-400)'
+                }
+            },
+            overlay: {
+                background: `var(--color-zinc-800)`,
+                color: 'var(--color-white)',
+                borderColor: `var(--color-ring)`
+            },
+            option: {
+                focusBackground: 'var(--color-indigo-300/30)',
+                selectedBackground: 'var(--color-emerald-500/30)',
+                selectedFocusBackground: 'var(--color-emerald-500/30)',
+                color: `var(--color-white)`,
+                focusColor: `var(--color-white)`,
+                selectedColor: `var(--color-white)`,
+                selectedFocusColor: `var(--color-white)`,
+            }
+
+        },
         inputnumber: {
 
             colorScheme: {
@@ -218,8 +245,12 @@ const primePT: PrimeVuePTOptions = {
         list: 'bg-zinc-800!',
         label: 'text-white!',
         optionLabel: 'text-white',
-        optionGroupLabel: 'text-white bg-black/15 w-full h-full',
+        optionGroupLabel: 'text-white',
         optionGroup: 'bg-black/20! rounded-md'
+    },
+    multiselect: {
+        root: ` text-white! font-bold border-2!`,
+        overlay: `border-2!`
     },
     autocomplete: {
         root: 'group group-hover:border-indigo-300! active:border-indigo-400! group-focus-within:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',

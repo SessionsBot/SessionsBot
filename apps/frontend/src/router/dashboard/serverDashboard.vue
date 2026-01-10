@@ -10,6 +10,8 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useGuildChannels } from '@/stores/dashboard/guildChannels';
     import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
+    import { useGuildRoles } from '@/stores/dashboard/guildRoles';
+    import { useGuildSubscription } from '@/stores/dashboard/guildSubscription';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -18,12 +20,21 @@
     const selectedGuildId = computed(() => dashboard.guild.id)
     // Guild - Channels:
     const channels = useGuildChannels();
+    // Guild - Roles:
+    const roles = useGuildRoles();
+    // Guild - Session Templates:
+    const subscription = useGuildSubscription()
     // Guild - Session Templates:
     const templates = useSessionTemplates()
 
     // Data Ready - Flag:
     const allDataReady = computed(() => {
-        const checks = [channels.isReady, templates.isReady];
+        const checks = [
+            channels.isReady,
+            roles.isReady,
+            templates.isReady,
+            subscription.isReady
+        ];
         return checks.every((s) => s.value == true)
     })
 

@@ -1,35 +1,67 @@
 <script lang="ts" setup>
     import { zodResolver } from '@primevue/forms/resolvers/zod';
     import z, { ZodError, ZodObject } from 'zod';
-    import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon } from 'lucide-vue-next';
+    import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon, SparklesIcon } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
-    import EmojiPicker from 'vue3-emoji-picker'
+    import EmojiPicker, { type Emoji, type EmojiExt } from 'vue3-emoji-picker'
     import 'vue3-emoji-picker/css'
     import type { PopoverMethods } from 'primevue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
     import InputTitle from '../../labels/inputTitle.vue'
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { IconifyIconComponent } from 'iconify-icon';
 
     // Services:
     const confirm = useConfirm();
+    const dashboard = useDashboardStore()
+
 
     // Main Panel Visibility & Mode
     const isVisible = defineModel<boolean>('isVisible');
     const actionMode = ref<'Edit' | 'New'>('New')
 
     // Editing - RSVP ID to edit:
-    const editingId = ref<string | null>(null)
+    const editingId = ref<number | null>(null)
 
     // Main Form Ref:
     const rsvpFormRef = ref<FormInstance>();
 
     // Emoji Picker - Ref
     const emojiPickerPORef = ref<PopoverMethods>(null as any);
+    const emojiPickerElRef = ref<InstanceType<typeof EmojiPicker> | null>(null)
+    function focusEmojiSearch() {
+        nextTick(() => {
+            const pickerRoot = emojiPickerElRef.value?.$el as HTMLElement | undefined;
+            if (!pickerRoot) return;
+
+            const searchInput = pickerRoot.querySelector('input');
+            searchInput?.focus();
+        });
+    }
+
+
+    // Guild Role Options:
+    const guildRoles = computed(() => {
+        if (dashboard.guild.roles?.length) {
+            let r = [];
+            for (const role of dashboard.guild.roles) {
+                if (role?.name == '@everyone') continue;
+                r.push({
+                    name: role?.name,
+                    value: role?.id
+                })
+            }
+            return r;
+        } else return [];
+    })
+
 
     // Form v-modal Values:
     const RsvpFormValues = ref({
         name: '',
         emoji: '',
-        capacity: 1
+        capacity: 1,
+        required_roles: <any>[]
     })
 
     // Form Schema & Restraints:
@@ -41,10 +73,9 @@
         emoji: z.string()
             .regex(/^\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*$/u, "Please enter a valid emoji.")
             .or(z.literal("")),
-        capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! <br> Upgrade your bot for higher limits!`)
+        capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! <br> <a href="./pricing" target="_blank" class="text-sky-400/80 underline">Upgrade your bot</a> for higher limits!`),
+        required_roles: z.nullish(z.array(z.string()))
     })
-
-
 
 
     // Reset RSVP Form:
@@ -52,7 +83,8 @@
         RsvpFormValues.value = ({
             name: '',
             emoji: '',
-            capacity: 1
+            capacity: 1,
+            required_roles: []
         });
     }
 
@@ -63,7 +95,7 @@
             header: 'Please Confirm',
             message: "Are you sure you'd like to remove this RSVP option? This action cannot be undone!",
             accept: () => {
-                emits('deleteRsvp', editingId.value as string)
+                emits('deleteRsvp', editingId.value as number)
                 isVisible.value = false;
             },
             reject: () => { return }
@@ -83,13 +115,14 @@
 
 
     // Start/Init RSVP Edit Fn:
-    function startRsvpEdit(id: string, data: { name: string, emoji: string, capacity: number }) {
+    function startRsvpEdit(id: number, data: { name: string, emoji: string, capacity: number, required_roles?: string[] }) {
         actionMode.value = 'Edit';
         editingId.value = id;
         RsvpFormValues.value = {
             name: data.name,
             emoji: data.emoji,
-            capacity: data.capacity
+            capacity: data.capacity,
+            required_roles: data.required_roles ?? []
         };
         rsvpFormRef.value?.setValues({
             name: data.name,
@@ -104,20 +137,23 @@
     const submitRsvpForm = (e: FormSubmitEvent) => {
         if (e.valid) {
             // Valid Submission:
-            let { name, emoji, capacity } = e.values;
+            let { name, emoji, capacity, required_roles } = e.values;
             // Empty Emoji String -> Null
             if (emoji?.trim() == "") {
                 emoji = null;
             }
+            if (!required_roles?.length) {
+                required_roles = null;
+            }
             // If creating new:
             if (actionMode.value == 'New') {
-                emits('addRsvp', { name, emoji, capacity });
+                emits('addRsvp', { name, emoji, capacity, required_roles });
                 isVisible.value = false;
                 return
             }
             // If editing existing:
-            if (actionMode.value == 'Edit' && editingId.value) {
-                emits('editRsvp', editingId.value, { name, emoji, capacity });
+            if (actionMode.value == 'Edit' && editingId.value != null) {
+                emits('editRsvp', editingId.value, { name, emoji, capacity, required_roles });
                 isVisible.value = false;
             }
         }
@@ -127,8 +163,8 @@
     // Defined EMITS:
     const emits = defineEmits<{
         addRsvp: [rsvpData: typeof RsvpFormValues.value],
-        editRsvp: [rsvpId: string, rsvpData: typeof RsvpFormValues.value],
-        deleteRsvp: [rsvpId: string],
+        editRsvp: [index: number, rsvpData: typeof RsvpFormValues.value],
+        deleteRsvp: [index: number],
     }>();
     // Defined EXPOSE:
     defineExpose({
@@ -154,7 +190,7 @@
         </template>
 
         <!-- Body / Form -->
-        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2 bg-zinc-700/25 py-5 rounded-md"
+        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2 w-70 bg-zinc-700/25 pb-4 pt-3 rounded-md"
             :resolver="zodResolver(RsvpFormSchema)" @submit="submitRsvpForm" :initial-values="RsvpFormValues">
 
             <!-- INPUT: Title -->
@@ -177,10 +213,7 @@
                 <InputTitle fieldTitle="Emoji" :icon="SmileIcon" />
                 <!-- Emoji Input -->
                 <div class="relative w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
-                    <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1 bg-red-500!" />
-                    <Button hidden label="🏷️" title="Pick Emoji" unstyled
-                        class="absolute! z-5 right-2 top-[10px] grayscale-75 rounded-full"
-                        @click="(e) => emojiPickerPORef.show(e)" />
+                    <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1" />
                 </div>
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
                     v-for="err in $form?.emoji?.errors || []">
@@ -190,8 +223,8 @@
                 </Message>
 
                 <!-- Emoji Picker -->
-                <Popover unstyled ref="emojiPickerPORef" class="p-2!">
-                    <EmojiPicker disable-skin-tones native theme="dark" @select="(e) => {
+                <Popover unstyled ref="emojiPickerPORef" class="p-2!" @show="focusEmojiSearch">
+                    <EmojiPicker ref="emojiPickerElRef" disable-skin-tones native theme="dark" @select="(e) => {
                         RsvpFormValues.emoji = e.i;
                         rsvpFormRef?.setFieldValue('emoji', e.i)
                         emojiPickerPORef.hide();
@@ -215,6 +248,36 @@
                     <p class="text-sm! pl-0.5" v-html="err?.message || 'Invalid Input'">
                     </p>
                 </Message>
+            </div>
+
+
+            <!-- INPUT: Required Roles -->
+            <div class="flex relative flex-col gap-1 w-full items-start"
+                :class="{ 'text-red-400! ring-red-400!': $form.required_roles?.invalid }">
+                <InputTitle fieldTitle="Required Role(s)" :icon="UserStarIcon" :show-help="{ path: '/' }" />
+
+                <div class="relative w-full">
+                    <MultiSelect name="required_roles" fluid v-model="RsvpFormValues.required_roles"
+                        :options="guildRoles" option-label="name" option-value="value" :show-toggle-all="false"
+                        filter />
+                    <!-- Premium Only - Wrapper -->
+                    <a hidden href="./pricing" target="_blank"
+                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 bg-amber-400/7 rounded-md">
+                        <iconify-icon icon="tabler:diamond" class="scale-120 text-white/40" />
+                        <p class="text-white/40 font-black"> Premium Feature </p>
+                    </a>
+
+                </div>
+
+
+
+                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                    v-for="err in $form?.required_roles?.errors || []">
+                    <p class="text-sm! pl-0.5">
+                        {{ err?.message || 'Invalid Input!' }}
+                    </p>
+                </Message>
+
             </div>
 
 
