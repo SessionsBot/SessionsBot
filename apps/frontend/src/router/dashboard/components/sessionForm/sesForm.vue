@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import z, { regex, safeParse, treeifyError } from 'zod'
-    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, FileWarningIcon, InfoIcon, MapPinCheckInsideIcon, Trash2Icon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
+    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
@@ -15,7 +15,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/loadingIcon.vue';
     import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
-    import { datetime, RRule } from 'rrule';
+    import { RRule } from 'rrule';
 
     // Services:
     const confirmService = useConfirm();

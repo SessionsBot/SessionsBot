@@ -43,7 +43,7 @@
 
 
 <template>
-    <div class="flex flex-col items-center justify-center flex-1 w-full h-full">
+    <div class="flex flex-col grow items-center justify-center flex-1 w-full h-full">
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
             <div v-if="!allDataReady"
@@ -62,7 +62,7 @@
                 <DashboardNav />
 
                 <!-- Content/Tab View Area -->
-                <div class="flex w-full flex-col grow">
+                <div class="flex overflow-y-scroll w-full h-full flex-col grow">
                     <SessionsTab v-if="dashboard.nav.currentTab == 'Sessions'" />
                     <CalendarTab v-if="dashboard.nav.currentTab == 'Calendar'" />
                 </div>

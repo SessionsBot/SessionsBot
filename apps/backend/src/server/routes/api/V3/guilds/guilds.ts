@@ -1,7 +1,7 @@
 import axios from "axios";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
-import { PlanName, APIResponse as reply } from "@sessionsbot/shared";
+import { APIResponse as reply, SubscriptionPlanName } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin, verifyGuildMember } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";
@@ -77,14 +77,14 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async
         // Determine Subscription Level:
         const premiumSkuId = process.env?.['PREMIUM_SKU_ID'];
         const enterpriseSkuId = process.env?.['ENTERPRISE_SKU_ID'];
-        const subscriptionLevel = (): PlanName => {
+        const subscriptionLevel = (): SubscriptionPlanName => {
             if (activeSubscriptions.some(e => e.sku_id == enterpriseSkuId)) return 'ENTERPRISE';
             else if (activeSubscriptions.some(e => e.sku_id == premiumSkuId)) return 'PREMIUM';
             else return 'FREE';
         }
 
         // Return result data:
-        return new reply(res).success({plan: subscriptionLevel(), entitlements: guildEntitlements})
+        return new reply(res).success({ plan: subscriptionLevel(), entitlements: guildEntitlements })
     } catch (err) {
         // Log & Return Error:
         createLog.for('Api').warn(`Failed to fetch guild subscription!`, { err, actorId: req.auth.user.id });

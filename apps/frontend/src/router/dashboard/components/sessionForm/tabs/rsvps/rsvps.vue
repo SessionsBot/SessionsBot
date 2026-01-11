@@ -4,6 +4,8 @@
     import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../../sesForm.vue';
     import RsvpPanel from './rsvpFormPanel.vue';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { useToast } from 'vue-toastification';
 
 
     // Incoming Props:
@@ -12,6 +14,13 @@
         validateField: (name: NewSessions_FieldNames, value: any) => void
     }>();
     const { invalidFields, validateField } = props;
+
+    // Services:
+    const dashboard = useDashboardStore();
+
+
+    // Subscription - Limits:
+    const maxRsvpSlots = computed(() => dashboard.guild.subscription.limits.MAX_RSVP_SLOTS);
 
 
     // RSVP Panel Ref:
@@ -107,11 +116,27 @@
                 </div>
 
                 <!-- Add Rsvp Btn -->
-                <Button unstyled :disabled="!rsvpsEnabled" @click="rsvpDialogVisible = !rsvpDialogVisible"
+                <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                    @click="rsvpDialogVisible = !rsvpDialogVisible"
                     class="bg-zinc-600 py-0.75 px-2.25 pl-1.25 my-3 mx-3 rounded-lg transition-all cursor-pointer font-medium hover:bg-zinc-700 flex items-center flex-row">
                     <PlusIcon class="size-5 p-0.5" />
                     <p class="text-sm"> Add </p>
                 </Button>
+
+                <!-- Upgrade Btn -->
+                <p v-if="rsvps.length >= maxRsvpSlots" class="text-white/40 mt-2 italic text-xs mx-5 text-center">
+                    Maximum allowed RSVP slots reached for your current subscription plan. Upgrade you bot
+                    today to increase your limits!
+                </p>
+                <RouterLink to="/pricing">
+                    <Button v-if="rsvps.length >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                        @click="rsvpDialogVisible = !rsvpDialogVisible"
+                        class="bg-emerald-400/40 py-0.75 px-2.25 pl-1.25 my-3 mx-3 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-emerald-400/30 flex items-center flex-row">
+                        <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
+                        <p class="text-sm"> Upgrade Bot </p>
+                    </Button>
+                </RouterLink>
+
 
 
             </section>

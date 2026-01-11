@@ -11,9 +11,11 @@
   // Services:
   const nav = useNavStore();
 
+
   // // Reactive Header Height:
   const headerRef = ref();
   const headerHeight = computed(() => Number(headerRef.value?.['headerHeight']) ?? 0)
+
 
   // On App Mount:
   onMounted(async () => {
@@ -24,7 +26,8 @@
 
 <template>
 
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen"
+    :class="{ 'overflow-hidden! overflow-y-clip! max-h-screen! max-w-screen!': nav.lockBodyScroll }">
     <SiteHeader ref="headerRef" />
 
     <div class="flex-1 flex flex-col overflow-hidden">
@@ -41,6 +44,8 @@
 
   <!-- Confirm Dialog -->
   <PV_Dialog />
+  <!-- Custom Notifications -->
+  <Notifier hidden />
 
 </template>
 

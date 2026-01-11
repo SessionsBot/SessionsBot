@@ -49,9 +49,11 @@ body {
   display: none; /* Chrome, Safari, Edge */
 }
 
-
-iconify-icon {
+/* ICONS */
+/* iconify-icon {
   display: inline-block !important;
+  min-width: fit-content;
+  min-height: fit-content;
   width: 1em;
   height: 1em;
-}
+} */

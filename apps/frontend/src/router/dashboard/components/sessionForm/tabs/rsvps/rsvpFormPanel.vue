@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { zodResolver } from '@primevue/forms/resolvers/zod';
     import z, { ZodError, ZodObject } from 'zod';
-    import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon, SparklesIcon } from 'lucide-vue-next';
+    import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon, SparklesIcon, ExternalLink } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
     import EmojiPicker, { type Emoji, type EmojiExt } from 'vue3-emoji-picker'
     import 'vue3-emoji-picker/css'
@@ -10,6 +10,7 @@
     import InputTitle from '../../labels/inputTitle.vue'
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { IconifyIconComponent } from 'iconify-icon';
+    import { SubscriptionLevel } from '@sessionsbot/shared';
 
     // Services:
     const confirm = useConfirm();
@@ -65,7 +66,7 @@
     })
 
     // Form Schema & Restraints:
-    const maxRsvpCapacity = ref(10);
+    const maxRsvpCapacity = computed(() => dashboard.guild.subscription.limits.MAX_RSVP_CAPACITY);
 
 
     const RsvpFormSchema = z.object({
@@ -171,12 +172,13 @@
         startRsvpEdit
     });
 
+
 </script>
 
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-zinc-900! text-white! ring-2! ring-ring! m-7!">
+        class="bg-zinc-900! text-white! ring-2! ring-ring! m-7! p-2 overflow-y-auto! overflow-x-clip!">
 
         <!-- Header -->
         <template #header class="w-full! grow!">
@@ -190,7 +192,9 @@
         </template>
 
         <!-- Body / Form -->
-        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2 w-70 bg-zinc-700/25 pb-4 pt-3 rounded-md"
+
+        <Form v-slot="$form" ref="rsvpFormRef"
+            class="flex flex-col gap-2 p-2! w-70 bg-zinc-700/25 pb-4 pt-3 rounded-md "
             :resolver="zodResolver(RsvpFormSchema)" @submit="submitRsvpForm" :initial-values="RsvpFormValues">
 
             <!-- INPUT: Title -->
@@ -257,14 +261,14 @@
                 <InputTitle fieldTitle="Required Role(s)" :icon="UserStarIcon" :show-help="{ path: '/' }" />
 
                 <div class="relative w-full">
-                    <MultiSelect name="required_roles" fluid v-model="RsvpFormValues.required_roles"
-                        :options="guildRoles" option-label="name" option-value="value" :show-toggle-all="false"
-                        filter />
+                    <MultiSelect :disabled="dashboard.guild.subscription.level == 0" name="required_roles" fluid
+                        v-model="RsvpFormValues.required_roles" :options="guildRoles" option-label="name"
+                        option-value="value" :show-toggle-all="false" filter class="disabled:border-2! border-ring!" />
                     <!-- Premium Only - Wrapper -->
-                    <a hidden href="./pricing" target="_blank"
-                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 bg-amber-400/7 rounded-md">
-                        <iconify-icon icon="tabler:diamond" class="scale-120 text-white/40" />
-                        <p class="text-white/40 font-black"> Premium Feature </p>
+                    <a v-if="dashboard.guild.subscription.level <= 1" href="./pricing" target="_blank"
+                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-white/50 hover:text-emerald-400/70 rounded-md">
+                        <iconify-icon icon="tabler:diamond" class="scale-120" />
+                        <p class=" font-black"> Premium Feature </p>
                     </a>
 
                 </div>
@@ -282,6 +286,7 @@
 
 
         </Form>
+
 
 
         <!-- Footer -->
@@ -325,5 +330,9 @@
     .v3-emoji-picker,
     .v3-emoji-picker.v3-color-theme-dark {
         --v3-picker-bg: var(--color-zinc-900) !important;
+    }
+
+    :deep().p-dialog-content {
+        overflow-x: hidden !important;
     }
 </style>

@@ -1,7 +1,7 @@
 
 import { defineStore } from "pinia";
 import { useAuthStore } from "../auth";
-import { type API_SessionTemplateBodyInterface, type AppUserGuildData, type Database, type PlanName } from "@sessionsbot/shared";
+import { SubscriptionLevel, type API_SessionTemplateBodyInterface, type AppUserGuildData, type Database, } from "@sessionsbot/shared";
 
 
 // Define Store:
@@ -12,7 +12,7 @@ const useDashboardStore = defineStore("dashboard", {
             channels: <{ sendable: any[], all: any[] } | null>null,
             roles: <any[] | null>null,
             sessionTemplates: <Database['public']['Tables']['session_templates']['Row'] | null>null,
-            subscription: <PlanName>'FREE'
+            subscription: SubscriptionLevel.FREE
         },
         nav: {
             currentTab: <DashboardTabName>"Sessions",

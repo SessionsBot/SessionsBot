@@ -166,7 +166,8 @@ const customPreset = definePreset(Aura, {
                 hoverBorderColor: 'var(--color-indigo-300)',
                 focusRing: {
                     color: 'var(--color-indigo-400)'
-                }
+                },
+                disabledBackground: `var(--color-zinc-800)`
             },
             overlay: {
                 background: `var(--color-zinc-800)`,
