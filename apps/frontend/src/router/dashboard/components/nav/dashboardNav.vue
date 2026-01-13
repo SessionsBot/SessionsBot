@@ -16,7 +16,7 @@
 
 <template>
     <aside
-        class="w-15 z-4 h-full! max-h-full! grow p-1 fixed flex flex-col flex-wrap text-wrap overflow-clip overflow-y-auto transition-all bg-zinc-900"
+        class="w-15 z-4 h-fit! max-h-full! p-1 absolute left-0 flex flex-col flex-wrap text-wrap overflow-clip overflow-y-auto transition-all bg-zinc-900"
         :class="{
             'isExpanded': dashboard.nav.expanded,
             'isSmallScreen': isSmallScreen
@@ -34,10 +34,10 @@
             </Button>
         </div>
 
-        <span class=" bg-amber-700/50 flex flex-1 justify-between items-center flex-col">
+        <div class=" bg-amber-700/50 flex flex-1 justify-between items-center flex-col">
             <p>1</p>
-            <p>2</p>
-        </span>
+            <p class="absolute bottom-0">2</p>
+        </div>
 
 
     </aside>

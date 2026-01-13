@@ -5,7 +5,7 @@
     import SessionsTab from './tabs/sessions/sessions.vue';
     import CalendarTab from './tabs/calendar.vue'
     import SessionForm from './components/sessionForm/sesForm.vue'
-    import DashboardNav from './components/nav/dashboardNavOLD.vue'
+    import DashboardNav from './components/nav/OLD/dashboardNavOLD.vue'
     import { supabase } from '@/utils/supabase';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useGuildChannels } from '@/stores/dashboard/guildChannels';
