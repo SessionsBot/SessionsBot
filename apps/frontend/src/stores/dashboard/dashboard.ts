@@ -28,12 +28,6 @@ const useDashboardStore = defineStore("dashboard", {
     }),
 
     getters: {
-        /** Returns weather the clients screen is considered small or not(<= 640px). */
-        // isSmallScreen: () => {
-        //     const { width: screenWidth } = useWindowSize();
-        //     return screenWidth.value < 640
-        // },
-
         /** Returns a utility class to handle users dashboard saved guild selection. */
         saveGuildSelection: (state) => {
             return class saveGuildChoice {

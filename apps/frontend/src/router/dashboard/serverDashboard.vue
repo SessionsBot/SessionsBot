@@ -5,7 +5,7 @@
     import SessionsTab from './tabs/sessions/sessions.vue';
     import CalendarTab from './tabs/calendar.vue'
     import SessionForm from './components/sessionForm/sesForm.vue'
-    import DashboardNav from './components/nav/dashboardNav.vue'
+    import DashboardNav from './components/nav/dashboardNavOLD.vue'
     import { supabase } from '@/utils/supabase';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useGuildChannels } from '@/stores/dashboard/guildChannels';
@@ -59,7 +59,7 @@
             <div v-else class="flex flex-row grow w-full h-full">
 
                 <!-- Nav Menu(s) -->
-                <DashboardNav />
+                <!-- <DashboardNav /> -->
 
                 <!-- Content/Tab View Area -->
                 <div class="flex overflow-y-scroll w-full h-full flex-col grow">
