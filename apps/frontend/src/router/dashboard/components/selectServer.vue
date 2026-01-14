@@ -45,18 +45,12 @@
         } else {
             dashboard.saveGuildSelection.clear();
         };
+        dashboard.nav.expanded = false;
         return dashboard.guild.id = guildId;
     }
 
     // Still Loading Alert:
-    const showStillLoadingCard = ref(false)
-
-    // Not Signed In - EXTRA Guard:
-    onMounted(() => {
-        setTimeout(() => {
-            showStillLoadingCard.value = true
-        }, 2000)
-    });
+    const showStillLoadingCard = ref(false);
 
 
 </script>
@@ -143,6 +137,7 @@
 
             <div class="bg-black/40 max-w-75 p-5 rounded-md text-white/70 flex items-center justify-center flex-col">
                 <ProgressSpinner stroke-width="5" class="size-12!" />
+
                 <span v-if="showStillLoadingCard" class="flex items-center justify-center flex-col">
                     <p class="pt-0.5 font-bold"> Still Loading? </p>
                     <p class="text-sm"> You might want to refresh this page or ensure your logged into

@@ -10,7 +10,7 @@
 
 
 <template>
-    <div class="flex h-full! w-full flex-col justify-center items-center flex-1">
+    <div class="p-4 gap-2 w-full h-fit flex-col flex items-center justify-center ">
 
         <!-- Total Sessions Card -->
         <TotalSessionsCard />

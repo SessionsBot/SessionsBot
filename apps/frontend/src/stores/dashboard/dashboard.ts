@@ -11,13 +11,13 @@ const useDashboardStore = defineStore("dashboard", {
             id: <string | null>null,
             channels: <{ sendable: any[], all: any[] } | null>null,
             roles: <any[] | null>null,
-            sessionTemplates: <Database['public']['Tables']['session_templates']['Row'] | null>null,
+            sessionTemplates: <Database['public']['Tables']['session_templates']['Row'][] | null>null,
             subscription: SubscriptionLevel.FREE
         },
         nav: {
             currentTab: <DashboardTabName>"Sessions",
             expanded: false,
-            modeled: false
+            // modeled: false
         },
         sessionForm: {
             visible: false,
@@ -52,23 +52,6 @@ const useDashboardStore = defineStore("dashboard", {
             }
         },
 
-        /** Gets and returns users guild data for selected guild, or undefined. */
-        guildUserData: (state) => {
-            const auth = useAuthStore();
-            if (!auth.signedIn) {
-                console.warn('User Signed Out - Cannot get user guild data...');
-                return undefined
-            }
-            if (state.guild.id) {
-                const userData = auth.user?.user_metadata;
-                return userData?.guilds.manageable.find(g => g.id == state.guild.id)
-            } else {
-                console.warn('No Guild Selected - Cannot get user guild data...');
-                return undefined
-            }
-        }
-
-
     },
 
     actions: {
@@ -82,7 +65,7 @@ const useDashboardStore = defineStore("dashboard", {
 })
 
 // Dashboard Types:
-export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'Subscription';
+export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
 // Export Store:
 export default useDashboardStore;

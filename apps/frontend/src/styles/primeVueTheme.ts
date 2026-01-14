@@ -209,6 +209,13 @@ const customPreset = definePreset(Aura, {
                 focusBackground: 'none',
                 selectedBackground: 'none'
             }
+        },
+        popover: {
+            root: {
+                background: `var(--color-zinc-800)`,
+                borderColor: `var(--color-ring)`,
+                color: `var(--color-white)`
+            }
         }
     },
 

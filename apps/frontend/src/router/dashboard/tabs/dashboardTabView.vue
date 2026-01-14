@@ -1,23 +1,18 @@
 <script lang="ts" setup>
-    import { useAuthStore } from '@/stores/auth';
-    import { useNavStore } from '@/stores/nav';
-    import type { API_SessionTemplateBodyInterface } from '@sessionsbot/shared';
-    import SessionsTab from './tabs/sessions/sessions.vue';
-    import CalendarTab from './tabs/calendar.vue'
-    import SessionForm from './components/sessionForm/sesForm.vue'
-    import DashboardNav from './components/nav/OLD/dashboardNavOLD.vue'
-    import { supabase } from '@/utils/supabase';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useGuildChannels } from '@/stores/dashboard/guildChannels';
     import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
     import { useGuildRoles } from '@/stores/dashboard/guildRoles';
     import { useGuildSubscription } from '@/stores/dashboard/guildSubscription';
+    import SessionForm from '../components/sessionForm/sesForm.vue';
+    import SessionsTab from './sessions/sessionsTab.vue';
+    import CalendarTab from './calendar/calendarTab.vue';
+    import AuditLogTab from './auditLog/auditLogTab.vue';
+    import NotificationsTab from './notifications/notificationsTab.vue';
 
     // Services:
     const dashboard = useDashboardStore();
 
-    // Guild - Selected Id:
-    const selectedGuildId = computed(() => dashboard.guild.id)
     // Guild - Channels:
     const channels = useGuildChannels();
     // Guild - Roles:
@@ -56,16 +51,17 @@
             </div>
 
             <!-- Main Page Content -->
-            <div v-else class="flex flex-row grow w-full h-full">
+            <div v-else class="flex flex-row grow min-w-full! w-full! h-fit overflow-x-clip overflow-y-auto">
 
-                <!-- Nav Menu(s) -->
-                <!-- <DashboardNav /> -->
+                <Transition name="slide" mode="out-in">
+                    <KeepAlive>
+                        <SessionsTab v-if="dashboard.nav.currentTab == 'Sessions'" />
+                        <CalendarTab v-else-if="dashboard.nav.currentTab == 'Calendar'" />
+                        <NotificationsTab v-else-if="dashboard.nav.currentTab == 'Notifications'" />
+                        <AuditLogTab v-else-if="dashboard.nav.currentTab == 'AuditLog'" />
+                    </KeepAlive>
+                </Transition>
 
-                <!-- Content/Tab View Area -->
-                <div class="flex overflow-y-scroll w-full h-full flex-col grow">
-                    <SessionsTab v-if="dashboard.nav.currentTab == 'Sessions'" />
-                    <CalendarTab v-if="dashboard.nav.currentTab == 'Calendar'" />
-                </div>
 
             </div>
         </Transition>

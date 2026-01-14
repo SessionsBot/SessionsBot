@@ -33,7 +33,7 @@
     <div class="flex-1 flex flex-col overflow-hidden">
       <RouterView v-slot="{ Component }">
         <Transition name="slide" mode="out-in">
-          <component class="flex-1 w-full" :is="Component"
+          <component class="flex-1 w-full h-full" :is="Component"
             :style="{ marginTop: headerHeight ? headerHeight + 'px' : '0px' }" />
         </Transition>
       </RouterView>
