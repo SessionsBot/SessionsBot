@@ -52,7 +52,7 @@ export const sendPermissionAlert = async (guildId: string) => {
                         components: <any>[
                             new TextDisplayBuilder({
                                 content: `### 🌍  Missing Bot Role Permissions:
-                            \n> ${missingGlobalPerms.length ? ('- `' + missingGlobalPerms.join('`\n> - `') + '`') : '`- ✔ NONE`'} \n**How to Fix**: \n> You can easily resolve this issue by re-inviting Session Bot to your server with the "Re-Invite" button. This will refresh the permissions granted to the bot within this server. \n-# --- or --- \n> You can also manually reassign permissions to the bot's role within your Server Settings > Roles > <@&${botRole.id}> > Permissions > (manually reassign).`
+                            \n> ${missingGlobalPerms.length ? ('- `' + missingGlobalPerms.join('`\n> - `') + '`') : '`- ✔ NONE`'} \n**How to Fix**: \n> You can easily resolve this issue by re-inviting Sessions Bot to your server with the "Re-Invite" button. This will refresh the permissions granted to the bot within this server. \n-# --- or --- \n> You can also manually reassign permissions to the bot's role within your Server Settings > Roles > <@&${botRole.id}> > Permissions > (manually reassign).`
                             })
                         ],
                         accessory: {

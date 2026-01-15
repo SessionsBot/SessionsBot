@@ -31,7 +31,6 @@ export function useGuildSubscription() {
             console.warn('[!] Failed to fetch guild subscription - API Request Failed', subscriptionResult);
             return null;
         } else {
-            console.info(`Guild Subscription`, subscriptionResult.data);
             if (subscriptionResult.data?.plan == 'FREE') {
                 dashboard.guild.subscription = SubscriptionLevel.FREE
             } else if (subscriptionResult.data?.plan == 'PREMIUM') {
@@ -48,17 +47,5 @@ export function useGuildSubscription() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchSubscription, null, { immediate: false });
-
-    // Auto Update - On guild change:
-    watch(() => dashboard.guild.id, (id) => {
-        if (id) asyncState.execute();
-        else dashboard.guild.subscription = SubscriptionLevel.FREE;
-    }, { immediate: true })
-
-    // Return Results/State:
-    return {
-        ...asyncState,
-        subscription: dashboard.guild.subscription
-    }
+    return useAsyncState(fetchSubscription, null, { immediate: false });
 }

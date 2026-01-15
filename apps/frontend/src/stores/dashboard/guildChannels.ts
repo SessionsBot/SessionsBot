@@ -28,17 +28,5 @@ export function useGuildChannels() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchChannels, null, { immediate: false });
-
-    // Auto Update - On guild change:
-    watch(() => dashboard.guild.id, (id) => {
-        if (id) asyncState.execute();
-        else dashboard.guild.channels = null;
-    }, { immediate: true })
-
-    // Return Results/State:
-    return {
-        ...asyncState,
-        channels: dashboard.guild.channels
-    }
+    return useAsyncState(fetchChannels, null, { immediate: false });
 }

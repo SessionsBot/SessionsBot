@@ -28,17 +28,5 @@ export function useGuildRoles() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchRoles, null, { immediate: false });
-
-    // Auto Update - On guild change:
-    watch(() => dashboard.guild.id, (id) => {
-        if (id) asyncState.execute();
-        else dashboard.guild.roles = null;
-    }, { immediate: true })
-
-    // Return Results/State:
-    return {
-        ...asyncState,
-        roles: dashboard.guild.roles
-    }
+    return useAsyncState(fetchRoles, null, { immediate: false });
 }

@@ -12,12 +12,12 @@ const useDashboardStore = defineStore("dashboard", {
             channels: <{ sendable: any[], all: any[] } | null>null,
             roles: <any[] | null>null,
             sessionTemplates: <Database['public']['Tables']['session_templates']['Row'][] | null>null,
-            subscription: SubscriptionLevel.FREE
+            subscription: SubscriptionLevel.FREE,
+            dataReady: false
         },
         nav: {
             currentTab: <DashboardTabName>"Sessions",
             expanded: false,
-            // modeled: false
         },
         sessionForm: {
             visible: false,
@@ -51,11 +51,11 @@ const useDashboardStore = defineStore("dashboard", {
                 }
             }
         },
-
+        /** Retrieve the auth metadata stored for the current selected dashboard guild id. */
         userGuildData: (state) => {
             const authStore = useAuthStore();
             if (!authStore.signedIn) {
-                console.warn("User is not signed in... cannot fetch `UserGuildData`!")
+                // console.warn("User is not signed in... cannot fetch `UserGuildData`!")
                 return undefined;
             }
             if (state.guild.id) {
@@ -70,6 +70,18 @@ const useDashboardStore = defineStore("dashboard", {
 
         startNewSessionFormEdit(payload: API_SessionTemplateBodyInterface) {
             this.sessionForm.editPayload = payload as any;
+        },
+
+        clearGuildStoreData() {
+            console.info('Resetting Guild Data')
+            this.guild = {
+                id: null,
+                channels: null,
+                roles: null,
+                subscription: SubscriptionLevel.FREE,
+                sessionTemplates: null,
+                dataReady: false
+            }
         }
 
     }

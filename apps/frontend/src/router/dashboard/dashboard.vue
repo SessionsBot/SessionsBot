@@ -4,11 +4,23 @@
     import DashboardNav from './components/nav/dashboardNav.vue';
     import SelectServer from './components/selectServer.vue';
     import DashboardTabView from './tabs/dashboardTabView.vue';
+    import { useAuthStore } from '@/stores/auth';
+    import { useGuildChannels } from '@/stores/dashboard/guildChannels';
+    import { useGuildRoles } from '@/stores/dashboard/guildRoles';
+    import { useGuildSubscription } from '@/stores/dashboard/guildSubscription';
+    import { useGuildTemplates } from '@/stores/dashboard/sessionTemplates';
 
+    // Services:
     const dashboard = useDashboardStore();
-    const selectedGuildId = computed(() => dashboard.guild.id);
+    const auth = useAuthStore();
 
-    // ON - Initial Full Page Mount:
+    // Guild Data - Services:
+    const channels = useGuildChannels();
+    const roles = useGuildRoles();
+    const subscription = useGuildSubscription();
+    const templates = useGuildTemplates();
+
+    // BEFORE MOUNT - Load Saved Guild Choice:
     onBeforeMount(() => {
         // Load Saved "Guild Selection":
         const choice = dashboard.saveGuildSelection.get();
@@ -16,7 +28,56 @@
             dashboard.guild.id = choice;
             dashboard.nav.expanded = false;
         }
-    })
+    });
+
+    // FN - Fetch Guild Data for Dashboard:
+    async function fetchGuildData() {
+        // Fetch Data:
+        await Promise.all([
+            channels.execute(),
+            roles.execute(),
+            subscription.execute(),
+            templates.execute(),
+        ]);
+        // Check Data:
+        const checks = [channels, roles, subscription, templates];
+        const dataReady = checks.every(r => r.isReady.value && !r.error.value);
+        dashboard.guild.dataReady = dataReady;
+    }
+
+    // FN - Await Auth Ready to Fetch Data:
+    async function waitForAuthReady(timeoutMs = 5000) {
+        if (auth.signedIn) return true;
+        return await Promise.race([
+            new Promise(resolve => watch(() => auth.authReady, (r) => { if (r) resolve(true) }, { once: true })),
+            new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
+        ])
+    }
+
+    // WATCH - Guild Selected - Fetch Data:
+    watch(() => dashboard.guild.id, async (id) => {
+        console.info('Guild Changed', id);
+        if (!id) {
+            // No Guild Id Selected - Clear Store:
+            console.info('No guild id - clearing store...');
+            dashboard.clearGuildStoreData();
+            return
+        }
+        if (!auth.authReady) {
+            // Auth NOT READY - Await Readiness:
+            console.warn('Waiting for auth to be ready...');
+            await waitForAuthReady();
+        }
+        if (!auth.signedIn) {
+            // No User Signed In - Clear Store - Prompt Sign In:
+            dashboard.clearGuildStoreData();
+            auth.signIn('/dashboard')
+            return;
+        }
+        // CHECKS PASSED - Fetch Data for Selected Guild:
+        await fetchGuildData();
+    }, { immediate: true })
+
 
 </script>
 
@@ -28,7 +89,7 @@
 
         <Transition name="slide" mode="out-in">
             <!-- Dashboard View - Page/Wrap -->
-            <div v-if="selectedGuildId" class="absolute flex flex-row inset-0 w-full! h-full!">
+            <div v-if="dashboard.guild.id" class="absolute flex flex-row inset-0 w-full! h-full!">
 
                 <!-- Dashboard - Nav/Sidebar -->
                 <DashboardNav />

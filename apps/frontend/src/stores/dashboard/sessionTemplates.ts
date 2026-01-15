@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 import { RRule } from "rrule";
 
 // Main Module:
-export function useSessionTemplates() {
+export function useGuildTemplates() {
     // Services:
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
@@ -68,17 +68,17 @@ export function useSessionTemplates() {
     };
 
     // Async State:
-    const asyncState = useAsyncState(fetchTemplates, null, { immediate: false });
+    return useAsyncState(fetchTemplates, null, { immediate: false });
 
-    // Auto Update - On Guild Select:
-    watch(() => dashboard.guild.id, (id) => {
-        if (id) asyncState.execute()
-        else dashboard.guild.sessionTemplates = null;
-    }, { immediate: true })
+    // // Auto Update - On Guild Select:
+    // watch(() => dashboard.guild.id, (id) => {
+    //     if (id) asyncState.execute()
+    //     else dashboard.guild.sessionTemplates = null;
+    // }, { immediate: true })
 
-    // Return Results/State:
-    return {
-        ...asyncState,
-        templates: dashboard.guild.sessionTemplates
-    }
+    // // Return Results/State:
+    // return {
+    //     ...asyncState,
+    //     templates: dashboard.guild.sessionTemplates
+    // }
 }

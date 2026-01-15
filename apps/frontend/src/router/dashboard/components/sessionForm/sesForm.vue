@@ -14,7 +14,7 @@
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/loadingIcon.vue';
-    import { useSessionTemplates } from '@/stores/dashboard/sessionTemplates';
+    import { useGuildTemplates } from '@/stores/dashboard/sessionTemplates';
     import { RRule } from 'rrule';
 
     // Services:
@@ -245,7 +245,7 @@
         // - Maybe alter / change the start and end dates to represent
         // the next occurrence rather than the first start date on creation
         // to fix various ui and validation bugs
-        // ALSO - Fix display of selected post channel whn edit begins
+        // ALSO - Fix display of selected post channel when edit begins
 
         // Assign Editing Id:
         if (!data.id) return console.warn('Invalid Session Template Id - For Edit', data?.id);
@@ -546,7 +546,7 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            useSessionTemplates().execute()
+            useGuildTemplates().execute()
 
         } finally {
             setTimeout(() => {

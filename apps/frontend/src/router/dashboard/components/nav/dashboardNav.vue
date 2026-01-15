@@ -58,7 +58,8 @@
                         class="bg-white/5 mx-2.5! ring-2 ring-ring hover:ring-white/40 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
                         :class="{ 'aspect-square': !navExpanded }">
 
-                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring" :src="DiscordLogo" />
+                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring"
+                            :src="dashboard.userGuildData?.icon || DiscordLogo" />
                         <p v-if="navExpanded" class="font-bold text-nowrap text-sm">
                             {{ dashboard.userGuildData?.name || 'Select a Server' }}
                         </p>
