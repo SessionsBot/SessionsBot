@@ -52,6 +52,18 @@ const useDashboardStore = defineStore("dashboard", {
             }
         },
 
+        userGuildData: (state) => {
+            const authStore = useAuthStore();
+            if (!authStore.signedIn) {
+                console.warn("User is not signed in... cannot fetch `UserGuildData`!")
+                return undefined;
+            }
+            if (state.guild.id) {
+                return authStore.user?.user_metadata.guilds.manageable.find(g => g.id == state.guild.id)
+            }
+            else return undefined;
+        }
+
     },
 
     actions: {

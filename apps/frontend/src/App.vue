@@ -45,7 +45,7 @@
   <!-- Confirm Dialog -->
   <PV_Dialog />
   <!-- Custom Notifications -->
-  <Notifier hidden />
+  <!-- <Notifier hidden /> -->
 
 </template>
 

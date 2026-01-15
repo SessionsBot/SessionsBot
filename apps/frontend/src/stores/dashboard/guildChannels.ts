@@ -12,13 +12,15 @@ export function useGuildChannels() {
     const fetchChannels = async () => {
         const access_token = auth?.session?.access_token;
         if (!access_token) {
-            console.warn('[!] Failed to fetch guild channels - No access token provided from auth user!');
-            return null;
+            throw new Error(`[!] Failed to fetch guild channels - No access token provided from auth user!`);
+        }
+        if (!dashboard.guild.id) {
+            throw new Error(`[!] Failed to fetch guild channels - No guild id selected within dashboard!`);
         }
         const { data: channelsResult } = await API.get<APIResponseValue>(`/guilds/${dashboard.guild.id}/channels`, { headers: { Authorization: `Bearer ${auth?.session?.access_token}` } })
         if (!channelsResult?.success) {
-            console.warn('[!] Failed to fetch guild channels - API Request Failed', channelsResult);
-            return null;
+            console.warn('Channels API Request Failed!', channelsResult);
+            throw new Error(`[!] Failed to fetch guild channels - API Request Failed!`);
         } else {
             dashboard.guild.channels = channelsResult.data as any;
             return channelsResult.data as { all: any, sendable: any };
@@ -26,11 +28,12 @@ export function useGuildChannels() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchChannels(), null, { immediate: false });
+    const asyncState = useAsyncState(fetchChannels, null, { immediate: false });
 
     // Auto Update - On guild change:
     watch(() => dashboard.guild.id, (id) => {
         if (id) asyncState.execute();
+        else dashboard.guild.channels = null;
     }, { immediate: true })
 
     // Return Results/State:

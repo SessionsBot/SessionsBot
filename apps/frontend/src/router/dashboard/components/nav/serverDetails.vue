@@ -13,16 +13,23 @@
         switchServerPoRef.value?.toggle(e)
     }
 
+    // FN - Refresh API Data:
+    async function refreshApiData() {
+        let prevSelectionId = dashboard.guild.id;
+        if (prevSelectionId) {
+            dashboard.guild.id = null;
+            setTimeout(() => {
+                dashboard.guild.id = prevSelectionId
+            }, 300);
+        }
+    }
+
 </script>
 
 
 <template>
     <slot :togglePopOver="togglePopOver" />
-    <Popover ref="switchServerPoRef" :dt="<PopoverDesignTokens>{
-        root: {
-            background: `var(--color-zinc-900)`,
-        }
-    }">
+    <Popover ref="switchServerPoRef">
         <!-- Options List -->
         <ul class="options-list">
 
@@ -42,7 +49,7 @@
                 </Button>
             </RouterLink>
 
-            <Button unstyled class="option-button">
+            <Button @click="refreshApiData" unstyled class="option-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 485 485">
                     <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="35"
                         d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192s192-86 192-192Z" />

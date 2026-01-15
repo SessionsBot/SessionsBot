@@ -68,11 +68,12 @@ export function useSessionTemplates() {
     };
 
     // Async State:
-    const asyncState = useAsyncState(fetchTemplates(), null, { immediate: false });
+    const asyncState = useAsyncState(fetchTemplates, null, { immediate: false });
 
     // Auto Update - On Guild Select:
     watch(() => dashboard.guild.id, (id) => {
         if (id) asyncState.execute()
+        else dashboard.guild.sessionTemplates = null;
     }, { immediate: true })
 
     // Return Results/State:

@@ -15,6 +15,9 @@ export function useGuildSubscription() {
             console.warn('[!] Failed to fetch guild subscription - No access token provided from auth user!');
             return null;
         }
+        if (!dashboard.guild.id) {
+            throw new Error(`[!] Failed to fetch guild subscription - No guild id selected within dashboard!`);
+        }
         // GET - Entitlements from Backend API:
         const { data: subscriptionResult } = await API.get<APIResponseValue<{
             plan: SubscriptionPlanName,
@@ -45,11 +48,12 @@ export function useGuildSubscription() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchSubscription(), null, { immediate: false });
+    const asyncState = useAsyncState(fetchSubscription, null, { immediate: false });
 
     // Auto Update - On guild change:
     watch(() => dashboard.guild.id, (id) => {
         if (id) asyncState.execute();
+        else dashboard.guild.subscription = SubscriptionLevel.FREE;
     }, { immediate: true })
 
     // Return Results/State:

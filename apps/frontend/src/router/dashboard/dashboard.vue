@@ -3,16 +3,13 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import DashboardNav from './components/nav/dashboardNav.vue';
     import SelectServer from './components/selectServer.vue';
-    import SessionsTab from './tabs/sessions/sessionsTab.vue';
     import DashboardTabView from './tabs/dashboardTabView.vue';
 
     const dashboard = useDashboardStore();
     const selectedGuildId = computed(() => dashboard.guild.id);
-    const selectedDashboardTab = computed(() => dashboard.nav.currentTab)
-
 
     // ON - Initial Full Page Mount:
-    onMounted(() => {
+    onBeforeMount(() => {
         // Load Saved "Guild Selection":
         const choice = dashboard.saveGuildSelection.get();
         if (choice) {

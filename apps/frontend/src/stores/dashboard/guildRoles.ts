@@ -12,13 +12,15 @@ export function useGuildRoles() {
     const fetchRoles = async () => {
         const access_token = auth?.session?.access_token;
         if (!access_token) {
-            console.warn('[!] Failed to fetch guild roles - No access token provided from auth user!');
-            return null;
+            throw new Error('[!] Failed to fetch guild roles - No access token provided from auth user!');
+        }
+        if (!dashboard.guild.id) {
+            throw new Error(`[!] Failed to fetch guild roles - No guild id selected within dashboard!`);
         }
         const { data: rolesResult } = await API.get<APIResponseValue>(`/guilds/${dashboard.guild.id}/roles`, { headers: { Authorization: `Bearer ${auth?.session?.access_token}` } })
         if (!rolesResult?.success) {
-            console.warn('[!] Failed to fetch guild roles - API Request Failed', rolesResult);
-            return null;
+            console.warn('Roles API Request Failed!', rolesResult)
+            throw new Error('[!] Failed to fetch guild roles - API Request Failed');
         } else {
             dashboard.guild.roles = rolesResult.data as any;
             return rolesResult.data;
@@ -26,11 +28,12 @@ export function useGuildRoles() {
     }
 
     // Async State:
-    const asyncState = useAsyncState(fetchRoles(), null, { immediate: false });
+    const asyncState = useAsyncState(fetchRoles, null, { immediate: false });
 
     // Auto Update - On guild change:
     watch(() => dashboard.guild.id, (id) => {
         if (id) asyncState.execute();
+        else dashboard.guild.roles = null;
     }, { immediate: true })
 
     // Return Results/State:

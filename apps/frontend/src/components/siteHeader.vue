@@ -33,10 +33,7 @@
 
 <template>
     <header ref="headerRef"
-        class="flex flex-col border-b-2 z-5 drop-shadow-2xl drop-shadow-black/40 border-white/5 border-b-white/0 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
-        <div
-            class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse">
-        </div>
+        class="flex flex-col z-5 transition-all drop-shadow-2xl drop-shadow-black/40 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
 
         <!-- Main Header Contents -->
         <span class="flex flex-row justify-between items-center w-full flex-wrap">
@@ -60,35 +57,54 @@
             </span>
         </span>
 
-
         <!-- Status Alert Bar -->
         <Transition name="slide" mode="out-in">
             <div v-if="showStatusAlert"
-                class="p-1 relative bg-pink-400/20 w-full flex flex-row flex-wrap justify-center items-center content-center">
+                class="bg-zinc-800/55 p-2 w-full gap-1 m-0! min-h-fit! h-fit flex flex-row flex-wrap justify-center items-center">
+
+                <!-- Icon Area -->
+                <div
+                    class=" py-0.75 px-1.5 gap-0.5 flex items-center justify-center bg-zinc-600/55 rounded-full ring-1 ring-ring">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="p-px" width="19" height="19" viewBox="0 0 24 24">
+                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.5">
+                            <path
+                                d="M20.307 15.331c-3.521 3.521-9.173 3.577-12.694.056s-3.465-9.173.056-12.694m12.638 12.638c1.677-1.677.207-5.865-3.283-9.355S9.346 1.016 7.67 2.693m12.638 12.638c-1.677 1.677-5.866.207-9.355-3.282M7.669 2.693C5.992 4.37 7.462 8.56 10.952 12.05m0 0L14 9" />
+                            <path
+                                d="m6.488 15l-1.737 2.488c-1.399 2.004-2.098 3.006-1.58 3.76C3.687 22 5.075 22 7.85 22h4.297c2.776 0 4.164 0 4.682-.753c.471-.686-.067-1.578-1.225-3.247" />
+                        </g>
+                    </svg>
+                    <p class="text-xs uppercase font-bold relative top-px">
+                        System
+                    </p>
+                </div>
+
                 <!-- Text area -->
-                <span class="flex flex-1 p-0.5 px-1">
-                    <p class="font-medium text-sm block">
+                <div class="flex gap-0.5 items-center h-full flex-1">
+
+                    <p class="font-bold text-sm block p-1">
                         It seems we're currently experiencing a service disruption! Please view our
                         <a class="text-sky-400 underline" href="https://status.sessionsbot.fyi" target="_blank">
                             status page</a>
                         for more information.
                     </p>
-                </span>
-                <!-- Close button -->
-                <span class="flex justify-evenly items-center">
-                    <Button @click="showStatusAlert = false"
-                        class="size-5 self-center flex justify-center items-center p-0.5 rounded-md cursor-pointer hover:bg-zinc-700/60 transition-all"
-                        unstyled>
-                        <XIcon />
-                    </Button>
-                </span>
-
-                <div
-                    class="absolute inset-x-0 top-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse">
                 </div>
+
+                <!-- Close button -->
+
+                <Button @click="showStatusAlert = false"
+                    class="size-5 self-center flex justify-center items-center p-0.5 rounded-md cursor-pointer hover:bg-zinc-700/60 transition-all"
+                    unstyled>
+                    <XIcon />
+                </Button>
+
 
             </div>
         </Transition>
+
+        <!-- Accent Color - Bar -->
+        <div v-if="!showStatusAlert"
+            class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse" />
 
 
     </header>

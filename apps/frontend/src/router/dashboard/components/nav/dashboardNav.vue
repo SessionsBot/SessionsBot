@@ -1,37 +1,19 @@
 <script lang="ts" setup>
-    import { useAuthStore } from '@/stores/auth';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import ServerDetails from './serverDetails.vue';
     import { HelpCircle } from 'lucide-vue-next';
+    import DiscordLogo from '/discord-grey.png'
 
 
     // Services:
     const dashboard = useDashboardStore();
-    const auth = useAuthStore();
 
     // Compute - Is Small Screen:
-    const isSmallScreen = computed(() => {
-        const { width: screenWidth } = useWindowSize();
-        return screenWidth.value < 640
-    })
+    const { width } = useWindowSize()
+    const isSmallScreen = computed(() => width.value < 640)
 
     // Compute - Is Nav Expanded (from store):
     const navExpanded = computed(() => dashboard.nav.expanded)
-
-    // Compute - Selected Guild User Data:
-    const guildUserData = computed(() => {
-        if (!auth.signedIn) {
-            console.warn('User Signed Out - Cannot get user guild data...');
-            return undefined
-        }
-        if (dashboard.guild.id) {
-            const userData = auth.user?.user_metadata;
-            return userData?.guilds.manageable.find(g => g.id == dashboard.guild.id)
-        } else {
-            console.warn('No Guild Selected - Cannot get user guild data...');
-            return undefined
-        }
-    });
 
 </script>
 
@@ -56,10 +38,11 @@
             </p>
 
             <!-- Expander Button -->
-            <Button unstyled @click="dashboard.nav.expanded = !dashboard.nav.expanded"
+            <Button :title="navExpanded ? 'Fold Nav' : 'Expand Nav'" unstyled
+                @click="dashboard.nav.expanded = !dashboard.nav.expanded"
                 class="size-8 aspect-square rounded-md hover:bg-zinc-600/50 active:scale-95 cursor-pointer transition-all flex items-center justify-center">
                 <iconify-icon icon="proicons:panel-right-expand" height="29" width="29"
-                    class="transition-all rotate-180" :class="{ 'rotate-0!': navExpanded }" />
+                    class="transition-all rotate-180 text-white/40" :class="{ 'rotate-0!': navExpanded }" />
             </Button>
         </div>
 
@@ -75,9 +58,9 @@
                         class="bg-white/5 mx-2.5! ring-2 ring-ring hover:ring-white/40 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
                         :class="{ 'aspect-square': !navExpanded }">
 
-                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring" :src="guildUserData?.icon" />
+                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring" :src="DiscordLogo" />
                         <p v-if="navExpanded" class="font-bold text-nowrap text-sm">
-                            {{ guildUserData?.name || 'Select a Server' }}
+                            {{ dashboard.userGuildData?.name || 'Select a Server' }}
                         </p>
 
                     </Button>
