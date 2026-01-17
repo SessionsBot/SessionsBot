@@ -95,7 +95,8 @@
 
                 <!-- Dashboard - Content View -->
                 <div class="ml-15 sm:ml-0! p-0 grow flex items-center justify-center">
-                    <div class="bg-red-500/0 w-full grow h-full min-h-fit flex flex-row justify-between items-center">
+                    <div
+                        class="bg-red-500/0 w-full grow h-full min-h-fit flex flex-row justify-between items-center overflow-clip">
 
                         <DashboardTabView />
 

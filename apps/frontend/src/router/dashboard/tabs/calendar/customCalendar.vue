@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from 'lucide-vue-next';
+    import { ArrowLeftCircleIcon, ArrowRightCircleIcon, XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { number } from 'motion-v';
     import { Popover } from 'primevue';
@@ -94,7 +94,7 @@
     // CALENDAR - Current Month:
     const selectedMonth = ref(DateTime.now().startOf('month'));
     const maxMonth = DateTime.now().plus({ year: 15 }).startOf('month');
-    const minMonth = DateTime.now().startOf('month').plus({ month: 2 });
+    const minMonth = DateTime.now().startOf('month')
     const previousMonth = () => selectedMonth.value = selectedMonth.value.minus({ month: 1 });
     const nextMonth = () => selectedMonth.value = selectedMonth.value.plus({ month: 1 });
 
@@ -113,11 +113,28 @@
         return days;
     });
 
+    // DAY VIEW - Dialog / Modal Panel:
+    const useDayViewDialog = () => {
+        const visible = ref(false)
+        const daySelected = ref<DateTime | null>(null);
+        const openDayViewFor = (date: DateTime) => {
+            daySelected.value = date;
+            visible.value = true
+        }
+
+        return {
+            visible,
+            daySelected,
+            openDayViewFor
+        }
+    }
+    const dayViewDialog = useDayViewDialog();
+
 </script>
 
 
 <template>
-    <div class="flex flex-col justify-center items-center w-full p-5">
+    <div class="flex flex-col justify-center items-center w-fit h-fit">
 
         <!-- Calendar Header -->
         <div class="calendar-header">
@@ -134,7 +151,7 @@
 
                 <!-- Exact Select - Popover -->
                 <Popover :ref="monthYearPopover.popover">
-                    <div class="flex flex-row flex-wrap gap-2 p-2 items-center justify-center">
+                    <div class="flex flex-row flex-nowrap gap-2 p-2 items-center justify-center">
                         <!-- Month Select -->
                         <IftaLabel>
                             <label for="month">
@@ -209,8 +226,8 @@
                 <div v-for="_ in leadingEmptyDays" class="size-px" />
 
                 <!-- calendar Month Days -->
-                <div v-for="day in daysInMonth" class="calendar-day"
-                    @click="console.log('Viewing Details for Day', day.toFormat('F'))">
+                <Button unstyled v-for="day in daysInMonth" class="calendar-day"
+                    @click="dayViewDialog.openDayViewFor(day)">
                     {{ day.day }}
                     <!-- Chip Bar -->
                     <div class="absolute bottom-1 w-full h-1.75 sm:h-3 gap-1 flex items-center justify-center">
@@ -219,7 +236,7 @@
                         <!-- Repeating Session - Chip -->
                         <div hidden class="h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
                     </div>
-                </div>
+                </Button>
             </div>
 
         </div>
@@ -227,6 +244,36 @@
 
 
     </div>
+
+    <!-- Day View - Modal/Dialog -->
+    <Dialog v-model:visible="dayViewDialog.visible.value" modal block-scroll>
+        <template #container>
+            <div
+                class="flex flex-col min-w-55 justify-between items-start border-2 border-ring rounded-md overflow-clip">
+                <!-- Header -->
+                <div
+                    class="flex bg-zinc-800 border-b-2 border-inherit p-2 gap-4 flex-row justify-between items-center w-full">
+                    <span>
+                        <p class="uppercase font-black text-xs text-white/40"> Day View </p>
+                        <p class="font-bold">
+                            {{ dayViewDialog.daySelected.value?.toFormat('D') || 'Select a Day!' }}
+                        </p>
+                    </span>
+                    <Button unstyled @click="dayViewDialog.visible.value = false"
+                        class="p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer">
+                        <XIcon :size="20" />
+                    </Button>
+
+                </div>
+                <!-- Content -->
+                <div class="flex p-15 bg-zinc-700 w-full h-fit">
+                    Content Here!
+                </div>
+
+            </div>
+
+        </template>
+    </Dialog>
 </template>
 
 
@@ -235,7 +282,7 @@
     @reference '@/styles/main.css';
 
     .calendar-header {
-        @apply bg-zinc-700 w-full max-w-125 p-2 rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
+        @apply bg-zinc-800 w-full max-w-125 p-2 rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
 
         *.adjust-month-button {
             @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-white/20;
@@ -245,12 +292,12 @@
             }
 
             &:disabled {
-                @apply cursor-not-allowed opacity-50 bg-zinc-700
+                @apply cursor-not-allowed opacity-40 bg-transparent
             }
         }
 
         *.select-month-button {
-            @apply p-0.5 px-1.5 gap-1 bg-white/15 hover:bg-white/10 flex flex-row items-center justify-center text-center font-extrabold text-nowrap rounded-md select-none cursor-pointer transition-all;
+            @apply p-0.5 px-2 gap-1 bg-white/15 hover:bg-white/10 flex flex-row items-center justify-center text-center font-extrabold text-nowrap rounded-md select-none cursor-pointer transition-all;
 
             &:active {
                 @apply bg-white/8
@@ -280,7 +327,7 @@
 
 
     .calendar-wrap {
-        @apply bg-zinc-800 w-full max-w-125 rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col grow;
+        @apply bg-zinc-700 w-full max-w-125 !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
 
         *.weekday-header-row {
             @apply w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
@@ -291,10 +338,10 @@
         }
 
         *.calendar-days-wrap {
-            @apply grid grid-cols-7 gap-2 p-2 w-full h-full items-center justify-center;
+            @apply grid grid-cols-7 gap-2 p-2 w-full items-center justify-center;
 
             *.calendar-day {
-                @apply relative bg-black/15 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center text-white/40 sm:text-lg font-black transition-all;
+                @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center sm:text-lg font-black transition-all;
 
                 &:hover {
                     @apply ring-white/60 cursor-pointer;

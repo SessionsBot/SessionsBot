@@ -36,5 +36,7 @@ export const externalUrls = {
     discordServer: {
         invite: "https://discord.gg/dKp5HZPjCg",
         supportInvite: "https://discord.gg/49gNbwA8t6",
-    }
+    },
+    /** BEFORE PRODUCTION - SWITCH THIS TO PUBLIC APP STORE URL! */
+    discordStore: "https://discord.com/discovery/applications/1380300328179732500/store"
 }

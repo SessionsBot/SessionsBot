@@ -8,6 +8,7 @@ import TermsAndConditions from "./termsAndConditions.vue";
 import Dashboard from "./dashboard/dashboard.vue";
 import Support from "./support/support.vue";
 import { useAuthStore } from "@/stores/auth";
+import Pricing from "./pricing/pricing.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,12 @@ const router = createRouter({
     },
 
     // Information:
+    {
+      name: "Pricing",
+      path: '/pricing',
+      alias: ['/plans', '/pricing-plans', '/solutions'],
+      component: Pricing
+    },
     {
       name: "Support",
       path: '/support',
