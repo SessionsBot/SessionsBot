@@ -1,4 +1,4 @@
-import { ButtonInteraction, MessageFlags } from "discord.js";
+import { ButtonInteraction, ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
 
 export default {
@@ -24,9 +24,26 @@ export default {
             .eq('session_id', rsvpSlot.session_id)
         if (rsvpAssigneesErr) throw rsvpAssigneesErr;
 
+        // If required role(s):
+        if (rsvpSlot.roles_required) {
+            const requiredRoles = rsvpSlot.roles_required;
+            const userRoles = i.guild.roles.fetch(i.user.id)
+
+            return await i.reply({
+                components: <any>[
+                    new ContainerBuilder({
+                        components: <any>[
+                            new TextDisplayBuilder({ content: `##Required Roles \n\`${requiredRoles}\` \n##User Roles \n\`${userRoles}\`` })
+                        ]
+                    })
+                ],
+                flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
+            })
+        }
+
         // Send Response:
         await i.reply({
-            content: `Interaction received! - RSVP for \`${rsvpId}\` \nCurrent Capacity: ${rsvpAssignees.length}/${rsvpSlot.capacity}`,
+            content: `Interaction received! - RSVP for \`${rsvpId}\` \nDATA: \`${JSON.stringify(rsvpSlot, null, 2)}\``,
             flags: MessageFlags.Ephemeral
         })
 

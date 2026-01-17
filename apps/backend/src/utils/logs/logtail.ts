@@ -1,9 +1,10 @@
 import { Logtail } from "@logtail/node";
 import LogCategories from './categories'
 import { keyof } from "zod";
+import { ENVIRONMENT_TYPE } from "../environment";
 
 // Env Variables:
-const environment: string = process.env['ENVIRONMENT'];
+const environment = ENVIRONMENT_TYPE;
 const isProduction = (environment == "production");
 const sourceToken: string = isProduction ? process.env['LOGTAIL_SOURCE_TOKEN'] : process.env['DEV_LOGTAIL_SOURCE_TOKEN'];
 const ingestingHost: string = isProduction ? process.env['LOGTAIL_INGESTING_HOST'] : process.env['DEV_LOGTAIL_INGESTING_HOST'];

@@ -1,16 +1,18 @@
 // Env Variables
 import "dotenv/config";
 
-const deployToDevTester = true; // (process.env?.['ENVIRONMENT'] == 'development');
-
-const botToken = !deployToDevTester ? process.env['DISCORD_BOT_TOKEN'] : process.env['DEV_BOT_TOKEN'];
-const clientId = !deployToDevTester ? process.env['DISCORD_CLIENT_ID'] : process.env['DEV_CLIENT_ID'];
-
 // Imports
 import { REST, Routes } from "discord.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
+import { ENVIRONMENT_TYPE } from "./environment";
+
+const deployToDevTester = (ENVIRONMENT_TYPE != 'production')
+
+const botToken = !deployToDevTester ? process.env['DISCORD_BOT_TOKEN'] : process.env['DEV_BOT_TOKEN'];
+const clientId = !deployToDevTester ? process.env['DISCORD_CLIENT_ID'] : process.env['DEV_CLIENT_ID'];
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +50,7 @@ const rest = new REST().setToken(botToken);
     try {
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-        const data:any = await rest.put(
+        const data: any = await rest.put(
             Routes.applicationCommands(clientId),
             { body: commands }
         );

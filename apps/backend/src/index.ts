@@ -1,14 +1,13 @@
 // ------- [ Variables/Setup: ] -------
 import 'dotenv/config'
 import dotenv from "dotenv";
+import { ENVIRONMENT_TYPE } from './utils/environment.js';
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Collection } from "discord.js";
 
 import fs from "fs";
 import path from "node:path";
 import { ExtendedClient } from './utils/types/extendedClient.js';
-
-const ENVIRONMENT_TYPE = process.env?.['ENVIRONMENT'];
 
 const client = new ExtendedClient({
 	intents: ['Guilds', 'GuildMessages', 'DirectMessages']
@@ -40,7 +39,7 @@ function getAllFiles(dir: string, fileList = []) {
 client.commands = new Collection();
 const commandFiles = getAllFiles(path.join(__dirname, 'commands'));
 for (const filePath of commandFiles) {
-	if (ENVIRONMENT_TYPE == 'API_ONLY') break; // ! REMOVE BEFORE PRODUCTION
+	if (ENVIRONMENT_TYPE == 'api_only') break; // ! REMOVE BEFORE PRODUCTION
 	const { default: command } = await import(pathToFileURL(filePath).href);
 	if ('data' in command && 'execute' in command) {
 		client.commands.set(command.data.name, command);
@@ -54,7 +53,7 @@ for (const filePath of commandFiles) {
 client.buttons = new Collection();
 const buttonFiles = getAllFiles(path.join(__dirname, 'buttons'));
 for (const filePath of buttonFiles) {
-	if (ENVIRONMENT_TYPE == 'API_ONLY') break; // ! REMOVE BEFORE PRODUCTION
+	if (ENVIRONMENT_TYPE == 'api_only') break; // ! REMOVE BEFORE PRODUCTION
 	const { default: button } = await import(pathToFileURL(filePath).href);
 	if ('data' in button && 'execute' in button) {
 		client.buttons.set(button.data.customId, button);
@@ -67,7 +66,7 @@ for (const filePath of buttonFiles) {
 // + Initialize Events
 const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
-	// if (ENVIRONMENT_TYPE == 'API_ONLY') break; // ! REMOVE BEFORE PRODUCTION
+	if (ENVIRONMENT_TYPE == 'api_only') break; // ! REMOVE BEFORE PRODUCTION
 	const { default: event } = await import(pathToFileURL(filePath).href);
 	if (event?.once) {
 		client.once(event.name, (...args) => event.execute(...args));
@@ -88,12 +87,13 @@ if (debugFileLoader) {
 
 // ------- [ Login (via Token): ] -------
 
-if (process.env['ENVIRONMENT'] == 'development') {
-	client.login(process.env['DEV_BOT_TOKEN']);
-} else {
+if (ENVIRONMENT_TYPE == 'production') {
 	client.login(process.env['DISCORD_BOT_TOKEN']);
+} else {
+	client.login(process.env['DEV_BOT_TOKEN']);
 }
 
 
 // ------- [ Web Server (api): ] -------
 import './server/index.js';
+

@@ -5,6 +5,7 @@ import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
 import { HttpStatusCode } from "axios";
 import { APIResponse } from "@sessionsbot/shared";
+import { ENVIRONMENT_TYPE } from "../utils/environment.js";
 
 /** Main backend web server instance for Sessions Bot. */
 const app = express()
@@ -22,7 +23,7 @@ app.use('/api', apiRouter)
 // Start Web Server:
 app.listen(PORT, () => {
     console.info(`[🌐] Web Server is running on ${PORT}`);
-    if (process.env['ENVIRONMENT'] == 'development') console.info(`[🌐] Visit at http://localhost:${PORT}`);
+    if (ENVIRONMENT_TYPE != 'production') console.info(`[🌐] Visit at http://localhost:${PORT}`);
 })
 
 // 404 - Not Found / Unknown Routes:

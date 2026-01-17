@@ -1,6 +1,7 @@
 import pkg from '../../package.json' with { type: 'json' };
 import { ExtendedClient } from './types/extendedClient.js';
 
+
 const core = {
     /** Current running Sessions Bot version. */
     botVersion: pkg.version,
@@ -33,6 +34,13 @@ const core = {
         sessionsWText: ':null:'
     },
 
+    /** Discord SKU Ids representing different subscription plans for Sessions Bot. 
+     * @NOTE !CHANGE BEFORE PRODUCTION - CURRENTLY DEV SHOP SKUs
+    */
+    entitlementSKUs: {
+        PREMIUM: "",
+        ENTERPRISE: ""
+    },
 
     /** Internal / frequent url locations. */
     urls: {

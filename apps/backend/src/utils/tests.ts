@@ -2,6 +2,7 @@ import { ButtonStyle, ComponentType, ContainerBuilder, ActionRowBuilder, ButtonB
 import core from "./core.js";
 import { initTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
 import { useLogger } from "./logs/logtail.js";
+import { ENVIRONMENT_TYPE } from "./environment.js";
 
 
 const createLog = useLogger();
@@ -13,7 +14,7 @@ export default {
     /** Runs on bot startup in DEVELOPMENT environments only. */
     init: async () => {
         try {
-            if (process.env['ENVIRONMENT'] == 'development') {
+            if (ENVIRONMENT_TYPE == 'development') {
                 console.info('--- \n[i] Running Development Tests!');
                 const { botClient: bot, colors } = core
                 // Test here..\
