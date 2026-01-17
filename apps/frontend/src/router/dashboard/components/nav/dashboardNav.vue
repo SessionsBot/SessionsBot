@@ -3,14 +3,20 @@
     import ServerDetails from './serverDetails.vue';
     import { HelpCircle } from 'lucide-vue-next';
     import DiscordLogo from '/discord-grey.png'
+    import { useAuthStore } from '@/stores/auth';
 
 
     // Services:
     const dashboard = useDashboardStore();
+    const auth = useAuthStore();
 
     // Compute - Is Small Screen:
     const { width } = useWindowSize()
     const isSmallScreen = computed(() => width.value < 640)
+
+    // const userGuildData = computed(() => dashboard.userGuildData)
+    const userGuildData = computed(() => { return dashboard.userGuildData })
+
 
     // Compute - Is Nav Expanded (from store):
     const navExpanded = computed(() => dashboard.nav.expanded)
@@ -59,9 +65,9 @@
                         :class="{ 'aspect-square': !navExpanded }">
 
                         <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring"
-                            :src="dashboard.userGuildData?.icon || DiscordLogo" />
+                            :src="userGuildData?.icon || DiscordLogo" />
                         <p v-if="navExpanded" class="font-bold text-nowrap text-sm">
-                            {{ dashboard.userGuildData?.name || 'Select a Server' }}
+                            {{ userGuildData?.name || 'Select a Server' }}
                         </p>
 
                     </Button>

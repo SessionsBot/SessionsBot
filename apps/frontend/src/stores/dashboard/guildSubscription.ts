@@ -47,5 +47,9 @@ export function useGuildSubscription() {
     }
 
     // Async State:
-    return useAsyncState(fetchSubscription, null, { immediate: false });
+    return useAsyncState(fetchSubscription, null, {
+        immediate: false, onError(e) {
+            console.warn('[Guild Channels] API Request Error', e)
+        },
+    });
 }

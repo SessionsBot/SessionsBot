@@ -5,17 +5,16 @@
     import CalendarTab from './calendar/calendarTab.vue';
     import AuditLogTab from './auditLog/auditLogTab.vue';
     import NotificationsTab from './notifications/notificationsTab.vue';
-    import { useAuthStore } from '@/stores/auth';
 
     // Services:
-    // const auth = useAuthStore();
     const dashboard = useDashboardStore();
+    const currentTab = computed(() => dashboard.nav.currentTab)
 
 </script>
 
 
 <template>
-    <div class="flex flex-col grow items-center justify-center flex-1 w-full h-full">
+    <div class="flex relative flex-col grow items-center justify-center flex-1 w-full h-full">
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
             <div v-if="!dashboard.guild.dataReady"
@@ -28,16 +27,18 @@
             </div>
 
             <!-- Main Page Content -->
-            <div v-else class="flex flex-row grow min-w-full! w-full! h-fit overflow-x-clip overflow-y-auto">
+            <div v-else class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto">
 
-                <Transition name="slide" mode="out-in">
-                    <KeepAlive>
-                        <SessionsTab v-if="dashboard.nav.currentTab == 'Sessions'" />
-                        <CalendarTab v-else-if="dashboard.nav.currentTab == 'Calendar'" />
-                        <NotificationsTab v-else-if="dashboard.nav.currentTab == 'Notifications'" />
-                        <AuditLogTab v-else-if="dashboard.nav.currentTab == 'AuditLog'" />
+                <TransitionGroup name="slide" type="animation">
+                    <KeepAlive key="tab_keep_alive">
+                        <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
+                        <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
+                        <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
+                        <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
+                        <p v-else class="italic text-sm uppercase font-black"> NO TAB FOUND?
+                        </p>
                     </KeepAlive>
-                </Transition>
+                </TransitionGroup>
 
 
             </div>

@@ -6,14 +6,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  /* --color-lightBackground: #DAD7CD;
-    --color-lightForeground: #a3b18a;
-    --color-lightAccent: #607458;
-
-    --color-darkBackground: #101814;
-    --color-darkForeground: #607458;
-    --color-darkAccent: #293D33; */
-
   --color-ring: var(--color-zinc-600);
 
   --font-rubik: "Rubik";
@@ -29,6 +21,7 @@ body {
   color: white;
   font-family: var(--font-Nunito) !important;
   box-sizing: border-box;
+  position: relative;
   color-scheme: dark;
 }
 
@@ -48,12 +41,3 @@ body {
 .scroll-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Edge */
 }
-
-/* ICONS */
-/* iconify-icon {
-  display: inline-block !important;
-  min-width: fit-content;
-  min-height: fit-content;
-  width: 1em;
-  height: 1em;
-} */

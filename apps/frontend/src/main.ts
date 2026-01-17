@@ -21,9 +21,8 @@ import 'iconify-icon'
 
 
 
-
 // Configure & Mount App:
-const app = createApp(App)
+const app = createApp(App);
 
 
 app.use(createPinia())

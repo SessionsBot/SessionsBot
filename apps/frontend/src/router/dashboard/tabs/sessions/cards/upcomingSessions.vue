@@ -63,25 +63,28 @@
 
 <template>
     <div
-        class="bg-black/10 rounded-md overflow-clip ring-2 w-[90%] max-w-150 ring-ring/40 flex flex-wrap flex-col items-center justify-center">
+        class="bg-white/10 rounded-md overflow-clip ring-2 w-[90%] max-w-170 ring-ring/40 flex flex-wrap flex-col items-center justify-center">
         <!-- Header - Upcoming Sessions -->
         <div
-            class="flex gap-0.5 w-full border-b-2 border-ring/60 bg-white/5 p-2.5 flex-row items-center justify-between">
+            class="flex gap-1 w-full border-b-2 border-ring/60 bg-zinc-900 p-2.5 flex-row items-center justify-between">
             <div class="flex flex-row gap-0.75 items-center">
                 <ArrowBigDownIcon :fill="'white'" :size="22" />
-                <p class="text-lg font-extrabold"> Upcoming Sessions </p>
+                <p class="sm:text-lg font-extrabold"> Upcoming Sessions </p>
             </div>
             <div class="flex items-center gap-1 ">
                 <!-- Filter -->
-                <Button unstyled
+                <Button hidden unstyled
                     class="bg-zinc-700 hover:bg-zinc-700/80 size-8 rounded-sm active:scale-95 transition-all cursor-pointer flex items-center justify-center">
                     <FilterIcon :size="16" />
                 </Button>
                 <!-- Create Session Button -->
                 <Button unstyled @click="(e) => sessionsFormVisible = true"
-                    class="bg-indigo-500 hover:bg-indigo-500/80 py-0.5 p-1 rounded-sm active:scale-95 transition-all cursor-pointer">
+                    class="bg-[#178954] hover:bg-[#178954]/80 py-0.5 p-1 rounded-sm active:scale-95 transition-all cursor-pointer">
                     <p class="p-1 font-extrabold text-sm">
-                        Create Session
+                        Create
+                        <i class="hidden sm:inline">
+                            Session
+                        </i>
                     </p>
                 </Button>
             </div>
@@ -89,18 +92,18 @@
 
         <!-- Content - Sessions List -->
         <motion.ul :variants="sessionListVariants" initial="hidden" animate="visible" v-if="sessionTemplates"
-            class="flex bg-black/15 gap-4.5 p-3.5 flex-col w-full justify-start items-center">
+            class="flex bg-black/15 gap-4.5 p-3.5 flex-wrap w-full justify-center items-center">
 
             <!-- Session Card / Row Item: -->
             <motion.li :variants="sessionItemVariants" v-for="session in sessionTemplates" :key="session.id"
-                class="flex flex-wrap gap-1 items-center ring-2 w-full ring-ring bg-white/5 p-1 rounded-md">
+                class="flex flex-wrap gap-1 w-full items-center ring-2 ring-ring bg-black/15 p-1 rounded-md">
                 <!-- Card Cover Content -->
                 <div class="flex flex-row flex-wrap justify-center items-start grow-4 p-1 gap-2">
 
                     <!-- Title / Time / Zone -->
                     <div class="flex flex-wrap flex-col justify-center items-start gap-1.5">
                         <!-- Title -->
-                        <p class="bg-indigo-500 font-bold rounded-md p-0.5 py-0.25"> {{ session.title }} </p>
+                        <p class="bg-indigo-500/70 font-bold rounded-md p-0.5 py-0.25"> {{ session.title }} </p>
                         <!-- Time & Zone -->
                         <div class="flex font-bold flex-row flex-nowrap gap-0 items-start justify-center">
                             <p :title="DateTime.fromISO(session.starts_at_utc, { zone: session.time_zone }).toFormat('F')"
@@ -138,41 +141,6 @@
                         </div>
 
                     </div>
-
-                    <!-- More Info Accordion -->
-                    <Accordion class="w-full bg-zinc-900! ">
-                        <AccordionPanel value="1">
-                            <AccordionHeader v-slot="ctx" :pt="{ root: 'bg-zinc-900! p-1! rounded-md!' }">
-                                <p class="text-white/70 font-bold">
-                                    Details
-                                </p>
-                            </AccordionHeader>
-                            <AccordionContent
-                                :pt="{ root: 'bg-zinc-900! text-white! p-0!', contentWrapper: 'p-0!', content: 'bg-zinc-700!' }"
-                                class="p-1! text-white/70!">
-
-                                <Button @click="console.log(calculateNextPostUTC({
-                                    startDate: DateTime.fromISO(session.starts_at_utc, { zone: 'utc' }),
-                                    zone: session.time_zone,
-                                    postOffsetMs: session.post_before_ms,
-                                    rrule: session.rrule
-                                })?.setZone(session.time_zone))">
-                                    Log Next UTC
-                                </Button>
-
-                                <Button @click="console.log(calculateExpiresAtUTC({
-                                    startDate: dbIsoUtcToDateTime(session.starts_at_utc, session.time_zone).toUTC(),
-                                    postOffsetMs: session.post_before_ms,
-                                    zone: session.time_zone,
-                                    rrule: session.rrule
-                                })?.setZone(session.time_zone))">
-                                    Log Expiration
-                                </Button>
-
-                            </AccordionContent>
-                        </AccordionPanel>
-                    </Accordion>
-
 
                 </div>
 

@@ -73,7 +73,6 @@ const useDashboardStore = defineStore("dashboard", {
         },
 
         clearGuildStoreData() {
-            console.info('Resetting Guild Data')
             this.guild = {
                 id: null,
                 channels: null,
@@ -81,6 +80,10 @@ const useDashboardStore = defineStore("dashboard", {
                 subscription: SubscriptionLevel.FREE,
                 sessionTemplates: null,
                 dataReady: false
+            }
+            this.nav = {
+                currentTab: "Sessions",
+                expanded: false
             }
         }
 

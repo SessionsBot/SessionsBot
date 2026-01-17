@@ -156,7 +156,7 @@
                         </Button>
 
                         <!-- My Account -->
-                        <RouterLink :to="'/account'" v-slot="{ isActive }">
+                        <RouterLink :to="'/account'" v-slot="{ isActive }" v-if="auth.signedIn">
                             <Button class="nav-button" @click="closeNav()" :class="{ 'nav-button-active': isActive }"
                                 unstyled :disabled="isActive">
                                 <UserCircle2Icon />
@@ -180,8 +180,8 @@
 
                         <!-- Sign Out -->
                         <RouterLink :to="'/account'" v-slot="{ isActive }">
-                            <Button class="nav-button hover:bg-red-400/20!" @click="auth.signOut(), closeNav()" unstyled
-                                :disabled="isActive">
+                            <Button v-if="auth.signedIn" class="nav-button hover:bg-red-400/20!"
+                                @click="auth.signOut(), closeNav()" unstyled :disabled="isActive">
                                 <LogOutIcon />
                                 <p>
                                     Sign Out

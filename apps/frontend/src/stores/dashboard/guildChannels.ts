@@ -28,5 +28,9 @@ export function useGuildChannels() {
     }
 
     // Async State:
-    return useAsyncState(fetchChannels, null, { immediate: false });
+    return useAsyncState(fetchChannels, null, {
+        immediate: false, onError(e) {
+            console.warn('[Guild Channels] API Request Error', e)
+        },
+    });
 }

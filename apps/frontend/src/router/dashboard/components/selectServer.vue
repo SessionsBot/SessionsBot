@@ -49,8 +49,30 @@
         return dashboard.guild.id = guildId;
     }
 
-    // Still Loading Alert:
+    // Still Loading Alert - Authentication Timeout:
     const showStillLoadingCard = ref(false);
+    const startAuthTimer = async (timeout = 3500) => {
+        // If already authed - Return:
+        if (auth.signedIn) return true;
+        // Wait for Sign In or Timeout:
+        const authed = await Promise.race([
+            new Promise<boolean>(res => watch(() => auth.signedIn, (signedIn) => {
+                if (signedIn) res(true);
+            }, { once: true })),
+            new Promise<boolean>(res => setTimeout(() => res(false), timeout))
+        ])
+        // Show Sign In Alert if necessary:
+        if (!authed) {
+            showStillLoadingCard.value = true;
+        }
+    }
+
+    onMounted(() => {
+        // If not Signed In - Start Auth Timer:
+        if (!auth.signedIn) {
+            startAuthTimer()
+        }
+    })
 
 
 </script>

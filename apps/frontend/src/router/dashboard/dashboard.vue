@@ -30,6 +30,15 @@
         }
     });
 
+    // FN - Await Auth Ready to Fetch Data:
+    async function waitForAuthReady(timeoutMs = 5000) {
+        if (auth.signedIn) return true;
+        return await Promise.race([
+            new Promise(resolve => watch(() => auth.authReady, (r) => { if (r) resolve(true) }, { once: true })),
+            new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
+        ])
+    }
+
     // FN - Fetch Guild Data for Dashboard:
     async function fetchGuildData() {
         // Fetch Data:
@@ -45,38 +54,28 @@
         dashboard.guild.dataReady = dataReady;
     }
 
-    // FN - Await Auth Ready to Fetch Data:
-    async function waitForAuthReady(timeoutMs = 5000) {
-        if (auth.signedIn) return true;
-        return await Promise.race([
-            new Promise(resolve => watch(() => auth.authReady, (r) => { if (r) resolve(true) }, { once: true })),
-            new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
-        ])
-    }
-
     // WATCH - Guild Selected - Fetch Data:
     watch(() => dashboard.guild.id, async (id) => {
-        console.info('Guild Changed', id);
         if (!id) {
             // No Guild Id Selected - Clear Store:
-            console.info('No guild id - clearing store...');
             dashboard.clearGuildStoreData();
             return
         }
         if (!auth.authReady) {
             // Auth NOT READY - Await Readiness:
-            console.warn('Waiting for auth to be ready...');
+            // console.warn('[Dashboard Data]: Waiting for auth to be ready for data fetch...');
             await waitForAuthReady();
         }
         if (!auth.signedIn) {
             // No User Signed In - Clear Store - Prompt Sign In:
+            console.warn('[Dashboard Data]: Auth Ready - NO USER - Clearing Store');
             dashboard.clearGuildStoreData();
             auth.signIn('/dashboard')
             return;
         }
         // CHECKS PASSED - Fetch Data for Selected Guild:
         await fetchGuildData();
-    }, { immediate: true })
+    }, { immediate: true });
 
 
 </script>
@@ -95,7 +94,7 @@
                 <DashboardNav />
 
                 <!-- Dashboard - Content View -->
-                <div class=" ml-15 sm:ml-0! p-0 grow flex items-center justify-center overflow-clip">
+                <div class="ml-15 sm:ml-0! p-0 grow flex items-center justify-center">
                     <div class="bg-red-500/0 w-full grow h-full min-h-fit flex flex-row justify-between items-center">
 
                         <DashboardTabView />

@@ -39,7 +39,7 @@
       </RouterView>
     </div>
 
-    <SiteFooter />
+    <SiteFooter hidden />
   </div>
 
   <!-- Confirm Dialog -->

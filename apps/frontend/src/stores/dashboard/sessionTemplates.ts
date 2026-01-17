@@ -68,17 +68,10 @@ export function useGuildTemplates() {
     };
 
     // Async State:
-    return useAsyncState(fetchTemplates, null, { immediate: false });
+    return useAsyncState(fetchTemplates, null, {
+        immediate: false, onError(e) {
+            console.warn('[Guild Templates] API Request Error', e)
+        },
+    });
 
-    // // Auto Update - On Guild Select:
-    // watch(() => dashboard.guild.id, (id) => {
-    //     if (id) asyncState.execute()
-    //     else dashboard.guild.sessionTemplates = null;
-    // }, { immediate: true })
-
-    // // Return Results/State:
-    // return {
-    //     ...asyncState,
-    //     templates: dashboard.guild.sessionTemplates
-    // }
 }
