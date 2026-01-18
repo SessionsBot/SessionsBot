@@ -1,6 +1,6 @@
 import { Events, Guild } from "discord.js";
 import dbManager from "../utils/database/manager";
-import discordLog from "../utils/logs/discordLog.js";
+import discordLog from "../utils/logs/discord.js";
 import { useLogger } from "../utils/logs/logtail.js";
 
 const createLog = useLogger();

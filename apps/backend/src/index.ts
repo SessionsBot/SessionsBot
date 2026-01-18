@@ -66,6 +66,10 @@ for (const filePath of buttonFiles) {
 // + Initialize Events
 const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
+	if (ENVIRONMENT_TYPE == 'api_only') {
+		client.once('clientReady', (c) => { core.botClient = c as any })
+		break;
+	};
 	const { default: event } = await import(pathToFileURL(filePath).href);
 	if (event?.once) {
 		client.once(event.name, (...args) => event.execute(...args));
@@ -95,4 +99,5 @@ if (ENVIRONMENT_TYPE == 'production') {
 
 // ------- [ Web Server (api): ] -------
 import './server/index.js';
+import core from './utils/core.js';
 

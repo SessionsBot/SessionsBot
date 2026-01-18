@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, Events,
 import { useLogger } from "../utils/logs/logtail";
 import core from "../utils/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
-import discordLog from "../utils/logs/discordLog";
+import discordLog from "../utils/logs/discord";
 import dbManager from "../utils/database/manager";
 
 const createLog = useLogger();
