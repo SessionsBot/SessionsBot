@@ -1,5 +1,7 @@
+import { SubscriptionSKUs } from '@sessionsbot/shared';
 import pkg from '../../package.json' with { type: 'json' };
 import { ExtendedClient } from './types/extendedClient.js';
+import { Entitlement, SKU } from 'discord.js';
 
 
 const core = {
@@ -28,19 +30,17 @@ const core = {
         },
     },
 
-    /** Custom emoji strings formatted for use within Discord. - (loaded by script) */
+    /** Custom emoji strings formatted for use within Discord. 
+     * * (loaded by `ready` event) */
     emojiStrings: <{ [cmdName: string]: string }>{
         sessions: ':null:',
         sessionsWText: ':null:'
     },
 
-    /** Discord SKU Ids representing different subscription plans for Sessions Bot. 
-     * @NOTE !CHANGE BEFORE PRODUCTION - CURRENTLY DEV SHOP SKUs
-    */
-    entitlementSKUs: {
-        PREMIUM: "",
-        ENTERPRISE: ""
-    },
+    /** Discord SKU Ids representing different store products for Sessions Bot 
+     * * loaded by `ready` event
+     * @NOTE Possibly obsolete, see {@link SubscriptionSKUs} */
+    storeSKUs: <Record<string, SKU>>{},
 
     /** Internal / frequent url locations. */
     urls: {

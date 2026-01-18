@@ -29,8 +29,7 @@ const logtail = () => {
 
     return new Logtail(sourceToken || '', {
         endpoint: ingestingHost,
-        sendLogsToConsoleOutput: true,
-        sendLogsToBetterStack: isProduction,
+        sendLogsToConsoleOutput: true
     });
 
 }

@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      entitlements: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          guild_id: string | null
+          id: string
+          sku_id: string
+          starts_at: string | null
+          status: Database["public"]["Enums"]["Entitlement Status"]
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at?: string | null
+          guild_id?: string | null
+          id: string
+          sku_id: string
+          starts_at?: string | null
+          status: Database["public"]["Enums"]["Entitlement Status"]
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string | null
+          guild_id?: string | null
+          id?: string
+          sku_id?: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["Entitlement Status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entitlements_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guilds: {
         Row: {
           id: string
@@ -21,7 +59,6 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
-          subscription: Database["public"]["Enums"]["Pricing Plans"]
         }
         Insert: {
           id: string
@@ -29,7 +66,6 @@ export type Database = {
           member_count: number
           name: string
           owner_id: string
-          subscription?: Database["public"]["Enums"]["Pricing Plans"]
         }
         Update: {
           id?: string
@@ -37,7 +73,6 @@ export type Database = {
           member_count?: number
           name?: string
           owner_id?: string
-          subscription?: Database["public"]["Enums"]["Pricing Plans"]
         }
         Relationships: []
       }
@@ -319,7 +354,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      "Pricing Plans": "FREE" | "PREMIUM" | "ENTERPRISE"
+      "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -447,7 +482,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      "Pricing Plans": ["FREE", "PREMIUM", "ENTERPRISE"],
+      "Entitlement Status": ["ACTIVE", "EXPIRED", "CANCELED"],
     },
   },
 } as const

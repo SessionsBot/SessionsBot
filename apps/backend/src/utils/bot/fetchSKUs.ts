@@ -1,8 +1,19 @@
+import { SKUType } from 'discord.js'
 import core from '../core.js'
 
 export default async () => {
     // Fetch App Emojis:
-    const fetch = await core.botClient.application.fetchSKUs()
+    const fetch = await core.botClient.application.fetchSKUs();
 
-    console.info(fetch)
+    // Filter out - "System Groups":
+    const filtered = fetch.filter((s) => s.type != SKUType.SubscriptionGroup)
+
+    // Map by Name & SKU Id:
+    let mapped: typeof core.storeSKUs = {} as any;
+    for (const [_, sku] of filtered) {
+        mapped[sku.id] = sku;
+    }
+
+    // Assign to Core SKU Map:
+    core.storeSKUs = mapped;
 }

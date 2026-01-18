@@ -13,6 +13,13 @@ interface PlanLimitValues {
 
 export type SubscriptionPlanName = 'FREE' | 'PREMIUM' | 'ENTERPRISE';
 
+/** Subscription Plan SKU Ids indexed by name. 
+ * @note **CHANGE BEFORE PRODUCTION** - CURRENTLY DEV SKUs */
+export const SubscriptionSKUs = {
+  PREMIUM: "1459624525925974088",
+  ENTERPRISE: "1459624678426546310"
+} as const;
+
 /** According plan limits/restrictions by bot subscription level. */
 export const SubscriptionLimits: Record<SubscriptionPlanName, PlanLimitValues> = {
   FREE: {

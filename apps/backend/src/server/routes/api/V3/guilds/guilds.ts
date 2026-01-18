@@ -1,11 +1,11 @@
 import axios from "axios";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
-import { APIResponse as reply, SubscriptionPlanName } from "@sessionsbot/shared";
+import { APIResponse as reply, SubscriptionPlanName, SubscriptionSKUs } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin, verifyGuildMember } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";
-import { ChannelType, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
+import { ChannelType, RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
 
@@ -63,23 +63,19 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async
         // Parse req:
         const guildId = req.params['guildId'];
         const { botClient: bot } = core;
-        // Fetch guild entitlements:
 
-        const guildFetch = await bot.guilds.fetch(guildId);
+        // Fetch guild entitlements:
         const guildEntitlements: RESTGetAPIEntitlementsResult = await bot.rest.get(Routes.entitlements(bot.application.id), {
-            query: new URLSearchParams({
-                guildId: guildId
-            })
+            query: new URLSearchParams(<RESTGetAPIEntitlementsQuery>{
+                exclude_ended: true,
+                guild_id: guildId
+            } as any)
         }) as any;
 
-        // Filter out Inactive:
-        const activeSubscriptions = guildEntitlements.filter((e) => e.deleted != true);
         // Determine Subscription Level:
-        const premiumSkuId = process.env?.['PREMIUM_SKU_ID'];
-        const enterpriseSkuId = process.env?.['ENTERPRISE_SKU_ID'];
         const subscriptionLevel = (): SubscriptionPlanName => {
-            if (activeSubscriptions.some(e => e.sku_id == enterpriseSkuId)) return 'ENTERPRISE';
-            else if (activeSubscriptions.some(e => e.sku_id == premiumSkuId)) return 'PREMIUM';
+            if (guildEntitlements.some(e => e.sku_id == SubscriptionSKUs.ENTERPRISE)) return 'ENTERPRISE';
+            else if (guildEntitlements.some(e => e.sku_id == SubscriptionSKUs.PREMIUM)) return 'PREMIUM';
             else return 'FREE';
         }
 

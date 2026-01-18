@@ -3,6 +3,7 @@ import core from "./core.js";
 import { initTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
+import fetchSKUs from "./bot/fetchSKUs.js";
 
 
 const createLog = useLogger();
@@ -22,7 +23,7 @@ export default {
                 // const result = await sendPermissionAlert(guildId);
                 // console.info(result)
 
-                initTemplateCreationScheduler({ runOnExecution: true });
+                // initTemplateCreationScheduler({ runOnExecution: true });
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

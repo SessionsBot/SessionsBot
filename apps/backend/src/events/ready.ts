@@ -5,6 +5,7 @@ import { useLogger } from "../utils/logs/logtail.js";
 import { DateTime } from "luxon";
 import tests from "../utils/tests.js";
 import fetchEmojis from "../utils/bot/fetchEmojis.js";
+import fetchSKUs from "../utils/bot/fetchSKUs.js";
 
 const createLog = useLogger();
 
@@ -17,6 +18,8 @@ export default {
 
 		// Fetch App Emojis to 'core':
 		fetchEmojis();
+		// Fetch Guild Subscription SKUs to 'core':
+		fetchSKUs();
 
 		// Get Startup Timestamp:
 		const startupTimestamp = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_SHORT)

@@ -23,7 +23,7 @@ app.use('/api', apiRouter)
 // Start Web Server:
 app.listen(PORT, () => {
     console.info(`[🌐] Web Server is running on ${PORT}`);
-    if (ENVIRONMENT_TYPE != 'production') console.info(`[🌐] Visit at http://localhost:${PORT}`);
+    if (ENVIRONMENT_TYPE == 'development') console.info(`[🌐] Visit at http://localhost:${PORT}`);
 })
 
 // 404 - Not Found / Unknown Routes:

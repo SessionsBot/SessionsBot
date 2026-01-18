@@ -3,7 +3,7 @@ import core from "../../../../../utils/core.js";
 import { supabase } from '../../../../../utils/database/supabase.js';
 import { AuthError } from './authErrTypes.js';
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
-import { AppUserGuildData, AppUserGuilds } from '@sessionsbot/shared';
+import { AppUserGuilds } from '@sessionsbot/shared';
 
 const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") ?? [];
 
