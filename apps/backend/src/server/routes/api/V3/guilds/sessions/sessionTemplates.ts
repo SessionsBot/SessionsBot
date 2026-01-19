@@ -42,7 +42,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: auth
     } catch (err) {
         // Log & Return Err:
         const errTxt = `Failed to create a new session template!`;
-        createLog.for('Api').warn(errTxt, { err, body: req.body, from: 'Caught Error!' });
+        createLog.for('Api').warn(errTxt, { err, body: req.body, source: 'Caught Error!' });
         return new reply(res).failure(errTxt);
     }
 })

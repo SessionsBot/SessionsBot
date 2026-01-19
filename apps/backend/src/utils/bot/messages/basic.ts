@@ -20,7 +20,7 @@ export const genericErrorMsg = ({
             new SeparatorBuilder(),
             new TextDisplayBuilder({ content: `**Reason:**\n> ${reasonDesc}` }),
             new SeparatorBuilder(),
-            new TextDisplayBuilder({ content: `-# Need Help? Join our support server for bot assistance:` }),
+            // new TextDisplayBuilder({ content: `-# Need Help? Join our support server for bot assistance:` }),
             new ActionRowBuilder({
                 components: <any>[
                     new ButtonBuilder({
@@ -35,21 +35,26 @@ export const genericErrorMsg = ({
                     })
                 ]
             }),
-            new SeparatorBuilder(),
+            // new SeparatorBuilder(),
         ]
     })
 }
 
 
 /** Returns a generic `Footer` for Sessions Bot messages. */
-export const defaultFooterText = (config:
+export const defaultFooterText = (opts:
     {
-        /** Whether or not to show the `Need Help?` text with support url or not. */
+        /** Whether or not to show the `Need Help?` text with support url or not. 
+         * @_default false */
         showHelpLink?: boolean
+        /** Whether or not to display this text as a subheading(`-#`). 
+         * @_default false */
+        lightFont?: boolean
     } = {
         // Default opts:
-        showHelpLink: false
+        showHelpLink: false,
+        lightFont: false
     }
 ) => {
-    return new TextDisplayBuilder({ content: `${core.emojiStrings['sessions']} Powered by [Sessions Bot](${core.urls.mainSite}) ${config.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''}` })
+    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings['sessions']} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''}` })
 }

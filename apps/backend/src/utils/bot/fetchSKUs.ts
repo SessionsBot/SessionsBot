@@ -2,7 +2,7 @@ import { SKUType } from 'discord.js'
 import core from '../core.js'
 
 export default async () => {
-    // Fetch App Emojis:
+    // Fetch App SKUs:
     const fetch = await core.botClient.application.fetchSKUs();
 
     // Filter out - "System Groups":

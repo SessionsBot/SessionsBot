@@ -6,6 +6,7 @@ import { DateTime } from "luxon";
 import tests from "../utils/tests.js";
 import fetchEmojis from "../utils/bot/fetchEmojis.js";
 import fetchSKUs from "../utils/bot/fetchSKUs.js";
+import fetchCommands from "../utils/bot/fetchCommands.js";
 
 const createLog = useLogger();
 
@@ -20,12 +21,11 @@ export default {
 		fetchEmojis();
 		// Fetch Guild Subscription SKUs to 'core':
 		fetchSKUs();
-
-		// Get Startup Timestamp:
-		const startupTimestamp = DateTime.now().setZone('America/Chicago').toLocaleString(DateTime.DATETIME_SHORT)
+		// Fetch App Commands to 'core':
+		fetchCommands();
 
 		// Log Startup:
-		createLog.for('Bot').info('[✅] Startup', { timestamp: startupTimestamp, clientTag: client?.user?.tag, botVersion: core.botVersion });
+		createLog.for('Bot').info('[✅] Startup', { clientTag: client?.user?.tag, botVersion: core.botVersion });
 
 		// Set Bot User's Activity:
 		client.user.setActivity('🔗 sessionsbot.fyi', { type: ActivityType.Custom });

@@ -51,7 +51,13 @@ export default {
             // Check for Bot Permission Error:
             if (isBotPermissionError(err)) sendPermissionAlert(interaction.guildId)
             // Log failure
-            createLog.for('Bot').warn(`The /dashboard command failed during an interaction... see details`, { interaction, err });
+            createLog.for('Bot').warn(`The /dashboard command failed during an interaction... see details`, {
+                interaction: {
+                    user: interaction.user.id,
+                    interactionId: interaction.id,
+                    guildId: interaction.guildId,
+                }, err
+            });
         }
     }
 }

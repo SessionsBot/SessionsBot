@@ -21,6 +21,8 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     ALLOW_NOTIFICATIONS: boolean;
     /** Weather to allow custom message accent colors based on subscription level. */
     CUSTOM_ACCENT_COLOR: boolean
+    /** Weather to display a "Powered by Sessions Bot" text within Discord interactions/messages. */
+    SHOW_WATERMARK: boolean
 }> = {
     FREE: {
         MAX_SCHEDULES: 7,
@@ -29,6 +31,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         ALLOW_RSVP_ROLE_RESTRICTION: false,
         ALLOW_NOTIFICATIONS: false,
         CUSTOM_ACCENT_COLOR: false,
+        SHOW_WATERMARK: true,
     },
     PREMIUM: {
         MAX_SCHEDULES: 15,
@@ -37,6 +40,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         ALLOW_RSVP_ROLE_RESTRICTION: true,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
+        SHOW_WATERMARK: false,
     },
     ENTERPRISE: {
         MAX_SCHEDULES: Infinity,
@@ -45,6 +49,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         MAX_RSVP_CAPACITY: Infinity,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
+        SHOW_WATERMARK: true,
     },
 };
 

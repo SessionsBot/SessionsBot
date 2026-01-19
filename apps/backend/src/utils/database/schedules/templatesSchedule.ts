@@ -11,6 +11,7 @@ import { genericErrorMsg } from "../../bot/messages/basic";
 import sendWithFallback from "../../bot/messages/sendWithFallback";
 
 const createLog = useLogger();
+const debugSchedule = true;
 
 /** The `ScheduledTask` obj of the Session Template creation schedule */
 let sessionTemplateCreationCron: ScheduledTask = null;
@@ -19,7 +20,7 @@ let sessionTemplateCreationCron: ScheduledTask = null;
 /** Session Template Creation Schedule - **Execution** - Scans templates that are overdue for post -> posts them!*/
 async function executeTemplateCreationSchedule() {
 
-    console.info(`(i) Template Creation Schedule - Running at ${DateTime.now().toFormat('F')}`)
+    if (debugSchedule) console.info(`[⏰] Template Creation Schedule - Executing at ${DateTime.now().toFormat('F')}`)
 
     // Fetch/load Session Templates -> PAST NOW 'next_post_utc':
     const getTemplates = async (fromUTC: DateTime) => {
@@ -30,7 +31,7 @@ async function executeTemplateCreationSchedule() {
             .lte('next_post_utc', fromUTC.toISO())
         // Catch Fetch Errors:
         if (!data || !data?.length) {
-            console.info(`(i) Template Fetch - Returned 0 results due for next post!`)
+            if (debugSchedule) console.info(`[⏰] Template Fetch - Returned 0 results due for next post!`)
             return null;
         }
         if (error) {
@@ -88,6 +89,9 @@ async function executeTemplateCreationSchedule() {
                 // If Create/Save Error - Continue:
                 if (createSessionErr || !session) {
                     createLog.for('Database').error('FAILED TO SAVE/CREATE - New Session - See Details...', { template: t, err: createSessionErr, session });
+                    // Send Failure Message:
+                    const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
+                    sendWithFallback(guildId, errMsg);
                     continue;
                 }
 
@@ -99,7 +103,7 @@ async function executeTemplateCreationSchedule() {
                             title: data.name,
                             emoji: data.emoji,
                             capacity: data.capacity,
-                            roles_required: data.requiredRoles,
+                            roles_required: data.required_roles,
                             session_id: session.id,
                             guild_id: guildId
                         }).select('*').single()
@@ -107,10 +111,10 @@ async function executeTemplateCreationSchedule() {
                             abortTemplateFromRsvpErr = true;
                             // RSVP Save FAILED:
                             createLog.for('Database').error('FAILED TO SAVE - RSVP SLOT - See Details..', { session, guildId, templateId: t.id, rsvpSaveErr, rsvpData: data });
-                            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \nTemplate Id: \`${t.id}\` \`Guild Id: \`${t.guild_id}\`` })
                             // Delete Created Session
                             await supabase.from('sessions').delete().eq('id', session.id);
                             // Send Failure Message:
+                            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
                             sendWithFallback(guildId, errMsg);
                             break;
                         }
@@ -121,7 +125,7 @@ async function executeTemplateCreationSchedule() {
                 }
 
                 // Post to Discord:
-                const signupMsgContent = await buildSessionSignupMsg({ session })
+                const signupMsgContent = await buildSessionSignupMsg(session)
                 const signupMsg = await channel.send({
                     components: [signupMsgContent],
                     flags: MessageFlags.IsComponentsV2
@@ -132,10 +136,10 @@ async function executeTemplateCreationSchedule() {
                     signup_id: signupMsg.id
                 }).eq('id', session.id)
                 if (updateSessionErr) {
-                    createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "signup_id"', { updateSessionErr, session, guildId })
+                    createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "signup_id"', { updateSessionErr, session })
                 }
 
-                console.info('Session Created', session.title, session.id);
+                if(debugSchedule) console.info('[🧾] Session Created --', session.title, '--', session.id);
 
                 // Update Template - Next/Last Post UTC:
                 const newNextPostUTC = calculateNextPostUTC({
@@ -165,13 +169,13 @@ async function executeTemplateCreationSchedule() {
 /** Initializes the session template creation schedule.
  * @runs every 5 mins of each hour */
 export async function initTemplateCreationScheduler(opts: { runOnExecution?: boolean }) {
-    console.info(`(i) Initializing Template Creation Scheduler! - At: ${DateTime.now().toFormat('F')}`)
+    if (debugSchedule) console.info(`[⏰] Initializing Template Creation Scheduler! - At: ${DateTime.now().toFormat('F')}`)
     sessionTemplateCreationCron = cron.schedule(`*/5 * * * *`, executeTemplateCreationSchedule, {
         timezone: 'UTC', name: 'template_creation'
     })
 
     if (opts.runOnExecution) {
-        console.info(`(i) Running Session Template Creation Schedule Early..`)
+        if (debugSchedule) console.info(`[⏰] Running Session Template Creation Schedule Early..`)
         sessionTemplateCreationCron.execute()
     }
 }

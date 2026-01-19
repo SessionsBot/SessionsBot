@@ -10,13 +10,12 @@ import { useLogger } from "../../logs/logtail";
 const createLog = useLogger();
 const { botClient: bot, colors } = core
 
-export async function buildSessionSignupMsg(opts: {
-    session: Database['public']['Tables']['sessions']['Row'],
-}) {
+export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row']) {
     // Get Template/Session Data:
-    const { session: s } = opts;
-    const startsAt = DateTime.fromISO(s.starts_at_utc)
+    const s = session;
+    const startsAt = DateTime.fromISO(s.starts_at_utc);
     const endsAt = s.duration_ms ? startsAt.plus({ millisecond: s.duration_ms }) : null;
+    const pastStart = DateTime.now() >= startsAt;
 
     // Fetch Session RSVP Slots:
     const { data: rsvpSlots, error: rsvpSlotsErr } = await supabase.from('session_rsvp_slots')
@@ -28,7 +27,7 @@ export async function buildSessionSignupMsg(opts: {
     }
 
     // Fetch Session RSVP Assignees:
-    let rsvpAssignees: Database['public']['Tables']['session_rsvps']['Row'][] = [];
+    let sessionAssignees: Database['public']['Tables']['session_rsvps']['Row'][] = [];
     if (rsvpSlots?.length) {
         const { data: curRsvpAssignees, error: rsvpAssigneesErr } = await supabase.from('session_rsvps')
             .select('*')
@@ -37,7 +36,7 @@ export async function buildSessionSignupMsg(opts: {
         if (rsvpAssigneesErr) {
             createLog.for('Database').error('FAILED TO GET RSVP ASSIGNEES - For Signup Msg - See Details', { rsvpAssigneesErr, session: s })
         }
-        rsvpAssignees = curRsvpAssignees;
+        sessionAssignees = curRsvpAssignees;
     }
 
 
@@ -46,23 +45,44 @@ export async function buildSessionSignupMsg(opts: {
         let r = [];
         if (rsvpSlots?.length) {
             for (const rsvp of rsvpSlots) {
+                // RSVP Slot Vars:
                 const rsvpTitle = rsvp.emoji ? `${rsvp.emoji} ${rsvp.title}` : rsvp.title
-                const capacityState = `\`0/${rsvp.capacity}\``
-                r.push(new SectionBuilder({
-                    components: <any>[
-                        new TextDisplayBuilder({ content: `**${rsvpTitle}** *${capacityState}* \n> No RSVPs` })
-                    ],
-                    accessory: {
-                        type: ComponentType.Button,
-                        custom_id: rsvp.id.replace('_', ':'),
-                        label: '☑️',
-                        style: ButtonStyle.Secondary
+                const slotAssignees = sessionAssignees.filter(a => a.rsvp_slot_id == rsvp.id)
+                const atCapacity = (slotAssignees?.length ?? 0) >= rsvp.capacity;
+                const capacityString = `\`${slotAssignees?.length ?? 0}/${rsvp.capacity}\``
+                const mappedAssignees = () => {
+                    if (!slotAssignees?.length) {
+                        return `> No RSVPs`
+                    } else {
+                        return `> <@${slotAssignees.map(a => a.user_id).join(`\n> > <@`) + '>'}`
                     }
-                }), new SeparatorBuilder())
+                }
+                const emojiLabel = () => {
+                    if (atCapacity) return '⛔';
+                    if (pastStart) return '⌛';
+                    else return '☑️';
+                }
+                // Add RSVP Section to Msg:
+                r.push(
+                    new SectionBuilder({
+                        components: <any>[
+                            new TextDisplayBuilder({ content: `**${rsvpTitle}** *${capacityString}* \n${mappedAssignees()}` })
+                        ],
+                        accessory: {
+                            type: ComponentType.Button,
+                            custom_id: rsvp.id.replace('_', ':') + `:${s.id}`,
+                            label: emojiLabel(),
+                            style: ButtonStyle.Secondary,
+                            disabled: (pastStart || atCapacity) ? true : false
+                        }
+                    }),
+                    new SeparatorBuilder()
+                )
             }
             return r;
         } else return [];
     }
+
 
     // Util: Create Action Row / Footer Component:
     const getActionButtons = () => {
@@ -90,8 +110,8 @@ export async function buildSessionSignupMsg(opts: {
         ]
     }
 
+
     // Build Root Msg Container:
-    const splitId = s.id.split('-')
     const msg = new ContainerBuilder({
         accent_color: colors.getOxColor('purple'),
         components: <any>[
@@ -113,7 +133,6 @@ export async function buildSessionSignupMsg(opts: {
             ...getActionButtons(),
             new SeparatorBuilder(),
             defaultFooterText(),
-            new TextDisplayBuilder({ content: `-# ID: ${splitId.at(-1) + splitId.at(-2)}` }),
         ]
     })
 

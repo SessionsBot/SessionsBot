@@ -32,9 +32,24 @@ const core = {
 
     /** Custom emoji strings formatted for use within Discord. 
      * * (loaded by `ready` event) */
-    emojiStrings: <{ [cmdName: string]: string }>{
+    emojiStrings: <{ [emojiName: string]: string }>{
         sessions: ':null:',
         sessionsWText: ':null:'
+    },
+
+    /** Holds application/bot command related data. */
+    commands: {
+        /** Bot application command ids mapped by their command names. */
+        ids: <{ [cmdName: string]: string }>{},
+        /** Returns a command "link" string for a provided command name or else just the name itself if undefined. */
+        getLinkString: (
+            /** The * ***exact*** * command name to retrieve a string for. */
+            cmdName: string
+        ) => {
+            const cmdId = core.commands.ids[cmdName] || null;
+            if (!cmdId) return '/' + cmdName;
+            else return `</${cmdName}:${cmdId}>`
+        }
     },
 
     /** Discord SKU Ids representing different store products for Sessions Bot 

@@ -1,15 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { supabase } from "../../utils/database/supabase.js";
-import { APIResponse as reply } from "@sessionsbot/shared";
+import { AppUser, APIResponse as reply } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import { useLogger } from "../../utils/logs/logtail.js";
-import { AuthError, User } from "@supabase/supabase-js";
 
 const createLog = useLogger();
 
 export interface authorizedRequest extends Request {
     auth: {
-        user: User,
+        user: AppUser,
         profile: any
     }
 };

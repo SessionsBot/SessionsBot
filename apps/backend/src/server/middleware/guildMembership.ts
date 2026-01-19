@@ -25,7 +25,14 @@ const verifyGuildMember = async (req: authorizedRequest, res: Response, next: Ne
 
     } catch (err) {
         // Log & return error:
-        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
+        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, {
+            err,
+            userId: req?.auth.user.id,
+            username: req?.auth?.user?.user_metadata?.username,
+            userGuildsMeta: req?.auth.user.user_metadata.guilds.all,
+            guildId: req?.params?.guildId,
+            route: req.originalUrl
+        });
         return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${req?.params?.guildId}`);
     }
 }
@@ -55,7 +62,14 @@ const verifyGuildAdmin = async (req: authorizedRequest, res: Response, next: Nex
 
     } catch (err) {
         // Log & return error:
-        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, { err, user: req?.auth.user, guildId: req?.params?.guildId });
+        createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, {
+            err,
+            userId: req?.auth.user.id,
+            username: req?.auth?.user?.user_metadata?.username,
+            userGuildsMeta: req?.auth.user.user_metadata.guilds,
+            guildId: req?.params?.guildId,
+            route: req.originalUrl
+        });
         return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${req?.params?.guildId}`);
     }
 }

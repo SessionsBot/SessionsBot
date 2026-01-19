@@ -82,7 +82,7 @@ export function mapRsvps(rsvpJSON: any) {
         name: string,
         emoji: string,
         capacity: number,
-        requiredRoles?: string[]
+        required_roles?: string[]
     }[] = Array.from(parsed);
     return rsvpsArray;
 }

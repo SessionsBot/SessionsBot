@@ -9,83 +9,137 @@ const createLog = useLogger();
 
 export default {
 	name: Events.InteractionCreate,
-	async execute(interaction: BaseInteraction) {
-		const botClient = interaction.client as ExtendedClient;
+	async execute(i: BaseInteraction) {
+		const botClient = i.client as ExtendedClient;
 
 		// Command Interactions:
-		if (interaction.isChatInputCommand()) {
-			const command = botClient.commands.get(interaction.commandName);
+		if (i.isChatInputCommand()) {
+			const command = botClient.commands.get(i.commandName);
 
-			if (!command) return createLog.for('Bot').error(`No command matching ${interaction.commandName} was found.`)
+			if (!command) return createLog.for('Bot').error(`No command matching ${i.commandName} was found.`)
 			try {
 				// Execute Command:
-				await command.execute(interaction);
+				await command.execute(i);
 
-			} catch (error) { // On Failure:
-				// Check for Bot Permission Error:
-				if (isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
-				// Log
-				createLog.for('Bot').warn('Command Interaction Error - See Details', { error, interaction });
-				// Respond with Alert
-				const alertMsg = genericErrorMsg({
-					reasonDesc: `The </${interaction?.commandName}:${interaction?.commandId}> command has **FAILED** execution! Confirm inputs *(if any)* and try again!`
+			} catch (error) {
+				// On Failure:
+				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				// Log:
+				createLog.for('Bot').warn('Command Interaction Error - See Details', {
+					error, interaction: {
+						command: {
+							cmdName: i?.commandName,
+							cmdId: i?.commandId,
+						},
+						guild: {
+							guildId: i?.guildId,
+							guildName: i?.guild?.name,
+						},
+						user: {
+							username: i.user.username,
+							userId: i.user.id
+						}
+					}
 				});
-				if (interaction.replied || interaction.deferred) {
-					await interaction.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+				// Respond with Alert:
+				let reason = [
+					`The </${i?.commandName}:${i?.commandId}> command has **FAILED** execution! Confirm inputs *(if any)* and try again!`,
+					`> If this issue persists feel free to contact Bot Support!`,
+					`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nCommand Name: ${i.commandName} \nCommand Id: ${i.commandId}\`\`\``,
+					`-# Please provide the above text to a Support Agent if assistance is required.`
+				].join(`\n`);
+				const alertMsg = genericErrorMsg({
+					reasonDesc: reason
+				});
+				if (i.replied || i.deferred) {
+					await i.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
 				} else {
-					await interaction.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
-					// await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+					await i.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
 				}
 			}
 		}
 
 
 		// Button Interactions:
-		if (interaction.isButton()) {
+		if (i.isButton()) {
 
 			// Confirm static button:
-			const [buttonId] = interaction.customId.split(':');
+			const [buttonId] = i.customId.split(':');
 			const button = botClient.buttons.get(buttonId);
-			if (!button) return;
+			if (!button) return createLog.for('Bot').error(`No button matching custom_id: ${i?.customId} was found.`)
 
 			try {
 				// Execute button:
-				await button.execute(interaction);
+				await button.execute(i);
 
-			} catch (error) { // On failure: 
-				// Check for Bot Permission Error:
-				if (isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
-				// Log
-				createLog.for('Bot').warn('Button Interaction Error - See Details', { error, interaction });
-				// Respond with Alert:
-				const alertMsg = genericErrorMsg({
-					reasonDesc: `This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${core.urls.statusPage}) or contact support!`
+			} catch (error) {
+				// On failure: 
+				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				// Log:
+				createLog.for('Bot').warn('Button Interaction Error - See Details', {
+					error, interaction: {
+						buttonId: i?.customId,
+						guild: {
+							guildId: i?.guildId,
+							guildName: i?.guild?.name,
+						},
+						message: {
+							channelId: i?.channelId,
+							messageId: i?.message?.id
+						},
+						user: {
+							username: i.user.username,
+							userId: i.user.id
+						},
+					}
 				});
-				if (interaction.replied || interaction.deferred) {
-					await interaction.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+				// Respond with Alert:
+				let reason = [
+					`This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${core.urls.statusPage}) or contact Bot Support!`,
+					`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nButton Id: ${i.customId}\`\`\``,
+					`-# Please provide the above text to a Support Agent if assistance is required.`
+				].join(`\n`);
+				const alertMsg = genericErrorMsg({ reasonDesc: reason });
+				if (i.replied || i.deferred) {
+					await i.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
 				} else {
-					await interaction.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+					await i.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
 				}
 			}
 		}
 
 
 		// Autocomplete Interactions:
-		if (interaction.isAutocomplete()) {
-			const command = botClient.commands.get(interaction.commandName);
+		if (i.isAutocomplete()) {
+			const command = botClient.commands.get(i.commandName);
 			if (!command) {
-				return;
+				return console.warn(`[!] Couldn't find ${i.commandName} for an Auto Complete Interaction!`);
 			}
 
 			try {
-				await command.autocomplete(interaction);
+				await command.autocomplete(i);
 			} catch (error) {
 				// Check for Bot Permission Error:
-				// if(isBotPermissionError(error)) sendPermissionAlert(interaction.guildId)
-				createLog.for('Bot').warn('Auto-complete Interaction Error - See Details', { error, interaction });
+				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				// Log:
+				console.warn('Auto Complete Interaction Error - See Details', {
+					error, interaction: {
+						command: {
+							cmdName: i?.commandName,
+							cmdId: i?.commandId
+						},
+						guild: {
+							guildId: i?.guildId,
+							guildName: i?.guild?.name,
+						},
+						user: {
+							username: i.user.username,
+							userId: i.user.id
+						},
+					}
+				});
 			}
 		}
-
 
 	},
 };

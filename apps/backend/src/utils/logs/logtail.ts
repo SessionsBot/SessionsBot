@@ -22,17 +22,13 @@ class DevLogger {
     flush() { return }
 };
 
-/** `Utility` - **Send logs to internal cloud log storage!** 📃
- * 
- * DEV Environment → Logs locally using console */
-const logtail = () => {
+/** `Logtail` *(Instance)* - **Send logs to internal cloud log storage!** 📃 */
+const logtail = new Logtail(sourceToken || '', {
+    endpoint: ingestingHost,
+    sendLogsToConsoleOutput: true
+});
 
-    return new Logtail(sourceToken || '', {
-        endpoint: ingestingHost,
-        sendLogsToConsoleOutput: true
-    });
 
-}
 
 /** Factory Function - Use to create/save logs with pre-defined category prefixes. 
  * @example // Definition:
@@ -40,6 +36,15 @@ const logtail = () => {
  * // Usage Example:
  * createLog.for('Database').info('This is a log message!', {extra: any}) */
 export function useLogger() {
+
+    /** Extracts the true "called from" or "source" the log was initiated from. */
+    function getCaller() {
+        const err = new Error();
+        const stack = err.stack?.split('\n') ?? [];
+        const callerLine = stack[4] || stack[3];
+        return callerLine?.trim();
+    }
+
     return {
 
         /** Creates a new log within a specified category. */
@@ -48,20 +53,25 @@ export function useLogger() {
             category: categoryName
         ) => {
             const logTitle = `${LogCategories[category].emoji} ${LogCategories[category].name}`
+            const payload = (extra: any) => {
+                return {
+                    ...extra,
+                    from: getCaller(),
+                    category
+                }
+            }
             return {
                 /** Creates an `Info` level log. */
-                info: (msg: string, extra?: object) => logtail().info(`[${logTitle}] - ${msg}`, extra),
+                info: (msg: string, extra?: object) => logtail.info(`[${logTitle}] - ${msg}`, payload(extra)),
                 /** Creates an `Debug` level log. */
-                debug: (msg: string, extra?: object) => logtail().debug(`[${logTitle}] - ${msg}`, extra),
+                debug: (msg: string, extra?: object) => logtail.debug(`[${logTitle}] - ${msg}`, payload(extra)),
                 /** Creates an `Warn` level log. */
-                warn: (msg: string, extra?: object) => logtail().warn(`[${logTitle}] - ${msg}`, extra),
+                warn: (msg: string, extra?: object) => logtail.warn(`[${logTitle}] - ${msg}`, payload(extra)),
                 /** Creates an `Error` level log. */
-                error: (msg: string, extra?: object) => logtail().error(`[${logTitle}] - ${msg}`, extra),
+                error: (msg: string, extra?: object) => logtail.error(`[${logTitle}] - ${msg}`, payload(extra)),
             }
-        },
-        /** Uses Logtail's native `flush()` method. */
-        // flush: () => logtail().flush()
+        }
     }
 }
 
-export default logtail()
+export default logtail

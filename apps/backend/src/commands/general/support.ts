@@ -70,7 +70,13 @@ export default {
             // Check for Bot Permission Error:
             if (isBotPermissionError(err)) sendPermissionAlert(interaction.guildId)
             // Log failure
-            createLog.for('Bot').warn(`The /support command failed during an interaction... see details`, { interaction, err });
+            createLog.for('Bot').warn(`The /support command failed during an interaction... see details`, {
+                interaction: {
+                    user: interaction.user.id,
+                    guild: interaction.guildId,
+                    interaction: interaction.id
+                }, err
+            });
         }
     }
 }

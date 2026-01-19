@@ -16,6 +16,7 @@ export default {
         //     .eq('channel_id', originChannelId)
         //     .eq('signup_id', originSignupMsg)
         //     .maybeSingle()
-        await i.reply('Interaction received! - Add to calendar!')
+        throw ' this isn\'t ready, test errors tho.'
+        // await i.reply('Interaction received! - Add to calendar!')
     }
 }

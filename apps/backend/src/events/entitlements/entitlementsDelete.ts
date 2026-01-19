@@ -21,7 +21,15 @@ export default {
         }
 
         // Log:
-        createLog.for('Entitlements').info(`Entitlement DELETED - Active: ${sku?.isActive()}`, { entitlement: sku })
+        createLog.for('Entitlements').info(`Entitlement DELETED - Active: ${sku?.isActive()}`, {
+            entitlement: {
+                skuId: sku.skuId,
+                entitlementId: sku.id,
+                active: sku?.isActive(),
+                guildOwner: sku?.guildId,
+                userOwner: sku?.userId
+            }
+        })
         discordLog.events.entitlementUpdated(sku);
 
         // Add Entitlement to DB:
@@ -34,7 +42,18 @@ export default {
             ends_at: DateTime.fromJSDate(sku?.endsAt).toISO(),
         })
         if (dbError) {
-            createLog.for('Database').error('Failed to UPDATE an entitlement within database! - See Details', { err: dbError, entitlement: sku })
+            createLog.for('Database').error('Failed to UPDATE an entitlement within database! - See Details', {
+                err: dbError,
+                entitlement: {
+                    skuId: sku.skuId,
+                    entitlementId: sku.id,
+                    active: sku?.isActive(),
+                    guildOwner: sku?.guildId,
+                    userOwner: sku?.userId,
+                    startsAt: sku?.startsAt,
+                    endsAt: sku?.endsAt,
+                }
+            })
         }
 
     }
