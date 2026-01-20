@@ -1,3 +1,5 @@
+import type { BaseInteraction } from 'discord.js'
+
 export type SubscriptionPlanName = 'FREE' | 'PREMIUM' | 'ENTERPRISE';
 
 /** Subscription Plan SKU Ids indexed by name. 
@@ -51,7 +53,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         CUSTOM_ACCENT_COLOR: true,
         SHOW_WATERMARK: true,
     },
-};
+} as const;
 
 
 /** Subscription Level Plans available through Sessions Bot for Discord */
@@ -81,3 +83,13 @@ export const SubscriptionLevel: Record<SubscriptionPlanName, {
 } as const;
 
 
+/** **Util:** Get Subscription Plan/Limits from a Discord Interaction */
+export const getSubscriptionFromInteraction = (i: BaseInteraction) => {
+    const activeSubscriptions = i.entitlements.filter(e => (e.isActive() && e.isGuildSubscription)).map(s => s.skuId);
+    if (activeSubscriptions.includes(SubscriptionSKUs.ENTERPRISE))
+        return SubscriptionLevel.ENTERPRISE;
+    else if (activeSubscriptions.includes(SubscriptionSKUs.PREMIUM))
+        return SubscriptionLevel.PREMIUM;
+    else
+        return SubscriptionLevel.FREE;
+}

@@ -3,6 +3,7 @@ import { useLogger } from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 import { defaultFooterText } from "../../utils/bot/messages/basic.js";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 
 const createLog = useLogger();
 
@@ -14,13 +15,16 @@ export default {
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     ,
     // Command Execution:
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (i: CommandInteraction) => {
         try {
+            // Get Guild Subscription
+            const subscription = getSubscriptionFromInteraction(i)
+
             // Build Response Msg:
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 💻 Visit your Bot Dashboard \nClick on the button below to access your bots main dashboard page. This is where you can create and configure your servers sessions/events!` }),
+                    new TextDisplayBuilder({ content: `### 💻 Visit your Bot Dashboard \n-# This is where you can create and configure your servers sessions/events and more!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
@@ -36,26 +40,33 @@ export default {
                             })
                         ]
                     }),
-                    new SeparatorBuilder(),
-                    defaultFooterText({ showHelpLink: true })
+
                 ]
             });
 
+            // IF FREE PLAN - Show Watermark:
+            if (subscription.limits.SHOW_WATERMARK) {
+                responseMsg.components.push(
+                    new SeparatorBuilder(),
+                    defaultFooterText({ showHelpLink: true })
+                )
+            }
+
             // Send message:
-            await interaction.reply({
+            await i.reply({
                 components: [responseMsg],
                 flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
             });
 
         } catch (err) {
             // Check for Bot Permission Error:
-            if (isBotPermissionError(err)) sendPermissionAlert(interaction.guildId)
+            if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
             // Log failure
             createLog.for('Bot').warn(`The /dashboard command failed during an interaction... see details`, {
                 interaction: {
-                    user: interaction.user.id,
-                    interactionId: interaction.id,
-                    guildId: interaction.guildId,
+                    user: i.user.id,
+                    interactionId: i.id,
+                    guildId: i.guildId,
                 }, err
             });
         }

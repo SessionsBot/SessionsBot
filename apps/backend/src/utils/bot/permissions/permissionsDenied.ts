@@ -26,7 +26,7 @@ export const sendPermissionAlert = async (guildId: string) => {
 
         // Check Cooldown:
         if (canAlert(guildId)) startCooldown(guildId);
-        else return Result.failure('COOLDOWN', null);
+        else return Result.err('COOLDOWN', null);
 
         // Fetch guild:
         const guild = await core.botClient.guilds.fetch(guildId)
@@ -83,15 +83,15 @@ export const sendPermissionAlert = async (guildId: string) => {
 
             const sendResult = await sendWithFallback(guildId, msg)
             if (!sendResult.success) throw sendResult;
-            return Result.success({ missingGlobalPerms })
+            return Result.ok({ missingGlobalPerms })
         } else {
-            return Result.failure('No missing permission(s) found!');
+            return Result.err('No missing permission(s) found!');
         }
 
 
     } catch (err) {
         // Log Error:
         createLog.for('Bot').warn('[!!] Failed to run PERMISSION CHECKS for guild! - See Details', { err });
-        return Result.failure('Failed to run permission checks for guild!', err)
+        return Result.err('Failed to run permission checks for guild!', err)
     }
 }

@@ -13,7 +13,6 @@ export default {
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const {
-            botClient: bot,
             colors: { getOxColor },
             commands: { getLinkString: getCmdLink },
             urls
@@ -70,14 +69,18 @@ export default {
             return;
         }
 
-        // Fetch Signup Panel - Update Content:
-        const guild = await bot.guilds.fetch(session.guild_id)
-        if (!guild) throw { message: `Failed to fetch guild for UN-RSVP assignment!`, details: { sessionId, guildId: session.guild_id } };
-        const channel = await guild.channels.fetch(session.channel_id) as TextChannel;
-        if (!channel) throw { message: `Failed to fetch guild channel for UN-RSVP assignment!`, details: { sessionId, guildId: session.guild_id, channelId: session.channel_id } };
-        const signupMsg = await channel.messages.fetch(session.signup_id)
-        if (!signupMsg) throw { message: `Failed to fetch signup msg for UN-RSVP assignment!`, details: { sessionId, guildId: session.guild_id, channelId: session.channel_id, msgId: session.signup_id } };
-        // Get & Edit in - New Content:
+        // Get Signup Message:
+        const getSignupMsg = async () => {
+            if (i.message.id == session.signup_id) return i.message;
+            else {
+                const channel = await i.guild.channels.fetch(session.channel_id) as TextChannel;
+                return await channel.messages.fetch(session.signup_id)
+            }
+        }
+        const signupMsg = await getSignupMsg();
+        if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
+
+        // Update Signup - New Content:
         const newSignupContent = await buildSessionSignupMsg(session);
         await signupMsg.edit({
             components: [newSignupContent]
@@ -87,7 +90,7 @@ export default {
         const successMsg = new ContainerBuilder({
             accent_color: getOxColor('warning'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## 🗑️ RSVP Removed!` }),
+                new TextDisplayBuilder({ content: `### 🗑️ RSVP Removed!` }),
                 // new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# View details below:` }),
                 new SeparatorBuilder(),

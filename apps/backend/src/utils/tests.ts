@@ -5,6 +5,7 @@ import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import fetchSKUs from "./bot/fetchSKUs.js";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
+import createAuditLog, { AuditEvent } from "./database/auditLog.js";
 
 
 const createLog = useLogger();

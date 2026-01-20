@@ -18,7 +18,7 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
                     components: [messageContent],
                     flags: MessageFlags.IsComponentsV2
                 })
-                return Result.success(`Message was sent to system channel!`);
+                return Result.ok(`Message was sent to system channel!`);
             }
         } catch (err) { }
 
@@ -37,7 +37,7 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
                     })
                 } catch (e) { continue }
                 // If succeeded:
-                return Result.success(`Message was sent through a fallback channel! - Id: ${channel?.id}`);
+                return Result.ok(`Message was sent through a fallback channel! - Id: ${channel?.id}`);
             }
         } catch (err) { }
 
@@ -49,7 +49,7 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
                 flags: MessageFlags.IsComponentsV2
             })
             // Return success:
-            return Result.success(`Message was sent to server owner!`);
+            return Result.ok(`Message was sent to server owner!`);
         } catch (err) {
             // throw to final err catch
             throw { message: 'ALL SEND ATTEMPTS FAILED!', guildId, sendToOwnerErr: err }
@@ -58,6 +58,6 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
     } catch (err) {
         // Log and return failure:
         createLog.for('Bot').error(`Failed to desperately send a message to guild ${guildId}`, { err });
-        return Result.failure('Failed to desperately send message to  guild...', err);
+        return Result.err('Failed to desperately send message to  guild...', err);
     }
 }

@@ -2,6 +2,8 @@ import { ButtonStyle, CommandInteraction, ComponentType, ContainerBuilder, Messa
 import { useLogger } from "../../utils/logs/logtail.js";
 import core from "../../utils/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
+import { getSubscriptionFromInteraction, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { defaultFooterText } from "../../utils/bot/messages/basic.js";
 
 const createLog = useLogger()
 
@@ -12,14 +14,29 @@ export default {
         .setDescription('Need help with Sessions Bot? Use this command for support resources.')
     ,
     // Command Execution:
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (i: CommandInteraction) => {
         try {
+            // Get Guild Subscription:
+            const subscription = getSubscriptionFromInteraction(i)
+
             // Build Default Response Msg:
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('warning'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 🤔 Need Help with Sessions Bot?\ \n Don't worry theres plenty of support resources to get your sessions running smoothly!` }),
+                    new TextDisplayBuilder({ content: `### 🤔 Need Help with Sessions Bot?\ \n-# Don't worry theres plenty of support resources to get your sessions running smoothly!` }),
                     new SeparatorBuilder(),
+                    new SectionBuilder({
+                        components: <any>[
+                            new TextDisplayBuilder({ content: `**Join our Support Server** \n-# Get instant support, access information, get update announcements, and more!` })
+                        ],
+                        accessory: {
+                            label: 'Support Chat',
+                            emoji: { name: '💬' },
+                            style: ButtonStyle.Link,
+                            url: core.urls.support.serverInvite,
+                            type: ComponentType.Button
+                        }
+                    }),
                     new SectionBuilder({
                         components: <any>[
                             new TextDisplayBuilder({ content: `**Read the Bot Documentation** \n-# Learn everything there is to know about Sessions Bot in this online guide!` })
@@ -34,18 +51,6 @@ export default {
                     }),
                     new SectionBuilder({
                         components: <any>[
-                            new TextDisplayBuilder({ content: `**Join our Support Server** \n-# Get instant support, access information, get update announcements, and more!` })
-                        ],
-                        accessory: {
-                            label: 'Join Server',
-                            emoji: { name: '💬' },
-                            style: ButtonStyle.Link,
-                            url: core.urls.support.serverInvite,
-                            type: ComponentType.Button
-                        }
-                    }),
-                    new SectionBuilder({
-                        components: <any>[
                             new TextDisplayBuilder({ content: `**More Resources** \n-# Status page, recent incidents, FAQs, support email, and more!` })
                         ],
                         accessory: {
@@ -55,26 +60,34 @@ export default {
                             url: core.urls.support.onlineResources,
                             type: ComponentType.Button
                         }
-                    })
+                    }),
 
                 ]
             });
 
+            // Free Plan - Add Watermark:
+            if (subscription.limits.SHOW_WATERMARK) {
+                responseMsg.components.push(
+                    new SeparatorBuilder(),
+                    defaultFooterText()
+                )
+            }
+
             // Send message:
-            await interaction.reply({
+            await i.reply({
                 components: [responseMsg],
                 flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
             });
 
         } catch (err) {
             // Check for Bot Permission Error:
-            if (isBotPermissionError(err)) sendPermissionAlert(interaction.guildId)
+            if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
             // Log failure
             createLog.for('Bot').warn(`The /support command failed during an interaction... see details`, {
                 interaction: {
-                    user: interaction.user.id,
-                    guild: interaction.guildId,
-                    interaction: interaction.id
+                    user: i.user.id,
+                    guild: i.guildId,
+                    interaction: i.id
                 }, err
             });
         }

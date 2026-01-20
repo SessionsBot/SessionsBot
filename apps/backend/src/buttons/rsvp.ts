@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, GuildMember, MessageFlags, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, GuildMember, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
-import { SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { getSubscriptionFromInteraction, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
 import core from "../utils/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
 import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
+
 
 export default {
     data: {
@@ -13,12 +14,12 @@ export default {
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const {
+            botClient: bot,
             colors: { getOxColor },
             commands: { getLinkString: getCmdLink },
             urls
         } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
-
 
         // Defer Reply:
         await i.deferReply({ flags: MessageFlags.Ephemeral })
@@ -32,12 +33,18 @@ export default {
         if (!session || sessionERR) throw { message: `Failed to fetch session data for RSVP button interaction!`, details: { session, err: sessionERR } };
 
         // Get Guild Subscription:
-        const subscriptions = i.entitlements.filter(e => (e.isActive() && e.isGuildSubscription)).map(s => s.skuId)
-        const currentPlan = () => {
-            if (subscriptions.includes(SubscriptionSKUs.ENTERPRISE)) return SubscriptionLevel.ENTERPRISE;
-            else if (subscriptions.includes(SubscriptionSKUs.PREMIUM)) return SubscriptionLevel.PREMIUM;
-            else return SubscriptionLevel.FREE;
-        };
+        const subscription = getSubscriptionFromInteraction(i)
+
+        // Get Signup Message:
+        const getSignupMsg = async () => {
+            if (i.message.id == session.signup_id) return i.message;
+            else {
+                const channel = await i.guild.channels.fetch(session.channel_id) as TextChannel;
+                return await channel?.messages?.fetch(session.signup_id)
+            }
+        }
+        const signupMsg = await getSignupMsg();
+        if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
 
         // IF PAST SESSION - Alert - Update Signup - Return:
         const sessionStart = DateTime.fromISO(session.starts_at_utc);
@@ -50,11 +57,10 @@ export default {
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records this session has **already started**! \n-# It's possible this signup panel was simply outdated.` }),
                     new SeparatorBuilder(),
-                    // ! CONFIRM FORMATTING
-                    new TextDisplayBuilder({ content: `**Requested Session:** \n> \`${session.title}\` \n**Started At:** \n>>> <t:${sessionStart.toSeconds()}:f> \n<t:${sessionStart.toSeconds()}:R>\ \nFeel free to RSVP to another session that available and hasn't occurred yet!` })
+                    new TextDisplayBuilder({ content: `**Requested Session:** \n> \`${session.title}\` \n**Started At:** \n> <t:${sessionStart.toSeconds()}:f> \n> <t:${sessionStart.toSeconds()}:R> \n-# Feel free to RSVP to another session that available and hasn't occurred yet!` })
                 ]
             })
-            if (currentPlan().limits.SHOW_WATERMARK) {
+            if (subscription.limits.SHOW_WATERMARK) {
                 alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
             }
             // Reply to Interaction:
@@ -64,32 +70,35 @@ export default {
             })
             // Update Outdated Signup Panel:
             const signupMsgContent = await buildSessionSignupMsg(session);
-            await i.message.edit({
+            await signupMsg.edit({
                 components: [signupMsgContent]
             })
             return;
         }
 
-        // Fetch RSVP Slot(s) for Session:
-        const { data: rsvpSlots, error: rsvpSlotERR } = await supabase.from('session_rsvp_slots')
-            .select('*')
-            .eq('session_id', sessionId)
-            .select()
-        if (rsvpSlotERR) throw rsvpSlotERR;
+        // FETCH RSVP Slots & Assignees for Session:
+        const [
+            { data: rsvpSlots, error: rsvpSlotERR }, // Slots
+            { data: rsvpAssignees, error: rsvpAssigneesErr } // Assignees
+        ] = await Promise.all([
+            await supabase.from('session_rsvp_slots')
+                .select('*')
+                .eq('session_id', sessionId)
+                .select(),
+            await supabase.from('session_rsvps')
+                .select('*')
+                .eq('session_id', sessionId)
+        ])
+        if (rsvpSlotERR) throw rsvpSlotERR
         if (!rsvpSlots.length) throw { message: `Failed to fetch rsvp slots for session (${sessionId}) for RSVP button interaction!` }
-        const requestedSlot = rsvpSlots.find(s => s.id = "rsvp_" + rsvpId);
+        if (rsvpAssigneesErr) throw rsvpAssigneesErr;
+        // Requested Slot:
+        const requestedSlot = rsvpSlots.find(s => s.id === `rsvp_${rsvpId}`);
         if (!requestedSlot) throw { message: `Failed to fetch requested rsvp slots from session for RSVP button interaction!`, details: { sessionId, rsvpId: "rsvp_" + rsvpId } }
 
 
-        // Fetch Session RSVP Assignees:
-        const { data: rsvpAssignees, error: rsvpAssigneesErr } = await supabase.from('session_rsvps')
-            .select('*')
-            .eq('session_id', sessionId)
-        if (rsvpAssigneesErr) throw rsvpAssigneesErr;
-
-
         // If required role(s) - Perform Checks:
-        if (currentPlan().limits.ALLOW_RSVP_ROLE_RESTRICTION && requestedSlot.roles_required?.length) {
+        if (subscription.limits.ALLOW_RSVP_ROLE_RESTRICTION && requestedSlot.roles_required?.length) {
             // Vars:
             const requiredRoles = requestedSlot.roles_required;
             const member = i.member as GuildMember;
@@ -105,10 +114,10 @@ export default {
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `This RSVP slot is protected by one or more required role(s). \n-# You are not assigned at least one of the following roles:` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `\n> <@&${requiredRoles.join('> \n> <@&') + '>'} \n-# Therefore, you cannot be assigned this role!` }),
+                        new TextDisplayBuilder({ content: `\n> <@&${requiredRoles.join('> \n> <@&') + '>'} \n-# Therefore, you cannot be assigned this RSVP!` }),
                     ]
                 })
-                if (currentPlan().limits.SHOW_WATERMARK) {
+                if (subscription.limits.SHOW_WATERMARK) {
                     alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
                 }
                 await i.editReply({
@@ -136,7 +145,7 @@ export default {
                     new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-sessions')} command to modify your current RSVP assignment(s) if you wish to do so.` })
                 ]
             })
-            if (currentPlan().limits.SHOW_WATERMARK) {
+            if (subscription.limits.SHOW_WATERMARK) {
                 alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
             }
             await i.editReply({
@@ -157,7 +166,7 @@ export default {
                     new TextDisplayBuilder({ content: `Unfortunately this RSVP slot has already reached its max user capacity. \n-# Feel free to sign up for another RSVP slot*(if available)* or check back later.` }),
                 ]
             })
-            if (currentPlan().limits.SHOW_WATERMARK) {
+            if (subscription.limits.SHOW_WATERMARK) {
                 alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
             }
             await i.editReply({
@@ -184,7 +193,7 @@ export default {
 
         // Update - Sessions Signup Panel:
         const signupMsgContent = await buildSessionSignupMsg(session);
-        await i.message.edit({
+        await signupMsg.edit({
             components: [signupMsgContent]
         })
 
@@ -192,7 +201,7 @@ export default {
         const successMsg = new ContainerBuilder({
             accent_color: getOxColor('success'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ✅ RSVP Success!` }),
+                new TextDisplayBuilder({ content: `### ✅ RSVP Success!` }),
                 // new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# View details below:` }),
                 new SeparatorBuilder(),
@@ -215,7 +224,7 @@ export default {
             ]
         })
         // FREE PLAN - Add Watermark
-        if (currentPlan().limits.SHOW_WATERMARK) {
+        if (subscription.limits.SHOW_WATERMARK) {
             successMsg.components.push(
                 new SeparatorBuilder(),
                 defaultFooterText({ lightFont: true })

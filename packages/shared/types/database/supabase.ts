@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          guild_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          guild_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          guild_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entitlements: {
         Row: {
           created_at: string | null
@@ -160,21 +192,21 @@ export type Database = {
       session_rsvps: {
         Row: {
           created_at: string
-          id: number
+          id: string
           rsvp_slot_id: string
           session_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: string
           rsvp_slot_id: string
           session_id: string
           user_id: string
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: string
           rsvp_slot_id?: string
           session_id?: string
           user_id?: string
