@@ -121,7 +121,7 @@
             </Button>
 
             <!-- Notifications Tab -->
-            <Button title="Notifications" unstyled class="tab-view-button"
+            <Button hidden title="Notifications" unstyled class="tab-view-button"
                 @click="dashboard.nav.currentTab = 'Notifications'" :class="{
                     'expanded': navExpanded,
                     'selected': dashboard.nav.currentTab == 'Notifications'

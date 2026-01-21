@@ -204,10 +204,20 @@
                     <p class="text-xs text-nowrap text-white/30">More Resources</p>
                     <div class="bg-ring/50 h-1 rounded-full flex-1/2" />
                 </div>
-                <p class="nav-footer-link" @click="$router.push('/privacy'); closeNav();"
-                    :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Privacy' }">Privacy Policy</p>
-                <p class="nav-footer-link" @click="$router.push('/terms'); closeNav();"
-                    :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">Terms and Conditions</p>
+                <!-- Privacy Policy -->
+                <RouterLink to="/privacy-policy">
+                    <p class="nav-footer-link" @click="closeNav();"
+                        :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Privacy' }">
+                        Privacy Policy
+                    </p>
+                </RouterLink>
+                <!-- Terms & Conditions -->
+                <RouterLink to="/terms-and-conditions">
+                    <p class="nav-footer-link" @click="closeNav();"
+                        :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">
+                        Terms and Conditions
+                    </p>
+                </RouterLink>
 
                 <span @click="defaultWindow?.open(externalUrls.gitHub, '_blank')"
                     class="inline! cursor-pointer hover:underline underline-offset-1 text-xs opacity-55">

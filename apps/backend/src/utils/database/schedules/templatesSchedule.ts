@@ -139,7 +139,7 @@ async function executeTemplateCreationSchedule() {
                     createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "signup_id"', { updateSessionErr, session })
                 }
 
-                if(debugSchedule) console.info('[🧾] Session Created --', session.title, '--', session.id);
+                if (debugSchedule) console.info('[🧾] Session Created --', session.title, '--', session.id);
 
                 // Update Template - Next/Last Post UTC:
                 const newNextPostUTC = calculateNextPostUTC({
