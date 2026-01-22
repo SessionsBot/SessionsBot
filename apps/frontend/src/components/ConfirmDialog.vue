@@ -14,7 +14,7 @@
                     <CircleQuestionMarkIcon class="grow! flex! size-max! p-3 drop-shadow-md drop-shadow-black/40" />
                 </div>
                 <span class="font-bold text-3xl block mb-2 mt-6">{{ message.header }}</span>
-                <p class="mb-0">{{ message.message }}</p>
+                <p v-html="message.message" class="mb-0" />
                 <div class="flex items-center gap-2 mt-6">
 
                     <Button label="Cancel" variant="outlined" severity="contrast" @click="rejectCallback"

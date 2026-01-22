@@ -147,17 +147,11 @@
                 <!-- Session/Template Buttons -->
                 <div class="flex grow flex-row gap-1.5 items-center justify-end p-1.5">
 
-                    <!-- Delete Session - Button -->
-                    <Button hidden unstyled title="Delete Session"
-                        class="bg-red-400/60 hover:bg-red-400/40 size-6.5 flex flex-col flex-wrap items-center justify-center transition-all active:scale-95 p-0.5 px-1 cursor-pointer rounded-md">
-                        <Trash2Icon :size="17" class="p-0.25" />
-                    </Button>
-
                     <!-- Edit Schedule - Button -->
                     <Button @click="startSessionFormEdit?.(session as any)" v-if="session.rrule" unstyled
                         title="Edit Schedule"
                         class="bg-zinc-600/80 hover:bg-zinc-600/60 size-6.5 flex flex-col flex-wrap items-center justify-center transition-all active:scale-95 p-0.5 px-1 cursor-pointer rounded-md">
-                        <PencilIcon :size="17" class="p-0.25" />
+                        <PencilIcon :size="17" class="p-px" />
                     </Button>
 
                 </div>

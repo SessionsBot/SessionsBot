@@ -38,6 +38,7 @@ export function useGuildTemplates() {
     return useAsyncState(fetchTemplates, null, {
         immediate: false, onError(e) {
             console.warn('[Guild Templates] API Request Error', e)
+            dashboard.fetchErrors.templates = [e];
         },
     });
 

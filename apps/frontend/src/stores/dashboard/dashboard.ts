@@ -15,6 +15,12 @@ const useDashboardStore = defineStore("dashboard", {
             subscription: SubscriptionLevel.FREE,
             dataReady: false
         },
+        fetchErrors: {
+            channels: <any[]>[],
+            roles: <any[]>[],
+            subscription: <any[]>[],
+            templates: <any[]>[]
+        },
         nav: {
             currentTab: <DashboardTabName>"Sessions",
             expanded: false,

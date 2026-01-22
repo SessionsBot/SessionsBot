@@ -5,25 +5,52 @@
     import CalendarTab from './calendar/calendarTab.vue';
     import AuditLogTab from './auditLog/auditLogTab.vue';
     import NotificationsTab from './notifications/notificationsTab.vue';
+    import { useGuildChannels } from '@/stores/dashboard/guildChannels';
+    import { useGuildRoles } from '@/stores/dashboard/guildRoles';
+    import { useGuildSubscription } from '@/stores/dashboard/guildSubscription';
+    import { useGuildTemplates } from '@/stores/dashboard/sessionTemplates';
+    import { TriangleAlertIcon } from 'lucide-vue-next';
 
     // Services:
     const dashboard = useDashboardStore();
     const currentTab = computed(() => dashboard.nav.currentTab)
+
+    // Fetch Errors:
+    const fetchErrors = computed(() => {
+        const all = Object.entries(dashboard.fetchErrors)
+        return all.flatMap((err) => err[1])
+    })
 
 </script>
 
 
 <template>
     <div class="flex relative flex-col grow items-center justify-center flex-1 w-full h-full">
+
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
-            <div v-if="!dashboard.guild.dataReady"
+            <div v-if="!dashboard.guild.dataReady && fetchErrors.length == 0"
                 class="flex gap-2 items-center justify-center p-4 bg-black/40 rounded-md shadow-lg">
                 <ProgressSpinner />
                 <div class="text-white/70 p-2 text-center">
                     <p class="font-bold text-lg"> Loading Dashboard </p>
                     <p class="text-xs italic"> Please Wait</p>
                 </div>
+            </div>
+
+            <!-- FETCH ERROR - Alert -->
+            <div v-else-if="fetchErrors.length"
+                class="flex flex-col gap-2 items-center justify-center p-7 m-5 max-w-135 bg-black/40 rounded-md shadow-lg">
+                <p class="font-black text-lg">
+                    <TriangleAlertIcon class="inline bottom-0.5 relative text-yellow-500" /> Uh oh! We
+                    ran
+                    into a data
+                    fetching error...
+                </p>
+                <p>
+                    Wait a few seconds and refresh this page, if this issue persists please contact get in touch with
+                    <RouterLink class="text-sky-500 hover:underline" to="/support">bot support</RouterLink>.
+                </p>
             </div>
 
             <!-- Main Page Content -->

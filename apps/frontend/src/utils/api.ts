@@ -12,5 +12,8 @@ export const API = axios.create({
     baseURL: apiUrl,
     validateStatus: (s) => {
         return true;
-    }
+    },
+    timeout: 10_000,
+    timeoutErrorMessage: 'TIMED OUT! - Failed to receive a backend API response within 10 seconds! You might want to check out our status page at https://status.sessionsbot.fyi.'
+
 })

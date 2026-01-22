@@ -9,14 +9,40 @@
         <!-- Hero - Top Landing Area -->
         <LandingSection />
 
-        <!-- Resources -->
+        <!-- General Questions - FAQs -->
+        <div class="w-full p-5 flex items-center justify-center">
+            <p>
+                Have a generalized question about or how to use Sessions Bot?
+            </p>
+            <p>
+                It's possible this questions already been answered in our Frequently asked Questions resource, feel free
+                to
+                check that out!
+            </p>
+        </div>
+
+
+        <!-- Documentation - Reference -->
+        <div class="w-full p-5 flex items-center justify-center">
+
+            <p>
+                Want to learn all there is to know about Sessions Bot and it's features?
+            </p>
+            <p>
+                We've created an extensive documentation site for you to read through to get comfortable with Sessions
+                Bot!
+            </p>
+        </div>
+
+
+        <!-- All Resources -->
         <div class="w-full p-5 flex items-center justify-center">
             <div
                 class="ring-2 max-w-200 gap-3 p-3 pt-2 ring-ring rounded-md flex items-center justify-center flex-wrap">
                 <!-- Header -->
                 <div class="w-full flex flex-wrap justify-between items-center content-center p-0">
                     <p class="text-white/70 font-extrabold uppercase text-sm">
-                        Resources:
+                        All Resources:
                     </p>
 
                     <input type="text"

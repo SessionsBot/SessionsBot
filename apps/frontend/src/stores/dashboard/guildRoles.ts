@@ -31,6 +31,7 @@ export function useGuildRoles() {
     return useAsyncState(fetchRoles, null, {
         immediate: false, onError(e) {
             console.warn('[Guild Roles] API Request Error', e)
+            dashboard.fetchErrors.roles = [e];
         },
     });
 }

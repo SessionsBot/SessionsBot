@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import z, { regex, safeParse, treeifyError } from 'zod'
-    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, MapPinCheckInsideIcon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
+    import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, Layers2Icon, MapPinCheckInsideIcon, Trash2Icon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
@@ -298,6 +298,29 @@
 
         // Open Form:
         sessionsFormVisible.value = true;
+    }
+
+    /** Starts/Creates a "Duplicate" from an Editing Session */
+    function startNewDuplicate() {
+        // Switch Mode to "New":
+        formAction.value = 'new';
+    }
+
+    /** Starts the deletion prompt to delete this session template */
+    function startDeletionPrompt() {
+        const confirm = confirmService.require({
+            header: `Are you sure?`,
+            message: `
+                <p>
+                    You're about to <strong>permanently delete</strong> this session
+                    & any recurring session that stems from it.
+                </p><br>
+                <p class="w-full text-center text-red-400">
+                    This cannot be undone!
+                </p>
+            `
+
+        })
     }
 
 
@@ -682,7 +705,7 @@
                         </a>
                     </div>
 
-                    <!-- Invalid Fields - Badge -->
+                    <!-- Invalid Fields - Badge - EDIT Actions -->
                     <div class="flex justify-center items-center p-2 overflow-clip">
 
                         <Transition name="slide" mode="out-in">
@@ -690,6 +713,18 @@
                                 class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-400/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
                                 <p class="text-xs font-bold"> Fix invalid fields! </p>
+                            </span>
+
+                            <span v-else-if="formAction == 'edit'" class="gap-2 flex flex-row">
+                                <Button unstyled title="Duplicate" @click="startNewDuplicate"
+                                    class="aspect-square p-1 bg-zinc-500 hover:bg-zinc-500/80 cursor-pointer rounded-md active:bg-zinc-500/60 active:scale-95 transition-all">
+                                    <Layers2Icon :size="20" />
+                                </Button>
+
+                                <Button unstyled title="Delete" @click="startDeletionPrompt"
+                                    class="aspect-square p-1 bg-red-400 hover:bg-red-400/80 cursor-pointer rounded-md active:bg-red-400/60 active:scale-95 transition-all">
+                                    <Trash2Icon :size="20" />
+                                </Button>
                             </span>
                         </Transition>
 

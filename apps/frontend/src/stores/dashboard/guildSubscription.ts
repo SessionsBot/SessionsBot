@@ -50,6 +50,7 @@ export function useGuildSubscription() {
     return useAsyncState(fetchSubscription, null, {
         immediate: false, onError(e) {
             console.warn('[Guild Channels] API Request Error', e)
+            dashboard.fetchErrors.subscription = [e];
         },
     });
 }
