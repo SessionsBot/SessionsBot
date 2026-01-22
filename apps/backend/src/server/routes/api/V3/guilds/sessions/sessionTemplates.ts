@@ -2,7 +2,7 @@ import express from 'express';
 import { verifyGuildAdmin } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
 import { API_SessionTemplateBodySchema, Database, APIResponse as reply } from '@sessionsbot/shared';
-import logtail, { useLogger } from '../../../../../../utils/logs/logtail';
+import { useLogger } from '../../../../../../utils/logs/logtail';
 import * as z from 'zod';
 import { HttpStatusCode } from 'axios';
 import { supabase } from '../../../../../../utils/database/supabase';
@@ -10,7 +10,7 @@ import { supabase } from '../../../../../../utils/database/supabase';
 const createLog = useLogger();
 
 // Create Router:
-// path: `https://ApiRoot.any/api/guilds/:guildId/sessions/templates`;
+// path: `API_ROOT/api/guilds/:guildId/sessions/templates`;
 const sessionTemplatesRouter = express.Router({ mergeParams: true });
 
 
@@ -86,6 +86,34 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: aut
 })
 
 
+// DELETE - Delete Existing Template:
+sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+    try {
+        // Parse/Read/Validate Request:
+        const { templateId } = req.params;
+
+        // Attempt to Delete Session Template by Id:
+        const { data, error } = await supabase.from('session_templates').delete()
+            .eq('id', templateId)
+            .select()
+            .single()
+
+        // If deletion error:
+        if (error) {
+            throw { details: 'Failed to delete template by id within database.', error }
+        }
+
+        // Return Success:
+        return new reply(res).success(data)
+
+
+    } catch (err) {
+        // Log & Return Err:
+        const errTxt = `Failed to delete existing session template!`;
+        createLog.for('Api').warn(errTxt, { err, from: 'Caught Error!' });
+        return new reply(res).failure(errTxt);
+    }
+})
 
 
 // Exported Router:
