@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import core, { urls } from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg } from "../../bot/messages/sessionSignup";
-import { MessageFlags, ModalAssertions } from "discord.js";
+import { MessageFlags } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
 import { genericErrorMsg } from "../../bot/messages/basic";
 import sendWithFallback from "../../bot/messages/sendWithFallback";

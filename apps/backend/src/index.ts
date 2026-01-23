@@ -67,7 +67,11 @@ for (const filePath of buttonFiles) {
 const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
-		client.once('clientReady', (c) => { core.botClient = c as any })
+		client.once('clientReady', (c) => {
+			console.info('Client Ready! - Set to core')
+			core.botClient = c as any
+			console.log('Tag:', core.botClient.user.tag)
+		})
 		initTemplateCreationScheduler()
 		break;
 	};
