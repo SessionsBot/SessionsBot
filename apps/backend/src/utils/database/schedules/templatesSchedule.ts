@@ -168,13 +168,13 @@ async function executeTemplateCreationSchedule() {
 
 /** Initializes the session template creation schedule.
  * @runs every 5 mins of each hour */
-export async function initTemplateCreationScheduler(opts: { runOnExecution?: boolean }) {
+export async function initTemplateCreationScheduler(opts?: { runOnExecution?: boolean }) {
     if (debugSchedule) console.info(`[⏰] Initializing Template Creation Scheduler! - At: ${DateTime.now().toFormat('F')}`)
     sessionTemplateCreationCron = cron.schedule(`*/5 * * * *`, executeTemplateCreationSchedule, {
         timezone: 'UTC', name: 'template_creation'
     })
 
-    if (opts.runOnExecution) {
+    if (opts?.runOnExecution) {
         if (debugSchedule) console.info(`[⏰] Running Session Template Creation Schedule Early..`)
         sessionTemplateCreationCron.execute()
     }

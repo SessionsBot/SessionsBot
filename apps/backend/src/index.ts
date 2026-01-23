@@ -68,6 +68,7 @@ const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
 		client.once('clientReady', (c) => { core.botClient = c as any })
+		initTemplateCreationScheduler()
 		break;
 	};
 	const { default: event } = await import(pathToFileURL(filePath).href);
@@ -100,4 +101,5 @@ if (ENVIRONMENT_TYPE == 'production') {
 // ------- [ Web Server (api): ] -------
 import './server/index.js';
 import core from './utils/core.js';
+import { initTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
 
