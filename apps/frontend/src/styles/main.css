@@ -8,6 +8,7 @@
 @theme inline {
   --color-ring: var(--color-zinc-600);
 
+  /* Fonts */
   --font-rubik: "Rubik";
   --font-Nunito: "Nunito";
   --font-cutLetters: "Protest Guerrilla";
@@ -22,7 +23,7 @@ body {
   font-family: var(--font-Nunito) !important;
   box-sizing: border-box;
   position: relative;
-  color-scheme: dark;
+  color-scheme: dark !important;
 }
 
 #app {

@@ -13,14 +13,17 @@
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import LoadingIcon from '@/components/icons/loadingIcon.vue';
+    import LoadingIcon from '@/components/icons/LoadingIcon.vue';
     import { useGuildTemplates } from '@/stores/dashboard/sessionTemplates';
     import { RRule } from 'rrule';
+    import { useToast } from 'vue-toastification';
 
     // Services:
     const confirmService = useConfirm();
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
+    const toaster = useToast()
+    const guildTemplates = useGuildTemplates()
 
     // Form Visibility:
     const sessionsFormVisible = computed({
@@ -236,6 +239,9 @@
         dashboard.sessionForm.editPayload = null;
         editingId.value = undefined;
         formAction.value = 'new';
+
+        // Reset Submit States:
+        submitState.value = 'idle';
     }
 
     /** Starts an existing session template edit */
@@ -318,8 +324,25 @@
                 <p class="w-full text-center text-red-400">
                     This cannot be undone!
                 </p>
-            `
+            `,
+            accept: async () => {
+                submitState.value = 'failed'
+                const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`, {
+                    headers: { Authorization: `Bearer ${auth.session?.access_token}` }
+                })
+                if (!success || error || status >= 300) {
+                    console.error('Failed to Delete Session:', status, error)
+                    toaster.error(`Failed to delete session.. If this issues persists please contact Bot Support!`)
+                    setTimeout(() => submitState.value = 'idle', 2_500)
+                } else {
+                    sessionsFormVisible.value = false;
+                    resetFrom()
+                    guildTemplates.execute()
+                    toaster('Session Deleted!')
 
+                }
+
+            }
         })
     }
 
@@ -423,7 +446,20 @@
             let cursor = DateTime.now();
             const getNextPostUtc = (): DateTime | null => {
                 while (true) {
-                    // Find Next Local Date in JS Date:
+                    // No RRULE - Compute first/last post if after NOW:
+                    if (!rrule) {
+                        // Get First & Only Post Time:
+                        const post = startUtc.minus({ millisecond: getPostOffsetMs() })
+                        // IF EDITING - Ensure this post date is past its last post date:
+                        if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                            const lastPostUtc = DateTime.fromISO(dashboard.sessionForm.editPayload.last_post_utc)
+                            if (post <= lastPostUtc) {
+                                return null
+                            }
+                        }
+                        return post
+                    }
+                    // RRULE - Find Next Local Date in JS Date:
                     const nextStartJs = rrule ? rrule.after(cursor.toJSDate(), true) : null;
                     if (nextStartJs) {
                         // Create DateTime in Zone w/ Post Offset of next recurrence:
@@ -443,6 +479,9 @@
                         return nextPostInZone.toUTC();
 
                     } else {
+                        // No Next Occurrence from NOW - Possible 1 Time with Day Before offsets
+                        // Find most recent occurrence - PREVIOUSLY and return that post date:
+                        console.error('No `nextStartJs` was found!');
                         return null;
                     };
 
@@ -450,6 +489,7 @@
             };
             const nextPostUtc = getNextPostUtc();
 
+            console.info({ nextPostUtc })
 
             // Compute - Expiration Date UTC (last post time):
             const getUtcExpiresAtDate = () => {
@@ -569,7 +609,7 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            useGuildTemplates().execute()
+            guildTemplates.execute()
 
         } finally {
             setTimeout(() => {
@@ -708,7 +748,7 @@
                     <!-- Invalid Fields - Badge - EDIT Actions -->
                     <div class="flex justify-center items-center p-2 overflow-clip">
 
-                        <Transition name="slide" mode="out-in">
+                        <Transition name="zoom" mode="out-in">
                             <span v-if="invalidFields.size >= 1"
                                 class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-400/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
@@ -717,12 +757,12 @@
 
                             <span v-else-if="formAction == 'edit'" class="gap-2 flex flex-row">
                                 <Button unstyled title="Duplicate" @click="startNewDuplicate"
-                                    class="aspect-square p-1 bg-zinc-500 hover:bg-zinc-500/80 cursor-pointer rounded-md active:bg-zinc-500/60 active:scale-95 transition-all">
+                                    class="aspect-square p-1 bg-ring hover:bg-emerald-500/80 cursor-pointer rounded-md active:bg-emerald-500/60 active:scale-95 transition-all">
                                     <Layers2Icon :size="20" />
                                 </Button>
 
                                 <Button unstyled title="Delete" @click="startDeletionPrompt"
-                                    class="aspect-square p-1 bg-red-400 hover:bg-red-400/80 cursor-pointer rounded-md active:bg-red-400/60 active:scale-95 transition-all">
+                                    class="aspect-square p-1 bg-ring hover:bg-red-400/60 cursor-pointer rounded-md active:bg-red-400/50 active:scale-95 transition-all">
                                     <Trash2Icon :size="20" />
                                 </Button>
                             </span>

@@ -216,6 +216,18 @@ const customPreset = definePreset(Aura, {
                 borderColor: `var(--color-ring)`,
                 color: `var(--color-white)`
             }
+        },
+        inputtext: {
+            root: {
+                background: `var(--color-zinc-800)`,
+                color: `var(--color-white)`,
+                hoverBorderColor: `var(--color-indigo-300)`,
+                focusBorderColor: `var(--color-indigo-400)`,
+                invalidBorderColor: 'var(--color-red-400)',
+                focusRing: {
+                    color: 'var(--color-indigo-400)'
+                },
+            }
         }
     },
 
@@ -227,7 +239,7 @@ const customPreset = definePreset(Aura, {
 /** Main Theme PASS THROUGHs */
 const primePT: PrimeVuePTOptions = {
     inputtext: {
-        root: 'bg-zinc-800! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!'
+        root: 'font-bold border-2!'
     },
     textarea: {
         root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
@@ -287,8 +299,8 @@ const primeVueConfig = <PrimeVueConfiguration>{
     ripple: true,
     pt: primePT,
     ptOptions: {
-        mergeSections: true,
-        mergeProps: true
+        // mergeSections: true,
+        // mergeProps: true
     },
 }
 

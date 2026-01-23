@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/auth";
 import type { APIResponseValue } from "@sessionsbot/shared";
-import axios from "axios";
+import axios, { Axios, type AxiosInstance } from "axios";
 
 /** When enabled, routes all API traffic to local dev url at `http://localhost:3000/api` */
 const local_dev_api = false;
@@ -14,6 +14,5 @@ export const API = axios.create({
         return true;
     },
     timeout: 10_000,
-    timeoutErrorMessage: 'TIMED OUT! - Failed to receive a backend API response within 10 seconds! You might want to check out our status page at https://status.sessionsbot.fyi.'
-
+    timeoutErrorMessage: 'TIMED OUT! - Failed to receive a backend API response within 10 seconds! You might want to check out our status page at https://status.sessionsbot.fyi.',
 })
