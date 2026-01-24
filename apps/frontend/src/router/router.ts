@@ -9,7 +9,6 @@ import Dashboard from "./dashboard/dashboard.vue";
 import Support from "./support/support.vue";
 import { useAuthStore } from "@/stores/auth";
 import Pricing from "./pricing/pricing.vue";
-import Test from "./test/Test.vue";
 
 // ALL Page Routes:
 const routes: RouterOptions['routes'] = [
@@ -65,13 +64,6 @@ const routes: RouterOptions['routes'] = [
         path: '/terms',
         alias: ['/terms-and-conditions', '/agreement', '/terms-of-use', '/terms-of--usage'],
         component: TermsAndConditions
-    },
-
-    // Extra Routes:
-    {
-        name: "Testing",
-        path: '/test',
-        component: Test
     },
 
 

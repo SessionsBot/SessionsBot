@@ -1,13 +1,14 @@
 // ------- [ Variables/Setup: ] -------
 import 'dotenv/config'
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "node:path";
 import { ENVIRONMENT_TYPE } from './utils/environment.js';
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Collection } from "discord.js";
-
-import fs from "fs";
-import path from "node:path";
 import { ExtendedClient } from './utils/types/extendedClient.js';
+import { initTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
+import ready from './events/ready.js';
 
 const client = new ExtendedClient({
 	intents: ['Guilds', 'GuildMessages', 'DirectMessages']
@@ -68,9 +69,7 @@ const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
 		client.once('clientReady', (c) => {
-			console.info('Client Ready! - Set to core')
-			core.botClient = c as any
-			console.log('Tag:', core.botClient.user.tag)
+			ready.execute(c as any)
 		})
 		initTemplateCreationScheduler()
 		break;
@@ -104,6 +103,5 @@ if (ENVIRONMENT_TYPE == 'production') {
 
 // ------- [ Web Server (api): ] -------
 import './server/index.js';
-import core from './utils/core.js';
-import { initTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
+
 
