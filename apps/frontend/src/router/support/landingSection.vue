@@ -17,16 +17,15 @@
         </p>
         <!-- Action Buttons -->
         <div class="actions-wrap">
-            <!-- FREE - Invite -->
-            <a hidden :href="externalUrls.inviteBot" target="_blank">
-                <Button unstyled
-                    class="action-button bg-emerald-500/80 hover:bg-emerald-500/60 active:bg-emerald-500/50">
-                    <ShopIcon />
-                    Use for FREE
+            <!-- Documentation -->
+            <a :href="externalUrls.documentation" target="_blank">
+                <Button unstyled class="action-button bg-zinc-500/80 hover:bg-zinc-500/60 active:bg-zinc-500/50">
+                    <Iconify icon="mingcute:paper-fill" :size="23" />
+                    Read Documentation
                 </Button>
             </a>
-            <!-- DIRECT - Discord Shop Link -->
-            <a :href="externalUrls.discordStore" target="_blank">
+            <!-- Chat with Support -->
+            <a :href="externalUrls.discordServer.supportInvite" target="_blank">
                 <Button unstyled class="action-button bg-indigo-500/80 hover:bg-indigo-500/60 active:bg-indigo-500/50">
                     <ChatIcon />
                     Chat with Support

@@ -1,8 +1,82 @@
 <script lang="ts" setup>
-    import type { AutoCompleteDesignTokens } from '@primeuix/themes/types/autocomplete';
-    import { ScanSearchIcon } from 'lucide-vue-next';
-    import type { AutoCompletePassThroughOptions } from 'primevue';
+    import ChatIcon from '@/components/icons/ChatIcon.vue';
+    import { externalUrls } from '@/stores/nav';
+    import { XIcon } from 'lucide-vue-next';
+    import type { Component } from 'vue';
 
+    // Resources:
+    const resources: {
+        name: string,
+        icon: string | Component,
+        tags: string[],
+        routerLink?: string,
+        hrefLink?: string,
+        classes?: {
+            root?: string,
+            icon?: string
+        }
+    }[] = [
+            {
+                name: 'FAQs',
+                icon: 'wpf:faq',
+                tags: ['frequently, asked, questions,'],
+                hrefLink: externalUrls.documentation
+            },
+            {
+                name: 'Documentation',
+                icon: 'mingcute:paper-fill',
+                tags: ['documentation, user, manuel, guide, reference'],
+                hrefLink: externalUrls.documentation
+
+            },
+            {
+                name: 'Support Chat',
+                icon: ChatIcon,
+                tags: ['support, chat, agent, message'],
+                classes: { icon: 'ml-1 mr-0.5' },
+                hrefLink: externalUrls.discordServer.supportInvite
+            },
+        ]
+
+    // Search & AutoComplete:
+    function useSearchAndAutocomplete() {
+        const autoCompleteVisible = ref<boolean>(false)
+        const autoCompleteOptions = ref<string[]>([])
+
+        const searchValue = ref<string>('')
+
+        const filteredResources = computed(() => {
+            const q = searchValue.value
+            return resources.filter(r => r.tags.some(t => t.includes(q)) || r.name.includes(q))
+        })
+
+        function showAutoComplete() {
+            autoCompleteVisible.value = true
+        }
+
+        async function hideAutoComplete() {
+            setTimeout(() => {
+                autoCompleteVisible.value = false
+            }, 150);
+        }
+
+        return {
+            autoCompleteVisible,
+            autoCompleteOptions,
+            filteredResources,
+            searchValue,
+            showAutoComplete,
+            hideAutoComplete
+        }
+    }
+    const { autoCompleteVisible, autoCompleteOptions, filteredResources, searchValue, showAutoComplete, hideAutoComplete } = useSearchAndAutocomplete();
+    watch(searchValue, (q) => {
+        if (q) {
+            if (q.trim() == '') return autoCompleteOptions.value = []
+            const filtered = resources.filter(r => r.tags.some(t => t.includes(q)) || r.name.includes(q))
+            autoCompleteOptions.value = filtered.map(r => r.name)
+        } else return autoCompleteOptions.value = []
+    })
 
 </script>
 
@@ -12,27 +86,43 @@
 
         <!-- Header -->
         <div class="w-full flex flex-wrap justify-between items-center content-center p-0">
-            <p class="text-white/70 font-extrabold uppercase text-sm">
-                All Resources:
-            </p>
-
-            <input hidden type="text"
-                class="h-5 p-2 font-bold text-sm rounded-full bg-white/20 ring-ring ring-2 accent-indigo-400 focus:outline-none!"
-                placeholder="Search for a resource..." />
+            <!-- Title -->
+            <div class="text-white/70 flex flex-row gap-0.5 items-center justify-start w-fit">
+                <Iconify icon="material-symbols:list-alt-outline" :size="22" />
+                <p class=" font-extrabold uppercase text-sm">
+                    All Resources:
+                </p>
+            </div>
 
             <!-- Search - Input Wrap -->
-            <div class="bg-zinc-800 relative w-45 h-7 p-1.5 rounded-md ring-ring ring-2 flex flex-row gap-1">
-                <input type="search" class="w-full! h-full! text-sm focus:outline-none!"
-                    placeholder="Search for a resource...">
+            <div
+                class="bg-zinc-800 relative w-45 h-7 p-1.5 rounded-md ring-ring ring-2 hover:ring-white/70 focus-within:ring-white/70 flex flex-row gap-1">
+                <input v-model="searchValue" type="search" @focusin="autoCompleteVisible = true"
+                    @focusout="hideAutoComplete" class="w-full! h-full! text-sm focus:outline-none!"
+                    :class="{ 'pr-4.75': searchValue?.trim()?.length }" placeholder="Search for a resource...">
+
+                <!-- Clear Button -->
+                <button @click="searchValue = ''" v-if="searchValue?.trim()?.length"
+                    class="h-full aspect-square bg-white-50 absolute right-0 top-0 p-1 opacity-50 hover:opacity-70 cursor-pointer transition-all">
+                    <XIcon class="w-fit h-full! aspect-square! p-0.5" :stroke-width="2.5" />
+                </button>
 
                 <!-- Autocomplete -->
-                <div
-                    class="gap-1 p-1 z-3 absolute top-[calc(100%+4px)] bg-zinc-800 left-0 w-full h-fit max-h-20 overflow-y-auto flex flex-col items-center justify-start border-ring border-2 rounded-md">
-                    <div v-for="i in [1, 2, 3, 4, 5]"
-                        class="w-full p-1 hover:bg-white/5 active:bg-white/3 rounded cursor-pointer transition-all">
-                        <p class="text-xs font-medium w-full p-0.5 opacity-80"> {{ i }} </p>
+                <Transition name="autocomplete-slide" mode="out-in">
+                    <div v-if="autoCompleteVisible"
+                        class="gap-1 p-1 z-3 absolute top-[calc(100%+4px)] bg-zinc-800 -left-0.5 w-[calc(100%+4px)] h-fit max-h-20 overflow-y-auto flex flex-col items-center justify-start border-ring border-2 rounded-lg transition-all">
+                        <button v-if="autoCompleteOptions.length" v-for="o in autoCompleteOptions"
+                            @click="() => { autoCompleteVisible = false; searchValue = o }"
+                            class="w-full text-left p-1 hover:bg-white/5 active:bg-white/3 rounded cursor-pointer transition-all">
+                            <p class="text-xs font-medium w-full p-0.5 opacity-80 truncate"> {{ o }} </p>
+                        </button>
+
+                        <!-- No options msg -->
+                        <div v-else class="w-full p-1 rounded transition-all">
+                            <p class="text-xs font-medium w-full p-0.5 opacity-60"> No options </p>
+                        </div>
                     </div>
-                </div>
+                </Transition>
 
             </div>
 
@@ -41,44 +131,31 @@
         <!-- Results Wrap -->
         <div class="resources-results-wrap">
 
-            <!-- FaQs -->
-            <Button unstyled
-                class="bg-zinc-800/80 w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring hover:ring-white/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
+            <!-- Resource Button(s) -->
+            <Button unstyled v-for="r in filteredResources" :class="r?.classes?.root"
+                class="bg-zinc-800/80 relative w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring hover:ring-white/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
                 <!-- Icon -->
-                <svg class="h-full w-fit p-2" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
-                    viewBox="0 0 26 26">
-                    <path fill="currentColor"
-                        d="M13 0c-1.7 0-3 1.3-3 3v6c0 1.7 1.3 3 3 3h6l4 4v-4c1.7 0 3-1.3 3-3V3c0-1.7-1.3-3-3-3zm4.188 3h1.718l1.688 6h-1.5l-.407-1.5h-1.5L16.813 9H15.5zM18 4c-.1.4-.212.888-.313 1.188l-.28 1.312h1.187l-.282-1.313C18.113 4.888 18 4.4 18 4M3 10c-1.7 0-3 1.3-3 3v6c0 1.7 1.3 3 3 3v4l4-4h6c1.7 0 3-1.3 3-3v-6h-3c-1.9 0-3.406-1.3-3.906-3zm4.594 2.906c1.7 0 2.5 1.4 2.5 3c0 1.4-.481 2.288-1.281 2.688c.4.2.874.306 1.374.406l-.374 1c-.7-.2-1.426-.512-2.126-.813c-.1-.1-.275-.093-.375-.093C6.112 18.994 5 18 5 16c0-1.7.994-3.094 2.594-3.094m0 1.094c-.8 0-1.188.9-1.188 2c0 1.2.388 2 1.188 2s1.218-.9 1.218-2s-.418-2-1.218-2" />
-                </svg>
-
+                <Iconify v-if="typeof r.icon == 'string'" class="p-2" :class="r?.classes?.icon" :icon="r.icon"
+                    :size="22" />
+                <component v-else :is="r.icon" :class="r?.classes?.icon" />
                 <!-- Title -->
                 <div class="flex grow items-center justify-center pl-0 p-1 pr-2 flex-col">
-                    <p class="font-semibold font-rubik uppercase font-white/70 text-lg">
-                        FaQs
+                    <p class="font-semibold font-rubik uppercase font-white/70 text-lg truncate">
+                        {{ r.name }}
                     </p>
                 </div>
-            </Button>
-            <!-- Docs -->
-            <Button unstyled
-                class="bg-zinc-800/80 w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring hover:ring-white/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
-                <!-- Icon -->
-                <svg class="h-full w-fit p-2 pr-1" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
-                    viewBox="0 0 24 24">
-                    <g fill="none">
-                        <path
-                            d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                        <path fill="currentColor"
-                            d="M16 3a3 3 0 0 1 2.995 2.824L19 6v10h.75c.647 0 1.18.492 1.244 1.122l.006.128V19a3 3 0 0 1-2.824 2.995L18 22H8a3 3 0 0 1-2.995-2.824L5 19V9H3.25a1.25 1.25 0 0 1-1.244-1.122L2 7.75V6a3 3 0 0 1 2.824-2.995L5 3zm3 15h-9v1c0 .35-.06.687-.17 1H18a1 1 0 0 0 1-1zm-7-6h-2a1 1 0 0 0-.117 1.993L10 14h2a1 1 0 0 0 .117-1.993zm2-4h-4a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2M5 5a1 1 0 0 0-1 1v1h1z" />
-                    </g>
-                </svg>
 
-                <!-- Title -->
-                <div class="flex grow items-center justify-center pl-0 p-1 pr-2 flex-col">
-                    <p class="font-semibold font-rubik uppercase font-white/70 text-lg">
-                        Documentation
-                    </p>
-                </div>
+                <!-- Links -->
+                <a v-if="r.hrefLink" :href="r.hrefLink" class="absolute inset-0 w-full h-full" />
+                <RouterLink v-if="r.routerLink" :to="r.routerLink" class="absolute inset-0 w-full h-full" />
             </Button>
+
+            <!-- No Results Found -->
+            <div v-if="!filteredResources?.length" class="flex items-center justify-center p-1">
+                <p class="font-medium italic opacity-40">
+                    No Results Found
+                </p>
+            </div>
 
         </div>
 
@@ -91,13 +168,32 @@
     @reference "@/styles/main.css";
 
     .resources-list-wrap {
-        @apply ring-2 max-w-200 gap-3 p-3 pt-2 ring-ring rounded-md flex items-center justify-center flex-wrap;
+        @apply ring-2 max-w-200 w-full gap-3 p-3 pt-2 ring-ring rounded-md flex items-center justify-center flex-wrap;
 
         .resources-results-wrap {
-            @apply w-full h-fit flex gap-3 p-1 items-center justify-center;
+            @apply w-full h-fit flex gap-3 p-1 items-center justify-center flex-wrap;
         }
     }
 
-    .support-resource-search {}
+    /* AutoComplete - Animation In/Out */
+    .autocomplete-slide-enter-from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    .autocomplete-slide-leave-to {
+        opacity: 0;
+    }
+
+    .autocomplete-slide-enter-to,
+    .autocomplete-slide-leave-from {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+
+    .autocomplete-slide-enter-active,
+    .autocomplete-slide-leave-active {
+        transition: all 0.22s ease;
+    }
 
 </style>

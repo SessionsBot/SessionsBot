@@ -1,6 +1,7 @@
 <script lang="ts" setup>
     import { externalUrls } from '@/stores/nav';
     import type { SubscriptionPlanName } from '@sessionsbot/shared';
+    import { CheckIcon } from 'lucide-vue-next';
 
 
     type PlanData = {
@@ -85,7 +86,7 @@
 
                 <div v-for="[i, feat] of Array.from(plan.features).entries()" :key="plan.title + '-feat-' + i"
                     class="flex relative flex-row flex-nowrap gap-2 px-4 p-2 pb-2.5 w-full items-center justify-center">
-                    <CheckIcon class="min-w-fit! text-indigo-500 aspect-square" />
+                    <CheckIcon class="min-w-fit! text-emerald-400/70 aspect-square" />
                     <p>
                         {{ feat }}
                     </p>

@@ -9,7 +9,9 @@ import Dashboard from "./dashboard/dashboard.vue";
 import Support from "./support/support.vue";
 import { useAuthStore } from "@/stores/auth";
 import Pricing from "./pricing/pricing.vue";
+import Test from "./test/Test.vue";
 
+// ALL Page Routes:
 const routes: RouterOptions['routes'] = [
     // Most Visited:
     {
@@ -66,6 +68,11 @@ const routes: RouterOptions['routes'] = [
     },
 
     // Extra Routes:
+    {
+        name: "Testing",
+        path: '/test',
+        component: Test
+    },
 
 
     // External Links:
@@ -86,7 +93,8 @@ const routes: RouterOptions['routes'] = [
     },
 ]
 
-// Main App Router
+
+// Main App Router:
 const router = createRouter({
     routes,
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -99,7 +107,7 @@ const router = createRouter({
 });
 
 
-// Page Title - AFTER Nav Hook
+// Page Title - AFTER Nav Hook:
 router.afterEach((to, from, failure) => {
     if (failure) return;
     if (to) document.title = `Sessions Bot | ${String(to?.name)}`;

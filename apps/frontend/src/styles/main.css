@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@100..800&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 @import "tailwindcss";
@@ -8,10 +9,13 @@
 @theme inline {
   --color-ring: var(--color-zinc-600);
 
+  --color-surface: var(--color-zinc-800);
+
   /* Fonts */
   --font-rubik: "Rubik";
-  --font-Nunito: "Nunito";
-  --font-cutLetters: "Protest Guerrilla";
+  --font-nunito: "Nunito";
+  --font-play-pen: "Playpen Sans Arabic";
+  --font-cut-letters: "Protest Guerrilla";
   --default-font-family: var(--font-rubik);
 }
 
@@ -20,7 +24,7 @@ body {
   background: var(--color-zinc-900);
   /* background: radial-gradient(circle at top, #1e1b4b 0%, #111827 60%); */
   color: white;
-  font-family: var(--font-Nunito) !important;
+  font-family: var(--font-nunito) !important;
   box-sizing: border-box;
   position: relative;
   color-scheme: dark !important;

@@ -15,7 +15,7 @@
           <img src="/logo.png" class="size-37 mb-12 z-2! rounded-xl logo-shadow" />
         </span>
         <h1 class="text-5xl md:text-6xl font-extrabold mb-4">
-          Welcome to <span class="text-indigo-400 font-stretch-125% font-cutLetters!">Sessions Bot</span>
+          Welcome to <span class="text-indigo-400 font-stretch-125% font-cut-letters!">Sessions Bot</span>
         </h1>
         <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-8">
           Manage your Discord sessions effortlessly — schedule, organize, and host events with ease!

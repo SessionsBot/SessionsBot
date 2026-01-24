@@ -43,7 +43,7 @@
                 <div class="sm:size-11 size-9 logo-shadow rounded-xl">
                     <img src="/favicon.ico" class="sm:size-11 size-9 ring-2! ring-ring rounded-xl" :draggable="false" />
                 </div>
-                <p class="font-cutLetters! text-center title-shadow bg-transparent! text-2xl sm:text-3xl">Sessions Bot
+                <p class="font-cut-letters! text-center title-shadow bg-transparent! text-2xl sm:text-3xl">Sessions Bot
                 </p>
             </span>
 

@@ -43,9 +43,9 @@
 
     // Guild Role Options:
     const guildRoles = computed(() => {
-        if (dashboard.guild.roles?.length) {
+        if (dashboard.guild.roles?.state?.length) {
             let r = [];
-            for (const role of dashboard.guild.roles) {
+            for (const role of dashboard.guild.roles?.state) {
                 if (role?.name == '@everyone') continue;
                 r.push({
                     name: role?.name,
@@ -66,7 +66,8 @@
     })
 
     // Form Schema & Restraints:
-    const maxRsvpCapacity = computed(() => dashboard.guild.subscription.limits.MAX_RSVP_CAPACITY);
+    const guildSubscription = computed(() => dashboard.guild.subscription?.state || SubscriptionLevel.FREE)
+    const maxRsvpCapacity = computed(() => guildSubscription.value.limits.MAX_RSVP_CAPACITY);
 
 
     const RsvpFormSchema = z.object({
@@ -261,11 +262,11 @@
                 <InputTitle fieldTitle="Required Role(s)" :icon="UserStarIcon" :show-help="{ path: '/' }" />
 
                 <div class="relative w-full">
-                    <MultiSelect :disabled="dashboard.guild.subscription.level == 0" name="required_roles" fluid
+                    <MultiSelect :disabled="guildSubscription.level == 0" name="required_roles" fluid
                         v-model="RsvpFormValues.required_roles" :options="guildRoles" option-label="name"
                         option-value="value" :show-toggle-all="false" filter class="disabled:border-2! border-ring!" />
                     <!-- Premium Only - Wrapper -->
-                    <a v-if="dashboard.guild.subscription.level <= 1" href="./pricing" target="_blank"
+                    <a v-if="guildSubscription.level <= 1" href="./pricing" target="_blank"
                         class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-white/50 hover:text-emerald-400/70 rounded-md">
                         <iconify-icon icon="tabler:diamond" class="scale-120" />
                         <p class=" font-black"> Premium Feature </p>

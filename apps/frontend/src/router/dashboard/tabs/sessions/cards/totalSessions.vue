@@ -4,7 +4,7 @@
 
     // Services:
     const dashboard = useDashboardStore();
-    const totalSessions = computed(() => dashboard.guild.sessionTemplates?.length)
+    const totalSessions = computed(() => dashboard.guild.sessionTemplates?.state?.length)
 
 </script>
 

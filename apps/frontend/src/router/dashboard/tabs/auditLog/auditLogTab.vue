@@ -13,7 +13,7 @@
 
 
 <template>
-    <div class="flex p-5 flex-col w-full grow justify-start items-center">
+    <div class="dashboard-tab-view">
         <!-- Title & Desc -->
         <div class="w-full flex items-center justify-start flex-row gap-0">
             <div class="w-fit h-fit flex aspect-square">

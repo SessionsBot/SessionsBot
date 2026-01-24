@@ -31,7 +31,7 @@
                 <!-- Site Title/Logo -->
                 <span class="flex flex-row flex-wrap gap-1.5 items-center content-center justify-center">
                     <img src="/favicon.ico" alt="" class="size-7.5 ring-1 ring-white/5 rounded-md" draggable="false" />
-                    <p class="font-cutLetters text-xl">Sessions Bot</p>
+                    <p class="font-cut-letters text-xl">Sessions Bot</p>
                 </span>
                 <!-- Close Nav Btn -->
                 <Button unstyled @click="closeNav()"
@@ -172,7 +172,7 @@
                             <Button class="nav-button bg-red-400/10! hover:bg-red-400/20!" @click="closeNav()"
                                 :class="{ 'nav-button-active': isActive }" unstyled :disabled="isActive">
                                 <ShieldUserIcon />
-                                <p class="font-cutLetters opacity-87">
+                                <p class="font-cut-letters opacity-87">
                                     BOT ADMIN
                                 </p>
                             </Button>

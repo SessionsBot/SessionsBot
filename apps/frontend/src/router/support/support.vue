@@ -6,7 +6,7 @@
 
 
 <template>
-    <div class="flex justify-start items-center flex-col">
+    <div class="flex justify-start items-center flex-col w-full flex-wrap">
         <!-- Hero - Top Landing Area -->
         <LandingSection />
 
@@ -40,6 +40,11 @@
         <div class="w-full p-5 flex items-center justify-center">
             <AllResourcesList />
         </div>
+
+        <!-- Spacer -->
+        <span class="w-4 flex grow bg-rose-400/30" />
+
+        <SiteFooter />
     </div>
 </template>
 

@@ -17,7 +17,7 @@
 
     // Guild Channels - Model:
     const dashboard = useDashboardStore();
-    const guildChannels = computed(() => dashboard.guild.channels);
+    const guildChannels = computed(() => dashboard.guild.channels.state);
 
     // Form Values:
     const channelId = defineModel<string>('channelId');

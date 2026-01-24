@@ -41,9 +41,9 @@
     // Select Ready Server fn:
     function selectReadyServer(guildId: string) {
         if (saveGuildChoiceEnabled.value) {
-            dashboard.saveGuildSelection.set(guildId);
+            dashboard.savedGuildSelection.set(guildId);
         } else {
-            dashboard.saveGuildSelection.clear();
+            dashboard.savedGuildSelection.clear();
         };
         dashboard.nav.expanded = false;
         return dashboard.guild.id = guildId;

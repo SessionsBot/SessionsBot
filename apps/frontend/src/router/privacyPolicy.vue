@@ -1,25 +1,44 @@
 <script lang="ts" setup>
-    import { BookKeyIcon } from 'lucide-vue-next';
+    import { ArrowUpCircleIcon, BookKeyIcon } from 'lucide-vue-next';
 
-    const lastUpdated = ref('11/15/25')
+    // Document Data/Vars:
+    const lastUpdated = ref('1/25/26')
     const orgName = ref("Sessions Bot");
     const supportEmail = ref("support@sessionsbot.fyi");
+    const securityEmail = ref("security@sessionsbot.fyi");
 
-    const firebasePrivacyPolicy = ref('https://firebase.google.com/support/privacy');
-    const analyticsPrivacyPolicy = ref('https://policies.google.com/technologies/partner-sites');
+    // External Privacy Policies:
+    const externalPrivacyPolicies = {
+        googleAnalytics: "https://policies.google.com/technologies/partner-sites",
+        supabase: "https://supabase.com/privacy",
+        googleCloud: "https://policies.google.com/technologies/partner-sites",
+    }
+
+    // Scroll Util:
+    const scroll = useScroll(window, { behavior: 'smooth' })
+    const showScrollUp = computed(() => scroll.y.value >= 350)
+    function scrollToTop() {
+        scroll.x.value = 0
+        scroll.y.value = 0
+    }
+
 </script>
 
 <template>
     <main class="flex flex-wrap w-full h-full flex-1 justify-center items-center content-center">
         <div class="max-w-4xl mx-auto py-12 pb-2 px-6">
 
-            <div class="fixed right-2 bottom-2 z-[100]">
+            <!-- Scroll to Top -->
+            <Transition name="slide-up" mode="out-in">
+                <Button v-if="showScrollUp" @click="scrollToTop" unstyled title="Scroll to Top"
+                    class="p-1.5 gap-1 flex items-center justify-center fixed! bottom-3 right-3 ring-ring bg-surface ring-2 rounded-md cursor-pointer hover:bg-zinc-900 active:scale-95 transition-all">
+                    <ArrowUpCircleIcon class="opacity-70" :size="28" />
+                </Button>
+            </Transition>
 
-            </div>
-
-            <div class="w-full flex flex-row gap-3 mb-6 py-5 flex-wrap justify-center items-center content-center">
-                <BookKeyIcon :size="33" />
-                <h1 class="text-4xl font-extrabold w-fit text-center">
+            <div class="w-full flex flex-row gap-3 mb-7 py-5 flex-wrap justify-center items-center content-center">
+                <BookKeyIcon :size="33" class="sm:scale-125" />
+                <h1 class="text-4xl sm:text-5xl font-extrabold w-fit text-center">
                     Privacy Policy
                 </h1>
             </div>
@@ -27,8 +46,8 @@
             <p class="mb-4">
                 This Privacy Policy explains how {{ orgName }} (“we,” “our,” or “us”)
                 collects, uses, and shares information when you use our services.
-                This privacy policy pertains to our <strong>website</strong> and
-                <strong>Discord Bot</strong>. By using our services, you agree to the
+                This privacy policy pertains to our <strong>website</strong>,
+                <strong>Discord Bot</strong>, and related services. By using our services, you agree to the
                 practices described by this policy.
             </p>
 
@@ -36,14 +55,13 @@
             <ul class="list-disc ml-6 space-y-2">
                 <li>
                     <strong>Discord OAuth2 Data:</strong> When you sign in using Discord, we
-                    collect various account information such as user ID, username, avatar, user guilds, etc. These
-                    access
-                    scopes may potentially change in the future.
+                    collect various account information such as user ID, username, avatar image, email, user guilds,
+                    etc. We retain this information to maintain app functionality.
                 </li>
                 <li>
-                    <strong>Guild &amp; User Configurations:</strong> Through our web
-                    dashboard, we store user inputted data such as preferred accent colors,
-                    session schedules, posting times, and other guild/user configurations.
+                    <strong>Guild &amp; User Configurations:</strong> Throughout our web
+                    dashboard and Discord Bot, we store user inputted data such as saved preferences,
+                    sessions/schedules and related metadata, and other guild/user configurations.
                 </li>
                 <li>
                     <strong>Discord Bot Data:</strong> We may store limited identifiers,
@@ -51,21 +69,24 @@
                     and guild management. We do not log or store general chat messages for an extended period of time.
                 </li>
                 <li>
-                    <strong>Firebase:</strong> We use Google Firebase for data storage and authentication. Please review
-                    <a :href="analyticsPrivacyPolicy" class="link"> Google Firebase's Privacy Policy </a> for details on
+                    <strong>Supabase:</strong> We use Supabase for data storage and authentication. Please review
+                    <a :href="externalPrivacyPolicies.supabase" class="link"> Supabase's Privacy Policy </a> for details
+                    on
                     their data handling and retention practices.
                 </li>
                 <li>
                     <strong>Google Analytics:</strong> We use Google Analytics for collecting usage statistics such as
                     page
-                    views, browser/device type, and approximate location. Please review <a :href="firebasePrivacyPolicy"
-                        class="link"> Google Analytics's Privacy Policy </a> for details on their data handling and
+                    views, browser/device type, and approximate location. Please review <a
+                        :href="externalPrivacyPolicies.googleAnalytics" class="link"> Google Analytics's Privacy
+                        Policy</a> for details on their data handling and
                     retention practices.
                 </li>
                 <li>
                     <strong>Cookies &amp; Local Storage:</strong> We use local browser cookies and storage to maintain
-                    your
-                    login session, save tokens, support analytics and other various session based related data sets.
+                    your login session, save tokens, support analytics and other various session based related data
+                    sets. We may
+                    also use cookies and browser storage to store limited site preferences.
                 </li>
             </ul>
 
@@ -79,7 +100,8 @@
                 </li>
                 <li>
                     <strong>Guild & User Configurations:</strong> We process and store
-                    configuration data (such as accent colors, posting times, schedules, etc.) to
+                    configuration data (such as session templates, rsvp templates, required roles, guild preferences,
+                    etc.) to
                     personalize your guild’s experience, ensure scheduled events are posted at
                     the preferred times, and allow you and other guild members to manage settings
                     consistently.
@@ -87,15 +109,15 @@
                 <li>
                     <strong>Bot Functionality:</strong> We store limited Discord identifiers (such as
                     message IDs, channel IDs, guild roles, etc.) which are used to operate core bot
-                    features like posting session signups, mentioning roles, linking
+                    features like posting session signups, mentioning roles, rsvp attempts, linking
                     dashboard changes to Discord, etc.
                 </li>
                 <li>
-                    <strong>Data Hosting & Authentication Services:</strong> We rely on Google
-                    Firebase to securely store internal data and manage authentication states. Firebase
-                    may also retain certain logs as described in <a class="link" :href="firebasePrivacyPolicy">their
-                        privacy
-                        policies</a>.
+                    <strong>Data Hosting & Authentication Services:</strong> We rely on Supabase to securely store
+                    internal data and manage authentication states. Supabase
+                    may also retain certain logs as described in <a class="link"
+                        :href="externalPrivacyPolicies.supabase">
+                        their privacy policies</a>.
                 </li>
                 <li>
                     <strong>Usage Analytics:</strong> We use Google Analytics to understand how
@@ -103,7 +125,7 @@
                     and approximate location. This helps us identify performance issues, improve
                     usability, and prioritize features that matter most to our users. See Google Analytics privacy
                     practices
-                    <a class="link" :href="analyticsPrivacyPolicy"> here</a>.
+                    <a class="link" :href="externalPrivacyPolicies.googleAnalytics"> here</a>.
                 </li>
                 <li>
                     <strong>Cookies & Local Storage:</strong> Browser Cookies and storage are
@@ -137,18 +159,20 @@
                     communication is limited to the access scopes that you authorize during sign in.
                 </li>
                 <li>
-                    <strong>Google Firebase / Google Cloud:</strong> We use Firebase for secure
+                    <strong>Supabase / Google Cloud:</strong> We use Supabase for secure
                     data storage, account/session authentication, and internal configuration
-                    management. Data hosted here is protected under Google’s <a class="link"
-                        :href="firebasePrivacyPolicy"> privacy and
-                        security standards.</a>
+                    management. Data hosted here is protected under Supabase's <a class="link"
+                        :href="externalPrivacyPolicies.supabase"> privacy and
+                        security standards.</a> We also use a small amount of cloud compute actions through
+                    Google Cloud, you can view <a class="link" :href="externalPrivacyPolicies.googleCloud">their privacy
+                        practices here</a>.
                 </li>
                 <li>
                     <strong>Google Analytics:</strong> Aggregated usage statistics (e.g., page
                     views, browser/device type, approximate location) are processed through
                     Google Analytics to help us understand how users interact with our web app
                     and to improve user experience. See their data practices <a class="link"
-                        :href="analyticsPrivacyPolicy">here</a>.
+                        :href="externalPrivacyPolicies.googleAnalytics">here</a>.
                 </li>
             </ul>
             <p class="mt-4">
@@ -216,7 +240,7 @@
                 controls, and regular security reviews. However, no online platform can
                 guarantee complete security. If you discover a security vulnerability, please
                 notify us via email at
-                <a :href="`mailto:${supportEmail}`" class="link">{{ supportEmail }}</a>.
+                <a :href="`mailto:${supportEmail}`" class="link">{{ securityEmail }}</a>.
             </p>
 
             <h2 class="sectionHeading">Changes to This Policy</h2>
@@ -255,4 +279,5 @@
         line-height: var(--text-2xl--line-height);
         font-weight: var(--font-weight-semibold);
     }
+
 </style>

@@ -6,6 +6,7 @@
     import RsvpPanel from './rsvpFormPanel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useToast } from 'vue-toastification';
+    import { SubscriptionLevel } from '@sessionsbot/shared';
 
 
     // Incoming Props:
@@ -20,7 +21,8 @@
 
 
     // Subscription - Limits:
-    const maxRsvpSlots = computed(() => dashboard.guild.subscription.limits.MAX_RSVP_SLOTS);
+    const guildSubscription = computed(() => dashboard.guild.subscription?.state || SubscriptionLevel.FREE)
+    const maxRsvpSlots = computed(() => guildSubscription.value.limits.MAX_RSVP_SLOTS);
 
 
     // RSVP Panel Ref:

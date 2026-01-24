@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 
     import TotalSessionsCard from './cards/totalSessions.vue';
-    import UpcomingSessionsCard from './cards/upcomingSessions.vue'
+    import UpcomingSessions from './cards/upcomingSessions.vue';
+    import UpcomingSessionsCard from './cards/upcomingSessionsOLD.vue'
 
 
 
@@ -10,13 +11,16 @@
 
 
 <template>
-    <div class="p-4 gap-2 w-full h-fit flex-col flex items-center justify-center ">
+    <div class="dashboard-tab-view">
 
         <!-- Total Sessions Card -->
-        <TotalSessionsCard />
+        <TotalSessionsCard hidden />
 
         <!-- Upcoming Sessions Card -->
         <UpcomingSessionsCard />
+
+        <!-- Upcoming Sessions Card -->
+        <UpcomingSessions />
 
     </div>
 </template>

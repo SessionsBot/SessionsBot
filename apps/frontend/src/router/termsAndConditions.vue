@@ -1,36 +1,56 @@
 <script lang="ts" setup>
-    import { BookMarkedIcon } from 'lucide-vue-next';
+    import { externalUrls } from '@/stores/nav';
+    import { ArrowUpCircleIcon, BookMarkedIcon } from 'lucide-vue-next';
 
-    // Vars:
-    const lastUpdated = ref('11/15/25');
-    const orgName = ref('Sessions Bot');
-    const githubOrganization = ref('https://github.com/SessionsBot')
-    const supportEmail = ref('support@sessionsbot.fyi');
-
-    // Domains/paths
+    // Document Data/Vars:
+    const lastUpdated = ref('1/25/26')
+    const orgName = ref("Sessions Bot");
     const rootUrl = ref('https://sessionsbot.fyi');
+    const supportEmail = ref("support@sessionsbot.fyi");
+    const securityEmail = ref("security@sessionsbot.fyi");
+    const githubOrganization = ref('https://github.com/SessionsBot');
 
-    // Links
-    const internalPrivacyPolicy = ref(`${rootUrl.value}/privacy`);
-    const discordPrivacyPolicy = ref('https://discord.com/terms');
-    const firebasePrivacyPolicy = ref('https://firebase.google.com/support/privacy')
+    // External Privacy Policies:
+    const externalPrivacyPolicies = {
+        googleAnalytics: "https://policies.google.com/technologies/partner-sites",
+        supabase: "https://supabase.com/terms",
+        googleCloud: "https://policies.google.com/technologies/partner-sites",
+        discord: "https://discord.com/terms"
+    }
+
+    // Scroll Util:
+    const scroll = useScroll(window, { behavior: 'smooth' })
+    const showScrollUp = computed(() => scroll.y.value >= 350)
+    function scrollToTop() {
+        scroll.x.value = 0
+        scroll.y.value = 0
+    }
+
 </script>
 
 <template>
     <main class="flex flex-wrap w-full h-full flex-1 justify-center items-center content-center">
         <div class="max-w-4xl mx-auto py-12 pb-2 px-6 relative">
 
-            <div class="w-full flex flex-row gap-3 mb-6 py-5 flex-wrap justify-center items-center content-center">
-                <BookMarkedIcon :size="33" />
-                <h1 class="text-4xl font-extrabold w-fit text-center">
+            <!-- Scroll to Top -->
+            <Transition name="slide-up" mode="out-in">
+                <Button v-if="showScrollUp" @click="scrollToTop" unstyled title="Scroll to Top"
+                    class="p-1.5 gap-1 flex items-center justify-center fixed! bottom-3 right-3 ring-ring bg-surface ring-2 rounded-md cursor-pointer hover:bg-zinc-900 active:scale-95 transition-all">
+                    <ArrowUpCircleIcon class="opacity-70" :size="28" />
+                </Button>
+            </Transition>
+
+            <div class="w-full flex flex-row gap-3 mb-7 py-5 flex-wrap justify-center items-center content-center">
+                <BookMarkedIcon :size="33" class="sm:scale-125" />
+                <h1 class="text-4xl sm:text-5xl font-extrabold w-fit text-center">
                     Terms &amp; Conditions
                 </h1>
             </div>
 
             <p class="mb-4">
                 These Terms &amp; Conditions (“Terms”) govern your use of {{ orgName }}’s
-                <strong>website</strong> (available at <span class="underline">{{ rootUrl }}</span>)
-                and <strong>Discord bot</strong> (together, the “services”).
+                <strong>website</strong> (available at <RouterLink class="link" to="/">{{ rootUrl }}</RouterLink>)
+                and <strong>Discord Bot</strong> (together, the “services”).
                 By accessing or using the services, you agree to these Terms.
                 If you do not agree, please do not use the services.
                 <br />
@@ -41,9 +61,9 @@
             <ul class="list-disc ml-6 space-y-2">
                 <li>
                     <strong>Scope:</strong> These Terms &amp; Conditions apply to both the public-facing site at
-                    <a class="link" :href="rootUrl">{{ rootUrl }}</a>,
+                    <RouterLink class="link" to="/">{{ rootUrl }}</RouterLink>,
                     and our Discord bot (SessionsBot). Therefore these terms also apply to any {{ orgName }} features
-                    (e.g., scheduling, signups, role mentions)
+                    (e.g., scheduling, rsvps, notifications) and subdomains.
                 </li>
                 <li>
                     <strong>Minimum Age:</strong> You must be at least 13 years old or have
@@ -51,7 +71,7 @@
                 </li>
                 <li>
                     <strong>Account Login:</strong> Access is provided via Discord OAuth2. We may
-                    use custom tokens (e.g. JWT, Firebase) and local storage for session management.
+                    use custom tokens (e.g. JWT, Supabase Auth) and local storage for session management.
                 </li>
             </ul>
 
@@ -64,10 +84,11 @@
                 </li>
                 <li>
                     <strong>Our Part:</strong> We take reasonable measures to secure our services
-                    (see our <a target="_blank" class="link" :href="internalPrivacyPolicy">Privacy Policy</a>), but all
-                    online services
-                    carry risk. If we mess up, we’ll work to fast to fix it; Caught a security vulnerability? Get in
-                    touch with us ASAP <a class="link" :href="`mailto:${supportEmail}`">via email</a>.
+                    (see our <RouterLink to="/privacy" class="link inline!"> Privacy Policy </RouterLink>), but all
+                    online services carry risk. If we mess up, we’ll work to fast to fix it; Caught a security
+                    vulnerability? Get in touch with us <b>ASAP</b> <a class="link"
+                        :href="`mailto:${securityEmail}`">via
+                        email</a>.
                 </li>
                 <li>
                     <strong>Guild Permissions:</strong> On invite, our bot will request
@@ -125,12 +146,12 @@
                 <li>
                     <strong>Discord:</strong> Authentication and certain features rely on Discord. Your use of Discord
                     is
-                    governed by <a target="_blank" class="link" :href="discordPrivacyPolicy">their terms and
+                    governed by <a target="_blank" class="link" :href="externalPrivacyPolicies.discord">their terms and
                         policies</a>.
                 </li>
                 <li>
-                    <strong>Google Firebase / Google Cloud:</strong> Used for data storage and authentication. <a
-                        class="link" :href="firebasePrivacyPolicy">See their policies
+                    <strong>Supabase:</strong> Used for data storage and authentication. <a class="link"
+                        :href="externalPrivacyPolicies.supabase">See their policies
                         for data handling and retention practices</a>.
                 </li>
                 <li>
@@ -156,9 +177,8 @@
                     and our posted plan terms.
                 </li>
                 <li>
-                    <strong>Refunds:</strong> Unless required by law, fees are non-refundable. We may, at our
-                    discretion, issue
-                    prorated or courtesy refunds in edge cases.
+                    <strong>Refunds:</strong> Unless required by law, fees are non-refundable. To request a refund,
+                    please do so at the point of purchases of your product (eg. Discord, payment processor, etc).
                 </li>
                 <li>
                     <strong>Taxes:</strong> Prices could potentially exclude applicable taxes/VAT; you are responsible
@@ -179,9 +199,9 @@
                     maintenance or updates from time to time.
                 </li>
                 <li>
-                    <strong>Support:</strong> Email <a class="link" :href="`mailto:${supportEmail}`">{{ supportEmail
-                    }}</a>.
-                    No guaranteed response times, but we aim to reply quickly.
+                    <strong>Support:</strong> Email to <a class="link" :href="`mailto:${supportEmail}`">{{ supportEmail
+                        }}</a> or join our <a :href="externalUrls.discordServer.supportInvite" class="link"> community
+                        server</a> and create a new support ticket.
                 </li>
                 <li>
                     <strong>Suspension/Termination:</strong> We may suspend or terminate access (with or without notice)
@@ -193,9 +213,9 @@
             <h2 class="sectionHeading">Privacy &amp; Security</h2>
             <p>
                 Your use of the services is also governed by our
-                <a target="_blank" class="link" :href="internalPrivacyPolicy">Privacy Policy</a>. If you believe you've
+                <RouterLink class="link" to="/privacy">Privacy Policy</RouterLink>. If you believe you've
                 identified a potential security issue, please contact us at
-                <a class="link" :href="`mailto:${supportEmail}`">{{ supportEmail }}</a> as soon as possible.
+                <a class="link" :href="`mailto:${securityEmail}`">{{ securityEmail }}</a> as soon as possible.
             </p>
 
             <h2 class="sectionHeading">Open Source &amp; Licenses</h2>
@@ -210,7 +230,7 @@
             <p>
                 Some features may be labeled beta/experimental and are subject to changes, rate-limitations, or removal.
                 We appreciate your
-                patience and <a target="_blank" class="link" :href="githubOrganization + '/backend/issues'">bug
+                patience and <a target="_blank" class="link" :href="githubOrganization + '/SessionsBot/issues'">bug
                     reports</a>.
             </p>
 
@@ -283,11 +303,10 @@
 
             <h2 class="sectionHeading">Changes to These Terms</h2>
             <p>
-                We may update these Terms from time to time. Changes take effect when posted on this page. We currently
-                do not send
-                email notifications of changes as we don't store user emails. Your continued use of the services after
-                changes become effective constitutes
-                acceptance of the revised Terms.
+                We may update these terms from time to time. Changes take effect when posted on this page. If you've
+                created an account, we'll notify you via the email address associated with your account. Your
+                continued use of the
+                services after changes become effective constitutes acceptance of the revised Terms.
             </p>
 
             <h2 class="sectionHeading">Termination of Use</h2>

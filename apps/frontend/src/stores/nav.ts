@@ -1,19 +1,21 @@
 import { defineStore } from "pinia";
 
+
+const scrollLock = useScrollLock(window, false)
+
 export const useNavStore = defineStore("nav", {
     state: () => ({
         navOpen: false,
-        lockBodyScroll: false
     }),
 
     actions: {
         openNav() {
             this.navOpen = true;
-            this.lockBodyScroll = true;
+            scrollLock.value = true;
         },
         closeNav() {
             this.navOpen = false;
-            this.lockBodyScroll = false;
+            scrollLock.value = false;
         },
         toggleNav() {
             if (!this.navOpen)
@@ -21,8 +23,8 @@ export const useNavStore = defineStore("nav", {
             else
                 this.closeNav()
         },
-        toggleBodyScroll(lock: boolean) {
-            this.lockBodyScroll = lock;
+        toggleBodyScroll(isLocked: boolean) {
+            scrollLock.value = isLocked;
         }
     },
 });

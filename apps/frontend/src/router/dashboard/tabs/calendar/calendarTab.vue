@@ -13,7 +13,7 @@
 
 <template>
     <!-- Content Root - Scroll Wrap -->
-    <div class="w-full grow flex flex-col flex-wrap p-4 items-center justify-start">
+    <div class="dashboard-tab-view">
         <!-- Title & Desc -->
         <div class="w-full flex items-center justify-start flex-row gap-0">
             <div class="w-fit h-fit flex aspect-square">

@@ -66,7 +66,7 @@
 
                         <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring"
                             :src="userGuildData?.icon || DiscordLogo" />
-                        <p v-if="navExpanded" class="font-bold text-nowrap text-sm">
+                        <p v-if="navExpanded" class="font-bold text-nowrap text-sm truncate">
                             {{ userGuildData?.name || 'Select a Server' }}
                         </p>
 

@@ -14,7 +14,6 @@
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/LoadingIcon.vue';
-    import { useGuildTemplates } from '@/stores/dashboard/sessionTemplates';
     import { RRule } from 'rrule';
     import { useToast } from 'vue-toastification';
 
@@ -23,7 +22,7 @@
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
     const toaster = useToast()
-    const guildTemplates = useGuildTemplates()
+    const guildTemplates = computed(() => dashboard.guild.sessionTemplates)
 
     // Form Visibility:
     const sessionsFormVisible = computed({
@@ -337,7 +336,7 @@
                 } else {
                     sessionsFormVisible.value = false;
                     resetFrom()
-                    guildTemplates.execute()
+                    guildTemplates.value?.execute()
                     toaster('Session Deleted!')
 
                 }
@@ -609,7 +608,7 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            guildTemplates.execute()
+            guildTemplates.value?.execute()
 
         } finally {
             setTimeout(() => {
