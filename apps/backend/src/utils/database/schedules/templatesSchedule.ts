@@ -190,9 +190,14 @@ async function executeTemplateCreationSchedule() {
                                 .toJSDate()
                             : baseStart
                                 .setZone(t.time_zone)
-                                .plus({ days: 1 })
-                                .startOf("day")
+                                .endOf("day")
+                                .plus({ milliseconds: 1 })
                                 .toJSDate();
+                        // : baseStart
+                        //     .setZone(t.time_zone)
+                        //     .plus({ days: 1 })
+                        //     .startOf("day")
+                        //     .toJSDate();
                         // Create Discord Native Event:
                         event = await guild.scheduledEvents.create({
                             name: t.title,
