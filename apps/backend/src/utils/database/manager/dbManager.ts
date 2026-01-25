@@ -73,6 +73,12 @@ export default {
         },
     },
 
+
+    rsvps: {
+        async add(session_id: string, rsvp_id: string) {
+
+        }
+    }
 }
 
 

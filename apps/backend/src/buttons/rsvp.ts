@@ -1,10 +1,11 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, GuildMember, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
-import { getSubscriptionFromInteraction, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import core from "../utils/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
 import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
+import createAuditLog, { AuditEvent } from "../utils/database/auditLog";
 
 
 export default {
@@ -14,7 +15,7 @@ export default {
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const {
-            botClient: bot,
+            // botClient: bot,
             colors: { getOxColor },
             commands: { getLinkString: getCmdLink },
             urls
@@ -57,11 +58,11 @@ export default {
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records this session has **already started**! \n-# It's possible this signup panel was simply outdated.` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `**Requested Session:** \n> \`${session.title}\` \n**Started At:** \n> <t:${sessionStart.toSeconds()}:f> \n> <t:${sessionStart.toSeconds()}:R> \n-# Feel free to RSVP to another session that available and hasn't occurred yet!` })
+                    new TextDisplayBuilder({ content: `**Requested Session:** \n> \`${session.title}\` \n**Started At:** \n> <t:${sessionStart.toSeconds()}:f> \n> <t:${sessionStart.toSeconds()}:R> \n-# Feel free to RSVP to another session that's available and hasn't occurred yet!` })
                 ]
             })
             if (subscription.limits.SHOW_WATERMARK) {
-                alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
+                alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true, showHelpLink: true }))
             }
             // Reply to Interaction:
             await i.editReply({
@@ -69,7 +70,7 @@ export default {
                 flags: MessageFlags.IsComponentsV2
             })
             // Update Outdated Signup Panel:
-            const signupMsgContent = await buildSessionSignupMsg(session);
+            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
             await signupMsg.edit({
                 components: [signupMsgContent]
             })
@@ -192,10 +193,13 @@ export default {
         }
 
         // Update - Sessions Signup Panel:
-        const signupMsgContent = await buildSessionSignupMsg(session);
-        await signupMsg.edit({
-            components: [signupMsgContent]
+        new Promise(async (res) => {
+            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
+            await signupMsg.edit({
+                components: [signupMsgContent]
+            })
         })
+
 
         // Success - Build & Send - RSVPed Response:
         const successMsg = new ContainerBuilder({
@@ -234,6 +238,17 @@ export default {
         await i.editReply({
             components: [successMsg],
             flags: MessageFlags.IsComponentsV2
+        })
+
+        // Create Audit Event:
+        createAuditLog({
+            event: AuditEvent.RsvpCreated,
+            guild: i.guildId,
+            user: i.user.id,
+            meta: {
+                session_id: session.id,
+                rsvp_id: 'rsvp_' + rsvpId
+            }
         })
 
     }

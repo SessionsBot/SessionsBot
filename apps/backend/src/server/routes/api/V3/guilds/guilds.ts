@@ -8,6 +8,7 @@ import core from "../../../../../utils/core.js";
 import { ChannelType, RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
+import { getGuildEntitlementsFromId, getGuildSubscriptionFromId } from "../../../../../utils/bot/entitlements.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();
@@ -62,25 +63,21 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async
     try {
         // Parse req:
         const guildId = req.params['guildId'];
-        const { botClient: bot } = core;
 
-        // Fetch guild entitlements:
-        const guildEntitlements: RESTGetAPIEntitlementsResult = await bot.rest.get(Routes.entitlements(bot.application.id), {
-            query: new URLSearchParams(<RESTGetAPIEntitlementsQuery>{
-                exclude_ended: true,
-                guild_id: guildId
-            } as any)
-        }) as any;
+        // Fetch Guild Entitlements from Id:
+        const entitlements = await getGuildEntitlementsFromId(guildId)
+        if (!entitlements.success) { throw entitlements };
 
-        // Determine Subscription Level:
-        const subscriptionLevel = (): SubscriptionPlanName => {
-            if (guildEntitlements.some(e => e.sku_id == SubscriptionSKUs.ENTERPRISE)) return 'ENTERPRISE';
-            else if (guildEntitlements.some(e => e.sku_id == SubscriptionSKUs.PREMIUM)) return 'PREMIUM';
+        // Determine Plan from Entitlements:
+        const subscriptionLevel = () => {
+            const ownedSKUs = entitlements.entitlements?.map(e => e.sku_id)
+            if (ownedSKUs?.includes(SubscriptionSKUs.ENTERPRISE)) return 'ENTERPRISE';
+            else if (ownedSKUs?.includes(SubscriptionSKUs.PREMIUM)) return 'PREMIUM';
             else return 'FREE';
         }
 
         // Return result data:
-        return new reply(res).success({ plan: subscriptionLevel(), entitlements: guildEntitlements })
+        return new reply(res).success({ plan: subscriptionLevel(), entitlements: entitlements?.entitlements })
     } catch (err) {
         // Log & Return Error:
         createLog.for('Api').warn(`Failed to fetch guild subscription!`, { err, actorId: req.auth.user.id });

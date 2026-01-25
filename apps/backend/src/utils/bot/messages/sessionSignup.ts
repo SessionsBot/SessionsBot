@@ -10,7 +10,7 @@ import { useLogger } from "../../logs/logtail";
 const createLog = useLogger();
 const { botClient: bot, colors } = core
 
-export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row']) {
+export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean) {
     // Get Template/Session Data:
     const s = session;
     const startsAt = DateTime.fromISO(s.starts_at_utc);
@@ -110,6 +110,22 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
         ]
     }
 
+    // Util: Get Roles Mentions - Footer:
+    const getFooter = () => {
+        let r = [];
+        if (showWatermark) {
+            r.push(
+                defaultFooterText()
+            )
+        }
+        if (s?.mention_roles?.length) {
+            r.push(
+                new TextDisplayBuilder({ content: `-# 🔔: <@&${s.mention_roles.join(`> <@&`)}> ` })
+            )
+        }
+        return r
+    }
+
 
     // Build Root Msg Container:
     const msg = new ContainerBuilder({
@@ -132,7 +148,7 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
             ...getRSVPsSections(),
             ...getActionButtons(),
             new SeparatorBuilder(),
-            defaultFooterText(),
+            ...getFooter()
         ]
     })
 

@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, GuildMember, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
-import { SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import core from "../utils/core";
-import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
+import { defaultFooterText } from "../utils/bot/messages/basic";
 import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
+import createAuditLog, { AuditEvent } from "../utils/database/auditLog";
 
 export default {
     data: {
@@ -23,12 +24,7 @@ export default {
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
         // Get Guild Subscription:
-        const subscriptions = i.entitlements.filter(e => (e.isActive() && e.isGuildSubscription)).map(s => s.skuId)
-        const currentPlan = () => {
-            if (subscriptions.includes(SubscriptionSKUs.ENTERPRISE)) return SubscriptionLevel.ENTERPRISE;
-            else if (subscriptions.includes(SubscriptionSKUs.PREMIUM)) return SubscriptionLevel.PREMIUM;
-            else return SubscriptionLevel.FREE;
-        };
+        const subscription = getSubscriptionFromInteraction(i)
 
         // Fetch Session:
         const { data: session, error: sessionERR } = await supabase.from('sessions')
@@ -59,7 +55,7 @@ export default {
                     new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-sessions')} command to confirm your current RSVP assignments within this Discord Server.` })
                 ]
             })
-            if (currentPlan().limits.SHOW_WATERMARK) {
+            if (subscription.limits.SHOW_WATERMARK) {
                 alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true, showHelpLink: true }))
             }
             await i.editReply({
@@ -81,7 +77,7 @@ export default {
         if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
 
         // Update Signup - New Content:
-        const newSignupContent = await buildSessionSignupMsg(session);
+        const newSignupContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
         await signupMsg.edit({
             components: [newSignupContent]
         })
@@ -108,7 +104,7 @@ export default {
             ]
         })
         // FREE PLAN - Add Watermark
-        if (currentPlan().limits.SHOW_WATERMARK) {
+        if (subscription.limits.SHOW_WATERMARK) {
             successMsg.components.push(
                 new SeparatorBuilder(),
                 defaultFooterText({ lightFont: true })
@@ -118,6 +114,17 @@ export default {
         await i.editReply({
             components: [successMsg],
             flags: MessageFlags.IsComponentsV2
+        })
+
+        // Create Audit Event:
+        createAuditLog({
+            event: AuditEvent.RsvpDeleted,
+            guild: i.guildId,
+            user: i.user.id,
+            meta: {
+                session_id: session.id,
+                rsvp_id: 'rsvp_' + rsvpId
+            }
         })
 
     }

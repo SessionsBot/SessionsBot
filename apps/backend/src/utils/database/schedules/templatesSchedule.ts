@@ -5,10 +5,12 @@ import { DateTime } from "luxon";
 import core, { urls } from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg } from "../../bot/messages/sessionSignup";
-import { MessageFlags } from "discord.js";
+import { ChannelType, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
 import { genericErrorMsg } from "../../bot/messages/basic";
 import sendWithFallback from "../../bot/messages/sendWithFallback";
+import createAuditLog, { AuditEvent } from "../auditLog";
+import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 
 const createLog = useLogger();
 const debugSchedule = true;
@@ -55,23 +57,32 @@ async function executeTemplateCreationSchedule() {
 
     // POST/CREATE - For Each Guild/Template In Post Queue:
     for (const [guildId, channels] of Object.entries(postQueue)) {
-        // Fetch Guild:
-        const guild = await core.botClient.guilds.fetch(guildId);
+        // Fetch Guild & Subscription:
+        const [guild, guildSubscription] = await Promise.all([
+            core.botClient.guilds.fetch(guildId),
+            getGuildSubscriptionFromId(guildId)
+        ])
+
         // For each post channel in guild:
         for (const [channelId, templates] of Object.entries(channels)) {
             // Fetch Channel:
-            const channel = await guild.channels.fetch(channelId);
+            const channel = await guild.channels.fetch(channelId) as TextChannel;
+            await channel.threads.fetch()
+
             if (!channel.isSendable()) {
                 // If channel isn't sendable:
                 await sendFailedToPostSessionAlert(guildId, channelId, templates.map(t => t.id))
                 continue
             }
+
+
             // For each Session Template in Channel Queue:
             const sortedTemplates = templates.sort((a, b) => DateTime.fromISO(a.starts_at_utc).toSeconds() - DateTime.fromISO(b.starts_at_utc).toSeconds())
             for (const t of sortedTemplates) {
                 // Get Vars:
                 const sessionStart = DateTime.fromISO(t.next_post_utc).plus({ millisecond: t.post_before_ms });
                 const templateRsvps = t.rsvps ? mapRsvps(t.rsvps) : null;
+                const mentionRoles = guildSubscription.limits.ALLOW_MENTION_ROLES ? t.mention_roles : null;
 
                 // Save/Create new Session from Template:
                 const { error: createSessionErr, data: session } = await supabase.from('sessions').insert({
@@ -84,7 +95,8 @@ async function executeTemplateCreationSchedule() {
                     guild_id: t.guild_id,
                     template_id: t.id,
                     channel_id: t.channel_id,
-                    signup_id: '0'
+                    mention_roles: mentionRoles,
+                    signup_id: '0',
                 }).select().single();
                 // If Create/Save Error - Continue:
                 if (createSessionErr || !session) {
@@ -124,16 +136,44 @@ async function executeTemplateCreationSchedule() {
                     }
                 }
 
+                // Get Signup Destination - Channel or Thread:
+                let destinationChannel: TextThreadChannel | TextChannel = null;
+                if (t.post_in_thread) {
+                    // Post inside Thread:
+                    const dayInZone = sessionStart.setZone(t.time_zone).startOf('day')
+                    const threadTitle = `📅 Sessions - ${dayInZone.month}/${dayInZone.day}`
+                    // Search for existing thread:
+                    const existingThread = channel.threads.cache.find(t => t.name == threadTitle)
+                    if (existingThread) {
+                        // Existing Thread - Assign:
+                        destinationChannel = existingThread;
+                    }
+                    else {
+                        // Create NEW Thread for Day - Assign:
+                        const thread = await channel.threads.create({
+                            name: threadTitle,
+                            autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+                            type: ChannelType.PublicThread
+                        })
+                        destinationChannel = thread;
+                    }
+
+                } else {
+                    // Posting to Channel:
+                    destinationChannel = channel;
+                }
+
                 // Post to Discord:
-                const signupMsgContent = await buildSessionSignupMsg(session)
-                const signupMsg = await channel.send({
+                const signupMsgContent = await buildSessionSignupMsg(session, guildSubscription.limits.SHOW_WATERMARK)
+                const signupMsg = await destinationChannel.send({
                     components: [signupMsgContent],
                     flags: MessageFlags.IsComponentsV2
                 })
 
-                // Update Signup Msg Id to Session in DB:
+                // Update Signup Msg & Thread Id(s) to Session in DB:
                 const { error: updateSessionErr } = await supabase.from('sessions').update({
-                    signup_id: signupMsg.id
+                    signup_id: signupMsg.id,
+                    thread_id: t.post_in_thread ? destinationChannel.id : null,
                 }).eq('id', session.id)
                 if (updateSessionErr) {
                     createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "signup_id"', { updateSessionErr, session })
@@ -159,6 +199,13 @@ async function executeTemplateCreationSchedule() {
                 if (updateErr) {
                     createLog.for('Database').error('FAILED TO UPDATE - Template Next/Last Post UTC(s) - See Details..', { updateErr, template: t, session })
                 }
+
+                // Session Created & Posted - Create Audit Event:
+                createAuditLog({
+                    event: AuditEvent.SessionPosted,
+                    guild: guildId,
+                    meta: { session_id: session.id }
+                })
             }
         }
     }

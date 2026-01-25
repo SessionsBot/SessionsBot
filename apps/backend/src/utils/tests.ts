@@ -6,6 +6,8 @@ import { ENVIRONMENT_TYPE } from "./environment.js";
 import fetchSKUs from "./bot/fetchSKUs.js";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
 import createAuditLog, { AuditEvent } from "./database/auditLog.js";
+import { supabase } from "./database/supabase.js";
+import guildCreate from "../events/guildCreate.js";
 
 
 const createLog = useLogger();
@@ -22,10 +24,7 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // const result = await sendPermissionAlert(guildId);
-                // console.info(result)
-
-                initTemplateCreationScheduler({ runOnExecution: true });
+                initTemplateCreationScheduler({ runOnExecution: true })
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

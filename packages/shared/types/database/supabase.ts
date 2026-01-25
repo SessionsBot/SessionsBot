@@ -17,6 +17,7 @@ export type Database = {
       audit_logs: {
         Row: {
           created_at: string
+          event_meta: Json | null
           event_type: string
           guild_id: string
           id: string
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          event_meta?: Json | null
           event_type: string
           guild_id: string
           id?: string
@@ -31,6 +33,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          event_meta?: Json | null
           event_type?: string
           guild_id?: string
           id?: string
@@ -226,6 +229,13 @@ export type Database = {
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "session_rsvps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["discord_id"]
+          },
         ]
       }
       session_templates: {
@@ -238,6 +248,7 @@ export type Database = {
           guild_id: string
           id: string
           last_post_utc: string | null
+          mention_roles: string[] | null
           native_events: boolean
           next_post_utc: string | null
           post_before_ms: number
@@ -260,6 +271,7 @@ export type Database = {
           guild_id: string
           id?: string
           last_post_utc?: string | null
+          mention_roles?: string[] | null
           native_events?: boolean
           next_post_utc?: string | null
           post_before_ms: number
@@ -282,6 +294,7 @@ export type Database = {
           guild_id?: string
           id?: string
           last_post_utc?: string | null
+          mention_roles?: string[] | null
           native_events?: boolean
           next_post_utc?: string | null
           post_before_ms?: number
@@ -314,6 +327,7 @@ export type Database = {
           event_id: string | null
           guild_id: string
           id: string
+          mention_roles: string[] | null
           signup_id: string
           starts_at_utc: string | null
           template_id: string | null
@@ -330,6 +344,7 @@ export type Database = {
           event_id?: string | null
           guild_id: string
           id?: string
+          mention_roles?: string[] | null
           signup_id: string
           starts_at_utc?: string | null
           template_id?: string | null
@@ -346,6 +361,7 @@ export type Database = {
           event_id?: string | null
           guild_id?: string
           id?: string
+          mention_roles?: string[] | null
           signup_id?: string
           starts_at_utc?: string | null
           template_id?: string | null

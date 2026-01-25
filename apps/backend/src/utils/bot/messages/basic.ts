@@ -45,10 +45,10 @@ export const genericErrorMsg = ({
 export const defaultFooterText = (opts:
     {
         /** Whether or not to show the `Need Help?` text with support url or not. 
-         * @_default false */
+         * @default false */
         showHelpLink?: boolean
         /** Whether or not to display this text as a subheading(`-#`). 
-         * @_default false */
+         * @default false */
         lightFont?: boolean
     } = {
         // Default opts:

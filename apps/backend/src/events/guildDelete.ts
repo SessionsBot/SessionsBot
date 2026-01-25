@@ -10,7 +10,7 @@ export default {
     name: Events.GuildCreate,
     async execute(guild: Guild) {
         // Log removing guild:
-        createLog.for('Guilds').info(`+ GUILD ADDED - ${guild.name} - ${guild.id}`);
+        createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`);
         discordLog.events.guildRemoved(guild, true);
 
         // Delete removing guild from database:

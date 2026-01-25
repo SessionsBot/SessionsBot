@@ -23,6 +23,7 @@ export const API_SessionTemplateBodySchema = z.object({
     last_post_utc: z.nullish(z.string()),
     next_post_utc: z.string(),
     expires_at_utc: z.nullish(z.string()),
+    mention_roles: z.nullish(z.array(z.string()))
 })
 /** **API/Database Data Interface** - Sessions Templates Table Row */
 export type API_SessionTemplateBodyInterface = z.infer<typeof API_SessionTemplateBodySchema>;

@@ -19,6 +19,8 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     MAX_RSVP_CAPACITY: number;
     /** Weather to allow RSVP restrictions by assigned guild roles. */
     ALLOW_RSVP_ROLE_RESTRICTION: boolean;
+    /** Weather to allow guild role mentions inside the session's post. */
+    ALLOW_MENTION_ROLES: boolean;
     /** Weather to allow session notifications based on subscription level. */
     ALLOW_NOTIFICATIONS: boolean;
     /** Weather to allow custom message accent colors based on subscription level. */
@@ -31,6 +33,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         MAX_RSVP_SLOTS: 3,
         MAX_RSVP_CAPACITY: 10,
         ALLOW_RSVP_ROLE_RESTRICTION: false,
+        ALLOW_MENTION_ROLES: false,
         ALLOW_NOTIFICATIONS: false,
         CUSTOM_ACCENT_COLOR: false,
         SHOW_WATERMARK: true,
@@ -40,6 +43,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         MAX_RSVP_SLOTS: 5,
         MAX_RSVP_CAPACITY: 20,
         ALLOW_RSVP_ROLE_RESTRICTION: true,
+        ALLOW_MENTION_ROLES: true,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
         SHOW_WATERMARK: false,
@@ -47,11 +51,12 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     ENTERPRISE: {
         MAX_SCHEDULES: Infinity,
         MAX_RSVP_SLOTS: 10,
-        ALLOW_RSVP_ROLE_RESTRICTION: true,
         MAX_RSVP_CAPACITY: Infinity,
+        ALLOW_RSVP_ROLE_RESTRICTION: true,
+        ALLOW_MENTION_ROLES: true,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
-        SHOW_WATERMARK: true,
+        SHOW_WATERMARK: false,
     },
 } as const;
 
