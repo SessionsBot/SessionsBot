@@ -45,7 +45,7 @@ export default {
 
                 // console.info('Event Created!', event.name, event.url)
 
-                initTemplateCreationScheduler({ runOnExecution: true })
+                // initTemplateCreationScheduler({ runOnExecution: true })
 
 
                 // End testing..

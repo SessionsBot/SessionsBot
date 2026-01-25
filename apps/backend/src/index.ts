@@ -68,10 +68,10 @@ for (const filePath of buttonFiles) {
 const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
-		client.once('clientReady', (c) => {
-			ready.execute(c as any)
+		client.once('clientReady', async (c) => {
+			await ready.execute(c as any);
+			await initTemplateCreationScheduler()
 		})
-		initTemplateCreationScheduler()
 		break;
 	};
 	const { default: event } = await import(pathToFileURL(filePath).href);
