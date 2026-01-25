@@ -175,18 +175,37 @@ async function executeTemplateCreationSchedule() {
                 if (t.native_events) {
                     // Events Enabled - Create
                     try {
+                        // Get Event Safe Dates:
+                        const baseStart =
+                            sessionStart > DateTime.utc()
+                                ? sessionStart
+                                : DateTime.utc().plus({ hour: 1 }).startOf("hour");
+                        const eventStart = baseStart
+                            .setZone(t.time_zone)
+                            .toJSDate();
+                        const eventEnd = t.duration_ms
+                            ? baseStart
+                                .plus({ milliseconds: t.duration_ms })
+                                .setZone(t.time_zone)
+                                .toJSDate()
+                            : baseStart
+                                .plus({ days: 1 })
+                                .startOf("day")
+                                .setZone(t.time_zone)
+                                .toJSDate();
+                        // Create Discord Native Event:
                         event = await guild.scheduledEvents.create({
                             name: t.title,
-                            description: t.description,
-                            scheduledStartTime: sessionStart > DateTime.now() ? sessionStart.toJSDate() : DateTime.now().endOf('hour').toJSDate(),
-                            scheduledEndTime: t.duration_ms ? sessionStart.plus({ milliseconds: t.duration_ms }).toJSDate() : sessionStart.endOf('day').toJSDate(),
+                            description: t.description?.slice(0, 1000) || null,
+                            scheduledStartTime: eventStart,
+                            scheduledEndTime: eventEnd,
                             entityType: GuildScheduledEventEntityType.External,
                             privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                             entityMetadata: { location: t.url ? t.url : signupMsg.url },
                         })
                     } catch (err) {
                         // Event Creation Error:
-                        createLog.for('Bot').error('Failed to create a NATIVE EVENT for a session! - See Details..', { guildId, session })
+                        createLog.for('Bot').error('Failed to create a NATIVE EVENT for a session! - See Details..', { guildId, session, err })
                     }
 
                 }
