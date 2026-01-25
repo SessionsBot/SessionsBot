@@ -176,10 +176,10 @@ async function executeTemplateCreationSchedule() {
                     // Events Enabled - Create
                     try {
                         // Get Event Safe Dates:
-                        const baseStart =
-                            sessionStart > DateTime.utc()
-                                ? sessionStart
-                                : DateTime.utc().plus({ hour: 1 }).startOf("hour");
+                        const baseStart = sessionStart > DateTime.utc()
+                            ? sessionStart
+                            : DateTime.utc().plus({ hour: 1 }).startOf("hour");
+                        const localStart = baseStart.setZone(t.time_zone);
                         const eventStart = baseStart
                             .setZone(t.time_zone)
                             .toJSDate();
@@ -188,17 +188,29 @@ async function executeTemplateCreationSchedule() {
                                 .plus({ milliseconds: t.duration_ms })
                                 .setZone(t.time_zone)
                                 .toJSDate()
-                            : baseStart
-                                .setZone(t.time_zone)
-                                .endOf("day")
-                                .plus({ milliseconds: 1 })
-                                .toJSDate();
+                            : DateTime.fromObject(
+                                {
+                                    year: localStart.year,
+                                    month: localStart.month,
+                                    day: localStart.day + 1,
+                                    hour: 0,
+                                    minute: 0,
+                                    second: 0,
+                                    millisecond: 0,
+                                },
+                                { zone: t.time_zone }
+                            ).toJSDate();
                         // : baseStart
                         //     .setZone(t.time_zone)
                         //     .plus({ days: 1 })
                         //     .startOf("day")
                         //     .toJSDate();
                         // Create Discord Native Event:
+                        console.info('Creating Discord Event:')
+                        console.info('UTC START', sessionStart.toFormat('f'))
+                        console.info('Local START', localStart.toFormat('f'))
+                        console.info('START DATE', eventStart)
+                        console.info('END DATE', eventEnd, '\n-----')
                         event = await guild.scheduledEvents.create({
                             name: t.title,
                             description: t.description?.slice(0, 1000) || null,
