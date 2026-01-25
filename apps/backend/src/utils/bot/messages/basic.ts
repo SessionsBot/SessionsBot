@@ -50,11 +50,13 @@ export const defaultFooterText = (opts:
         /** Whether or not to display this text as a subheading(`-#`). 
          * @default false */
         lightFont?: boolean
+        /** Additional text to append to the end of the footer's text content. */
+        appendText?: string
     } = {
         // Default opts:
         showHelpLink: false,
         lightFont: false
     }
 ) => {
-    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings['sessions']} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''}` })
+    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings['sessions']} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
 }

@@ -2,6 +2,7 @@ import { SubscriptionSKUs } from '@sessionsbot/shared';
 import pkg from '../../package.json' with { type: 'json' };
 import { ExtendedClient } from './types/extendedClient.js';
 import { Entitlement, SKU } from 'discord.js';
+import { BotEmojiName } from './bot/fetchEmojis';
 
 
 const core = {
@@ -32,7 +33,7 @@ const core = {
 
     /** Custom emoji strings formatted for use within Discord. 
      * * (loaded by `ready` event) */
-    emojiStrings: <{ [emojiName: string]: string }>{
+    emojiStrings: <Record<BotEmojiName, string>>{
         sessions: ':null:',
         sessionsWText: ':null:'
     },

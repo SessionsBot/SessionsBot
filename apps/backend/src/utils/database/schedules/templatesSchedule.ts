@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import core, { urls } from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg } from "../../bot/messages/sessionSignup";
-import { ChannelType, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
+import { ChannelType, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
 import { genericErrorMsg } from "../../bot/messages/basic";
 import sendWithFallback from "../../bot/messages/sendWithFallback";
@@ -170,10 +170,32 @@ async function executeTemplateCreationSchedule() {
                     flags: MessageFlags.IsComponentsV2
                 })
 
+                // Native Discord Event - Create if Enabled:
+                let event: GuildScheduledEvent = null;
+                if (t.native_events) {
+                    // Events Enabled - Create
+                    try {
+                        event = await guild.scheduledEvents.create({
+                            name: t.title,
+                            description: t.description,
+                            scheduledStartTime: sessionStart > DateTime.now() ? sessionStart.toJSDate() : DateTime.now().endOf('hour').toJSDate(),
+                            scheduledEndTime: t.duration_ms ? sessionStart.plus({ milliseconds: t.duration_ms }).toJSDate() : sessionStart.endOf('day').toJSDate(),
+                            entityType: GuildScheduledEventEntityType.External,
+                            privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                            entityMetadata: { location: t.url ? t.url : signupMsg.url },
+                        })
+                    } catch (err) {
+                        // Event Creation Error:
+                        createLog.for('Bot').error('Failed to create a NATIVE EVENT for a session! - See Details..', { guildId, session })
+                    }
+
+                }
+
                 // Update Signup Msg & Thread Id(s) to Session in DB:
                 const { error: updateSessionErr } = await supabase.from('sessions').update({
                     signup_id: signupMsg.id,
                     thread_id: t.post_in_thread ? destinationChannel.id : null,
+                    event_id: t.native_events ? event?.id : null
                 }).eq('id', session.id)
                 if (updateSessionErr) {
                     createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "signup_id"', { updateSessionErr, session })

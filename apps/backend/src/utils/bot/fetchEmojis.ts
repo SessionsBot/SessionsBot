@@ -1,5 +1,7 @@
 import core from '../core.js'
 
+export type BotEmojiName = "sessions" | "sessionsWText"
+
 export default async () => {
     // Fetch App Emojis:
     const fetch = await core.botClient.application.emojis.fetch();
@@ -9,5 +11,5 @@ export default async () => {
         botEmojis[data.name] = `<:${data.name}:${id}>`;
     }
     // Assign to core:
-    return core.emojiStrings = botEmojis;
+    return core.emojiStrings = botEmojis as any;
 }
