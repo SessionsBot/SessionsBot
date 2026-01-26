@@ -3,6 +3,7 @@ import { supabase } from "../utils/database/supabase";
 import core from "../utils/core";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import { defaultFooterText } from "../utils/bot/messages/basic";
+import { DateTime } from "luxon";
 
 const {
     colors: { getOxColor },
@@ -94,19 +95,76 @@ export default {
 
         // On Reply Collector - Interaction Collected:
         replyCollector.on('collect', async (ci) => {
+            // Parse & Handle Interaction:
             const selected = ci.values?.at(-1)
             await ci.deferUpdate()
+
+            // Get Session Dates:
+            const startUtc = DateTime.fromISO(session.starts_at_utc, { zone: 'utc' })
+            const endUtc = session.duration_ms
+                ? DateTime.fromISO(session.starts_at_utc, { zone: 'utc' }).plus({ millisecond: session.duration_ms })
+                : null
+            // Util: Convert DateTime -> Cal Date Format:
+            function formatDate(d: DateTime) {
+                return d.toFormat(`yyyyMMdd'T'HHmmss'Z'`);
+            }
+            // Util: Build Google Calendar Event URL:
+            const buildGoogleUrl = () => {
+                const params = new URLSearchParams({
+                    action: 'TEMPLATE',
+                    text: session.title,
+                    details: session.description ?? '',
+                    location: session.url ?? '',
+                    dates: endUtc
+                        ? `${formatDate(startUtc)}/${formatDate(endUtc)}`
+                        : `${startUtc.toFormat(`yyyyMMdd`)}/${startUtc.plus({ day: 1 }).toFormat(`yyyyMMdd`)}`,
+                })
+                return `https://calendar.google.com/calendar/render?${params.toString()}`
+            }
+            // Util: Build Outlook Calendar Event URL:
+            const buildOutlookUrl = () => {
+                const params = new URLSearchParams({
+                    subject: session.title,
+                    body: session.description ?? '',
+                    location: session.url ?? '',
+                    startdt: startUtc.toISO(),
+                    ...(endUtc && { enddt: endUtc.toISO() })
+                })
+                return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`
+            }
+
+            const buildICS = () => {
+                return `
+                    BEGIN:VCALENDAR
+                    VERSION:2.0
+                    PRODID:-//Sessions Bot//EN
+                    CALSCALE:GREGORIAN
+                    BEGIN:VEVENT
+                    UID:${session.id}@sessionsbot.fyi
+                    DTSTAMP:${formatDate(DateTime.now())}
+                    DTSTART:${formatDate(startUtc)}
+                    ${endUtc ? `DTEND:${formatDate(endUtc)}` : ''}
+                    SUMMARY:${session.title}
+                    DESCRIPTION:${session.description ?? ''}
+                    LOCATION:${session.url ?? ''}
+                    END:VEVENT
+                    END:VCALENDAR
+                `.trim()
+            }
+
+
+
 
             const responseData = () => {
                 switch (selected) {
                     case 'outlook':
-                        return 'OUTLOOK URL - here'
+                        return buildOutlookUrl()
                     case 'google':
-                        return 'GOOGLE URL - here'
+                        return buildGoogleUrl()
                     case 'apple':
                     case 'ics':
                     default:
-                        return 'ICS FILE FORMAT - here'
+                        return `\`\`\`ics\n${buildICS()}\n\`\`\``
                 }
             }
 
@@ -130,7 +188,7 @@ export default {
         // On Reply Collector - End/Timeout:
         replyCollector.on('end', async (v, r) => {
             console.info('Collector Ended!', r)
-            if (r = 'idle') {
+            if (r == 'idle') {
                 // Send Timed Out Alert:
                 await i.editReply({
                     components: [

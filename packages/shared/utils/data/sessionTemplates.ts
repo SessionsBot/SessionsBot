@@ -75,12 +75,12 @@ export function dbIsoUtcToDateTime(
 }
 
 
-/** Maps RSVPs from `JSON` string data from database.  */
+/** Maps RSVPs from `JSON` string data from database to an `array`.  */
 export function mapRsvps(rsvpJSON: any) {
     const parsed = JSON.parse(String(rsvpJSON));
     const rsvpsArray: {
         name: string,
-        emoji: string,
+        emoji?: string | null,
         capacity: number,
         required_roles?: string[]
     }[] = Array.from(parsed);

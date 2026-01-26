@@ -1,17 +1,8 @@
-import { ButtonStyle, ComponentType, ContainerBuilder, ActionRowBuilder, ButtonBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, TextDisplayBuilder, TextChannel, ThreadAutoArchiveDuration, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, } from "discord.js";
-import core, { get0xColor } from "./core.js";
-import { initTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
+import core from "./core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
-import fetchSKUs from "./bot/fetchSKUs.js";
-import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
-import createAuditLog, { AuditEvent } from "./database/auditLog.js";
-import { supabase } from "./database/supabase.js";
-import guildCreate from "../events/guildCreate.js";
-import { SubscriptionSKUs } from "@sessionsbot/shared";
-import { defaultFooterText } from "./bot/messages/basic.js";
-import sendWithFallback from "./bot/messages/sendWithFallback.js";
-import { DateTime } from "luxon";
+
+import { testMigrator } from "./migration/migrator.js";
 
 
 const createLog = useLogger();
@@ -46,6 +37,8 @@ export default {
                 // console.info('Event Created!', event.name, event.url)
 
                 // initTemplateCreationScheduler({ runOnExecution: true })
+
+                testMigrator()
 
 
                 // End testing..

@@ -89,6 +89,7 @@ export type Database = {
       }
       guilds: {
         Row: {
+          accent_color: string
           id: string
           joined_at: string
           member_count: number
@@ -96,6 +97,7 @@ export type Database = {
           owner_id: string
         }
         Insert: {
+          accent_color?: string
           id: string
           joined_at?: string
           member_count: number
@@ -103,6 +105,7 @@ export type Database = {
           owner_id: string
         }
         Update: {
+          accent_color?: string
           id?: string
           joined_at?: string
           member_count?: number

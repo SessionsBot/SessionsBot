@@ -171,7 +171,7 @@ async function executeTemplateCreationSchedule() {
                 })
 
                 // Native Discord Event - Create if Enabled:
-                let event: GuildScheduledEvent = null;
+                let event: GuildScheduledEvent | null = null;
                 if (t.native_events) {
                     // Events Enabled - Create
                     try {
@@ -200,17 +200,8 @@ async function executeTemplateCreationSchedule() {
                                 },
                                 { zone: t.time_zone }
                             ).toJSDate();
-                        // : baseStart
-                        //     .setZone(t.time_zone)
-                        //     .plus({ days: 1 })
-                        //     .startOf("day")
-                        //     .toJSDate();
+
                         // Create Discord Native Event:
-                        console.info('Creating Discord Event:')
-                        console.info('UTC START', sessionStart.toFormat('f'))
-                        console.info('Local START', localStart.toFormat('f'))
-                        console.info('START DATE', eventStart)
-                        console.info('END DATE', eventEnd, '\n-----')
                         event = await guild.scheduledEvents.create({
                             name: t.title,
                             description: t.description?.slice(0, 1000) || null,
@@ -277,6 +268,12 @@ export async function initTemplateCreationScheduler(opts?: { runOnExecution?: bo
     if (debugSchedule) console.info(`[⏰] Initializing Template Creation Scheduler! - At: ${DateTime.now().toFormat('F')}`)
     sessionTemplateCreationCron = cron.schedule(`*/5 * * * *`, executeTemplateCreationSchedule, {
         timezone: 'UTC', name: 'template_creation'
+    })
+
+    // Catch - Execution Errors:
+    sessionTemplateCreationCron.on("execution:failed", (ctx) => {
+        const { execution } = ctx;
+        createLog.for('Schedule').error('EXECUTION FAILED! - CRITICAL - See Details..', { details: execution })
     })
 
     if (opts?.runOnExecution) {
