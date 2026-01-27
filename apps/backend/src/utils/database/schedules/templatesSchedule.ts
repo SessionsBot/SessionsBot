@@ -188,18 +188,10 @@ async function executeTemplateCreationSchedule() {
                                 .plus({ milliseconds: t.duration_ms })
                                 .setZone(t.time_zone)
                                 .toJSDate()
-                            : DateTime.fromObject(
-                                {
-                                    year: localStart.year,
-                                    month: localStart.month,
-                                    day: localStart.day + 1,
-                                    hour: 0,
-                                    minute: 0,
-                                    second: 0,
-                                    millisecond: 0,
-                                },
-                                { zone: t.time_zone }
-                            ).toJSDate();
+                            : baseStart
+                                .plus({ hour: 1 })
+                                .setZone(t.time_zone)
+                                .toJSDate();
 
                         // Create Discord Native Event:
                         event = await guild.scheduledEvents.create({
