@@ -161,3 +161,19 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
         return null
     }
 }
+
+
+export function buildSessionThreadStartMsg(date: DateTime, watermark: boolean, accent_color?: number) {
+    let r = new ContainerBuilder({
+        accent_color: accent_color || colors.getOxColor('purple'),
+        components: <any>[
+            new TextDisplayBuilder({ content: `### 📅 Sessions for ${date.month}/${date.day}` }),
+            new SeparatorBuilder(),
+            new TextDisplayBuilder({ content: `-# You can view todays scheduled events/sessions by opening the attached thread below. 😊` })
+        ]
+    })
+    if (watermark) r.components.push(
+        defaultFooterText()
+    )
+    return r
+}

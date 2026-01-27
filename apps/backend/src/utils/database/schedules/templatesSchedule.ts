@@ -4,7 +4,7 @@ import { supabase } from "../supabase"
 import { DateTime } from "luxon";
 import core, { urls } from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
-import { buildSessionSignupMsg } from "../../bot/messages/sessionSignup";
+import { buildSessionSignupMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionSignup";
 import { ChannelType, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
 import { genericErrorMsg } from "../../bot/messages/basic";
@@ -149,10 +149,18 @@ async function executeTemplateCreationSchedule() {
                         destinationChannel = existingThread;
                     }
                     else {
+                        // CREATING THREAD - Send "Thread Start" Message:
+                        const threadStartMsg = await channel.send({
+                            components: [
+                                buildSessionThreadStartMsg(dayInZone, guildSubscription.limits.SHOW_WATERMARK)
+                            ],
+                            flags: MessageFlags.IsComponentsV2
+                        })
                         // Create NEW Thread for Day - Assign:
                         const thread = await channel.threads.create({
                             name: threadTitle,
                             autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+                            startMessage: threadStartMsg,
                             type: ChannelType.PublicThread
                         })
                         destinationChannel = thread;

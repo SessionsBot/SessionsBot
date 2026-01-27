@@ -2,7 +2,7 @@ import core from "./core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 
-import { testMigrator } from "./migration/migrator.js";
+import { initTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
 
 
 const createLog = useLogger();
@@ -38,7 +38,7 @@ export default {
 
                 // initTemplateCreationScheduler({ runOnExecution: true })
 
-                testMigrator()
+                // testMigrator()
 
 
                 // End testing..

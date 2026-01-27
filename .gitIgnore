@@ -2,3 +2,4 @@
 node_modules/
 private*
 *.private*
+apps/backend/src/utils/migration/**
