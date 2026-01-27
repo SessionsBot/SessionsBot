@@ -1,6 +1,8 @@
 <script lang="ts" setup>
     import AllResourcesList from './AllResourcesList.vue';
+
     import LandingSection from './LandingSection.vue';
+
 
 </script>
 
@@ -41,10 +43,13 @@
             <AllResourcesList />
         </div>
 
+
         <!-- Spacer -->
         <span class="w-4 flex grow bg-rose-400/30" />
 
         <SiteFooter />
+
+
     </div>
 </template>
 

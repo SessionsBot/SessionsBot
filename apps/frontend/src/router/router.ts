@@ -9,6 +9,7 @@ import Dashboard from "./dashboard/dashboard.vue";
 import Support from "./support/support.vue";
 import { useAuthStore } from "@/stores/auth";
 import Pricing from "./pricing/pricing.vue";
+import TestPage from "./test/TestPage.vue";
 
 // ALL Page Routes:
 const routes: RouterOptions['routes'] = [
@@ -75,6 +76,14 @@ const routes: RouterOptions['routes'] = [
         beforeEnter: async () => {
             return window.location.assign(externalUrls.inviteBot);
         }
+    },
+
+    // Extra - Tests:
+    {
+        path: '/test',
+        name: 'Testing',
+        alias: ['/tests', '/testing', '/t'],
+        component: TestPage
     },
 
     // Not Found - 404:
