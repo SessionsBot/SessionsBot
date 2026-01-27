@@ -1,20 +1,49 @@
 <script lang="ts" setup>
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { AuditEvent, type Database } from '@sessionsbot/shared';
+    import { DateTime } from 'luxon';
+    import EventLabel from './EventLabel.vue';
+    import EventDetailsDialog from './EventDetailsDialog.vue';
 
-    const auditEvents = ref<{ date: Date, user: string, action: string }[]>(
-        [
-            { date: new Date(), user: 'BOT', action: 'Created Session' },
-            { date: new Date(), user: 'br4dyb', action: 'RSVPed to Session' },
-            { date: new Date(), user: 'BOT', action: 'Created Session' },
-            { date: new Date(), user: 'br4dyb', action: 'Un-RSVPed from Session' },
-        ]
-    )
+
+    // Services:
+    const dashboard = useDashboardStore();
+
+    // Dashboard Data
+    const auditData = computed(() => dashboard.guild.auditLog)
+    const auditEvents = computed(() => auditData.value?.state)
+
+    // Event Details Modal:
+    const useEventDetailsModal = () => {
+        const isVisible = ref<boolean>(false)
+        const selectedEvent = ref<Database['public']['Tables']['audit_logs']['Row'] | null>()
+
+        function openDetails(e: Database['public']['Tables']['audit_logs']['Row']) {
+            selectedEvent.value = e,
+                isVisible.value = true
+        }
+
+        function closeDetails() {
+            selectedEvent.value = null;
+            isVisible.value = false
+        }
+
+        return {
+            isVisible,
+            selectedEvent,
+            openDetails,
+            closeDetails
+        }
+    }
+    const eventDetailsModal = useEventDetailsModal();
 
 </script>
 
 
 <template>
     <div class="dashboard-tab-view">
-        <!-- Title & Desc -->
+
+        <!-- Title -->
         <div class="w-full flex items-center justify-start flex-row gap-0">
             <div class="w-fit h-fit flex aspect-square">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 48 48">
@@ -30,51 +59,76 @@
             </p>
         </div>
 
+        <!-- Desc -->
         <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
             Take a look below at any of the recent actions Sessions Bot or server members have made in relation to
             sessions, RSVPs, etc.
         </p>
 
+
+
         <!-- Audit Log - Table -->
-        <div class="auditLog">
+        <div class="auditLogTable">
 
             <!-- Header Row -->
-            <div class="font-bold uppercase grid grid-cols-3">
+            <div class="font-bold uppercase grid grid-cols-3 w-full!">
                 <p class="heading-cell rounded-tl-md">
                     Date
+                </p>
+
+                <p class="heading-cell rounded-tr-md">
+                    Action
                 </p>
 
                 <p class="heading-cell">
                     User
                 </p>
 
-                <p class="heading-cell rounded-tr-md">
-                    Action
-                </p>
             </div>
 
-            <!-- Content Row -->
-            <div v-for="e of auditEvents" class="content-row">
-                <p class="content-cell">
-                    {{ e.date.toLocaleDateString() }}
-                </p>
-
-                <p class="content-cell">
-                    {{ e.user }}
-                </p>
-
+            <!-- Content Row(s) -->
+            <div title="View Details" v-for="e of auditEvents" class="content-row group"
+                @click="eventDetailsModal.openDetails(e)">
+                <!-- Date -->
                 <p class="content-cell ">
-                    {{ e.action }}
+                    {{ DateTime.fromISO(e.created_at).toFormat('f') }}
                 </p>
+
+                <!-- Event -->
+                <div class="content-cell">
+                    <!-- @vue-expect-error -->
+                    <EventLabel :event="e.event_type" />
+                </div>
+
+                <!-- User -->
+                <div class="content-cell">
+                    <div v-if="e.user_id === 'BOT'" class="flex flex-row items-center justify-start gap-1">
+                        <Iconify icon="bx:bot" />
+                        <p> BOT </p>
+                    </div>
+                    <p v-else>
+                        {{ JSON.parse(String(e?.event_meta))?.username || e.user_id }}
+                    </p>
+                </div>
+
             </div>
 
-
-            <p class="italic font-black w-full mt-2 text-center uppercase text-xs text-white/40">
-                . . .<br>
+            <!-- Footer / No Events -->
+            <p v-if="!auditEvents?.length"
+                class="italic font-black ring-ring ring w-full py-2 text-center uppercase text-xs text-white/40">
+                No Events Found!
+            </p>
+            <p v-else class="italic font-black ring-ring ring w-full py-2 text-center uppercase text-xs text-white/40">
                 END OF EVENTS
             </p>
 
         </div>
+
+
+        <!-- View Details - Audit Event Entry -->
+        <EventDetailsDialog v-model:isVisible="eventDetailsModal.isVisible.value"
+            v-model:selectedEvent="eventDetailsModal.selectedEvent.value" @close="eventDetailsModal.closeDetails()" />
+
 
     </div>
 </template>
@@ -84,21 +138,22 @@
 
     @reference "@/styles/main.css";
 
-    .auditLog {
-        @apply mt-5 pb-2 bg-white/5 ring-ring ring-2 rounded-md w-[95%];
+    .auditLogTable {
+        @apply mt-5 !max-h-fit block bg-surface ring-ring ring-2 rounded-md overflow-clip;
 
         *.heading-cell {
-            @apply w-full text-center p-2 bg-black/10 ring-1 ring-ring;
+            @apply w-full text-center p-2 bg-black/30 ring-1 ring-ring;
         }
 
         *.content-row {
-            @apply w-full grid grid-cols-3 grid-rows-1
+            @apply grid transition-all grid-cols-3 grid-flow-row-dense
         }
 
         *.content-cell {
-            @apply bg-white/7 flex items-center w-full p-1 px-1.5 ring-1 ring-ring font-medium text-white/85;
+            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-ring/40 group-hover:cursor-pointer group-active:bg-ring/25 flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring font-medium text-white/85;
         }
 
     }
+
 
 </style>

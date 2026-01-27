@@ -4,8 +4,9 @@ import core from "../utils/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
 import discordLog from "../utils/logs/discord";
 import dbManager from "../utils/database/manager";
-import createAuditLog, { AuditEvent } from "../utils/database/auditLog";
+import { createAuditLog } from "../utils/database/auditLog";
 import { defaultFooterText } from "../utils/bot/messages/basic";
+import { AuditEvent } from "@sessionsbot/shared";
 
 const createLog = useLogger();
 

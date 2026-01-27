@@ -1,11 +1,11 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
-import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
+import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core";
 import { defaultFooterText } from "../utils/bot/messages/basic";
 import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
-import createAuditLog, { AuditEvent } from "../utils/database/auditLog";
+import { createAuditLog } from "../utils/database/auditLog";
 
 export default {
     data: {
@@ -122,6 +122,7 @@ export default {
             guild: i.guildId,
             user: i.user.id,
             meta: {
+                username: i.user.username,
                 session_id: session.id,
                 rsvp_id: 'rsvp_' + rsvpId
             }

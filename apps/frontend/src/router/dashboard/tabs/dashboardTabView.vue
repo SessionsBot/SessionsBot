@@ -45,7 +45,8 @@
             </div>
 
             <!-- Main Page Content -->
-            <div v-else class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto min-h-fit!">
+            <div v-else
+                class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
 
                 <TransitionGroup name="slide" type="animation">
                     <KeepAlive key="tab_keep_alive">
@@ -78,7 +79,7 @@
     @reference "@/styles/main.css";
 
     :deep(.dashboard-tab-view) {
-        @apply flex p-5 flex-col w-full !min-h-fit grow justify-start items-center content-center;
+        @apply flex !p-5 flex-col flex-wrap !w-full !max-w-full !min-h-fit grow flex-1 justify-start items-center content-center;
     }
 
 

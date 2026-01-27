@@ -7,6 +7,8 @@
     import { supabase } from '@/utils/supabase';
     import { CheckCircle2, CheckCircle2Icon, XCircleIcon } from 'lucide-vue-next';
 
+    // Incoming Modal - Delete Data Dialog Visible:
+    const deleteDataDialogVisible = defineModel<boolean>('deleteDataDialogVisible')
 
     // Services:
     const auth = useAuthStore();
@@ -62,6 +64,7 @@
 
 <template>
     <div class="bg-surface ring-ring ring-2 rounded-md overflow-clip w-[80%] max-w-120">
+
         <!-- Panel Header -->
         <header
             class="bg-black/30 gap-1.5 p-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-b-2 border-ring">
@@ -71,11 +74,12 @@
                 <p class="font-extrabold">My Account</p>
             </div>
             <!-- Delete Button -->
-            <Button unstyled title="Delete my Data"
+            <Button unstyled title="Delete my Data" @click="deleteDataDialogVisible = !deleteDataDialogVisible"
                 class="p-1 rounded-md active:scale-95 hover:bg-white/10 hover:text-red-400/60 text-white/50 transition-all aspect-square cursor-pointer">
                 <Iconify icon="solar:trash-bin-trash-bold" size="20" />
             </Button>
         </header>
+
 
         <!-- User Account Details -->
         <div class=" p-2 pb-0 flex items-center justify-center flex-wrap w-full">
@@ -92,7 +96,7 @@
 
 
             <!-- Display Name -->
-            <div class="w-full flex flex-col gap-1 p-1 items-center justify-center">
+            <div class="w-full flex flex-col gap-1 pt-1.5 items-center justify-center">
                 <p class="detail-field-title">
                     Display Name
                 </p>
@@ -101,7 +105,7 @@
                 </p>
             </div>
             <!-- User Email -->
-            <div class="w-full flex flex-col gap-1 p-1 items-center justify-center">
+            <div class="w-full flex flex-col gap-1 pt-1.5 items-center justify-center">
                 <p class="detail-field-title">
                     Email
                 </p>
@@ -110,7 +114,7 @@
                 </p>
             </div>
             <!-- Last Sync -->
-            <div class="w-full flex flex-col gap-1 p-1 items-center justify-center">
+            <div class="w-full flex flex-col gap-1 pt-1.5 items-center justify-center">
                 <p class="detail-field-title">
                     Last Sync
                 </p>
@@ -154,13 +158,13 @@
             </Button>
 
             <!-- Sign Out -->
-            <Button unstyled class="bg-[#B34248]/90 hover:bg-[#99393D] active:bg-[#802F33] action-button">
+            <Button @click="auth.signOut()" unstyled
+                class="bg-[#B34248]/90 hover:bg-[#99393D] active:bg-[#802F33] action-button">
                 <Iconify icon="line-md:logout" size="20" />
                 <p class="font-semibold text-sm sm:text-[16px]"> Sign Out </p>
             </Button>
 
         </div>
-
 
 
         <!-- Footer -->

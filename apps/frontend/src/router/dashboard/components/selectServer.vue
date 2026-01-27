@@ -136,7 +136,20 @@
                 <p class="font-bold text-lg p-4 pb-0" :class="{ 'text-3xl!': !guildsWSession?.length }">
                     {{ guildsWSession?.length ? 'Or' : '' }} Invite Sessions Bot
                 </p>
-                <p class="text-xs p-3 pt-0 opacity-70"> To a server you manage/own: </p>
+                <!-- No Session Bot Servers - Text -->
+                <div v-if="!guildsWSession?.length"
+                    class="flex p-2 px-4 gap-1 opacity-70 text-xs flex-col items-center justify-center">
+                    <p class="font-bold">
+                        It seems like you currently don't manage any Discord servers
+                        with Sessions Bot installed as an application!
+                    </p>
+                    <p class="px-3 opacity-70">
+                        ** In order to access and utilize the dashboard you'll have to
+                        add the bot to a server you manage or own!
+                    </p>
+                </div>
+                <!-- Invite to Another - Text -->
+                <p v-else class="text-xs p-3 pt-0 opacity-70"> To a server you manage/own: </p>
                 <!-- Basic - Invite Button -->
                 <a :href="externalUrls.inviteBot">
                     <Button unstyled
@@ -145,6 +158,10 @@
                         <p class="font-medium text-sm text-shadow-sm"> Invite the Bot </p>
                     </Button>
                 </a>
+                <!-- No Sessions Bot Servers - Text -->
+                <div>
+
+                </div>
 
             </span>
 

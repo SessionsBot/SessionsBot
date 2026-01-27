@@ -65,19 +65,18 @@
 
         <Transition name="slide" mode="out-in">
             <!-- Dashboard View - Page/Wrap -->
-            <div v-if="dashboard.guild.id" class="absolute flex flex-row inset-0 w-full! h-full!">
+            <div v-if="dashboard.guild.id"
+                class="absolute flex flex-row inset-0 w-full! h-full! max-w-full! max-h-full!">
 
                 <!-- Dashboard - Nav/Sidebar -->
                 <DashboardNav />
 
                 <!-- Dashboard - Content View -->
-                <div class="ml-15 sm:ml-0! p-0 grow flex items-center justify-center">
-                    <div
-                        class="bg-red-500/0 w-full grow h-full min-h-fit flex flex-row justify-between items-center overflow-clip">
+                <div
+                    class=" pl-15 sm:pl-0! w-full h-full! max-w-full! max-h-full! p-0 grow flex items-center justify-center">
 
-                        <DashboardTabView />
+                    <DashboardTabView />
 
-                    </div>
                 </div>
 
             </div>

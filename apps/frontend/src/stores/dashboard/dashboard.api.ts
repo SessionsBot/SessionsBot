@@ -80,3 +80,20 @@ export const fetchTemplates = async (guild_id: string) => {
         throw new Error(`[!] Failed to fetch Guild Roles - API Request Failed!`);
     }
 }
+
+
+export const fetchAuditLog = async (guild_id: string) => {
+    // Confirm Inputs
+    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Audit Log - Missing guild id!`);
+    // Make DB Request
+    const { data, error } = await supabase.from('audit_logs')
+        .select('*')
+        .eq('guild_id', guild_id)
+    // Confirm Results
+    if (!error) {
+        return data
+    } else {
+        console.error('[!] Failed to fetch Guild Audit Log - API - See Details', { error })
+        throw new Error(`[!] Failed to fetch Guild Audit Log - API Request Failed!`);
+    }
+}

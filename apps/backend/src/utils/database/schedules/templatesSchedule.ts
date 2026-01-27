@@ -1,4 +1,4 @@
-import { calculateNextPostUTC, mapRsvps } from "@sessionsbot/shared";
+import { calculateNextPostUTC, mapRsvps, AuditEvent } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
@@ -9,7 +9,7 @@ import { ChannelType, GuildScheduledEvent, GuildScheduledEventEntityType, GuildS
 import cron, { ScheduledTask } from 'node-cron'
 import { genericErrorMsg } from "../../bot/messages/basic";
 import sendWithFallback from "../../bot/messages/sendWithFallback";
-import createAuditLog, { AuditEvent } from "../auditLog";
+import { createAuditLog } from "../auditLog";
 import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 
 const createLog = useLogger();

@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { useAuthStore } from "../auth";
 import { SubscriptionLevel, type API_SessionTemplateBodyInterface, type Database, } from "@sessionsbot/shared";
 import { supabase } from "@/utils/supabase";
-import { fetchChannels, fetchRoles, fetchSubscription, fetchTemplates } from "./dashboard.api";
+import { fetchAuditLog, fetchChannels, fetchRoles, fetchSubscription, fetchTemplates } from "./dashboard.api";
 import type { UseAsyncStateReturnBase } from "@vueuse/core";
 
 // Define Store:
@@ -15,7 +15,8 @@ const useDashboardStore = defineStore("dashboard_old", {
             channels: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchChannels>>, [], true> | null>null,
             roles: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchRoles>>, [], true> | null>null,
             sessionTemplates: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchTemplates>>, [], true> | null>null,
-            subscription: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchSubscription>>, [], true>>useAsyncState(async () => { return SubscriptionLevel.FREE }, SubscriptionLevel.FREE, { immediate: true })
+            subscription: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchSubscription>>, [], true>>useAsyncState(async () => { return SubscriptionLevel.FREE }, SubscriptionLevel.FREE, { immediate: true }),
+            auditLog: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchAuditLog>>, [], true> | null>null
         },
 
         nav: {
@@ -111,6 +112,10 @@ const useDashboardStore = defineStore("dashboard_old", {
             this.guild.sessionTemplates = useAsyncState(() => fetchTemplates(guild_id), null, {
                 immediate: true
             }) as any
+            // Get Audit Log:
+            this.guild.auditLog = useAsyncState(() => fetchAuditLog(guild_id), null, {
+                immediate: true
+            }) as any
         },
 
         /** Utility to reset guild related dashboard states. */
@@ -120,7 +125,8 @@ const useDashboardStore = defineStore("dashboard_old", {
                 channels: null,
                 roles: null,
                 subscription: SubscriptionLevel.FREE as any,
-                sessionTemplates: null
+                sessionTemplates: null,
+                auditLog: null
             }
             this.nav = {
                 currentTab: "Sessions",

@@ -1,12 +1,12 @@
 import express from 'express';
 import { verifyGuildAdmin } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
-import { API_SessionTemplateBodySchema, APIResponse as reply } from '@sessionsbot/shared';
+import { API_SessionTemplateBodySchema, AuditEvent, APIResponse as reply } from '@sessionsbot/shared';
 import { useLogger } from '../../../../../../utils/logs/logtail';
 import * as z from 'zod';
 import { HttpStatusCode } from 'axios';
 import { supabase } from '../../../../../../utils/database/supabase';
-import createAuditLog, { AuditEvent } from '../../../../../../utils/database/auditLog';
+import { createAuditLog } from '../../../../../../utils/database/auditLog';
 
 const createLog = useLogger();
 
@@ -40,7 +40,10 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: auth
                     event: AuditEvent.SessionCreated,
                     guild: newSession.guild_id,
                     user: req?.auth?.user?.user_metadata?.id,
-                    meta: { template_id: newSession.id }
+                    meta: {
+                        username: req?.auth?.profile?.username,
+                        template_id: newSession.id
+                    }
                 })
                 return new reply(res).success({ message: "Successfully created session template!", session: newSession })
             }
@@ -84,7 +87,10 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: aut
                     event: AuditEvent.SessionEdited,
                     guild: ExtSession.guild_id,
                     user: req?.auth?.user?.user_metadata?.id,
-                    meta: { template_id: ExtSession.id }
+                    meta: {
+                        username: req?.auth?.profile?.username,
+                        template_id: ExtSession.id
+                    }
                 })
                 return new reply(res).success({ message: "Successfully edited session template!", session: ExtSession })
             }
@@ -121,7 +127,10 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildAdmin, asy
             event: AuditEvent.SessionDeleted,
             guild: data.guild_id,
             user: req?.auth?.user?.user_metadata?.id,
-            meta: { template_id: data.id }
+            meta: {
+                username: req?.auth?.profile?.username,
+                template_id: data.id
+            }
         })
         return new reply(res).success(data)
 
