@@ -224,6 +224,7 @@ const customPreset = definePreset(Aura, {
                 hoverBorderColor: `var(--color-indigo-300)`,
                 focusBorderColor: `var(--color-indigo-400)`,
                 invalidBorderColor: 'var(--color-red-400)',
+                invalidPlaceholderColor: 'var(--color-red-400)',
                 focusRing: {
                     color: 'var(--color-indigo-400)'
                 },
@@ -259,11 +260,11 @@ const primePT: PrimeVuePTOptions = {
         ampm: 'text-white!'
     },
     select: {
-        root: 'bg-zinc-800! text-white! border-2! font-bold',
+        root: 'bg-zinc-800! text-white border-2! font-bold',
         overlay: 'text-white! border-2! border-zinc-600! overflow-clip',
         // option: 'hover:bg-white/5!',
         list: 'bg-zinc-800!',
-        label: 'text-white!',
+        label: 'text-white',
         optionLabel: 'text-white',
         optionGroupLabel: 'text-white',
         optionGroup: 'bg-black/20! rounded-md'
@@ -293,7 +294,8 @@ const primeVueConfig = <PrimeVueConfiguration>{
     theme: {
         preset: customPreset,
         options: {
-            darkModeSelector: '.dark'
+            darkModeSelector: '.dark',
+
         }
     },
     ripple: true,

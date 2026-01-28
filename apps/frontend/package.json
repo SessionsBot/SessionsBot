@@ -14,6 +14,7 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@odiffey/discord-markdown": "^3.3.0",
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^1.2.5",
     "@primevue/forms": "^4.4.1",

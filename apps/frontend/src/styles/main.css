@@ -17,7 +17,12 @@
   --font-play-pen: "Playpen Sans Arabic";
   --font-cut-letters: "Protest Guerrilla";
   --default-font-family: var(--font-rubik);
+  
+
 }
+
+
+
 
 html,
 body {
@@ -37,6 +42,10 @@ body {
   flex-direction: column;
   flex-wrap: wrap;
   min-height: 100vh; /* Full screen height */
+}
+
+.p-select-label {
+  --p-select-color: white;
 }
 
 .scroll-hidden {
