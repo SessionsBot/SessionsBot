@@ -10,12 +10,14 @@
     const dashboard = useDashboardStore();
     const auth = useAuthStore();
 
+
+
     // BEFORE MOUNT - Load Saved Guild Choice:
     onBeforeMount(() => {
         // Load Saved "Guild Selection":
-        const choice = dashboard.savedGuildSelection.get();
+        const choice = dashboard.saveGuildChoice.get()
         if (choice) {
-            dashboard.guild.id = choice;
+            dashboard.guildId = choice;
             dashboard.nav.expanded = false;
         }
     });
@@ -30,29 +32,29 @@
     }
 
     // WATCH - Guild Selected - Fetch Data:
-    watch(() => dashboard.guild.id, async (id) => {
-        if (!id) {
-            // No Guild Id Selected - Clear Store:
-            dashboard.clearGuildStoreData();
-            return
-        }
-        if (!auth.authReady) {
-            // Auth NOT READY - Await Readiness:
-            // console.warn('[Dashboard Data]: Waiting for auth to be ready for data fetch...');
-            await waitForAuthReady();
-        }
-        if (!auth.signedIn) {
-            // No User Signed In - Clear Store - Prompt Sign In:
-            console.warn('[Dashboard Data]: Auth Ready - NO USER - Clearing Store');
-            dashboard.clearGuildStoreData();
-            auth.signIn('/dashboard')
-            return;
-        }
-        // CHECKS PASSED - Fetch Data for Selected Guild:
-        // await fetchGuildData();
-        await dashboard.fetchGuildApiData()
+    // watch(() => dashboard.guild.id, async (id) => {
+    //     if (!id) {
+    //         // No Guild Id Selected - Clear Store:
+    //         dashboard.clearGuildStoreData();
+    //         return
+    //     }
+    //     if (!auth.authReady) {
+    //         // Auth NOT READY - Await Readiness:
+    //         // console.warn('[Dashboard Data]: Waiting for auth to be ready for data fetch...');
+    //         await waitForAuthReady();
+    //     }
+    //     if (!auth.signedIn) {
+    //         // No User Signed In - Clear Store - Prompt Sign In:
+    //         console.warn('[Dashboard Data]: Auth Ready - NO USER - Clearing Store');
+    //         dashboard.clearGuildStoreData();
+    //         auth.signIn('/dashboard')
+    //         return;
+    //     }
+    //     // CHECKS PASSED - Fetch Data for Selected Guild:
+    //     // await fetchGuildData();
+    //     await dashboard.fetchGuildApiData()
 
-    }, { immediate: true });
+    // }, { immediate: true });
 
 
 </script>
@@ -65,7 +67,7 @@
 
         <Transition name="slide" mode="out-in">
             <!-- Dashboard View - Page/Wrap -->
-            <div v-if="dashboard.guild.id"
+            <div v-if="dashboard.guildId"
                 class="absolute flex flex-row inset-0 w-full! h-full! max-w-full! max-h-full!">
 
                 <!-- Dashboard - Nav/Sidebar -->

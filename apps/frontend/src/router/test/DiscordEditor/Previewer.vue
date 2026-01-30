@@ -47,7 +47,7 @@
                 slash(node) {
                     return '/command'
                 }
-            }
+            },
         })
     })
 

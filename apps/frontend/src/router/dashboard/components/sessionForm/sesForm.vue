@@ -22,7 +22,7 @@
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
     const toaster = useToast()
-    const guildTemplates = computed(() => dashboard.guild.sessionTemplates)
+    // const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state)
 
     // Form Visibility:
     const sessionsFormVisible = computed({
@@ -31,7 +31,7 @@
     })
 
     // Guild Id:
-    const guildId = computed(() => dashboard.guild.id)
+    const guildId = computed(() => dashboard.guildId)
 
     // Form Tab Control:
     type FormTabs = 'information' | 'rsvps' | 'schedule' | 'discord';
@@ -336,7 +336,7 @@
                 } else {
                     sessionsFormVisible.value = false;
                     resetFrom()
-                    guildTemplates.value?.execute()
+                    dashboard.guildData.sessionTemplates.execute()
                     toaster('Session Deleted!')
 
                 }
@@ -608,7 +608,7 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            guildTemplates.value?.execute()
+            dashboard.guildData.channels?.execute()
 
         } finally {
             setTimeout(() => {

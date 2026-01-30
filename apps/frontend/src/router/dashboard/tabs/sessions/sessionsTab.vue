@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
     import TotalSessionsCard from './cards/totalSessions.vue';
-    import UpcomingSessions from './cards/upcomingSessions.vue';
+    import UpcomingSessions from './cards/upcomingSessions/UpcomingSessions.vue';
     import UpcomingSessionsCard from './cards/upcomingSessionsOLD.vue'
 
 

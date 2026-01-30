@@ -21,7 +21,7 @@
 
 
     // Subscription - Limits:
-    const guildSubscription = computed(() => dashboard.guild.subscription?.state || SubscriptionLevel.FREE)
+    const guildSubscription = computed(() => dashboard.guildData.subscription?.state || SubscriptionLevel.FREE)
     const maxRsvpSlots = computed(() => guildSubscription.value.limits.MAX_RSVP_SLOTS);
 
 

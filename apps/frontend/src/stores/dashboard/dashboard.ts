@@ -1,151 +1,143 @@
-
+import { type API_SessionTemplateBodyInterface } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
+import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildRoles, fetchGuildSessions, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
-import { SubscriptionLevel, type API_SessionTemplateBodyInterface, type Database, } from "@sessionsbot/shared";
-import { supabase } from "@/utils/supabase";
-import { fetchAuditLog, fetchChannels, fetchRoles, fetchSubscription, fetchTemplates } from "./dashboard.api";
-import type { UseAsyncStateReturnBase } from "@vueuse/core";
 
-// Define Store:
-const useDashboardStore = defineStore("dashboard_old", {
-    state: () => ({
+type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
-        guild: {
-            id: <string | null>null,
-            channels: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchChannels>>, [], true> | null>null,
-            roles: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchRoles>>, [], true> | null>null,
-            sessionTemplates: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchTemplates>>, [], true> | null>null,
-            subscription: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchSubscription>>, [], true>>useAsyncState(async () => { return SubscriptionLevel.FREE }, SubscriptionLevel.FREE, { immediate: true }),
-            auditLog: <UseAsyncStateReturnBase<Awaited<ReturnType<typeof fetchAuditLog>>, [], true> | null>null
+const useDashboardStore = defineStore('dashboard', () => {
+    /** Private Variables */
+    const auth = useAuthStore()
+    const authKey = computed(() => auth.session?.access_token)
+
+
+    /** Currently selected `Guild Id`. */
+    const guildId = ref<string | null>(null)
+    const guildData = reactive({
+        channels: useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
+        }),
+        roles: useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
+        }),
+        subscription: useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
+        }),
+        sessionTemplates: useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
+        }),
+        currentSessions: useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
+        }),
+        auditLogs: useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
+            immediate: false,
+            onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
+        })
+    })
+    const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
+    /** Saved Selection - Choice Class */
+    const saveGuildChoice = {
+        saveKey: 'SGC_Dashboard',
+        /** Gets and returns any saved guild selection's id or null. */
+        get() {
+            return sessionStorage.getItem(this.saveKey)
         },
-
-        nav: {
-            currentTab: <DashboardTabName>"Sessions",
-            expanded: false,
+        /** Assigns a new saved guild selection by id. */
+        set(guildId: string) {
+            return sessionStorage.setItem(this.saveKey, guildId)
         },
-
-        sessionForm: {
-            visible: false,
-            editPayload: <API_SessionTemplateBodyInterface | null>null
+        /** Assigns the selected dashboard guild to the saved choice, if any. */
+        assign() {
+            const choice = this.get();
+            if (choice) { guildId.value = choice };
+        },
+        /** Removes any saved selected dashboard guild. */
+        clear() {
+            return sessionStorage.removeItem(this.saveKey)
         }
-
-    }),
-
-    getters: {
-        /** Returns a utility class to handle users dashboard saved guild selection. */
-        savedGuildSelection: (state) => {
-            return class saveGuildChoice {
-                static saveKey = 'SGC_Dashboard'
-                /** Gets and returns any saved guild selection's id or null. */
-                static get() {
-                    return sessionStorage.getItem(this.saveKey)
-                }
-                /** Assigns a new saved guild selection by id. */
-                static set(guildId: string) {
-                    return sessionStorage.setItem(this.saveKey, guildId)
-                }
-                /** Assigns the selected dashboard guild to the saved choice, if any. */
-                static assign() {
-                    const choice = this.get();
-                    if (choice) { state.guild.id = choice };
-                }
-                /** Removes any saved selected dashboard guild. */
-                static clear() {
-                    return sessionStorage.removeItem(this.saveKey)
-                }
-            }
-        },
-
-        /** Retrieves the metadata stored form auth user for the currently selected guild id. */
-        userGuildData: (state) => {
-            const authStore = useAuthStore();
-            if (!authStore.signedIn) {
-                // console.warn("User is not signed in... cannot fetch `UserGuildData`!")
-                return undefined;
-            }
-            if (state.guild.id) {
-                return authStore.user?.user_metadata.guilds.manageable.find(g => g.id == state.guild.id)
-            }
-            else return undefined;
-        },
-
-        /** Returns current dashboard data fetch states/errors. */
-        dashboardReady: (state) => {
-            const checks = [
-                state.guild.channels,
-                state.guild.roles,
-                state.guild.sessionTemplates,
-                state.guild.subscription
-            ]
-            const errors = checks.filter(s => s?.error != null)?.map(s => s?.error)
-            const allReady = checks.every(s => s?.isReady)
-            return {
-                errors,
-                allReady
-            }
-        },
-    },
-
-    actions: {
-
-        /** Gets guild data from api/db when a new guild id has been selected */
-        async fetchGuildApiData() {
-            // Prepare for Fetch:
-            const guild_id = this.guild.id;
-            const access_token = (await supabase.auth.getSession()).data?.session?.access_token;
-            if (!access_token) return console.warn('No Auth Access Token! - Cannot fetch API data!')
-            if (!guild_id) return console.warn('No Guild Id Selected! - Cannot fetch API data!')
-
-            // Get Channels:
-            this.guild.channels = useAsyncState(() => fetchChannels(guild_id, access_token), null, {
-                immediate: true
-            }) as any
-            // Get Roles:
-            this.guild.roles = useAsyncState(() => fetchRoles(guild_id, access_token), null, {
-                immediate: true
-            }) as any
-            // Get Subscription:
-            this.guild.subscription = useAsyncState(() => fetchSubscription(guild_id, access_token), SubscriptionLevel.FREE, {
-                immediate: true
-            }) as any
-            // Get Session Templates:
-            this.guild.sessionTemplates = useAsyncState(() => fetchTemplates(guild_id), null, {
-                immediate: true
-            }) as any
-            // Get Audit Log:
-            this.guild.auditLog = useAsyncState(() => fetchAuditLog(guild_id), null, {
-                immediate: true
-            }) as any
-        },
-
-        /** Utility to reset guild related dashboard states. */
-        clearGuildStoreData() {
-            this.guild = {
-                id: null,
-                channels: null,
-                roles: null,
-                subscription: SubscriptionLevel.FREE as any,
-                sessionTemplates: null,
-                auditLog: null
-            }
-            this.nav = {
-                currentTab: "Sessions",
-                expanded: false
-            }
-        },
-
-        /** Starts (and opens) a new session (template) edit form. */
-        startNewSessionFormEdit(payload: API_SessionTemplateBodyInterface) {
-            this.sessionForm.editPayload = payload as any;
-        },
-
     }
 
+    /** Navigation - Nested States/Methods */
+    const nav = reactive({
+        currentTab: <DashboardTabName>"Sessions",
+        expanded: false,
+    })
+
+
+    /** Session (Template) Form - Nested States/Methods */
+    const sessionForm = reactive({
+        visible: false,
+        editPayload: <API_SessionTemplateBodyInterface | null>null,
+    })
+    function startSessionFormEdit(payload: API_SessionTemplateBodyInterface) {
+        sessionForm.editPayload = payload as any;
+    }
+
+
+    // + WATCH - Guild Id - Fetch & Reset Data on Selected Guild Id Change:
+    watch(guildId, async (id) => {
+        console.info('Guild ID has changed in store!', id)
+        // Guild Unselected - RESET DATA:
+        if (!id) {
+            // Reset Data
+            console.info('Resetting Guild Data!')
+            for (const state of Object.values(guildData)) {
+                state.state = undefined
+            }
+            // Session Form:
+            sessionForm.visible = false;
+            sessionForm.editPayload = null;
+            return;
+        }
+
+        // Auth NOT READY - Wait:
+        if (!auth.authReady) {
+            // Auth NOT READY - Await Readiness:
+            console.warn('[Dashboard Data]: Waiting for auth to be ready for data fetch...');
+            // FN - Await Auth Ready to Fetch Data:
+            async function waitForAuthReady(timeoutMs = 5000) {
+                if (auth.signedIn) return true;
+                return await Promise.race([
+                    new Promise(resolve => watch(() => auth.authReady, (r) => { if (r) resolve(true) }, { once: true })),
+                    new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
+                ])
+            }
+            await waitForAuthReady();
+        }
+
+        // Auth READY - No User - Prompt Sign In:
+        if (!auth.signedIn) {
+            // No User Signed In - Clear Store - Prompt Sign In:
+            console.warn('[Dashboard Data]: Auth Ready - NO USER - Sign in for Dashboard');
+            auth.signIn('/dashboard')
+            return;
+        }
+
+        // CHECKS PASSED - Fetch Data for selected Guild Id:
+        for (const state of Object.values(guildData)) {
+            state.execute()
+        }
+
+    })
+
+
+    // + Return States & Methods:
+    return {
+        nav,
+
+        guildId,
+        guildData,
+        userGuildData,
+        saveGuildChoice,
+
+        sessionForm,
+        startSessionFormEdit
+    }
 })
 
-// Dashboard Types:
-export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
-
-
-// Export Store:
 export default useDashboardStore;

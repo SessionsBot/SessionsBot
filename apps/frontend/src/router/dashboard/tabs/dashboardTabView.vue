@@ -12,7 +12,15 @@
     const dashboard = useDashboardStore();
     const currentTab = computed(() => dashboard.nav.currentTab)
 
-    const dashboardReady = computed(() => dashboard.dashboardReady)
+    const dashboardReady = computed(() => {
+        // @ts-expect-error
+        const allReady = Object.values(dashboard.guildData).every((s) => s?.isReady);
+        const errors = Object.values(dashboard.guildData).filter(s => s?.error != null)?.map(s => s?.error)
+        return {
+            allReady,
+            errors
+        }
+    })
 
 </script>
 

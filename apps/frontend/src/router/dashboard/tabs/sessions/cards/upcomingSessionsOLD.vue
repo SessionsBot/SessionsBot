@@ -12,14 +12,14 @@
     const dashboard = useDashboardStore();
 
     // Guild/Session Templates Data:
-    const sessionTemplates = computed(() => dashboard.guild.sessionTemplates?.state);
+    const sessionTemplates = computed(() => dashboard.guildData.sessionTemplates?.state);
 
     // Session Form Control
     const sessionsFormVisible = computed({
         get: () => dashboard.sessionForm.visible,
         set: (v) => (dashboard.sessionForm.visible = v)
     })
-    const startSessionFormEdit = dashboard.startNewSessionFormEdit
+    const startSessionFormEdit = dashboard.startSessionFormEdit
 
     // Session List - Animation Variants:
     const sessionListVariants = {

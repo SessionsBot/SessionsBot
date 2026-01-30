@@ -41,12 +41,12 @@
     // Select Ready Server fn:
     function selectReadyServer(guildId: string) {
         if (saveGuildChoiceEnabled.value) {
-            dashboard.savedGuildSelection.set(guildId);
+            dashboard.saveGuildChoice.set(guildId);
         } else {
-            dashboard.savedGuildSelection.clear();
+            dashboard.saveGuildChoice.clear();
         };
         dashboard.nav.expanded = false;
-        return dashboard.guild.id = guildId;
+        return dashboard.guildId = guildId;
     }
 
     // Still Loading Alert - Authentication Timeout:

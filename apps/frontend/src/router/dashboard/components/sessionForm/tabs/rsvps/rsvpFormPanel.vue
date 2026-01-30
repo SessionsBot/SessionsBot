@@ -43,9 +43,9 @@
 
     // Guild Role Options:
     const guildRoles = computed(() => {
-        if (dashboard.guild.roles?.state?.length) {
+        if (dashboard.guildData.roles.state) {
             let r = [];
-            for (const role of dashboard.guild.roles?.state) {
+            for (const role of dashboard.guildData.roles.state) {
                 if (role?.name == '@everyone') continue;
                 r.push({
                     name: role?.name,
@@ -66,7 +66,7 @@
     })
 
     // Form Schema & Restraints:
-    const guildSubscription = computed(() => dashboard.guild.subscription?.state || SubscriptionLevel.FREE)
+    const guildSubscription = computed(() => dashboard.guildData.subscription?.state || SubscriptionLevel.FREE)
     const maxRsvpCapacity = computed(() => guildSubscription.value.limits.MAX_RSVP_CAPACITY);
 
 

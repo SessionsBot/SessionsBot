@@ -28,7 +28,6 @@
     // Position Cursor: 
     async function positionCursor(start = 0, end = 0) {
         await nextTick(() => {
-            console.info(`Repositioning cursor to ${start} - ${end}`);
             textInputRef.value?.focus()
             textInputRef.value?.setSelectionRange(start, end)
         })
@@ -95,11 +94,9 @@
         const after = el.value.slice(selectionEnd)
 
         // Get & Assign Result Text:
-        console.info('before char:', before.trim().at(-1))
         const lastChar = before?.at(-1)
         const trimmedLast = before.trim().at(-1)
         const newLine = () => {
-            console.info({ lastChar, trimmedLast })
             if (lastChar == '') return '';
             if (lastChar == '\n') return '';
             if (!lastChar) return ''

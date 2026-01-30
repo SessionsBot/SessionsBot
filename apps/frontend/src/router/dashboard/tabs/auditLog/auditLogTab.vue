@@ -10,8 +10,7 @@
     const dashboard = useDashboardStore();
 
     // Dashboard Data
-    const auditData = computed(() => dashboard.guild.auditLog)
-    const auditEvents = computed(() => auditData.value?.state)
+    const auditEvents = computed(() => dashboard.guildData.auditLogs.state)
 
     // Event Details Modal:
     const useEventDetailsModal = () => {

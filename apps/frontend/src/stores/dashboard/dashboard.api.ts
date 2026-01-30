@@ -4,96 +4,111 @@ import { SubscriptionLevel, type APIResponseValue, type SubscriptionPlanName } f
 import { DateTime } from "luxon";
 
 
-
-
-export const fetchChannels = async (guild_id: string, access_token: string | undefined) => {
-    // Confirm Inputs
-    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Channels - Missing guild id!`);
-    if (!access_token) throw new Error(`[!] Failed to fetch Guild Channels - Missing access token!`);
-    // Make API Request
-    const { data: apiResult } = await API.get<APIResponseValue<{ all: any[], sendable: any[] }>>(`/guilds/${guild_id}/channels`, {
-        headers: { Authorization: `Bearer ${access_token}` }
+// Guild Channels:
+export async function fetchGuildChannels(guildId: string | null, accessToken: string | undefined) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Channels - Missing "guildId".` })
+    if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Channels - Missing "accessToken".` })
+    // Make API Request:
+    const { data: apiResult } = await API.get<APIResponseValue<{ all: any[], sendable: any[] }>>(`/guilds/${guildId}/channels`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
     })
-    // Confirm Results
+    // Return Result:
     if (apiResult?.success) {
         return apiResult.data;
     } else {
-        console.error('[!] Failed to fetch Guild Channels - API - See Details', { apiResult })
-        throw new Error(`[!] Failed to fetch Guild Channels - API Request Failed!`);
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Channels - API ERROR`, response: apiResult })
     }
 }
 
 
-export const fetchRoles = async (guild_id: string, access_token: string | undefined) => {
-    // Confirm Inputs
-    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Roles - Missing guild id!`);
-    if (!access_token) throw new Error(`[!] Failed to fetch Guild Roles - Missing access token!`);
-    // Make API Request
-    const { data: apiResult } = await API.get<APIResponseValue<any[]>>(`/guilds/${guild_id}/roles`, {
-        headers: { Authorization: `Bearer ${access_token}` }
+// Guild Roles:
+export async function fetchGuildRoles(guildId: string | null, accessToken: string | undefined) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Roles - Missing "guildId".` })
+    if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Roles - Missing "accessToken".` })
+    // Make API Request:
+    const { data: apiResult } = await API.get<APIResponseValue<any[]>>(`/guilds/${guildId}/roles`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
     })
-    // Confirm Results
+    // Return Result:
     if (apiResult?.success) {
         return apiResult.data;
     } else {
-        console.error('[!] Failed to fetch Guild Roles - API - See Details', { apiResult })
-        throw new Error(`[!] Failed to fetch Guild Roles - API Request Failed!`);
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Roles - API ERROR`, response: apiResult })
     }
 }
 
 
-export const fetchSubscription = async (guild_id: string, access_token: string | undefined) => {
-    // Confirm Inputs
-    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Roles - Missing guild id!`);
-    if (!access_token) throw new Error(`[!] Failed to fetch Guild Roles - Missing access token!`);
-    // Make API Request
-    const { data: apiResult } = await API.get<APIResponseValue<{ plan: SubscriptionPlanName, entitlements: any }>>(`/guilds/${guild_id}/subscription`, {
-        headers: { Authorization: `Bearer ${access_token}` }
-    });
-    // Confirm Results
+// Guild Subscription:
+export async function fetchGuildSubscription(guildId: string | null, accessToken: string | undefined) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Subscription - Missing "guildId".` })
+    if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Subscription - Missing "accessToken".` })
+    // Make API Request:
+    const { data: apiResult } = await API.get<APIResponseValue<{ plan: SubscriptionPlanName, entitlements: any }>>(`/guilds/${guildId}/subscription`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    // Return Result:
     if (apiResult?.success) {
         if (apiResult.data?.plan == 'ENTERPRISE') return SubscriptionLevel.ENTERPRISE
         else if (apiResult.data?.plan == 'PREMIUM') return SubscriptionLevel.PREMIUM
         else return SubscriptionLevel.FREE
     } else {
-        console.error('[!] Failed to fetch Guild Roles - API - See Details', { apiResult })
-        throw new Error(`[!] Failed to fetch Guild Roles - API Request Failed!`);
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Subscription - API ERROR`, response: apiResult })
     }
 }
 
 
-export const fetchTemplates = async (guild_id: string) => {
-    // Confirm Inputs
-    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Roles - Missing guild id!`);
-    // Make DB Request
+// Guild Templates:
+export async function fetchGuildTemplates(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - Missing "guildId".` })
+    // Make API Request:
     const { data, error } = await supabase.from('session_templates')
         .select('*')
-        .eq('guild_id', guild_id)
+        .eq('guild_id', guildId)
         .or(
             `expires_at_utc.gte.${DateTime.now().toISO()},expires_at_utc.is.null`
         )
-    // Confirm Results
+    // Return Result:
     if (!error) {
         return data
     } else {
-        console.error('[!] Failed to fetch Guild Roles - API - See Details', { error })
-        throw new Error(`[!] Failed to fetch Guild Roles - API Request Failed!`);
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - DB ERROR`, error })
     }
 }
 
 
-export const fetchAuditLog = async (guild_id: string) => {
-    // Confirm Inputs
-    if (!guild_id) throw new Error(`[!] Failed to fetch Guild Audit Log - Missing guild id!`);
-    // Make DB Request
-    const { data, error } = await supabase.from('audit_logs')
+// Guild Sessions:
+export async function fetchGuildSessions(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Sessions - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('sessions')
         .select('*')
-        .eq('guild_id', guild_id)
-    // Confirm Results
+        .eq('guild_id', guildId)
+    // Return Result:
     if (!error) {
         return data
     } else {
-        console.error('[!] Failed to fetch Guild Audit Log - API - See Details', { error })
-        throw new Error(`[!] Failed to fetch Guild Audit Log - API Request Failed!`);
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Sessions - DB ERROR`, error })
+    }
+}
+
+
+// Guild Audit Log:
+export async function fetchGuildAuditLog(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Audit Log - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('audit_logs')
+        .select('*')
+        .eq('guild_id', guildId)
+    // Return Result:
+    if (!error) {
+        return data
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Audit Log - DB ERROR`, error })
     }
 }

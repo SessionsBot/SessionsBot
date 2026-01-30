@@ -15,11 +15,11 @@
 
     // FN - Refresh API Data:
     async function refreshApiData() {
-        let prevSelectionId = dashboard.guild.id;
+        let prevSelectionId = dashboard.guildId;
         if (prevSelectionId) {
-            dashboard.guild.id = null;
+            dashboard.guildId = null;
             setTimeout(() => {
-                dashboard.guild.id = prevSelectionId
+                dashboard.guildId = prevSelectionId
             }, 300);
         }
     }
@@ -33,14 +33,14 @@
         <!-- Options List -->
         <ul class="options-list">
 
-            <Button @click="dashboard.guild.id = null;" unstyled class="option-button">
+            <Button @click="dashboard.guildId = null;" unstyled class="option-button">
                 <ArrowLeftCircle :size="17" />
                 <p class="text-sm">
                     Manage another server
                 </p>
             </Button>
 
-            <RouterLink :to="`/pricing?guild=${dashboard.guild.id}`">
+            <RouterLink :to="`/pricing?guild=${dashboard.guildId}`">
                 <Button unstyled class="option-button">
                     <CircleDollarSignIcon :size="17" />
                     <p class="text-sm">

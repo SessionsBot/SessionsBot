@@ -17,7 +17,7 @@
 
     // Guild Channels - Model:
     const dashboard = useDashboardStore();
-    const guildChannels = computed(() => dashboard.guild.channels.state);
+    const guildChannels = computed(() => dashboard.guildData.channels);
 
     // Form Values:
     const channelId = defineModel<string>('channelId');
@@ -27,11 +27,11 @@
     const postInThread = defineModel<string | any>('postInThread');
     // Select Post Channel Options:
     const selectChannelOpts = computed(() => {
-        if (!guildChannels || typeof guildChannels != typeof []) return [];
+        if (!guildChannels.value || typeof guildChannels.value != typeof []) return [];
         let channelCategories: any[] = [];
-        guildChannels.value?.all.forEach((val: any) => {
+        guildChannels.value?.state?.all.forEach((val: any) => {
             if (val?.type == 4) {
-                const catChannels = guildChannels.value?.sendable?.filter((ch: any) => ch.parentId == val.id).sort((a: any, b: any) => a.rawPosition - b.rawPosition);
+                const catChannels = guildChannels.value?.state?.sendable?.filter((ch: any) => ch.parentId == val.id).sort((a: any, b: any) => a.rawPosition - b.rawPosition);
                 if (catChannels?.length) {
                     channelCategories.push({ name: val?.name, items: catChannels })
                 }
