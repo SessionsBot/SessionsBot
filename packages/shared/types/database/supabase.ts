@@ -332,7 +332,7 @@ export type Database = {
           id: string
           mention_roles: string[] | null
           signup_id: string
-          starts_at_utc: string | null
+          starts_at_utc: string
           template_id: string | null
           thread_id: string | null
           time_zone: string
@@ -349,7 +349,7 @@ export type Database = {
           id?: string
           mention_roles?: string[] | null
           signup_id: string
-          starts_at_utc?: string | null
+          starts_at_utc: string
           template_id?: string | null
           thread_id?: string | null
           time_zone: string
@@ -366,7 +366,7 @@ export type Database = {
           id?: string
           mention_roles?: string[] | null
           signup_id?: string
-          starts_at_utc?: string | null
+          starts_at_utc?: string
           template_id?: string | null
           thread_id?: string | null
           time_zone?: string

@@ -262,11 +262,12 @@
                 <InputTitle fieldTitle="Required Role(s)" :icon="UserStarIcon" :show-help="{ path: '/' }" />
 
                 <div class="relative w-full">
-                    <MultiSelect :disabled="guildSubscription.level == 0" name="required_roles" fluid
-                        v-model="RsvpFormValues.required_roles" :options="guildRoles" option-label="name"
-                        option-value="value" :show-toggle-all="false" filter class="disabled:border-2! border-ring!" />
+                    <MultiSelect :disabled="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" name="required_roles"
+                        fluid v-model="RsvpFormValues.required_roles" :options="guildRoles" option-label="name"
+                        option-value="value" :show-toggle-all="false" filter
+                        class="disabled:border-2! disabled:border-ring!" />
                     <!-- Premium Only - Wrapper -->
-                    <a v-if="guildSubscription.level <= 1" href="./pricing" target="_blank"
+                    <a v-if="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" href="./pricing" target="_blank"
                         class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-white/50 hover:text-emerald-400/70 rounded-md">
                         <iconify-icon icon="tabler:diamond" class="scale-120" />
                         <p class=" font-black"> Premium Feature </p>
@@ -335,5 +336,11 @@
 
     :deep().p-dialog-content {
         overflow-x: hidden !important;
+    }
+
+    .p-multiselect {
+        &.p-disabled {
+            border-color: var(--color-ring) !important;
+        }
     }
 </style>

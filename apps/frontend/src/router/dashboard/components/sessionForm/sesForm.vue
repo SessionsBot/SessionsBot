@@ -336,7 +336,7 @@
                 } else {
                     sessionsFormVisible.value = false;
                     resetFrom()
-                    dashboard.guildData.sessionTemplates.execute()
+                    dashboard.guildData.sessionTemplates?.execute()
                     toaster('Session Deleted!')
 
                 }

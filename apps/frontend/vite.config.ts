@@ -20,7 +20,11 @@ export default defineConfig({
       }
     }),
     vueDevTools(),
-    tailwindcss(),
+    tailwindcss({
+      optimize: {
+        minify: true
+      }
+    }),
     AutoImport({
       imports: ['vue', 'vue-router', '@vueuse/core'],
       dts: 'private/auto-vue-imports.d.ts'

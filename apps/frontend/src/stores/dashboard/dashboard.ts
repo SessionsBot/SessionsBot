@@ -11,34 +11,50 @@ const useDashboardStore = defineStore('dashboard', () => {
     const authKey = computed(() => auth.session?.access_token)
 
 
-    /** Currently selected `Guild Id`. */
+    /** Current - Selected `Guild Id`. */
     const guildId = ref<string | null>(null)
-    const guildData = reactive({
-        channels: useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
-        }),
-        roles: useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
-        }),
-        subscription: useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
-        }),
-        sessionTemplates: useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
-        }),
-        currentSessions: useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
-        }),
-        auditLogs: useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
-            immediate: false,
-            onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
-        })
+
+    /** Guild Data - Channels */
+    const guildChannels = useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
     })
+    /** Guild Data - Roles */
+    const guildRoles = useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
+    })
+    /** Guild Data - Subscription */
+    const guildSubscription = useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
+    })
+    /** Guild Data - Session Templates */
+    const guildSessionTemplates = useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
+    })
+    /** Guild Data - Current Sessions */
+    const guildCurrentSessions = useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
+    })
+    /** Guild Data - Audit Logs */
+    const guildAuditLogs = useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
+    })
+
+    /** Selected Guild Data - **NESTED** */
+    const guildData = {
+        channels: guildChannels,
+        roles: guildRoles,
+        subscription: guildSubscription,
+        sessionTemplates: guildSessionTemplates,
+        sessions: guildCurrentSessions,
+        auditLog: guildAuditLogs
+    }
+
     const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
     /** Saved Selection - Choice Class */
     const saveGuildChoice = {
@@ -64,34 +80,40 @@ const useDashboardStore = defineStore('dashboard', () => {
 
     /** Navigation - Nested States/Methods */
     const nav = reactive({
+        /** Current "Tab" to display/view within Dashboard UI. */
         currentTab: <DashboardTabName>"Sessions",
+        /** Whether or not the Dashboard Nav element is "expanded" or not. */
         expanded: false,
     })
 
 
-    /** Session (Template) Form - Nested States/Methods */
-    const sessionForm = reactive({
-        visible: false,
-        editPayload: <API_SessionTemplateBodyInterface | null>null,
-    })
-    function startSessionFormEdit(payload: API_SessionTemplateBodyInterface) {
-        sessionForm.editPayload = payload as any;
+    /** Session Form - States & Methods: */
+    const useSessionForm = () => {
+        /** Session (Template) Form - Visibility Boolean */
+        const visible = ref(false)
+        /** Current session (template) payload/data for editing. */
+        const editPayload = ref<API_SessionTemplateBodyInterface | null>(null)
+        /** Fn - Starts a new session (template) form edit with provided `payload`. */
+        function startEdit(payload: API_SessionTemplateBodyInterface) {
+            editPayload.value = payload
+        }
+
+        return { visible, editPayload, startEdit }
     }
+    const sessionForm = useSessionForm()
 
 
     // + WATCH - Guild Id - Fetch & Reset Data on Selected Guild Id Change:
     watch(guildId, async (id) => {
-        console.info('Guild ID has changed in store!', id)
         // Guild Unselected - RESET DATA:
         if (!id) {
             // Reset Data
-            console.info('Resetting Guild Data!')
             for (const state of Object.values(guildData)) {
-                state.state = undefined
+                state.state.value = undefined
             }
             // Session Form:
-            sessionForm.visible = false;
-            sessionForm.editPayload = null;
+            sessionForm.visible.value = false;
+            sessionForm.editPayload.value = null;
             return;
         }
 
@@ -136,7 +158,6 @@ const useDashboardStore = defineStore('dashboard', () => {
         saveGuildChoice,
 
         sessionForm,
-        startSessionFormEdit
     }
 })
 

@@ -19,7 +19,7 @@
         get: () => dashboard.sessionForm.visible,
         set: (v) => (dashboard.sessionForm.visible = v)
     })
-    const startSessionFormEdit = dashboard.startSessionFormEdit
+    const startSessionFormEdit = dashboard.sessionForm.startEdit
 
     // Session List - Animation Variants:
     const sessionListVariants = {

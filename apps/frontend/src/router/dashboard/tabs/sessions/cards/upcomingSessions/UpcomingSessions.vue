@@ -2,9 +2,24 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowBigDown } from 'lucide-vue-next';
     import SessionCard from './SessionCard.vue';
+    import { DateTime } from 'luxon';
 
     // Services:
     const dashboard = useDashboardStore();
+
+    // Active Guild Sessions - From Start of Today in Sessions Selected Zone
+    const guildSessions = computed(() => dashboard.guildData.sessions.state?.filter(s => {
+        const startDate = DateTime.fromISO(s.starts_at_utc)
+        return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
+    }));
+
+
+    // Guild Templates that post past today in selected zone:
+    const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state?.filter(s => {
+        if (!s.next_post_utc) return false
+        const nextStart = DateTime.fromISO(s.next_post_utc)
+        return nextStart >= DateTime.now().setZone(s.time_zone).startOf('day')
+    }));
 
 </script>
 
@@ -48,10 +63,9 @@
                 </p>
             </div>
 
-            <div class="w-full p-4 h-15 ">
-                SESSIONS HERE
+            <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
-                <SessionCard :session="{} as any" />
+                <SessionCard v-for="s in guildSessions" :session="s" />
 
             </div>
 
@@ -68,10 +82,11 @@
                 </p>
             </div>
 
-            <div class="w-full p-4 h-15">
-                SESSIONS HERE
-            </div>
+            <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
+                <!-- <SessionCard v-for="t in guildTemplates" :session="t" /> -->
+
+            </div>
         </section>
 
     </div>
