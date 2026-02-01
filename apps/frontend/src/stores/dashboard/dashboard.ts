@@ -45,6 +45,21 @@ const useDashboardStore = defineStore('dashboard', () => {
         onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
     })
 
+
+    const guildFetchReady = computed(() => {
+        if (guildId.value == null) return []
+        return Object.values(guildData).every(s => s?.isReady.value == true)
+    })
+    const guildFetchErrors = computed(() => {
+        if (guildId.value == null) return []
+        return Object.values(guildData).filter(s => s?.error.value != null)?.map(s => s?.error.value)
+    })
+    /** Selected Guild Data Fetch State - **NESTED** */
+    const guildDataState = {
+        allReady: guildFetchReady,
+        errors: guildFetchErrors
+    }
+
     /** Selected Guild Data - **NESTED** */
     const guildData = {
         channels: guildChannels,
@@ -155,6 +170,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         guildId,
         guildData,
         userGuildData,
+        guildDataState,
         saveGuildChoice,
 
         sessionForm,

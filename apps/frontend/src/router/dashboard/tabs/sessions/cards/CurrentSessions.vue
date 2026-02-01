@@ -1,25 +1,34 @@
 <script lang="ts" setup>
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowBigDown } from 'lucide-vue-next';
-    import SessionCard from './SessionCard.vue';
     import { DateTime } from 'luxon';
+    import TemplateCard from './SessionCard.vue';
 
     // Services:
     const dashboard = useDashboardStore();
 
     // Active Guild Sessions - From Start of Today in Sessions Selected Zone
     const guildSessions = computed(() => dashboard.guildData.sessions.state?.filter(s => {
-        const startDate = DateTime.fromISO(s.starts_at_utc)
+        const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
         return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
+    }).sort((a, b) => {
+        return DateTime.fromISO(a.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(b.starts_at_utc)?.toUnixInteger()
     }));
 
-
-    // Guild Templates that post past today in selected zone:
-    const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state?.filter(s => {
-        if (!s.next_post_utc) return false
-        const nextStart = DateTime.fromISO(s.next_post_utc)
-        return nextStart >= DateTime.now().setZone(s.time_zone).startOf('day')
-    }));
+    // Next Posting Templates - Sorted by Time next START time - Max of 3
+    const guildTemplates = computed(() =>
+        dashboard.guildData.sessionTemplates.state?.filter(t => {
+            if (!t.next_post_utc) return false
+            const nextPost = DateTime.fromISO(t.next_post_utc, { zone: 'utc' })
+            return nextPost >= DateTime.utc()
+        }).sort((a, b) => {
+            const nextStartA = DateTime.fromISO(String(a.next_post_utc), { zone: 'utc' })
+                .plus({ milliseconds: a.post_before_ms })
+            const nextStartB = DateTime.fromISO(String(b.next_post_utc), { zone: 'utc' })
+                .plus({ milliseconds: b.post_before_ms })
+            return (nextStartA.toUnixInteger() - nextStartB.toUnixInteger())
+        }).slice(0, 3)
+    );
 
 </script>
 
@@ -35,13 +44,13 @@
                 <!-- Card Title -->
                 <div class="flex flex-row items-center justify-center gap-0.5 p-0.5 font-bold">
                     <ArrowBigDown fill="white" class="size-4.5 sm:size-5.5" />
-                    <h1 class="sm:text-lg"> Upcoming Sessions </h1>
+                    <h1 class="sm:text-lg"> Current Sessions </h1>
                 </div>
                 <!-- Create Session - Button -->
                 <Button unstyled @click="(e) => dashboard.sessionForm.visible = true"
-                    class="bg-[#178954] hover:bg-[#178954]/80 py-0.5 p-1 rounded-sm active:scale-95 transition-all cursor-pointer">
+                    class="bg-[#178954] hover:bg-[#178954]/80 py-0.5 p-2.25 rounded-sm active:scale-95 transition-all cursor-pointer">
                     <span class=" font-extrabold text-sm">
-                        Create
+                        Schedule
                         <span class="hidden sm:inline">
                             Session
                         </span>
@@ -49,8 +58,8 @@
                 </Button>
             </div>
 
+            <!-- Recently Posted - Section -->
             <div class="section-heading">
-                <!-- <Iconify icon="tabler:clock-check" :size="15" /> -->
 
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                     <path fill="currentColor"
@@ -59,16 +68,18 @@
                 </svg>
 
                 <p>
-                    Recently Posted
+                    Recently Posted:
                 </p>
             </div>
+            <div v-if="guildSessions?.length"
+                class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
-            <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
-
-                <SessionCard v-for="s in guildSessions" :session="s" />
+                <TemplateCard v-for="s in guildSessions" kind="session" :session="s" :key="s.id" />
 
             </div>
 
+
+            <!-- Posting Next - Section -->
             <div class="section-heading">
 
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -78,15 +89,17 @@
                 </svg>
 
                 <p>
-                    Posting Soon
+                    Posting Next:
                 </p>
             </div>
+            <div v-if="guildTemplates?.length"
+                class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
-            <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
-
-                <!-- <SessionCard v-for="t in guildTemplates" :session="t" /> -->
+                <TemplateCard v-for="t in guildTemplates" kind="template" :template="t" :key="t.id" />
 
             </div>
+
+
         </section>
 
     </div>

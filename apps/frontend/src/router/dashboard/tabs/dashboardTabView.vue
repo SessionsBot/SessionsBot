@@ -12,14 +12,8 @@
     const dashboard = useDashboardStore();
     const currentTab = computed(() => dashboard.nav.currentTab)
 
-    const dashboardReady = computed(() => {
-        const allReady = Object.values(dashboard.guildData).every((s) => s?.isReady);
-        const errors = Object.values(dashboard.guildData).filter(s => s?.error != null)?.map(s => s?.error)
-        return {
-            allReady,
-            errors
-        }
-    })
+    // Guild Data State:
+    const guildDataState = computed(() => dashboard.guildDataState)
 
 </script>
 
@@ -29,7 +23,7 @@
 
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
-            <div v-if="!dashboardReady?.allReady && !dashboardReady?.errors?.length"
+            <div v-if="!guildDataState?.allReady"
                 class="flex gap-2 items-center justify-center p-4 bg-black/40 rounded-md shadow-lg">
                 <ProgressSpinner />
                 <div class="text-white/70 p-2 text-center">
@@ -38,18 +32,7 @@
                 </div>
             </div>
 
-            <!-- FETCH ERROR - Alert -->
-            <div v-else-if="dashboardReady?.errors?.length"
-                class="flex flex-col gap-2 items-center justify-center p-7 m-5 max-w-135 bg-black/40 rounded-md shadow-lg">
-                <p class="font-black text-lg">
-                    <TriangleAlertIcon class="inline bottom-0.5 relative text-yellow-500" />
-                    Uh oh! We ran into a data fetching error...
-                </p>
-                <p>
-                    Wait a few seconds and refresh this page, if this issue persists please contact get in touch with
-                    <RouterLink class="text-sky-500 hover:underline" to="/support">bot support</RouterLink>.
-                </p>
-            </div>
+
 
             <!-- Main Page Content -->
             <div v-else

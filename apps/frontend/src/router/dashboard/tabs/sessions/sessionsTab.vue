@@ -1,26 +1,24 @@
 <script lang="ts" setup>
 
-    import TotalSessionsCard from './cards/totalSessions.vue';
-    import UpcomingSessions from './cards/upcomingSessions/UpcomingSessions.vue';
-    import UpcomingSessionsCard from './cards/upcomingSessionsOLD.vue'
-
-
+    import TotalSessionsCard from './cards/TotalSessions.vue';
+    import CurrentSessions from './cards/CurrentSessions.vue';
+    import ActiveTemplates from './cards/ActiveTemplates.vue';
 
 
 </script>
 
 
 <template>
-    <div class="dashboard-tab-view">
+    <div class="dashboard-tab-view flex! flex-wrap!">
 
         <!-- Total Sessions Card -->
-        <TotalSessionsCard hidden />
+        <TotalSessionsCard />
 
-        <!-- Upcoming Sessions Card -->
-        <UpcomingSessionsCard />
+        <!-- Current Sessions Card -->
+        <CurrentSessions />
 
-        <!-- Upcoming Sessions Card -->
-        <UpcomingSessions />
+        <!-- Active Session Templates Card -->
+        <ActiveTemplates />
 
     </div>
 </template>

@@ -5,55 +5,88 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { PencilIcon, Trash2Icon } from 'lucide-vue-next';
 
-
     // Incoming Props:
-    const props = defineProps<{
-        session: Database['public']['Tables']['sessions']['Row']
-    }>()
-    const { session } = props;
+    type IncomingProps = | {
+        kind: 'template'
+        template?: Database['public']['Tables']['session_templates']['Row']
+    } | {
+        kind: 'session',
+        session?: Database['public']['Tables']['sessions']['Row']
+    }
+    const props = defineProps<IncomingProps>()
 
     // Services:
     const dashboard = useDashboardStore();
 
-    // Session Template Data
 
-    const sessionTemplateData = computed(() => dashboard.guildData.sessionTemplates.state?.find((t) => t.id === session.template_id))
-    // Session Date - IN SESSION ZONE:
-    const sessionStart = computed(() => DateTime.fromISO(session.starts_at_utc, { zone: session.time_zone }))
-    const sessionPost = computed(() => {
-        return sessionStart.value.minus({ milliseconds: sessionTemplateData.value?.post_before_ms })
+    // Session Template Data:
+    const templateData = computed(() => {
+        if (props.kind == 'template') return props.template;
+        else return dashboard.guildData.sessionTemplates.state?.find(t => (t.id == props.session?.template_id))
     })
+
+    // Session/Template Next or Last Post Date:
+    const postDate = computed(() => {
+        if (props.kind == 'session') {
+            // Session - Last Post Date
+            return DateTime.fromISO(String(props.session?.starts_at_utc))
+                .setZone(props.session?.time_zone)
+                .minus({ milliseconds: templateData.value?.post_before_ms ?? 0 })
+        } else {
+            // Template - Next Post Date
+            return DateTime.fromISO(String(templateData.value?.next_post_utc))
+                .setZone(templateData.value?.time_zone)
+        }
+    })
+
+    // Session/Template Next or Last Start Date:
+    const startDate = computed(() => {
+        if (props.kind == 'session') {
+            // Session - Last Start Date
+            return DateTime.fromISO(String(props.session?.starts_at_utc))
+                .setZone(props.session?.time_zone)
+        } else {
+            // Template - Next Start Date
+            return postDate.value?.plus({ milliseconds: templateData.value?.post_before_ms })
+        }
+    })
+
+
     // Session Time Zone Data:
     const sessionZone = computed(() => {
-        const zoneName = session.time_zone
+        const zoneName = templateData.value?.time_zone
         if (!zoneName) return null
         else return getTimeZones().find(tz => tz.name == zoneName)
     })
 
     // Session Signup URL:
-    const signupMsgUrl = computed(() => `https://discord.com/channels/${session.guild_id}/${session?.thread_id ? session?.thread_id : session?.channel_id}/${session.signup_id}`)
+    const signupMsgUrl = computed(() => {
+        if (props.kind == 'session') {
+            return `https://discord.com/channels/${props.session?.guild_id}/${props.session?.thread_id ? props.session?.thread_id : props.session?.channel_id}/${props.session?.signup_id}`
+        } else return ''
+    })
 
-    // Edit Schedule Fn:
+    // Edit Schedule Fn: 
     function editSchedule() {
-        if (sessionTemplateData.value) {
-            dashboard.sessionForm.startEdit(sessionTemplateData.value as any)
-        } else console.warn('[!] - No session template data found for edit!')
+        dashboard.sessionForm.startEdit(templateData.value as any)
     }
 
 </script>
 
 
 <template>
-    <div class="session-card">
+    <div class="session-card" :class="{
+        'border-dotted! border-3! rounded-lg!': props.kind == 'template'
+    }">
 
         <!-- Name / Start Time / Zone -->
         <div class="name-and-time">
             <p class="session-title">
-                {{ session.title }}
+                {{ templateData?.title }}
             </p>
             <div class="time-and-zone">
                 <p class="session-date">
-                    {{ sessionStart?.toFormat('M/d/yy h:mm a') || '?/?/? ?:??' }}
+                    {{ startDate?.toFormat('M/d/yy h:mm a') || '?/?/? ?:??' }}
                 </p>
                 <p class="session-zone" :title="sessionZone?.name">
                     {{ sessionZone?.abbreviation }}
@@ -64,20 +97,20 @@
         <!-- Option Flag/Badge(s) -->
         <div class="option-flags">
             <p class="option-flag" :class="{
-                'enabled': sessionTemplateData?.rrule,
-                'disabled': !sessionTemplateData?.rrule
+                'enabled': templateData?.rrule,
+                'disabled': !templateData?.rrule
             }">
                 Repeats
             </p>
             <p class="option-flag" :class="{
-                'enabled': sessionTemplateData?.rsvps,
-                'disabled': !sessionTemplateData?.rsvps
+                'enabled': templateData?.rsvps,
+                'disabled': !templateData?.rsvps
             }">
                 RSVPS
             </p>
             <p class="option-flag" :class="{
-                'enabled': sessionTemplateData?.native_events,
-                'disabled': !sessionTemplateData?.native_events
+                'enabled': templateData?.native_events,
+                'disabled': !templateData?.native_events
             }">
                 Events
             </p>
@@ -86,8 +119,9 @@
 
         <!-- Posts/ed at / Action Buttons -->
         <div class="action-area">
-            <p class="post-time" :title="sessionPost.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
-                Post <i class="pi pi-clock relative top-0.5 mr-0.5" />: {{ sessionPost.toFormat('t') }}
+            <p class="post-time" :title="postDate?.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
+                Post <i class="pi pi-clock relative top-0.5 mr-0.5" />: {{
+                    postDate?.toFormat('t') }}
             </p>
             <!-- Edit Button -->
             <Button @click="editSchedule" unstyled class="action-button bg-amber-500/50! hover:bg-amber-500/40!">
@@ -96,7 +130,7 @@
                     Edit Schedule
                 </p>
             </Button>
-            <a v-if="signupMsgUrl" :href="signupMsgUrl" target="_blank">
+            <a v-if="props.kind == 'session'" :href="signupMsgUrl" target="_blank">
                 <Button unstyled class="action-button">
                     <DiscordIcon class="size-5 mr-0.5! relative bottom-px icon" />
                     <p class="inline-flex h-full items-center pt-0.5">
@@ -115,7 +149,7 @@
     @reference "@/styles/main.css";
 
     .session-card {
-        @apply p-2 grid grid-rows-[1fr_0.5fr_1fr] sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-black/20 border-ring w-full !h-fit text-center transition-all border-2 hover:border-white/40 rounded;
+        @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-black/20 border-ring w-full !h-fit text-center transition-all border-2 hover:border-white/40 rounded-md;
 
         .name-and-time {
             @apply flex grow-2 gap-2 p-1 items-center justify-center text-center flex-col flex-wrap;
@@ -161,11 +195,11 @@
             @apply flex gap-2.5 items-center justify-center flex-wrap w-full pb-2 sm:pb-1;
 
             .post-time {
-                @apply text-white/75 font-extrabold opacity-70 text-sm p-0.5 text-center w-full;
+                @apply text-white/75 font-extrabold opacity-70 text-sm p-0.5 pb-0 text-center w-full;
             }
 
             .action-button {
-                @apply px-1 pr-1.5 py-0.75 active:scale-95 font-bold bg-zinc-500 hover:bg-zinc-600 cursor-pointer transition-all rounded-md block;
+                @apply px-2 pr-2.5 py-0.75 active:scale-95 font-bold bg-zinc-500 hover:bg-zinc-600 cursor-pointer transition-all rounded-md block;
 
                 .icon {
                     @apply inline aspect-square min-w-fit !p-0 h-full flex items-center;

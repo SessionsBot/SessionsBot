@@ -166,7 +166,6 @@
             </span>
 
 
-            <!-- Syncing and Search Options -->
 
 
         </section>
