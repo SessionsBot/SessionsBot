@@ -3,7 +3,9 @@
     import { ArrowLeftCircleIcon, ArrowRightCircleIcon, XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { number } from 'motion-v';
-    import { Popover } from 'primevue';
+    import { Popover, type PopoverMethods } from 'primevue';
+    import { RRule } from 'rrule';
+    import DayViewDialog from './DayViewDialog.vue';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -11,94 +13,80 @@
     const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state);
 
     // HEADER - Month / Year Select Popover:
-    const useMonthYearPopover = () => {
-        const popover = ref<InstanceType<typeof Popover>>()
-        function toggle(e: Event) {
-            popover.value?.toggle(e)
+    const useMonthPopover = () => {
+
+        const popoverRef = ref<PopoverMethods>()
+
+        function togglePopover(e: Event) {
+            popoverRef.value?.toggle(e)
         }
 
-        const selectOptions = {
-            months: [
-                { name: 'January', value: 1 },
-                { name: 'February', value: 2 },
-                { name: 'March', value: 3 },
-                { name: 'April', value: 4 },
-                { name: 'May', value: 5 },
-                { name: 'June', value: 6 },
-                { name: 'July', value: 7 },
-                { name: 'August', value: 8 },
-                { name: 'September', value: 9 },
-                { name: 'October', value: 10 },
-                { name: 'November', value: 11 },
-                { name: 'December', value: 12 }
-            ],
+        const monthOptions = computed(() => {
+            const months = [
+                'January', 'February', 'March', 'April',
+                'May', 'June', 'July', 'August',
+                'September', 'October', 'November', 'December'
+            ]
 
-            years: () => {
-                const now = DateTime.now().startOf('year');
-                const returnYears = 15
-                let options: string | number[] = [];
-                for (let i = 0; i <= returnYears; i++) {
-                    options.push(
-                        now.plus({ years: i })?.year
-                    )
+            const year = selectedMonth.value.year;
+
+            return months
+                .map((name, index) => {
+                    const monthNumber = index + 1;
+
+                    const date = DateTime.local(year, monthNumber, 1).startOf('month');
+
+                    const isAfterMin = date >= minMonth.startOf('month');
+                    const isBeforeMax = date <= maxMonth.startOf('month');
+
+                    if (!isAfterMin || !isBeforeMax) return null;
+
+                    return {
+                        name,
+                        value: monthNumber
+                    };
+                })
+                .filter(Boolean);
+        });
+
+        const yearOptions = computed(() => {
+            // Get available years:
+            let years = [];
+            let cursor = minMonth.startOf('year');
+            while (true) {
+
+                const isAfterMin = cursor >= minMonth.startOf('year');
+                const isBeforeMax = cursor <= maxMonth.startOf('year');
+
+                console.info({ cursor, isAfterMin, isBeforeMax })
+
+                if (!isAfterMin || !isBeforeMax) break;
+                else {
+                    years.push(cursor.year)
+                    cursor = cursor.plus({ year: 1 }).startOf('year')
                 }
-                return options
             }
-        }
-        const selectDateValue = (opts: { month?: number, year?: number }) => {
-            if (opts.month) {
-                const selected = selectedMonth.value.set({ month: opts.month });
-                if (selected >= minMonth) {
-                    if (selected <= maxMonth) {
-                        selectedMonth.value = selected
-                    } else {
-                        selectedMonth.value = maxMonth
-                    }
-                } else {
-                    selectedMonth.value = minMonth
-                }
-            }
-            if (opts.year) {
-                const selected = selectedMonth.value.set({ year: opts.year });
-                if (selected >= minMonth) {
-                    if (selected <= maxMonth) {
-                        selectedMonth.value = selected
-                    } else {
-                        selectedMonth.value = maxMonth
-                    }
-                } else {
-                    selectedMonth.value = minMonth
-                }
-            }
-        }
+
+            return years;
+        })
+
+
 
         return {
-            popover,
-            selectOptions,
-            selectDateValue,
-            toggle
-        }
-    };
-    const monthYearPopover = useMonthYearPopover()
+            popoverRef,
+            togglePopover,
 
-    // HEADER - Calendar View Type:
-    const useCalendarViewType = () => {
-        type ViewType = 'Day' | 'Week' | 'Month';
-        const currentView = ref<ViewType>('Month');
-        const switchCalendarView = (view: ViewType) => { currentView.value = view };
-
-        return {
-            currentView,
-            switchCalendarView
+            yearOptions,
+            monthOptions
         }
     }
-    const { currentView: currentCalendarViewType, switchCalendarView } = useCalendarViewType()
+    const monthSelectPopover = useMonthPopover();
 
 
     // CALENDAR - Current Month:
     const selectedMonth = ref(DateTime.now().startOf('month'));
     const maxMonth = DateTime.now().plus({ year: 15 }).startOf('month');
-    const minMonth = DateTime.now().startOf('month')
+    const minMonth = DateTime.now().startOf('month').minus({ year: 5 })
     const previousMonth = () => selectedMonth.value = selectedMonth.value.minus({ month: 1 });
     const nextMonth = () => selectedMonth.value = selectedMonth.value.plus({ month: 1 });
 
@@ -117,37 +105,53 @@
         return days;
     });
 
-    // DAY VIEW - Dialog / Modal Panel:
-    const useDayViewDialog = () => {
-        const visible = ref(false)
-        const daySelected = ref<DateTime | null>(null);
-        const openDayViewFor = (date: DateTime) => {
-            daySelected.value = date;
-            visible.value = true
-        }
 
-        return {
-            visible,
-            daySelected,
-            openDayViewFor
-        }
+    // DAY VIEW - Dialog / Modal Panel:
+    const dayViewVisible = ref(false);
+    const dayViewDaySelected = ref<DateTime | undefined>(undefined);
+    function openDayViewFor(d: DateTime) {
+        dayViewDaySelected.value = d;
+        dayViewVisible.value = true;
     }
-    const dayViewDialog = useDayViewDialog();
+
 
     // Calendar Day Badge - Utils:
     function dayHasSessions(d: DateTime) {
-        return guildSessions.value?.some((s) => DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })?.startOf('day') == d?.startOf('day'))
+        return guildSessions.value?.some((s) => DateTime.fromISO(s.starts_at_utc, { zone: 'local' })?.startOf('day')?.toSeconds() == d?.startOf('day')?.toSeconds())
     }
-
-    // ! Fix me: Need more variables checks (e.g first start, past posts(sessions), future posts(RRule) )
     function dayHasTemplates(d: DateTime) {
-        // guildTemplates.value?.some(t => DateTime.fromISO(s.starts_at_utc, { zone: 'utc' }).startOf('day') == d?.startOf('day'))
+        // Get viewing day start:
+        const viewDay = d?.startOf('day')
+        if (viewDay.toSeconds() <= DateTime.now().startOf('day').toSeconds()) return false;
+        if (!guildTemplates.value) return false;
+        // Check each template:
+        for (const t of guildTemplates.value) {
+            const templateStartDay = DateTime.fromISO(t.starts_at_utc, { zone: 'local' }).startOf('day')
+            // If template start date:
+            if (templateStartDay.toSeconds() == viewDay.toSeconds()) return true;
+            // Else - Check recurrences for this month:
+            if (t.rrule) {
+                const rule = RRule.fromString(t.rrule)
+                const thisMonthOccurrences = rule.between(monthStart.value.toJSDate(), monthEnd.value.toJSDate());
+                if (thisMonthOccurrences.length) {
+                    // Recurrences THIS Month:
+                    for (const reDateJs of thisMonthOccurrences) {
+                        const localRecurrenceDate = DateTime.fromJSDate(reDateJs)
+                        const zonedRecurrenceDate = localRecurrenceDate.setZone(t.time_zone)
+                        if (zonedRecurrenceDate.startOf('day').toSeconds() == viewDay.toSeconds()) return true;
+                    }
+                }
+            }
+        }
+        // Checks Failed - No Template for Day:
+        return false;
     }
 
 </script>
 
 
 <template>
+    <!-- Calendar Container -->
     <div class="flex bg-surface flex-col justify-center items-center w-fit h-fit">
 
         <!-- Calendar Header -->
@@ -159,34 +163,25 @@
             </Button>
 
             <!-- This Month - Button / Popover -->
-            <div @click="monthYearPopover.toggle" class="select-month-button">
+            <div @click="monthSelectPopover?.togglePopover" class="select-month-button">
                 <p> {{ selectedMonth?.monthLong }} </p>
                 <p> {{ selectedMonth?.year }} </p>
 
                 <!-- Exact Select - Popover -->
-                <Popover :ref="monthYearPopover.popover">
+                <Popover :ref="monthSelectPopover.popoverRef">
                     <div class="flex flex-row flex-nowrap gap-2 p-2 items-center justify-center">
                         <!-- Month Select -->
-                        <IftaLabel>
-                            <label for="month">
-                                Month
-                            </label>
-                            <Select inputId="month" size="small"
-                                @value-change="(v) => monthYearPopover.selectDateValue({ month: v })"
-                                option-label="name" option-value="value"
-                                :options="monthYearPopover.selectOptions.months" placeholder="Month"
-                                v-bind:default-value="selectedMonth.month" />
-                        </IftaLabel>
+                        <Select inputId="month" size="small"
+                            @value-change="(v) => selectedMonth = selectedMonth.set({ month: v })" option-label="name"
+                            option-value="value" :options="monthSelectPopover.monthOptions.value" placeholder="Month"
+                            v-bind:default-value="selectedMonth.month" />
+
                         <!-- Year Select -->
-                        <IftaLabel>
-                            <label for="year">
-                                Year
-                            </label>
-                            <Select inputId="year" size="small"
-                                @value-change="(v) => monthYearPopover.selectDateValue({ year: v })"
-                                :options="monthYearPopover.selectOptions.years()"
-                                v-bind:default-value="selectedMonth.year" placeholder="Year" />
-                        </IftaLabel>
+                        <Select inputId="year" size="small"
+                            @value-change="(v) => selectedMonth = selectedMonth.set({ year: v })"
+                            :options="monthSelectPopover.yearOptions.value" v-bind:default-value="selectedMonth.year"
+                            placeholder="Year" />
+
                     </div>
                 </Popover>
             </div>
@@ -198,31 +193,6 @@
             </Button>
         </div>
 
-        <!-- Calendar Sub-Header -->
-        <div hidden class="calendar-subheader">
-            <!-- Previous Month - Button -->
-            <div class="view-buttons-wrap">
-                <Button @click="switchCalendarView('Day')" unstyled class="view-type-button"
-                    :class="{ 'selected': currentCalendarViewType == 'Day' }">
-                    Day
-                </Button>
-                <Button @click="switchCalendarView('Week')" unstyled class="view-type-button"
-                    :class="{ 'selected': currentCalendarViewType == 'Week' }">
-                    Week
-                </Button>
-                <Button @click="switchCalendarView('Month')" unstyled class="view-type-button"
-                    :class="{ 'selected': currentCalendarViewType == 'Month' }">
-                    Month
-                </Button>
-            </div>
-
-
-
-            <!-- Next Month - Button -->
-            <Button title="Today" unstyled class="today-button">
-                <p> Today </p>
-            </Button>
-        </div>
 
         <!-- Calendar Wrap -->
         <div class="calendar-wrap">
@@ -234,63 +204,65 @@
                 </p>
             </div>
 
-            <!-- Month Days -->
+            <!-- Month / Calendar Days -->
             <div class="calendar-days-wrap">
-                <!-- Leading Empty Days -->
+
+                <!-- Leading EMPTY DAYS -->
                 <div v-for="_ in leadingEmptyDays" class="size-px" />
 
-                <!-- calendar Month Days -->
-                <Button unstyled v-for="day in daysInMonth" class="calendar-day" :class="{
-                    'text-indigo-400!': (DateTime.now().startOf('day').toUnixInteger() == day?.toUnixInteger())
-                }" @click="dayViewDialog.openDayViewFor(day)">
+                <!-- Calendar DAYS -->
+                <Button unstyled v-for="day in daysInMonth" class="calendar-day" @click="openDayViewFor(day)" :class="{
+                    'today-day': (DateTime.now().startOf('day').toSeconds() == day?.toSeconds())
+                }">
                     {{ day.day }}
                     <!-- Chip Bar -->
-                    <div class="absolute bottom-0.75 w-full h-1.75 sm:h-3 gap-1 flex items-center justify-center">
+                    <div class="absolute bottom-0.75 w-full h-1.75 gap-1 py-px flex items-center justify-center">
                         <!-- Single Session - Chip -->
-                        <div :class="{ 'flex': dayHasSessions(day) }"
+                        <div :class="{ 'flex!': dayHasSessions(day) }"
                             class="hidden h-full w-fit rounded-full aspect-square bg-slate-600" />
                         <!-- Repeating Session - Chip -->
-                        <div hidden class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
+                        <div :class="{ 'flex!': dayHasTemplates(day) }"
+                            class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
                     </div>
                 </Button>
+
+            </div>
+
+            <!-- Guide/Key Footer -->
+            <div class="calendar-footer-row">
+
+                <!-- Calender Key/Guide -->
+                <span class="flex flex-row items-center justify-center gap-2 w-fit h-full">
+                    <!-- Session Item - Key -->
+                    <div class="key-item">
+                        <div class="size-2! rounded-full bg-slate-600" />
+                        <p> Occurred </p>
+                    </div>
+
+                    <!-- Template Item - Key -->
+                    <div class="key-item">
+                        <div class="size-2! rounded-full bg-indigo-500/80" />
+                        <p> Scheduled </p>
+                    </div>
+                </span>
+
+                <!-- Today Button -->
+                <Button v-if="selectedMonth.toSeconds() != DateTime.now().startOf('month').toSeconds()"
+                    @click="selectedMonth = DateTime.now().startOf('month')" title="Today" unstyled
+                    class="today-button">
+                    <p> Today </p>
+                </Button>
+
             </div>
 
         </div>
 
-
-
     </div>
 
-    <!-- Day View - Modal/Dialog -->
-    <Dialog v-model:visible="dayViewDialog.visible.value" modal block-scroll
-        :pt="{ root: 'bg-transparent! border-0! text-white/80!' }" class="w-[85%] max-w-130 bg-transparent!">
-        <template #container>
-            <div
-                class="flex flex-col w-full h-full justify-center items-start border-2 bg-surface border-ring rounded-md">
-                <!-- Header -->
-                <div
-                    class="flex bg-black/20 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full">
-                    <span>
-                        <p class="uppercase font-black text-xs text-white/40"> Day View </p>
-                        <p class="font-extrabold p-0.5 pl-0">
-                            {{ dayViewDialog.daySelected.value?.toFormat('D') || 'Select a Day!' }}
-                        </p>
-                    </span>
-                    <Button unstyled @click="dayViewDialog.visible.value = false"
-                        class="p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer">
-                        <XIcon :size="20" />
-                    </Button>
+    <!-- Calendar - Day View - Dialog -->
+    <DayViewDialog v-model:visible="dayViewVisible" v-model:selected-day="dayViewDaySelected" />
 
-                </div>
-                <!-- Content -->
-                <div class="flex bg-white/2 p-15 w-full! h-fit items-center justify-center">
-                    Content Here!
-                </div>
 
-            </div>
-
-        </template>
-    </Dialog>
 </template>
 
 
@@ -322,26 +294,6 @@
         }
     }
 
-    .calendar-subheader {
-        @apply bg-zinc-700 w-full max-w-125 p-1.5 px-2 rounded-md rounded-b-none border-2 rounded-t-none border-t-0 border-ring flex justify-between items-center;
-
-        .view-buttons-wrap {
-            @apply flex flex-row flex-nowrap gap-1 p-0.75 bg-zinc-800/80 rounded-md;
-
-            .view-type-button {
-                @apply bg-white/10 hover:bg-white/15 px-1.5 py-0.5 text-sm font-semibold rounded-md cursor-pointer transition-all;
-
-                &.selected {
-                    @apply !bg-indigo-400/40;
-                }
-            }
-        }
-
-        *.today-button {
-            @apply bg-white/10 hover:bg-white/15 px-1.5 py-0.5 text-sm font-semibold rounded-md cursor-pointer transition-all;
-        }
-    }
-
 
     .calendar-wrap {
         @apply bg-surface w-full max-w-125 !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
@@ -354,21 +306,40 @@
             }
         }
 
-        *.calendar-days-wrap {
+        .calendar-days-wrap {
             @apply grid grid-cols-7 gap-2 p-2 w-full items-center justify-center;
 
             .calendar-day {
                 @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center sm:text-lg font-black transition-all;
 
                 &:hover {
-                    @apply ring-white/60 cursor-pointer;
+                    @apply ring-white/60 text-white/60 cursor-pointer;
                 }
 
                 &.today-day {
-                    @apply !text-amber-400;
+                    @apply !text-amber-400/60;
                 }
             }
         }
+
+        .calendar-footer-row {
+            @apply gap-2 p-2 bg-black/20 border-t-2 border-ring/30 w-full !h-fit flex items-center justify-between content-center flex-wrap;
+
+            .key-item {
+                @apply p-0.75 px-1 gap-1 bg-black/10 rounded-lg border-2 border-ring/40 flex flex-row items-center justify-center;
+
+                p {
+                    @apply text-xs font-medium text-white/50 wrap-break-word;
+                }
+            }
+
+            .today-button {
+                @apply hover:bg-white/10 hover:text-white/80 text-white/50 px-1.25 p-0.75 text-xs font-medium rounded-md cursor-pointer transition-all active:scale-95;
+            }
+        }
+
+
     }
+
 
 </style>
