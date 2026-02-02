@@ -3,7 +3,7 @@
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb'
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { PencilIcon, Trash2Icon } from 'lucide-vue-next';
+    import { PencilIcon } from 'lucide-vue-next';
 
     // Incoming Props:
     type IncomingProps = | {
@@ -119,22 +119,33 @@
 
         <!-- Posts/ed at / Action Buttons -->
         <div class="action-area">
-            <p class="post-time" :title="postDate?.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
-                Post <i class="pi pi-clock relative top-0.5 mr-0.5" />: {{
-                    postDate?.toFormat('t') }}
-            </p>
+            <span class="post-time" :title="postDate?.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
+                <span v-if="props.kind == 'session'">Posted @:</span>
+                <span v-else>Posts @:</span> {{ postDate?.toFormat('t') }}
+                <span class="session-zone text-[10px]!" :title="sessionZone?.name">
+                    {{ sessionZone?.abbreviation }}
+                </span>
+                <!-- Posts Soon - Badge -->
+                <div v-if="props.kind == 'template' && DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
+                    class="px-1.25 py-0.5 border-2 bg-white/10 border-ring rounded-full flex items-center justify-center">
+                    <p class="text-amber-400 text-[10px] relative italic font-black">
+                        Soon
+                    </p>
+                </div>
+            </span>
             <!-- Edit Button -->
-            <Button @click="editSchedule" unstyled class="action-button bg-amber-500/50! hover:bg-amber-500/40!">
-                <PencilIcon :size="22" class="p-0.5! mr-0.5! icon" />
-                <p class="inline-flex h-full items-center pt-0.5">
-                    Edit Schedule
+            <Button @click="editSchedule" unstyled class="action-button">
+                <PencilIcon :size="22" class="p-0.5! mr-0.5! icon text-amber-400/80!" />
+                <p class="inline-flex gap-1 h-full items-center pt-0.5">
+                    Edit <span hidden class="hidden sm:inline"> Schedule</span>
                 </p>
             </Button>
+
             <a v-if="props.kind == 'session'" :href="signupMsgUrl" target="_blank">
                 <Button unstyled class="action-button">
-                    <DiscordIcon class="size-5 mr-0.5! relative bottom-px icon" />
-                    <p class="inline-flex h-full items-center pt-0.5">
-                        View on Discord
+                    <DiscordIconOutlined class="size-5 text-indigo-400 mr-1! relative bottom-px icon" />
+                    <p class="inline-flex gap-1 h-full items-center pt-0.5">
+                        View <span hidden class="hidden sm:inline"> on Discord</span>
                     </p>
                 </Button>
             </a>
@@ -149,7 +160,7 @@
     @reference "@/styles/main.css";
 
     .session-card {
-        @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-black/20 border-ring w-full !h-fit text-center transition-all border-2 hover:border-white/40 rounded-md;
+        @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-black/20 border-ring w-full !h-fit text-center transition-all border-2 hover:border-white/50 rounded-md;
 
         .name-and-time {
             @apply flex grow-2 gap-2 p-1 items-center justify-center text-center flex-col flex-wrap;
@@ -192,14 +203,14 @@
 
 
         .action-area {
-            @apply flex gap-2.5 items-center justify-center flex-wrap w-full pb-2 sm:pb-1;
+            @apply flex gap-2.5 sm:gap-2 pb-2 items-center justify-center flex-wrap h-full;
 
             .post-time {
-                @apply text-white/75 font-extrabold opacity-70 text-sm p-0.5 pb-0 text-center w-full;
+                @apply text-white/75 font-extrabold opacity-70 text-sm p-0.5 pb-2 sm:pb-0 text-center w-full inline-flex truncate items-center justify-center gap-1 flex-wrap;
             }
 
             .action-button {
-                @apply px-2 pr-2.5 py-0.75 active:scale-95 font-bold bg-zinc-500 hover:bg-zinc-600 cursor-pointer transition-all rounded-md block;
+                @apply px-2 pr-2.75 py-0.75 rounded-lg active:scale-95 font-bold bg-zinc-700 hover:bg-zinc-700/80 cursor-pointer transition-all block;
 
                 .icon {
                     @apply inline aspect-square min-w-fit !p-0 h-full flex items-center;

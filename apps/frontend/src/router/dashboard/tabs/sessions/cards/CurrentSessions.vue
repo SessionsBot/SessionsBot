@@ -30,11 +30,16 @@
         }).slice(0, 3)
     );
 
+
+    // Sessions Paginator:
+    const sPageIndexStart = ref<number>();
+
+
 </script>
 
 
 <template>
-    <div class="flex justify-center items-center w-full pt-10">
+    <div class="flex justify-center items-center min-w-fit pt-10">
 
         <!-- Current Sessions Card -->
         <section class="upcoming-sessions-card">
@@ -42,9 +47,17 @@
             <!-- Header -->
             <div class="card-header">
                 <!-- Card Title -->
-                <div class="flex flex-row items-center justify-center gap-0.5 p-0.5 font-bold">
-                    <ArrowBigDown fill="white" class="size-4.5 sm:size-5.5" />
-                    <h1 class="sm:text-lg"> Current Sessions </h1>
+                <div class="flex flex-row items-center justify-center gap-0.75 p-0.5 font-bold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2">
+                            <path stroke-linejoin="round"
+                                d="M15.5 4H18a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2.5" />
+                            <path stroke-linejoin="round"
+                                d="M8.621 3.515A2 2 0 0 1 10.561 2h2.877a2 2 0 0 1 1.94 1.515L16 6H8z" />
+                            <path d="M9 12h6m-6 4h6" />
+                        </g>
+                    </svg>
+                    <h1 class="sm:text-lg"> Sessions </h1>
                 </div>
                 <!-- Create Session - Button -->
                 <Button unstyled @click="(e) => dashboard.sessionForm.visible = true"
@@ -71,34 +84,19 @@
                     Recently Posted:
                 </p>
             </div>
+
+            <!-- Active/Posted Sessions - List -->
             <div v-if="guildSessions?.length"
                 class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
-                <TemplateCard v-for="s in guildSessions" kind="session" :session="s" :key="s.id" />
+                <TemplateCard v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))"
+                    kind="session" :session="s" :key="s.id" />
 
             </div>
-
-
-            <!-- Posting Next - Section -->
-            <div class="section-heading">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                        d="M17 9H7V7h10zm-2 4v3.69l3.19 1.84l.75-1.3l-2.44-1.41V13zm-6 9l1.87-1.24A6.95 6.95 0 0 0 16 23c3.87 0 7-3.13 7-7c0-1.91-.76-3.64-2-4.9V3H3v19l3-2zm0-2.4l-3-2l-1 .66V5h14v4.67c-.91-.43-1.93-.67-3-.67c-1.91 0-3.64.76-4.9 2H7v2h2.67c-.43.91-.67 1.93-.67 3c0 1.12.26 2.17.73 3.11zm7 1.4c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5s-2.24 5-5 5"
-                        stroke-width="0.25" stroke="currentColor" />
-                </svg>
-
-                <p>
-                    Posting Next:
-                </p>
-            </div>
-            <div v-if="guildTemplates?.length"
-                class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
-
-                <TemplateCard v-for="t in guildTemplates" kind="template" :template="t" :key="t.id" />
-
-            </div>
-
+            <!-- Sessions Paginator -->
+            <Paginator v-model:first="sPageIndexStart" v-if="guildSessions?.length"
+                :total-records="guildSessions.length" :rows="5" :always-show="false" class="paginator">
+            </Paginator>
 
         </section>
 
@@ -109,6 +107,17 @@
 <style scoped>
 
     @reference "@/styles/main.css";
+
+    /* Paginator Styles */
+    .paginator {
+        @apply !w-full p-1 border-t-2 border-ring;
+        --p-paginator-background: var(--color-surface);
+        --p-paginator-nav-button-hover-background: var(--color-ring);
+        --p-paginator-nav-button-selected-background: var(--color-indigo-500);
+        --p-paginator-nav-button-color: var(--color-white);
+        --p-paginator-nav-button-hover-color: var(--color-white);
+        --p-paginator-nav-button-selected-color: var(--color-white);
+    }
 
     .upcoming-sessions-card {
         @apply bg-surface w-[90%] max-w-140 h-fit ring-ring ring-2 rounded-md flex flex-col items-center justify-center content-center flex-wrap;

@@ -226,13 +226,14 @@
                 <div v-for="_ in leadingEmptyDays" class="size-px" />
 
                 <!-- calendar Month Days -->
-                <Button unstyled v-for="day in daysInMonth" class="calendar-day"
-                    @click="dayViewDialog.openDayViewFor(day)">
+                <Button unstyled v-for="day in daysInMonth" class="calendar-day" :class="{
+                    'text-indigo-400!': (DateTime.now().startOf('day').toUnixInteger() == day?.startOf('day').toUnixInteger())
+                }" @click="dayViewDialog.openDayViewFor(day)">
                     {{ day.day }}
                     <!-- Chip Bar -->
-                    <div class="absolute bottom-1 w-full h-1.75 sm:h-3 gap-1 flex items-center justify-center">
+                    <div class="absolute bottom-0.75 w-full h-1.75 sm:h-3 gap-1 flex items-center justify-center">
                         <!-- Single Session - Chip -->
-                        <div hidden class="h-full w-fit rounded-full aspect-square bg-gray-600" />
+                        <div hidden class="h-full w-fit rounded-full aspect-square bg-slate-600" />
                         <!-- Repeating Session - Chip -->
                         <div hidden class="h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
                     </div>
@@ -345,6 +346,10 @@
 
                 &:hover {
                     @apply ring-white/60 cursor-pointer;
+                }
+
+                &.today-day {
+                    @apply !text-amber-400;
                 }
             }
         }
