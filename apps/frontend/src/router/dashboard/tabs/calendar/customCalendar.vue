@@ -1,10 +1,14 @@
 <script lang="ts" setup>
+    import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowLeftCircleIcon, ArrowRightCircleIcon, XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { number } from 'motion-v';
     import { Popover } from 'primevue';
 
-
+    // Services:
+    const dashboard = useDashboardStore();
+    const guildSessions = computed(() => dashboard.guildData.sessions.state);
+    const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state);
 
     // HEADER - Month / Year Select Popover:
     const useMonthYearPopover = () => {
@@ -130,11 +134,21 @@
     }
     const dayViewDialog = useDayViewDialog();
 
+    // Calendar Day Badge - Utils:
+    function dayHasSessions(d: DateTime) {
+        return guildSessions.value?.some((s) => DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })?.startOf('day') == d?.startOf('day'))
+    }
+
+    // ! Fix me: Need more variables checks (e.g first start, past posts(sessions), future posts(RRule) )
+    function dayHasTemplates(d: DateTime) {
+        // guildTemplates.value?.some(t => DateTime.fromISO(s.starts_at_utc, { zone: 'utc' }).startOf('day') == d?.startOf('day'))
+    }
+
 </script>
 
 
 <template>
-    <div class="flex flex-col justify-center items-center w-fit h-fit">
+    <div class="flex bg-surface flex-col justify-center items-center w-fit h-fit">
 
         <!-- Calendar Header -->
         <div class="calendar-header">
@@ -227,15 +241,16 @@
 
                 <!-- calendar Month Days -->
                 <Button unstyled v-for="day in daysInMonth" class="calendar-day" :class="{
-                    'text-indigo-400!': (DateTime.now().startOf('day').toUnixInteger() == day?.startOf('day').toUnixInteger())
+                    'text-indigo-400!': (DateTime.now().startOf('day').toUnixInteger() == day?.toUnixInteger())
                 }" @click="dayViewDialog.openDayViewFor(day)">
                     {{ day.day }}
                     <!-- Chip Bar -->
                     <div class="absolute bottom-0.75 w-full h-1.75 sm:h-3 gap-1 flex items-center justify-center">
                         <!-- Single Session - Chip -->
-                        <div hidden class="h-full w-fit rounded-full aspect-square bg-slate-600" />
+                        <div :class="{ 'flex': dayHasSessions(day) }"
+                            class="hidden h-full w-fit rounded-full aspect-square bg-slate-600" />
                         <!-- Repeating Session - Chip -->
-                        <div hidden class="h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
+                        <div hidden class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
                     </div>
                 </Button>
             </div>
@@ -247,16 +262,17 @@
     </div>
 
     <!-- Day View - Modal/Dialog -->
-    <Dialog v-model:visible="dayViewDialog.visible.value" modal block-scroll>
+    <Dialog v-model:visible="dayViewDialog.visible.value" modal block-scroll
+        :pt="{ root: 'bg-transparent! border-0! text-white/80!' }" class="w-[85%] max-w-130 bg-transparent!">
         <template #container>
             <div
-                class="flex flex-col min-w-55 justify-between items-start border-2 border-ring rounded-md overflow-clip">
+                class="flex flex-col w-full h-full justify-center items-start border-2 bg-surface border-ring rounded-md">
                 <!-- Header -->
                 <div
-                    class="flex bg-zinc-800 border-b-2 border-inherit p-2 gap-4 flex-row justify-between items-center w-full">
+                    class="flex bg-black/20 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full">
                     <span>
                         <p class="uppercase font-black text-xs text-white/40"> Day View </p>
-                        <p class="font-bold">
+                        <p class="font-extrabold p-0.5 pl-0">
                             {{ dayViewDialog.daySelected.value?.toFormat('D') || 'Select a Day!' }}
                         </p>
                     </span>
@@ -267,7 +283,7 @@
 
                 </div>
                 <!-- Content -->
-                <div class="flex p-15 bg-zinc-700 w-full h-fit">
+                <div class="flex bg-white/2 p-15 w-full! h-fit items-center justify-center">
                     Content Here!
                 </div>
 
@@ -283,9 +299,9 @@
     @reference '@/styles/main.css';
 
     .calendar-header {
-        @apply bg-zinc-800 w-full max-w-125 p-2 rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
+        @apply bg-black/20 w-full max-w-125 p-2 rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
 
-        *.adjust-month-button {
+        .adjust-month-button {
             @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-white/20;
 
             &:active {
@@ -297,7 +313,7 @@
             }
         }
 
-        *.select-month-button {
+        .select-month-button {
             @apply p-0.5 px-2 gap-1 bg-white/15 hover:bg-white/10 flex flex-row items-center justify-center text-center font-extrabold text-nowrap rounded-md select-none cursor-pointer transition-all;
 
             &:active {
@@ -309,10 +325,10 @@
     .calendar-subheader {
         @apply bg-zinc-700 w-full max-w-125 p-1.5 px-2 rounded-md rounded-b-none border-2 rounded-t-none border-t-0 border-ring flex justify-between items-center;
 
-        *.view-buttons-wrap {
+        .view-buttons-wrap {
             @apply flex flex-row flex-nowrap gap-1 p-0.75 bg-zinc-800/80 rounded-md;
 
-            *.view-type-button {
+            .view-type-button {
                 @apply bg-white/10 hover:bg-white/15 px-1.5 py-0.5 text-sm font-semibold rounded-md cursor-pointer transition-all;
 
                 &.selected {
@@ -328,12 +344,12 @@
 
 
     .calendar-wrap {
-        @apply bg-zinc-700 w-full max-w-125 !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
+        @apply bg-surface w-full max-w-125 !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
 
-        *.weekday-header-row {
-            @apply w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
+        .weekday-header-row {
+            @apply bg-black/20 border-b-2 border-b-ring/30 w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
 
-            *.weekday-header {
+            .weekday-header {
                 @apply w-full p-1 text-center font-semibold italic text-white/60;
             }
         }
@@ -341,7 +357,7 @@
         *.calendar-days-wrap {
             @apply grid grid-cols-7 gap-2 p-2 w-full items-center justify-center;
 
-            *.calendar-day {
+            .calendar-day {
                 @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center sm:text-lg font-black transition-all;
 
                 &:hover {
