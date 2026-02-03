@@ -14,9 +14,36 @@
 
 
 <template>
-    <div class="dashboard-tab-view flex! flex-wrap!">
+    <div class="dashboard-tab-view flex! flex-wrap! flex-col!">
 
-        <span class="w-full h-full flex items-start justify-center p-4 flex-wrap">
+        <!-- Title & Desc -->
+        <div class="w-full flex items-center justify-start flex-row gap-0">
+            <div class="w-fit h-fit flex aspect-square">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="1">
+                        <path stroke-width="2" d="M12 3h7v18h-14v-18h7Z" />
+                        <path d="M14.5 3.5v3h-5v-3" />
+                        <g stroke-width="2">
+                            <path d="M9 10h3" />
+                            <g stroke-dasharray="8" stroke-dashoffset="8">
+                                <path d="M9 13h5" stroke-dashoffset="0" />
+                                <path d="M9 16h6" stroke-dashoffset="0" />
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+            <p class="text-xl px-1.5 uppercase font-black">
+                Sessions View
+            </p>
+        </div>
+
+        <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
+            View your Discord Server's recently posted sessions and any active session schedules you have configured.
+        </p>
+
+        <div class="w-full h-fit flex items-start justify-center p-4 pt-0 flex-wrap">
 
             <!-- Guild Stats - Bar Section -->
             <span hidden class="w-full flex gap-5 flex-wrap items-center justify-center">
@@ -50,7 +77,7 @@
             <!-- Active Session Templates Card -->
             <ActiveTemplates />
 
-        </span>
+        </div>
 
     </div>
 </template>

@@ -59,7 +59,8 @@
         <template #container class="dialog-container flex items-center justify-center">
 
             <!-- Header -->
-            <section class="flex relative flex-row justify-center items-center p-2 gap-0.75 border-b-2 border-ring">
+            <section
+                class="flex bg-black/20 relative flex-row justify-center items-center p-2 gap-0.75 border-b-2 border-ring">
                 <Iconify icon="clarity:details-solid" />
                 <p class="font-extrabold p-0.75 text-xl uppercase text-white!">
                     Event Details
@@ -72,9 +73,9 @@
             </section>
 
             <!-- Details -->
-            <section class="flex items-center justify-center flex-col gap-0 p-0 border-b-2 border-ring">
+            <section class="flex items-center justify-start flex-col gap-0 p-0 border-b-2 border-ring overflow-auto!">
 
-                <div class="field-value flex flex-col gap-2 p-3! items-center justify-center flex-wrap">
+                <div class="field-value flex flex-col gap-2 p-3! items-center justify-center flex-wrap ">
 
                     <!-- Event Type - Copy Text -->
                     <span
@@ -123,7 +124,7 @@
                         class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring rounded relative! flex items-center justify-center">
                         <!-- Value Title -->
                         <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
-                            Acting User
+                            {{ selectedEvent?.user_id == 'BOT' ? 'User' : 'User ID' }}
                         </p>
                         <!-- Value Display -->
                         <input :value="selectedEvent?.user_id" readonly
@@ -139,7 +140,7 @@
 
                     </span>
 
-                    <!-- Meta Value - Copy Text -->
+                    <!-- Meta Value(s) - Copy Text -->
                     <span v-for="[title, value] in Object.entries(eventMetaData)"
                         class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring rounded relative! flex items-center justify-center">
                         <!-- Value Title -->
@@ -160,28 +161,22 @@
                     </span>
 
                 </div>
+
             </section>
 
-            <Button unstyled @click="emits('close')"
-                class="gap-0 px-2 py-0.75 bg-white/15 text-white font-bold m-2 self-center flex items-center justify-center w-fit cursor-pointer active:scale-95 transition-all rounded-md">
-                <XIcon class="p-px" />
-                <p> Close Details </p>
-            </Button>
+            <!-- Footer -->
+            <section class="w-full bg-black/20 flex gap-2 items-center justify-center content-center flex-wrap">
+                <Button unstyled @click="emits('close')"
+                    class="gap-0 px-2 py-0.75 bg-white/15 hover:bg-white/9 text-white font-bold m-2 self-center flex items-center justify-center w-fit cursor-pointer active:scale-95 transition-all rounded-md">
+                    <XIcon class="p-px" />
+                    <p> Close Details </p>
+                </Button>
+            </section>
+
 
         </template>
     </Dialog>
 </template>
 
 
-<style scoped>
-
-    @reference "@/styles/main.css";
-
-    .field-name {
-        @apply bg-black/12 self-start relative left-1.5 px-1.5 py-px text-sm text-white/70 ring-ring ring-2 rounded w-fit h-fit font-black uppercase;
-    }
-
-    .field-value {
-        @apply italic font-bold text-white/90 p-0.5 text-center bg-white/7 w-full;
-    }
-</style>
+<style scoped></style>

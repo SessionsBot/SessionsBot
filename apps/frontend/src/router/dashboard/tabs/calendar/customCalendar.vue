@@ -271,7 +271,7 @@
     @reference '@/styles/main.css';
 
     .calendar-header {
-        @apply bg-black/20 w-full max-w-125 p-2 rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
+        @apply bg-black/20 w-full p-2 sm:text-lg rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
 
         .adjust-month-button {
             @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-white/20;
@@ -296,7 +296,7 @@
 
 
     .calendar-wrap {
-        @apply bg-surface w-full max-w-125 !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
+        @apply bg-surface w-full !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
 
         .weekday-header-row {
             @apply bg-black/20 border-b-2 border-b-ring/30 w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
@@ -307,10 +307,10 @@
         }
 
         .calendar-days-wrap {
-            @apply grid grid-cols-7 gap-2 p-2 w-full items-center justify-center;
+            @apply grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
 
             .calendar-day {
-                @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center sm:text-lg font-black transition-all;
+                @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
 
                 &:hover {
                     @apply ring-white/60 text-white/60 cursor-pointer;

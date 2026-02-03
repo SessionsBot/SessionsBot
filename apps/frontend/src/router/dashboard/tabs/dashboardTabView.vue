@@ -5,7 +5,6 @@
     import CalendarTab from './calendar/calendarTab.vue';
     import AuditLogTab from './auditLog/auditLogTab.vue';
     import NotificationsTab from './notifications/notificationsTab.vue';
-    import { TriangleAlertIcon } from 'lucide-vue-next';
     import PreferencesTab from './preferences/preferencesTab.vue';
 
     // Services:
