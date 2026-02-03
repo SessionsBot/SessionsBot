@@ -11,7 +11,6 @@
     const clipboard = useClipboard();
     const copyStates = ref<Map<string, 'idle' | 'success' | 'fail'>>(new Map())
     function copyText(n: string, v: string) {
-        console.info('copyingggg...')
         try {
             if (clipboard.isSupported) {
                 clipboard.copy(v)

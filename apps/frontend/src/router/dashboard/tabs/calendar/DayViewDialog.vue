@@ -116,7 +116,7 @@
                             </span>
                             <!-- Actions -->
                             <Button unstyled title="View Session" @click="$router.push(`/sessions/${session?.id}`)"
-                                class="action-button">
+                                class="action-button text-indigo-400">
                                 <Iconify icon="material-symbols:chat-paste-go-rounded" />
                             </Button>
                         </div>
@@ -149,8 +149,9 @@
                                 </p>
                             </span>
                             <!-- Actions -->
-                            <Button unstyled title="View Session"
-                                @click="dashboard.sessionForm.startEdit(template as any)" class="action-button">
+                            <Button unstyled title="Edit Schedule"
+                                @click="dashboard.sessionForm.startEdit(template as any)"
+                                class="action-button text-amber-400/80">
                                 <Iconify icon="mdi:pencil" />
                             </Button>
                         </div>
@@ -159,7 +160,7 @@
                                 No Sessions Scheduled!
                             </p>
                             <br>
-                            <Button v-if="!pastDay" unstyled title="View Session"
+                            <Button v-if="!pastDay" unstyled title="Create Schedule"
                                 @click="dashboard.sessionForm.visible = true" class="action-button p-1! px-2!">
                                 Create One
                             </Button>

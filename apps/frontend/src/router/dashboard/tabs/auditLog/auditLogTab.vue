@@ -10,7 +10,7 @@
     const dashboard = useDashboardStore();
 
     // Dashboard Data
-    const auditEvents = computed(() => dashboard.guildData.auditLog.state)
+    const auditEvents = computed(() => dashboard.guildData.auditLog.state?.sort((a, b) => DateTime.fromISO(b.created_at).toSeconds() - DateTime.fromISO(a.created_at).toSeconds()))
 
     // Event Details Modal:
     const useEventDetailsModal = () => {
@@ -90,7 +90,7 @@
                 @click="eventDetailsModal.openDetails(e)">
                 <!-- Date -->
                 <p class="content-cell ">
-                    {{ DateTime.fromISO(e.created_at).toFormat('f') }}
+                    {{ DateTime.fromISO(e.created_at).toFormat('M/d/yy - h:mm a') }}
                 </p>
 
                 <!-- Event -->
@@ -102,7 +102,14 @@
                 <!-- User -->
                 <div class="content-cell">
                     <div v-if="e.user_id === 'BOT'" class="flex flex-row items-center justify-start gap-1">
-                        <Iconify icon="bx:bot" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="relative bottom-px" width="24" height="24"
+                            viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M21.928 11.607c-.202-.488-.635-.605-.928-.633V8c0-1.103-.897-2-2-2h-6V4.61c.305-.274.5-.668.5-1.11a1.5 1.5 0 0 0-3 0c0 .442.195.836.5 1.11V6H5c-1.103 0-2 .897-2 2v2.997l-.082.006A1 1 0 0 0 1.99 12v2a1 1 0 0 0 1 1H3v5c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5a1 1 0 0 0 1-1v-1.938a1 1 0 0 0-.072-.455M5 20V8h14l.001 3.996L19 12v2l.001.005l.001 5.995z" />
+                            <ellipse cx="8.5" cy="12" fill="currentColor" rx="1.5" ry="2" />
+                            <ellipse cx="15.5" cy="12" fill="currentColor" rx="1.5" ry="2" />
+                            <path fill="currentColor" d="M8 16h8v2H8z" />
+                        </svg>
                         <p> BOT </p>
                     </div>
                     <p v-else>
@@ -138,10 +145,10 @@
     @reference "@/styles/main.css";
 
     .auditLogTable {
-        @apply mt-5 !max-h-fit block bg-surface ring-ring ring-2 rounded-md overflow-clip;
+        @apply mt-5 mx-3 !max-h-fit block bg-surface ring-ring ring-2 rounded-md overflow-clip;
 
         *.heading-cell {
-            @apply w-full text-center p-2 bg-black/30 ring-1 ring-ring;
+            @apply w-full text-center font-extrabold p-2 bg-black/30 ring-1 ring-ring;
         }
 
         *.content-row {
@@ -149,7 +156,7 @@
         }
 
         *.content-cell {
-            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-ring/40 group-hover:cursor-pointer group-active:bg-ring/25 flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring font-medium text-white/85;
+            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-ring/40 group-hover:cursor-pointer group-active:bg-ring/25 flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring font-medium text-white/65;
         }
 
     }

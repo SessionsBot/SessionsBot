@@ -17,12 +17,12 @@
 <template>
     <!-- Overlay / Modal -->
     <transition name="fade">
-        <div v-if="nav.navOpen" @click="closeNav()"
+        <div v-if="nav.navVisible" @click="closeNav()"
             class="bg-black/35 backdrop-blur-md w-full min-h-screen h-full flex-1 flex absolute top-0 bottom-0 z-10!" />
     </transition>
 
     <transition name="navSlide">
-        <nav v-if="nav.navOpen"
+        <nav v-if="nav.navVisible"
             class="bg-black/25 border-x-2 border-white/5 backdrop-blur-md gap-0 w-fit min-w-58 flex flex-col justify-start items-center content-center text-center fixed top-0 right-0 h-screen overflow-x-clip drop-shadow-2xl drop-shadow-black/50 z-20">
 
             <!-- Nav Header -->

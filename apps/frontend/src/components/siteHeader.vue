@@ -4,31 +4,28 @@
     import { ref } from "vue";
     import SiteNav from "./siteNav.vue";
     import { useNavStore } from "@/stores/nav";
-    import { API } from "@/utils/api";
-    import type { APIResponseValue } from "@sessionsbot/shared";
+
+    // Services:
+    const nav = useNavStore();
 
     // Expose header element so parent can measure
     const headerRef = ref<HTMLElement | null>(null);
     const headerHeight = useElementSize(headerRef).height || 0;
-    const systemStatuses = ref<string>();
-    const showStatusAlert = ref<boolean>(false);
 
-
-    onMounted(async () => {
-        // Get system statuses:
-        const { data } = await API.get<APIResponseValue<any>>(`/system/status`)
-        if (!data?.success || data?.data?.['showStatusAlert']) {
-            showStatusAlert.value = true;
-            systemStatuses.value = data.data;
+    // Status Alert Visibility
+    const showStatusAlert = ref(false)
+    watch(() => nav.systemStatus.state, (v) => {
+        if (v?.data.data?.showStatusAlert) {
+            showStatusAlert.value = true
         } else {
-            showStatusAlert.value = false;
-            systemStatuses.value = data.data;
+            showStatusAlert.value = false
         }
-    })
+    }, { deep: true })
 
-    defineExpose({ headerHeight, systemStatuses })
 
-    const nav = useNavStore();
+    defineExpose({ headerHeight })
+
+
 </script>
 
 <template>
