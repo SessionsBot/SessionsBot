@@ -22,9 +22,6 @@ export default {
 
                 // testMigrator()
 
-                // fetch guild:
-                const guild = await bot.guilds.fetch(guildId)
-                await discordLog.events.guildRemoved(guild)
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

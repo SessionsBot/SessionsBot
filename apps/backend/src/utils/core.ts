@@ -79,5 +79,4 @@ const core = {
 }
 
 export default core;
-export const get0xColor = core.colors.getOxColor
 export const urls = core.urls
