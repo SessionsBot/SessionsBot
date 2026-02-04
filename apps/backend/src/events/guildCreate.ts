@@ -22,6 +22,7 @@ export default {
         createAuditLog({
             event: AuditEvent.BotAdded,
             guild: guild.id,
+            user: core.botClient?.user?.id || null,
             meta: undefined
         })
 

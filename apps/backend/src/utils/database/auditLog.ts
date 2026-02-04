@@ -14,12 +14,9 @@ export async function createAuditLog<E extends AuditEvent>(opts: {
     meta: AuditMetaData<E>
     /** The `guildId` of the server to store an audit event for. */
     guild: string
-    /** The **DISCORD** `userId` related to the occurred action (if any).
-     * @_default `"BOT"` */
-    user?: string | undefined,
+    /** The **DISCORD** `userId` related to the occurred action */
+    user: string,
 }) {
-    // Defaults:
-    if (!opts.user) opts.user = "BOT";
 
     // Event Meta:
     const eventMetaString = opts?.['meta']

@@ -18,7 +18,7 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req
         // Parse req:
         const guildId = req.params['guildId'];
         // Fetch guild channels:
-        const guildFetch = await core.botClient.guilds.fetch(guildId);
+        const guildFetch = await core.botClient.guilds.fetch(String(guildId));
         const channelFetch = await guildFetch.channels.fetch();
         const filteredChannels = channelFetch.filter(ch => (ch.type == ChannelType.GuildText || ch.type == ChannelType.GuildCategory))
         // Return result data:
@@ -45,7 +45,7 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: a
         // Parse req:
         const guildId = req.params['guildId'];
         // Fetch guild roles:
-        const guildFetch = await core.botClient.guilds.fetch(guildId);
+        const guildFetch = await core.botClient.guilds.fetch(String(guildId));
         const guildRoles = await guildFetch.roles.fetch();
         // Return result data:
         return new reply(res).success(guildRoles)
@@ -64,7 +64,7 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async
         const guildId = req.params['guildId'];
 
         // Fetch Guild Entitlements from Id:
-        const entitlements = await getGuildEntitlementsFromId(guildId)
+        const entitlements = await getGuildEntitlementsFromId(String(guildId))
         if (!entitlements.success) { throw entitlements };
 
         // Determine Plan from Entitlements:

@@ -19,7 +19,7 @@ const sessionTemplatesRouter = express.Router({ mergeParams: true });
 sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
     try {
         // Parse/Read/Validate Request:
-        const { data: bodyData } = req.body;
+        const { data: bodyData } = req?.body;
         const result = API_SessionTemplateBodySchema.safeParse(bodyData)
         if (!result.success) {
             // Return Failure:
@@ -113,7 +113,7 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildAdmin, asy
 
         // Attempt to Delete Session Template by Id:
         const { data, error } = await supabase.from('session_templates').delete()
-            .eq('id', templateId)
+            .eq('id', String(templateId))
             .select()
             .single()
 

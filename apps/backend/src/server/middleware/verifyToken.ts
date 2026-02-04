@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { supabase } from "../../utils/database/supabase.js";
 import { AppUser, Database, APIResponse as reply } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
@@ -11,7 +11,7 @@ export interface authorizedRequest extends Request {
         user: AppUser,
         profile: Database['public']['Tables']['profiles']['Row']
     }
-};
+}
 
 
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +32,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         };
         // Allow request:
         return next()
+
 
     } catch (err) {
         // Log and return error:

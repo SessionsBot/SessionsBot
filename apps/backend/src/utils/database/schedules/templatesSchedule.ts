@@ -253,6 +253,7 @@ async function executeTemplateCreationSchedule() {
                 createAuditLog({
                     event: AuditEvent.SessionPosted,
                     guild: guildId,
+                    user: core.botClient?.user?.id || null,
                     meta: { session_id: session.id }
                 })
             }
