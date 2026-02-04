@@ -62,13 +62,19 @@ export default {
 
         /** Deletes an EXISTING guild from the `Guilds` database table. */
         async delete(guildId: string) {
+            // Get Session Templates Count on Delete:
+            const { count: templateCount } = await supabase
+                .from('session_templates')
+                .select('*', { count: 'exact', head: true })
+                .eq('guild_id', guildId);
+            // Delete Guild from DB:
             const { error } = await supabase.from('guilds').delete().eq('id', guildId);
             if (error) {
                 // Failed save - Return:
                 return dbResult.failure({ message: `Failed to delete guild!`, error });
             } else {
                 // Succeeded - Return data:
-                return dbResult.success({ message: `Successfully deleted guild!`, guildId })
+                return dbResult.success({ message: `Successfully deleted guild!`, guildId, templateCount })
             }
         },
     },

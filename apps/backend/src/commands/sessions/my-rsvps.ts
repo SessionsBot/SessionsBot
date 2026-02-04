@@ -9,7 +9,7 @@ import { defaultFooterText } from "../../utils/bot/messages/basic";
 export default {
     // Command Definition:
     data: new SlashCommandBuilder()
-        .setName('my-sessions')
+        .setName('my-rsvps')
         .setDescription('View your current RSVP assignments for any upcoming sessions.')
     ,
     // Command Execution:
@@ -33,7 +33,7 @@ export default {
                 .eq('guild_id', i.guild.id)
                 .gt('starts_at_utc', now)
                 .select()
-            if (sessionsERR) throw Result.err(sessionsERR, { message: `Failed to fetch "Active Sessions" for guild for /my-sessions cmd`, guildId: i.guildId, userId: i.user.id })
+            if (sessionsERR) throw Result.err(sessionsERR, { message: `Failed to fetch "Active Sessions" for guild for /my-rsvps cmd`, guildId: i.guildId, userId: i.user.id })
 
 
             // Fetch user's current RSVPs for Active Session Ids:
@@ -57,7 +57,7 @@ export default {
                     .select('*')
                     .in('id', assignedSlotIds)
                     .select()
-                if (error) throw Result.err(error, { message: 'Failed to fetch users assigned "RSVPS SLOTS" data for /my-sessions cmd!', guildId: i.guildId, userId: i.user.id })
+                if (error) throw Result.err(error, { message: 'Failed to fetch users assigned "RSVPS SLOTS" data for /my-rsvps cmd!', guildId: i.guildId, userId: i.user.id })
                 assignedSlotsData = data;
             }
 
@@ -69,7 +69,7 @@ export default {
                     .select('*')
                     .in('id', assignedSessionIds)
                     .select()
-                if (error) throw Result.err(error, { message: 'Failed to fetch users assigned "RSVPS SLOTS" data for /my-sessions cmd!', guildId: i.guildId, userId: i.user.id })
+                if (error) throw Result.err(error, { message: 'Failed to fetch users assigned "RSVPS SLOTS" data for /my-rsvps cmd!', guildId: i.guildId, userId: i.user.id })
                 assignedSessionsData = data;
             }
 
@@ -110,7 +110,7 @@ export default {
             const msgBuild = new ContainerBuilder({
                 accent_color: getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `## 📥  My Sessions \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
+                    new TextDisplayBuilder({ content: `## 📥  My RSVPs \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
                     new SeparatorBuilder(),
                     ...rsvpSections()
                 ]
@@ -129,7 +129,7 @@ export default {
 
         } catch (err) {
             // Execution Error:
-
+            throw err
         }
     }
 }

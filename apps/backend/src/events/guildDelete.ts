@@ -9,18 +9,16 @@ const createLog = useLogger();
 export default {
     name: Events.GuildCreate,
     async execute(guild: Guild) {
-        // Log removing guild:
+        // Log removing guild - cloud:
         createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`);
-        discordLog.events.guildRemoved(guild, true);
 
-        // Delete removing guild from database:
+        // Delete Guild from database:
         const result = await dbManager.guilds.delete(guild.id);
         if (!result.success) {
             return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { result })
+        } else {
+            // Log removing guild - Discord:
+            discordLog.events.guildRemoved(guild, (result.data.templateCount ?? null))
         }
-
-
-        // - Remove any Scheduled Sessions Posts:
-        // scheduleManager.unScheduleGuildsSessionPosts(guild?.id)
     }
 }

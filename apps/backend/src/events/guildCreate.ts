@@ -25,7 +25,7 @@ export default {
             meta: undefined
         })
 
-        // Add new guild to database:
+        // Add Guild to database:
         const result = await dbManager.guilds.add(guild);
         if (!result.success) {
             return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result })

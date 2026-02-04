@@ -1,7 +1,6 @@
-import { SubscriptionSKUs } from '@sessionsbot/shared';
 import pkg from '../../package.json' with { type: 'json' };
 import { ExtendedClient } from './types/extendedClient.js';
-import { Entitlement, SKU } from 'discord.js';
+import { SKU } from 'discord.js';
 import { BotEmojiName } from './bot/fetchEmojis';
 
 

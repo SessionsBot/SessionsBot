@@ -52,7 +52,7 @@ export default {
                     new TextDisplayBuilder({ content: `### 🤔 Hm! We cant find your RSVP Slot` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you're already **not assigned** this RSVP slot within this session.` }),
-                    new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-sessions')} command to confirm your current RSVP assignments within this Discord Server.` })
+                    new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-rsvps')} command to confirm your current RSVP assignments within this Discord Server.` })
                 ]
             })
             if (subscription.limits.SHOW_WATERMARK) {
