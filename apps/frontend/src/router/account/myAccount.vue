@@ -14,7 +14,7 @@
 </script>
 
 <template>
-    <main class="flex flex-wrap w-full h-full flex-1 justify-center items-center content-center">
+    <main class="flex flex-wrap w-full h-full flex-1 p-5 justify-center items-center content-center">
         <Transition name="zoom" mode="out-in">
 
             <!-- Main Account Panel -->

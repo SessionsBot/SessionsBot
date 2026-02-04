@@ -30,6 +30,9 @@
         const guildTemplates = dashboard.guildData.sessionTemplates.state;
         if (!guildTemplates || !guildTemplates.length) return [];
 
+        // If day has already occurred - Return []:
+        if (pastDay.value) return []
+
         // Check each template:
         return guildTemplates.filter((t) => {
             const templateStartDay = DateTime.fromISO(t.starts_at_utc, { zone: 'local' }).startOf('day')
@@ -123,7 +126,7 @@
 
                         <div v-if="!thisDaysSessions.length" class="list-item-card bg-white/10!">
                             <p v-if="pastDay" class="font-semibold italic opacity-55 inline">
-                                No Sessions Created!
+                                No sessions occurred on this day!
                             </p>
                             <p v-else="pastDay" class="font-semibold italic opacity-55 inline">
                                 No Sessions Created Yet!
@@ -156,8 +159,11 @@
                             </Button>
                         </div>
                         <div v-if="!thisDaysTemplates.length" class="list-item-card bg-white/10!">
-                            <p class="font-semibold italic opacity-55">
+                            <p v-if="!pastDay" class="font-semibold italic opacity-55">
                                 No Sessions Scheduled!
+                            </p>
+                            <p v-else class="font-semibold italic opacity-55">
+                                This day has already concluded!
                             </p>
                             <br>
                             <Button v-if="!pastDay" unstyled title="Create Schedule"

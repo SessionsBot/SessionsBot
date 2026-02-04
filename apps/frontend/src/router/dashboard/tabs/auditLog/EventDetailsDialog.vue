@@ -35,7 +35,6 @@
         const rawMeta = selectedEvent.value?.event_meta;
         if (!rawMeta) return {}
         const parsed = JSON.parse(String(rawMeta))
-        console.info(parsed)
         return parsed
     })
 

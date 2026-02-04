@@ -1,7 +1,10 @@
-import { type API_SessionTemplateBodyInterface } from "@sessionsbot/shared";
+import { discordSnowflakeSchema, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
 import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildRoles, fetchGuildSessions, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
+import { DateTime } from "luxon";
+import { API } from "@/utils/api";
+import { z } from 'zod'
 
 type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
@@ -102,6 +105,67 @@ const useDashboardStore = defineStore('dashboard', () => {
     })
 
 
+    /** Discord Identities - From User Ids */
+    const useDiscordIdentities = () => {
+        // Cached Identities:
+        type cachedIdentity = API_DiscordUserIdentity & { fetched_at: DateTime }
+
+        const inFlight = ref<Map<string, Promise<cachedIdentity | undefined>>>(new Map())
+        const cache = ref<Map<string, cachedIdentity>>(new Map())
+        const cacheTimeMs = (15 * 60 * 1000)
+
+        /** Gets a Discord Identity by UserId (using cache). */
+        async function get(userId: string) {
+            // Confirm User Id:
+            const { success: validUserId, error: userIdError } = z.safeParse(discordSnowflakeSchema, userId)
+            if (!validUserId) {
+                console.warn(`[!] Failed to fetch Discord Identity - INVALID USER ID - ${userId}`, { input_errors: z.treeifyError(userIdError)?.errors })
+                return undefined
+            }
+            // Get & Return Cached User if NOT Expired:
+            const cachedUser = cache.value.get(userId)
+            if (cachedUser) {
+                const expired = Math.abs(cachedUser.fetched_at.diffNow().milliseconds) >= cacheTimeMs
+                if (!expired) return cachedUser
+            }
+
+            // Already fetching?
+            const existing = inFlight.value.get(userId)
+            if (existing) return existing
+
+            // Create request
+            const request = (async () => {
+                try {
+                    const result = await API.get<APIResponseValue<API_DiscordUserIdentity>>(
+                        `/discord/identity/${userId}`
+                    )
+
+                    if (!result.data?.success) return undefined
+
+                    const identity: cachedIdentity = {
+                        ...result.data.data,
+                        fetched_at: DateTime.now(),
+                    } as any
+
+                    cache.value.set(userId, identity)
+                    return identity
+                } finally {
+                    inFlight.value.delete(userId)
+                }
+            })()
+
+            inFlight.value.set(userId, request)
+            return request
+        }
+
+        // Return States & Methods:
+        return {
+            get
+        }
+    }
+    const discordIdentities = useDiscordIdentities()
+
+
     /** Session Form - States & Methods: */
     const useSessionForm = () => {
         /** Session (Template) Form - Visibility Boolean */
@@ -173,6 +237,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         guildDataState,
         saveGuildChoice,
 
+        discordIdentities,
         sessionForm,
     }
 })
