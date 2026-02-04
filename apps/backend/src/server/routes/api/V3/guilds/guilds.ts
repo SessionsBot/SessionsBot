@@ -1,14 +1,13 @@
-import axios from "axios";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
-import { APIResponse as reply, SubscriptionPlanName, SubscriptionSKUs } from "@sessionsbot/shared";
+import { APIResponse as reply, SubscriptionSKUs } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin, verifyGuildMember } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core.js";
-import { ChannelType, RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
+import { ChannelType } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
-import { getGuildEntitlementsFromId, getGuildSubscriptionFromId } from "../../../../../utils/bot/entitlements.js";
+import { getGuildEntitlementsFromId } from "../../../../../utils/bot/entitlements.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();

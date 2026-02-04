@@ -3,7 +3,6 @@ import core from "../utils/core.js";
 import corsMiddleware from "./middleware/cors.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
-import { HttpStatusCode } from "axios";
 import { APIResponse } from "@sessionsbot/shared";
 import { ENVIRONMENT_TYPE } from "../utils/environment.js";
 

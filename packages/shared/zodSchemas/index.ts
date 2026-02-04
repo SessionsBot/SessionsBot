@@ -1,1 +1,2 @@
-export * from './api/session_templates'
+export * from './api/sessionTemplates'
+export * from './api/discordSnowflakes'

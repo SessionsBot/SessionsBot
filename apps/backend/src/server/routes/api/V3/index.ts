@@ -1,12 +1,11 @@
 // API V3 Sessions Bot - Internal Backend API Endpoints
 import express from "express";
-import { APIResponse } from "@sessionsbot/shared";
-import { HttpStatusCode } from "axios";
 import core from "../../../../utils/core";
 
 import authRouter from './auth/auth.js'
 import guildsRouter from "./guilds/guilds";
 import systemRouter from "./system/system";
+import discordRouter from "./discord/discord";
 
 // Create Router
 const apiRouter = express.Router();
@@ -20,6 +19,7 @@ apiRouter.all('/', (req, res) => {
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/guilds', guildsRouter);
 apiRouter.use('/system', systemRouter);
+apiRouter.use('/discord', discordRouter);
 
 
 // - Export Router:
