@@ -9,16 +9,25 @@
 
     // Services:
     const dashboard = useDashboardStore();
+    const route = useRoute();
+    const router = useRouter();
 
 
     // BEFORE MOUNT - Load Saved Guild Choice:
     onBeforeMount(() => {
+        // Get query / pre selected GUILD ID - allows actions:
+        const preProvided = route.query
+        if (preProvided?.['guildId']) {
+            dashboard.guildId = String(preProvided?.guildId);
+        }
+
         // Load Saved "Guild Selection":
         const choice = dashboard.saveGuildChoice.get()
         if (choice) {
             dashboard.guildId = choice;
             dashboard.nav.expanded = false;
         }
+
     });
 
     // Guild Data State:

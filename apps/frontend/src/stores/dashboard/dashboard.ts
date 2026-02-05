@@ -5,6 +5,7 @@ import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
 import { z } from 'zod'
+import router from "@/router/router";
 
 type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
@@ -215,7 +216,9 @@ const useDashboardStore = defineStore('dashboard', () => {
         if (!auth.signedIn) {
             // No User Signed In - Clear Store - Prompt Sign In:
             console.warn('[Dashboard Data]: Auth Ready - NO USER - Sign in for Dashboard');
-            auth.signIn('/dashboard')
+            // Get originating Dashboard URL to preserve pre defined actions:
+            const redirectBackTo = router.currentRoute.value.fullPath
+            auth.signIn(redirectBackTo)
             return;
         }
 

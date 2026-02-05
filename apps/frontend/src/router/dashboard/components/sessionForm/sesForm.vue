@@ -206,7 +206,14 @@
         if (formValues.value != formDefaults.value) {
             confirmService.require({
                 header: 'Are you sure?',
-                message: `You're about to leave this form and may have unsaved changes! This cannot be undone!`,
+                message: `
+                <p>
+                    You're about to <strong>leave this form</strong> and may have <b>unsaved changes</b>.
+                </p><br>
+                <p class="w-full font-bold text-center text-red-400">
+                    This cannot be undone!
+                </p>
+            `,
                 accept: () => {
                     resetFrom();
                     sessionsFormVisible.value = false;
@@ -245,12 +252,6 @@
 
     /** Starts an existing session template edit */
     function startNewEdit(data: API_SessionTemplateBodyInterface) {
-
-        // BEFORE PRODUCTION - NOTE:
-        // - Maybe alter / change the start and end dates to represent
-        // the next occurrence rather than the first start date on creation
-        // to fix various ui and validation bugs
-        // ALSO - Fix display of selected post channel when edit begins
 
         // Assign Editing Id:
         if (!data.id) return console.warn('Invalid Session Template Id - For Edit', data?.id);
@@ -306,9 +307,14 @@
     }
 
     /** Starts/Creates a "Duplicate" from an Editing Session */
+    const showDuplicatedAlert = ref(false)
     function startNewDuplicate() {
         // Switch Mode to "New":
         formAction.value = 'new';
+        showDuplicatedAlert.value = true;
+        setTimeout(() => {
+            showDuplicatedAlert.value = false;
+        }, 2_000);
     }
 
     /** Starts the deletion prompt to delete this session template */
@@ -324,6 +330,7 @@
                     This cannot be undone!
                 </p>
             `,
+            icon: 'lucide:trash-2',
             accept: async () => {
                 submitState.value = 'failed'
                 const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`, {
@@ -702,7 +709,7 @@
                             <!-- FORM TABS -->
                             <KeepAlive>
                                 <InformationTab v-if="tabSelected == 'information'" :invalidFields :validateField
-                                    :validateFields v-model:title="formValues.title"
+                                    :validateFields :formAction v-model:title="formValues.title"
                                     v-model:description="formValues.description" v-model:url="formValues.url"
                                     v-model:start-date="formValues.startDate" v-model:end-date="formValues.endDate"
                                     v-model:time-zone="formValues.timeZone" />
@@ -752,6 +759,12 @@
                                 class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-400/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
                                 <p class="text-xs font-bold"> Fix invalid fields! </p>
+                            </span>
+
+                            <span v-else-if="showDuplicatedAlert"
+                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-indigo-500/80 drop-shadow-sm rounded-md">
+                                <Layers2Icon :size="14" />
+                                <p class="text-xs font-bold"> Started Duplicate! </p>
                             </span>
 
                             <span v-else-if="formAction == 'edit'" class="gap-2 flex flex-row">

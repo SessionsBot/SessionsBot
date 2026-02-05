@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-    import { BaselineIcon, Clock10Icon, Clock8Icon, ClockIcon, Globe2Icon, LinkIcon, TextInitialIcon } from 'lucide-vue-next';
+    import { BaselineIcon, Clock8Icon, ClockIcon, Globe2Icon, LinkIcon, TextInitialIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import z, { safeParse } from 'zod'
+    import z from 'zod'
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import { getTimeZones, } from '@vvo/tzdb'
-    import type { AutoCompleteChangeEvent, AutoCompleteCompleteEvent, AutoCompleteEmitsOptions, AutoCompleteOptionSelectEvent } from 'primevue';
-    import InfoHelpButton from '../labels/infoHelpButton.vue';
+    import type { AutoCompleteCompleteEvent, AutoCompleteOptionSelectEvent } from 'primevue';
     import InputTitle from '../labels/inputTitle.vue';
     import InputErrors from '../labels/inputErrors.vue';
 
@@ -14,6 +13,7 @@
         invalidFields: Map<NewSessions_FieldNames, string[]>,
         validateField: (name: NewSessions_FieldNames) => void,
         validateFields: (fields: NewSessions_FieldNames[]) => void
+        formAction: 'edit' | 'new'
     }>();
     const { invalidFields, validateField, validateFields } = props;
 
@@ -27,8 +27,7 @@
 
 
     // Max/Min Session Dates:
-    const minSelectDate = DateTime.now().toJSDate()
-    const maxSelectDate = DateTime.now().plus({ year: 1 }).toJSDate();
+    const minSelectDate = computed(() => { return (props.formAction == 'new') ? DateTime.now().toJSDate() : undefined })
 
     // Timezone Opts/Selection:
     const timeZoneSuggestions = ref<any[]>([]);
@@ -100,7 +99,7 @@
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('startDate') }">
             <InputTitle fieldTitle="Start Time" required :icon="ClockIcon" />
             <DatePicker name="startDate" v-model="startDate" fluid date-format="m/d/y" class=" flex w-full"
-                :show-time="true" show-clear hour-format="12" :max-date="maxSelectDate" :min-date="minSelectDate"
+                :show-time="true" show-clear hour-format="12" :min-date="minSelectDate"
                 @value-change="validateFields(['startDate', 'endDate'])" :invalid="invalidFields.has('startDate')" />
             <InputErrors fieldName="startDate" :invalidFields />
         </div>
@@ -111,9 +110,8 @@
             :class="{ 'text-red-400! ring-red-400!': invalidFields.has('endDate') }">
             <InputTitle fieldTitle="End Time" :icon="Clock8Icon" />
             <DatePicker name="endDate" v-model="endDate" fluid date-format="m/d/y" class="w-full flex "
-                :show-time="true" show-clear hour-format="12" :max-date="maxSelectDate"
-                :min-date="startDate || minSelectDate" @value-change="validateFields(['startDate', 'endDate'])"
-                :invalid="invalidFields.has('endDate')" />
+                :show-time="true" show-clear hour-format="12" :min-date="startDate || minSelectDate"
+                @value-change="validateFields(['startDate', 'endDate'])" :invalid="invalidFields.has('endDate')" />
             <InputErrors fieldName="endDate" :invalidFields />
         </div>
 

@@ -87,7 +87,7 @@
             </div>
 
             <!-- Content Row(s) -->
-            <div title="View Details" v-for="e of auditEvents" class="content-row group"
+            <div title="View Details" v-for="e of auditEvents" class="content-row group odd:bg-white/5"
                 @click="eventDetailsModal.openDetails(e)">
                 <!-- Date -->
                 <p class="content-cell ">

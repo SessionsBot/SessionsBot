@@ -11,9 +11,13 @@
             <div class="flex ring-2 ring-zinc-700 flex-col items-center p-8 bg-zinc-900 text-white rounded max-w-120">
                 <div
                     class="rounded-full bg-(--p-button-danger-background) ring-3 ring-ring text-white inline-flex justify-center items-center h-24 w-24 -mt-20">
-                    <CircleQuestionMarkIcon class="grow! flex! size-max! p-3 drop-shadow-md drop-shadow-black/40" />
+                    <Iconify v-if="message?.icon" :size="68" :icon="message?.icon" class="size-full! grow! flex!" />
+                    <CircleQuestionMarkIcon v-else
+                        class="grow! flex! size-max! p-3 drop-shadow-md drop-shadow-black/40" />
                 </div>
-                <span class="font-bold text-3xl block mb-2 mt-6">{{ message.header }}</span>
+                <span class="font-bold text-3xl block mb-2 mt-6">
+                    {{ message.header }}
+                </span>
                 <p v-html="message.message" class="mb-0" />
                 <div class="flex items-center gap-2 mt-6">
 

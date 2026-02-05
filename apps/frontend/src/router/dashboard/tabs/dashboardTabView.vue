@@ -9,10 +9,34 @@
 
     // Services:
     const dashboard = useDashboardStore();
+    const route = useRoute();
+    const router = useRouter();
     const currentTab = computed(() => dashboard.nav.currentTab)
 
     // Guild Data State:
     const guildDataState = computed(() => dashboard.guildDataState)
+
+    // Watch Guild Data Ready - Refreshed - Perform Query Actions
+    watch(guildDataState, (v) => {
+        if (v.allReady && !v.errors.length) {
+            // Get Query - Pre Provided Actions:
+            const { action: actionRaw } = route.query
+            if (actionRaw) {
+                const action = String(actionRaw);
+                try {
+                    if (action == 'new session') {
+                        // Open New Session Form:
+                        dashboard.sessionForm.visible = true;
+                        router.replace('/dashboard')
+                    }
+                } catch (err) {
+                    console.error('Failed to perform pre-defined dashboard action!', action, err)
+                }
+            }
+        } else {
+            console.warn('Pre defined action has failed!, data was not ready or errored...', v)
+        }
+    }, { deep: true })
 
 </script>
 
