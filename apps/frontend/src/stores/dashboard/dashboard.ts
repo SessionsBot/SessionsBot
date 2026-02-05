@@ -190,7 +190,7 @@ const useDashboardStore = defineStore('dashboard', () => {
             console.info('Attempting to "Create New" session', { maxSchedulesAllowed, activeSchedulesCount })
 
 
-            if (activeSchedulesCount >= maxSchedulesAllowed || true) {
+            if (activeSchedulesCount >= maxSchedulesAllowed) {
                 // Limit Reached - Alert & Return:
                 const notifier = useNotifier();
                 notifier.send({
