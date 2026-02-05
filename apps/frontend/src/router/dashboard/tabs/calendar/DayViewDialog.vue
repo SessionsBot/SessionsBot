@@ -167,7 +167,7 @@
                             </p>
                             <br>
                             <Button v-if="!pastDay" unstyled title="Create Schedule"
-                                @click="dashboard.sessionForm.visible = true" class="action-button p-1! px-2!">
+                                @click="dashboard.sessionForm.createNew()" class="action-button p-1! px-2!">
                                 Create One
                             </Button>
                         </div>

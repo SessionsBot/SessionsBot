@@ -35,6 +35,17 @@ type NotificationAction = {
     onClick: (e: Event, ctx: { close: () => void }) => any
 }
 
+type NotificationTimer = {
+    /** Reference to `native` timeout id for notification display. */
+    timeoutId: NodeJS.Timeout,
+    /** The JS date this notification was first displayed */
+    startedAt: Date,
+    /** The amount of ms remaining in this notifications display duration. */
+    remainingMs: number,
+    /** Boolean representing weather this notification display timer is paused or not. */
+    paused: boolean
+}
+
 // Util - Create Msg Id:
 const generateMsgId = () => crypto.randomUUID().match(/[^-]{10}$/g)?.splice(0, 10).join() as string;
 
@@ -44,31 +55,92 @@ const useNotifier = defineStore('notifier', () => {
     // Current Notifications:
     const notifications = ref(new Map<string, NotificationOpts>())
 
+    const timers = ref(new Map<string, NotificationTimer>())
+
+    /* Starts & stores a new notification timer. **/
+    function startTimer(msgId: string, durationMs: number) {
+        const startedAt = new Date();
+
+        const timeoutId = setTimeout(() => {
+            hide(msgId)
+        }, durationMs);
+
+        // Store timer for notification:
+        timers.value.set(msgId, {
+            timeoutId,
+            startedAt,
+            remainingMs: durationMs,
+            paused: false
+        })
+    }
+
+    /* Stops & destroys a notification timer. **/
+    function stopTimer(msgId: string) {
+        // Get Existing Timer:
+        const timer = timers.value.get(msgId)
+        if (!timer) return
+        // Clear Timeout & Remove Reference:
+        clearTimeout(timer.timeoutId)
+        timers.value.delete(msgId)
+    }
+
+    /* Pauses a notification timer. **/
+    function pauseTimer(msgId: string) {
+        // Get Existing Timer
+        const timer = timers.value.get(msgId)
+        if (!timer) return
+        // Get Elapsed Time:
+        const elapsedMs = (new Date().getTime() - timer.startedAt.getTime())
+        // Clear Old Timeout:
+        clearTimeout(timer.timeoutId);
+        // Set Updated Remaining Time & Pause:
+        timer.remainingMs = Math.max(0, timer.remainingMs - elapsedMs);
+        timer.paused = true;
+    }
+
+    /* Resumes a notification timer. **/
+    function resumeTimer(msgId: string) {
+        // Get Existing Timer:
+        const timer = timers.value.get(msgId)
+        if (!timer || !timer.paused) return
+        // If Timer is already Completed:
+        if (timer.remainingMs <= 0) {
+            hide(msgId)
+            return
+        }
+        // Update Timer Started At Date & Unpause:
+        timer.startedAt = new Date()
+        timer.paused = false
+        // Update New Timeout:
+        timer.timeoutId = setTimeout(() => {
+            hide(msgId)
+        }, timer.remainingMs)
+    }
+
     /***Sends a new notification** using the app notifier. */
     function send(notificationOpts: NotificationOpts) {
         // Generate Msg Id:
         const msgId = generateMsgId();
-        // Make Template Raw if Applicable:
+        // Make Template "Raw" if provided:
         if (typeof notificationOpts.content != 'string') {
-            console.info('Component Type!')
             notificationOpts = {
                 ...notificationOpts,
                 content: markRaw(notificationOpts.content as Component)
             }
-        } else console.warn('non component type')
+        }
         notifications.value.set(msgId, notificationOpts)
         if (notificationOpts.duration != false) {
             // Hide after Duration:
-            const showMs = ((notificationOpts.duration ?? 3) * 1000);
-            setTimeout(() => {
-                notifications.value.delete(msgId)
-            }, showMs)
+            const showMs = ((notificationOpts.duration ?? 5) * 1000);
+            startTimer(msgId, showMs)
         }
 
     }
 
+
     /***Hides a notification** by its message id. */
     function hide(msgId: string) {
+        stopTimer(msgId)
         notifications.value.delete(msgId)
     }
 

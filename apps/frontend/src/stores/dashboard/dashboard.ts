@@ -1,4 +1,4 @@
-import { discordSnowflakeSchema, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
+import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
 import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildRoles, fetchGuildSessions, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
@@ -6,6 +6,10 @@ import { DateTime } from "luxon";
 import { API } from "@/utils/api";
 import { z } from 'zod'
 import router from "@/router/router";
+import useNotifier from "../notifier";
+import { XIcon } from "lucide-vue-next";
+import CookieConsent from "@/components/notifier/cookieConsent.vue";
+import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
 
 type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
@@ -177,8 +181,32 @@ const useDashboardStore = defineStore('dashboard', () => {
         function startEdit(payload: API_SessionTemplateBodyInterface) {
             editPayload.value = payload
         }
+        /** Fn - Attempts to open/create a new session schedule, if subscription allows does so - or else alerts. */
+        function createNew() {
+            const subscription = guildSubscription.state.value;
+            const maxSchedulesAllowed = subscription?.limits.MAX_SCHEDULES ?? SubscriptionLimits.FREE.MAX_SCHEDULES
+            const activeSchedulesCount = guildSessionTemplates.state.value?.length ?? 0
 
-        return { visible, editPayload, startEdit }
+            console.info('Attempting to "Create New" session', { maxSchedulesAllowed, activeSchedulesCount })
+
+
+            if (activeSchedulesCount >= maxSchedulesAllowed || true) {
+                // Limit Reached - Alert & Return:
+                const notifier = useNotifier();
+                notifier.send({
+                    header: 'Limit Reached!',
+                    content: h(LimitReachedAlert, { limitName: 'Session Schedules' }),
+                    level: 'upgrade',
+                    duration: 15
+                })
+
+            } else {
+                // Limit NOT Reached - Open Session Form:
+                sessionForm.visible.value = true
+            }
+        }
+
+        return { visible, editPayload, startEdit, createNew }
     }
     const sessionForm = useSessionForm()
 

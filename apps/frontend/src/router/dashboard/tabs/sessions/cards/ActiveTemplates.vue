@@ -45,7 +45,7 @@
                     <h1 class="sm:text-lg"> Schedules </h1>
                 </div>
                 <!-- Create Schedule - Button -->
-                <Button unstyled @click="(e) => dashboard.sessionForm.visible = true"
+                <Button unstyled @click="(e) => dashboard.sessionForm.createNew()"
                     class="bg-[#178954] hover:bg-[#178954]/80 py-0.5 p-2.25 rounded-sm active:scale-95 transition-all cursor-pointer">
                     <span class=" font-extrabold text-sm">
                         Create

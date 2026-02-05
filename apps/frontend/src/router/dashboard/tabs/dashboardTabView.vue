@@ -26,7 +26,7 @@
                 try {
                     if (action == 'new session') {
                         // Open New Session Form:
-                        dashboard.sessionForm.visible = true;
+                        dashboard.sessionForm.createNew()
                         router.replace('/dashboard')
                     }
                 } catch (err) {
