@@ -17,9 +17,13 @@
     // const userGuildData = computed(() => dashboard.userGuildData)
     const userGuildData = computed(() => { return dashboard.userGuildData })
 
-
     // Compute - Is Nav Expanded (from store):
     const navExpanded = computed(() => dashboard.nav.expanded)
+
+    watch(isSmallScreen, (isSmall) => {
+        if (isSmall) dashboard.nav.expanded = false;
+        else dashboard.nav.expanded = true;
+    })
 
 </script>
 

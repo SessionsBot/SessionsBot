@@ -30,7 +30,14 @@
             history!
         </p>
 
-        <CustomCalendar />
+        <!-- Calendar Container Wrap -->
+        <div class="flex grow items-center justify-center p-2 flex-wrap max-h-full w-full max-w-full">
+
+            <CustomCalendar />
+
+        </div>
+
+
     </div>
 
 </template>

@@ -152,7 +152,8 @@
 
 <template>
     <!-- Calendar Container -->
-    <div class="flex bg-surface flex-col justify-center items-center w-fit h-fit">
+    <div
+        class="flex bg-surface flex-col justify-center items-center w-fit h-fit lg:scale-108 mb-10 xl:scale-115 lg:m-5">
 
         <!-- Calendar Header -->
         <div class="calendar-header">
