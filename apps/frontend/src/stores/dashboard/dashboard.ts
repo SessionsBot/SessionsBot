@@ -187,10 +187,8 @@ const useDashboardStore = defineStore('dashboard', () => {
             const maxSchedulesAllowed = subscription?.limits.MAX_SCHEDULES ?? SubscriptionLimits.FREE.MAX_SCHEDULES
             const activeSchedulesCount = guildSessionTemplates.state.value?.length ?? 0
 
-            console.info('Attempting to "Create New" session', { maxSchedulesAllowed, activeSchedulesCount })
-
-
-            if (activeSchedulesCount >= maxSchedulesAllowed) {
+            // Check for MAX Active Schedules already created:
+            if (activeSchedulesCount >= maxSchedulesAllowed || true) {
                 // Limit Reached - Alert & Return:
                 const notifier = useNotifier();
                 notifier.send({
@@ -199,10 +197,12 @@ const useDashboardStore = defineStore('dashboard', () => {
                     level: 'upgrade',
                     duration: 15
                 })
+                return false
 
             } else {
                 // Limit NOT Reached - Open Session Form:
-                sessionForm.visible.value = true
+                sessionForm.visible.value = true;
+                return true
             }
         }
 

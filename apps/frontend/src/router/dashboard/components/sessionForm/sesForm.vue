@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import z, { regex, safeParse, treeifyError } from 'zod'
+    import z, { safeParse, treeifyError } from 'zod'
     import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, Layers2Icon, MapPinCheckInsideIcon, Trash2Icon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
     import InformationTab from './tabs/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
@@ -15,14 +15,14 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/LoadingIcon.vue';
     import { RRule } from 'rrule';
-    import { useToast } from 'vue-toastification';
+    import useNotifier from '@/stores/notifier';
+    import { externalUrls } from '@/stores/nav';
 
     // Services:
     const confirmService = useConfirm();
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
-    const toaster = useToast()
-    // const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state)
+    const notifier = useNotifier();
 
     // Form Visibility:
     const sessionsFormVisible = computed({
@@ -224,7 +224,6 @@
             resetFrom();
             sessionsFormVisible.value = false;
         }
-
     }
 
     /** Resets the form to all defaults/no errors. */
@@ -309,17 +308,24 @@
     /** Starts/Creates a "Duplicate" from an Editing Session */
     const showDuplicatedAlert = ref(false)
     function startNewDuplicate() {
-        // Switch Mode to "New":
-        formAction.value = 'new';
-        showDuplicatedAlert.value = true;
-        setTimeout(() => {
-            showDuplicatedAlert.value = false;
-        }, 2_000);
+        // Check if additional templates allowed:
+        const allowed = dashboard.sessionForm.createNew();
+        if (allowed) {
+            showDuplicatedAlert.value = true;
+            formAction.value = 'new';
+            setTimeout(() => {
+                showDuplicatedAlert.value = false;
+            }, 2_000);
+        } else {
+            return // alert sent from store
+        }
+
     }
 
     /** Starts the deletion prompt to delete this session template */
     function startDeletionPrompt() {
-        const confirm = confirmService.require({
+        // Show Confirmation Prompt:
+        confirmService.require({
             header: `Are you sure?`,
             message: `
                 <p>
@@ -338,14 +344,35 @@
                 })
                 if (!success || error || status >= 300) {
                     console.error('Failed to Delete Session:', status, error)
-                    toaster.error(`Failed to delete session.. If this issues persists please contact Bot Support!`)
+                    // Send Errored Alert:
+                    notifier.send({
+                        header: ' Failed!',
+                        content: `We couldn't delete that session.. if this issue persists please <b class="extrabold">get in contact with Bot Support!</b>`,
+                        level: 'error',
+                        actions: [
+                            {
+                                button: {
+                                    title: 'Chat with Support',
+                                    icon: 'basil:chat-solid',
+                                    href: "+" + externalUrls.discordServer.supportInvite
+                                },
+                                onClick(e, ctx) { return },
+                            }
+                        ]
+                    })
                     setTimeout(() => submitState.value = 'idle', 2_500)
                 } else {
                     sessionsFormVisible.value = false;
                     resetFrom()
                     dashboard.guildData.sessionTemplates?.execute()
-                    toaster('Session Deleted!')
-
+                    // Send Success Alert:
+                    notifier.send({
+                        header: 'Session Deleted',
+                        content: null,
+                        level: 'success',
+                        icon: 'iconamoon:trash-duotone',
+                        classes: { header: 'self-center text-[15px]' }
+                    })
                 }
 
             }

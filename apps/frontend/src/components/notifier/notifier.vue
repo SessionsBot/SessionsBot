@@ -46,10 +46,10 @@
 
     // Testing:
     let intervalId = ref<NodeJS.Timeout>()
-    let sendTestNotifs = true;
+    let sendTests = false;
     onMounted(() => {
         // Send Cookie Prompt:
-        if (!sendTestNotifs) return
+        if (!sendTests) return
         notifier.send({
             header: 'Want Cookies?',
             content: CookieConsentTemplate,
@@ -79,7 +79,9 @@
             ],
         })
 
-        intervalId.value = setInterval(() => {
+
+        if (!sendTests) return
+        else intervalId.value = setInterval(() => {
 
             // send random test notification:
             notifier.send({
@@ -89,7 +91,7 @@
                 actions: getRandomActions(),
                 duration: 10
             })
-        }, 1_500)
+        }, 5_000)
     })
     onUnmounted(() => clearInterval(intervalId.value))
 
@@ -105,12 +107,14 @@
 
         <TransitionGroup name="notification" type="transition">
             <!-- Notification Card -->
-            <div v-for="[msgId, data] in notifications" :key="msgId" class="notification-card" :class="{
-                'level-info': data.level == 'info',
-                'level-upgrade': data.level == 'upgrade',
-                'level-warn': data.level == 'warn',
-                'level-error': data.level == 'error'
-            }">
+            <div v-for="[msgId, data] in notifications" :key="msgId" class="notification-card"
+                @pointerenter="notifier.timers.pause(msgId)" @pointerleave="notifier.timers.resume(msgId)" :class="[{
+                    'level-info': data.level == 'info',
+                    'level-upgrade': data.level == 'upgrade',
+                    'level-success': data.level == 'success',
+                    'level-warn': data.level == 'warn',
+                    'level-error': data.level == 'error',
+                }, data.classes?.root]">
 
                 <!-- Header -->
                 <span class="notification-header">
@@ -119,9 +123,10 @@
                     <span class="header-wrap">
                         <span v-if="data.icon != false">
                             <!-- Default Icons -->
-                            <span v-if="!data.icon">
+                            <span v-if="!data.icon" :class="data?.classes?.headerIcon">
                                 <Iconify v-if="data.level == 'upgrade'" :icon="'tabler:diamond'"
                                     class="header-icon relative bottom-px" />
+                                <Iconify v-else-if="data.level == 'success'" :icon="'ix:success'" class="header-icon" />
                                 <Iconify v-else-if="data.level == 'error'" :icon="'ix:error'" class="header-icon" />
                                 <Iconify v-else-if="data.level == 'warn'" :icon="'pajamas:warning'" :size="18"
                                     class="pl-0.5 px-px mt-0.25 header-icon" />
@@ -129,10 +134,10 @@
                             </span>
 
                             <!-- Defined Icons -->
-                            <Iconify v-else :icon="data.icon" class="header-icon" />
+                            <Iconify v-else :icon="data.icon" class="header-icon" :class="data?.classes?.headerIcon" />
 
                         </span>
-                        <p class="font-semibold font-rubik text-lg">
+                        <p class="font-semibold font-rubik text-lg" :class="data?.classes?.header">
                             {{ data.header }}
                         </p>
                     </span>
@@ -147,7 +152,7 @@
 
                 <!-- Content - Text / Template -->
 
-                <span class="notification-content-wrap">
+                <span v-if="data.content != null" class="notification-content-wrap" :class="data?.classes?.content">
                     <component v-if="typeof data?.content != 'string'" :is="data.content" />
                     <span v-else v-html="data?.content || '?'" class="w-full text-start px-px" />
                 </span>
@@ -156,6 +161,8 @@
                 <!-- Actions Row -->
                 <span class="notification-action-row" v-if="data.actions?.length || data.level == 'upgrade'">
 
+                    <!-- Defined Action Buttons: -->
+
                     <Button v-for="{ button, onClick } in data.actions"
                         @click="(e) => { let ctx = { close: () => notifier.hide(msgId) }; onClick(e, ctx) }"
                         :class="button.class" unstyled class="action-button">
@@ -163,9 +170,16 @@
                         <p>
                             {{ button.title }}
                         </p>
+
+                        <!-- If native link href provided -->
+                        <a v-if="button?.href"
+                            :href="button.href.startsWith('+') ? button.href.replace('+', '') : button.href"
+                            :target="button.href.startsWith('+') ? '_blank' : undefined" />
+
                     </Button>
 
-                    <!-- Default Upgrade Level Buttons -->
+
+                    <!-- Default - Upgrade Level Buttons -->
                     <span v-if="(!data.actions || !data.actions?.length) && data.level == 'upgrade'"
                         class="flex flex-row items-center justify-center gap-2.25 w-fit!">
                         <a :href="externalUrls.discordStore" target="_blank">
@@ -194,10 +208,11 @@
     .notifier-app-container {
         --n-color-info: #0081c9;
         --n-color-upgrade: #6b71c1;
+        --n-color-success: #0fa653;
         --n-color-warn: #a6770f;
         --n-color-error: #a13d3f;
 
-        @apply fixed bottom-0 right-0 m-3.5 ml-[45%] gap-2 !w-fit flex-nowrap max-h-screen z-4 flex items-end content-center justify-end flex-col transition-all;
+        @apply z-1777 fixed bottom-0 right-0 m-3.5 ml-[45%] gap-2 !w-fit flex-nowrap max-h-screen flex items-end content-center justify-end flex-col transition-all;
     }
 
     .notification-card {
@@ -219,6 +234,14 @@
 
             .header-icon {
                 @apply text-(--n-color-upgrade);
+            }
+        }
+
+        &.level-success {
+            @apply border-(--n-color-success);
+
+            .header-icon {
+                @apply text-(--n-color-success);
             }
         }
 
@@ -268,10 +291,14 @@
         @apply w-full flex flex-row items-start justify-center gap-2.25 pt-1.25 pb-0.75 flex-wrap;
 
         .action-button {
-            @apply flex bg-zinc-600 hover:bg-zinc-600/80 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
+            @apply flex bg-zinc-600 relative hover:bg-zinc-600/80 drop-shadow-sm drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
 
             p {
                 @apply text-sm font-bold;
+            }
+
+            a {
+                @apply absolute inset-0 w-full h-full z-1;
             }
 
         }
