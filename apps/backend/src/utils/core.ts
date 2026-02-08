@@ -2,6 +2,7 @@ import pkg from '../../package.json' with { type: 'json' };
 import { ExtendedClient } from './types/extendedClient.js';
 import { SKU } from 'discord.js';
 import { BotEmojiName } from './bot/fetchEmojis';
+import { ENVIRONMENT_TYPE } from './environment';
 
 
 const core = {
@@ -60,6 +61,7 @@ const core = {
     /** Internal / frequent url locations. */
     urls: {
         mainSite: `https://sessionsbot.fyi`,
+        dashboard: `https://sessionsbot.fyi/dashboard`,
         pricing: `https://sessionsbot.fyi/pricing`,
         statusPage: `https://status.sessionsbot.fyi`,
         docs: {
@@ -78,5 +80,14 @@ const core = {
 
 }
 
+// OVERRIDE URLS IN DEV ENVIRONMENTS:
+if (ENVIRONMENT_TYPE != 'production') {
+    console.info('(i) overriding urls in non-production environment!')
+    core.urls.mainSite = `http://localhost:5173`
+    core.urls.dashboard = `http://localhost:5173/dashboard`
+    core.urls.support.onlineResources = `http://localhost:5173/support`
+}
+
 export default core;
-export const urls = core.urls
+export const urls = core.urls;
+export const colors = core.colors;
