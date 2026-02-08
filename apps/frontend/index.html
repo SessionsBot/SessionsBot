@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html lang="">
+
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sessions Bot</title>
+
+    <!-- Google Analytics - Consent Defaults -->
+    <script>
+      // Define dataLayer and gtag fn.
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied',
+        'wait_for_update': 2000
+      });
+    </script>
+
+    <!-- Google tag (gtag.js) -- Initialize -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BQ1C1XCRFL"></script>
+    <script>
+      gtag('js', new Date());
+
+      gtag('config', 'G-BQ1C1XCRFL');
+    </script>
+
   </head>
+
   <body class="dark">
     <div class="dark" id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
+
 </html>

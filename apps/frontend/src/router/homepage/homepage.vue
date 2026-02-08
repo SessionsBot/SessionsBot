@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { externalUrls } from '@/stores/nav';
   import { defaultLocation, defaultWindow } from '@vueuse/core';
   import { Card } from 'primevue';
 
@@ -21,11 +22,14 @@
           Manage your Discord sessions effortlessly — schedule, organize, and host events with ease!
         </p>
         <div class="flex justify-center gap-4">
-          <Button label="Invite to Discord" icon="pi pi-discord"
-            @click="defaultWindow?.open('https://invite.sessionsbot.fyi', '_blank');"
-            class="!bg-indigo-500 hover:!bg-indigo-600 border-none! shadow-md px-5 py-3 text-white font-semibold rounded-xl transition-all duration-300" />
-          <Button label="Dashboard" outlined @click="$router.push('/dashboard')" icon="pi pi-home"
-            class="!border-indigo-400 !text-indigo-300 hover:!bg-indigo-800 px-5 py-3 hover:!text-white/70 rounded-xl transition-all duration-300" />
+          <a :href="externalUrls.inviteBot" target="_blank" rel="noopener noreferrer">
+            <Button label="Invite to Discord" icon="pi pi-discord"
+              class="!bg-indigo-500 hover:!bg-indigo-600 border-none! shadow-md px-5 py-3 text-white font-semibold rounded-xl transition-all duration-300" />
+          </a>
+          <RouterLink to="/dashboard">
+            <Button label="Dashboard" outlined @click="$router.push('/dashboard')" icon="pi pi-home"
+              class="!border-indigo-400 !text-indigo-300 hover:!bg-indigo-800 px-5 py-3 hover:!text-white/70 rounded-xl transition-all duration-300" />
+          </RouterLink>
         </div>
       </section>
     </div>

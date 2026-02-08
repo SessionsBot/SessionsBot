@@ -7,8 +7,6 @@ import { API } from "@/utils/api";
 import { z } from 'zod'
 import router from "@/router/router";
 import useNotifier from "../notifier";
-import { XIcon } from "lucide-vue-next";
-import CookieConsent from "@/components/notifier/cookieConsent.vue";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
 
 type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
@@ -188,7 +186,7 @@ const useDashboardStore = defineStore('dashboard', () => {
             const activeSchedulesCount = guildSessionTemplates.state.value?.length ?? 0
 
             // Check for MAX Active Schedules already created:
-            if (activeSchedulesCount >= maxSchedulesAllowed || true) {
+            if (activeSchedulesCount >= maxSchedulesAllowed) {
                 // Limit Reached - Alert & Return:
                 const notifier = useNotifier();
                 notifier.send({

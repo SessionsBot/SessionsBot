@@ -2,8 +2,8 @@
     import { externalUrls } from '@/stores/nav';
     import useNotifier from '@/stores/notifier';
     import { XIcon } from 'lucide-vue-next';
-    import CookieConsentTemplate from './cookieConsent.vue';
     import { storeToRefs } from 'pinia';
+
 
     // Services:
     const notifier = useNotifier()
@@ -49,37 +49,7 @@
     let sendTests = false;
     onMounted(() => {
         // Send Cookie Prompt:
-        if (!sendTests) return
-        notifier.send({
-            header: 'Want Cookies?',
-            content: CookieConsentTemplate,
-            icon: 'sidekickicons:cookie-20-solid',
-            duration: false,
-            actions: [
-                {
-                    button: {
-                        title: 'Accept',
-                        class: 'bg-emerald-500/70! hover:bg-emerald-500/50! text-white!',
-                        icon: 'material-symbols:check'
-                    },
-                    onClick(e, ctx) {
-                        ctx.close()
-                    },
-                },
-                {
-                    button: {
-                        title: 'Manage Preferences',
-                        class: 'text-white!',
-                        icon: 'oui:nav-manage'
-                    },
-                    onClick(e, ctx) {
-                        ctx.close()
-                    },
-                }
-            ],
-        })
-
-
+        // if (!sendTests) return
         if (!sendTests) return
         else intervalId.value = setInterval(() => {
 

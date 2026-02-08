@@ -1,8 +1,12 @@
 <script setup lang="ts">
     import SiteHeader from './components/siteHeader.vue';
     import SiteFooter from './components/siteFooter.vue';
-    import PV_Dialog from './components/ConfirmDialog.vue';
+    import PV_Dialog from './components/confirmDialog/ConfirmDialog.vue';
     import { watchAuth } from './stores/auth/auth';
+    import useAnalyticsStore from './stores/analytics';
+
+    // Services:
+    const analytics = useAnalyticsStore();
 
     // // Reactive Header Height:
     const headerRef = ref();
@@ -10,7 +14,10 @@
 
     // On App Mount:
     onMounted(async () => {
+        // Initialize Auth (watcher):
         await watchAuth();
+        // Initialize Analytics - Cookie Consent:
+        analytics.cookieConsent.init()
     })
 
 </script>
@@ -34,6 +41,8 @@
 
     <!-- Confirm Dialog -->
     <PV_Dialog />
+    <!-- Cookie Alert -->
+    <CookiePreferencesDialog />
     <!-- Custom Notifications -->
     <Notifier />
 

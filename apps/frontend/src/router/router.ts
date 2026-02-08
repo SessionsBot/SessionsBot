@@ -110,8 +110,16 @@ const router = createRouter({
 
 // Page Title - AFTER Nav Hook:
 router.afterEach((to, from, failure) => {
-    if (failure) return;
+    if (failure) return
     if (to) document.title = `Sessions Bot | ${String(to?.name)}`;
+
+    // Google Analytics:
+    // gtag('event', 'page_view', {
+    //     page_path: to.fullPath,
+    //     page_location: to.fullPath,
+    //     page_title: document.title
+    // });
+
 })
 
 export default router;
