@@ -248,6 +248,27 @@ const useDashboardStore = defineStore('dashboard', () => {
             return;
         }
 
+        // Confirm selected Guild Id is within user's Manageable Guilds:
+        const isManageable = auth.user?.user_metadata?.guilds?.manageable?.some(g => g.id == id)
+        if (!isManageable) {
+            useNotifier().send({
+                header: 'Cannot Access Server!',
+                icon: 'material-symbols:lock',
+                content: `It seems like you're trying to access a server you <b>don't have access to</b>! <br> <div class="italic w-full pt-0.5! px-2 opacity-65">- If you believe this is a mistake please refresh your account data.</div>`,
+                level: 'warn',
+                actions: [{
+                    button: {
+                        title: 'View Account',
+                        href: '/account'
+                    },
+                    onClick(e, ctx) {
+                        ctx.close()
+                    },
+                }]
+            })
+            return guildId.value = null;
+        }
+
         // CHECKS PASSED - Fetch Data for selected Guild Id:
         for (const state of Object.values(guildData)) {
             state.execute()

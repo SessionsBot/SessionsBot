@@ -133,18 +133,23 @@
 
                     <!-- Defined Action Buttons: -->
 
-                    <Button v-for="{ button, onClick } in data.actions"
-                        @click="(e) => { let ctx = { close: () => notifier.hide(msgId) }; onClick(e, ctx) }"
-                        :class="button.class" unstyled class="action-button">
+                    <Button v-for="{ button, onClick } in data.actions" @click="(e) => {
+                        let ctx = { close: () => notifier.hide(msgId) };
+                        if (onClick) onClick(e, ctx)
+                    }" :class="button.class" unstyled class="action-button">
                         <Iconify v-if="button.icon" :icon="button.icon" :size="18" />
                         <p>
                             {{ button.title }}
                         </p>
 
                         <!-- If native link href provided -->
-                        <a v-if="button?.href"
+                        <a v-if="button?.href && !button.href.startsWith('/')"
                             :href="button.href.startsWith('+') ? button.href.replace('+', '') : button.href"
                             :target="button.href.startsWith('+') ? '_blank' : undefined" />
+
+                        <!-- if native ROUTER link provided -->
+                        <RouterLink v-if="button?.href && button.href.startsWith('/')" :to="button.href" />
+
 
                     </Button>
 

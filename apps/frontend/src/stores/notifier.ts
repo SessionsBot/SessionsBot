@@ -48,7 +48,7 @@ type NotificationAction = {
         href?: string | undefined
     },
     /** Function to execute when the button is clicked. */
-    onClick: (e: Event, ctx: { close: () => void }) => any
+    onClick?: (e: Event, ctx: { close: () => void }) => any
 }
 
 type NotificationTimer = {

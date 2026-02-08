@@ -34,7 +34,11 @@
                 }
             }
         } else {
-            console.warn('Pre defined action has failed!, data was not ready or errored...', v)
+            const { action: actionRaw } = route.query
+            if (actionRaw) { 
+                console.warn('Pre defined action has failed!, data was not ready or errored...', v) 
+            }
+            
         }
     }, { deep: true })
 

@@ -6,19 +6,46 @@
     import DashboardTabView from './tabs/dashboardTabView.vue';
     import { useAuthStore } from '@/stores/auth';
     import { TriangleAlertIcon } from 'lucide-vue-next';
+    import useNotifier from '@/stores/notifier';
 
     // Services:
     const dashboard = useDashboardStore();
+    const auth = useAuthStore()
     const route = useRoute();
-    const router = useRouter();
+    const notifier = useNotifier();
 
+    // Util: Await Auth Ready:
+    async function authIsReady() {
+        if (auth.authReady) return true
+        else return Promise.race([
+            // Watch auth to become ready
+            new Promise<boolean>(res => watch(() => auth.authReady, (isReady) => {
+                if (isReady) res(true);
+                else res(false);
+            }, { once: true })),
+            // Timeout in X seconds:
+            new Promise<boolean>((res) => {
+                setTimeout(() => { res(false) }, 2_500);
+            })
+        ])
+    }
 
-    // BEFORE MOUNT - Load Saved Guild Choice:
-    onBeforeMount(() => {
-        // Get query / pre selected GUILD ID - allows actions:
-        const preProvided = route.query
-        if (preProvided?.['guildId']) {
-            dashboard.guildId = String(preProvided?.guildId);
+    // BEFORE MOUNT - Auth Guard / Load Saved / Pre Selected Guild Choice:
+    onBeforeMount(async () => {
+
+        // If auth NOT ready - await readiness:
+        if (!auth.authReady) await authIsReady()
+
+        // If not Signed In - Redirect back to EXACT path (preserves predefined actions):
+        if (!auth.signedIn) {
+            const fullPath = route.fullPath
+            auth.signIn(fullPath)
+        }
+
+        // Get query / pre selected GUILD ID - allows pre defined actions:
+        const { guild } = route.query
+        if (guild) {
+            return dashboard.guildId = String(guild);
         }
 
         // Load Saved "Guild Selection":

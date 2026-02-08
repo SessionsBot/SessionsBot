@@ -23,13 +23,6 @@ const routes: RouterOptions['routes'] = [
         name: "Dashboard",
         path: "/dashboard",
         component: Dashboard,
-        beforeEnter: () => {
-            const auth = useAuthStore();
-            if (!auth.signedIn && auth.authReady) {
-                // Auto prompt sign in:
-                auth.signIn('/dashboard')
-            }
-        }
     },
     {
         name: "Account",
@@ -112,14 +105,6 @@ const router = createRouter({
 router.afterEach((to, from, failure) => {
     if (failure) return
     if (to) document.title = `Sessions Bot | ${String(to?.name)}`;
-
-    // Google Analytics:
-    // gtag('event', 'page_view', {
-    //     page_path: to.fullPath,
-    //     page_location: to.fullPath,
-    //     page_title: document.title
-    // });
-
 })
 
 export default router;
