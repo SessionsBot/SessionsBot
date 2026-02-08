@@ -155,15 +155,40 @@ export const watchAuth = async () => {
         store.session = session as any;
         store.userData = user?.user_metadata as any;
 
-        if (debugAuth) {
-            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
+        // G-Tag id:
+        const gTagId = import.meta.env.VITE_GTAG_ID
+
+        // If Initial Session (first sign in):
+        if (event == 'INITIAL_SESSION') {
+
+            // Update G-Tag "user_id" Config:
+            if (debugAuth) { console.log('updating', gTagId, user?.id) }
+            gtag('config', gTagId, {
+                'user_id': user?.id || null
+            })
+            // Send G-Tag "login" Event:
+            gtag('event', 'login', {
+                'method': 'Discord'
+            })
+
+            // If redirect path (after auth) found:
+            const redirectPath = store.redirectAfterAuth.get();
+            if (redirectPath) {
+                router.push(redirectPath);
+                store.redirectAfterAuth.clear();
+            }
         }
 
-        // If Initial Session w/ Redirect after Auth:
-        const redirectPath = store.redirectAfterAuth.get();
-        if (event == 'INITIAL_SESSION' && redirectPath) {
-            router.push(redirectPath);
-            store.redirectAfterAuth.clear();
+        // If Signing Out - Update G-Tag:
+        if (event == 'SIGNED_OUT') {
+            gtag('config', gTagId, {
+                'user_id': null
+            })
+        }
+
+        // Debug:
+        if (debugAuth) {
+            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
         }
 
         // Check for outdated Discord Data:
