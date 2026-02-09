@@ -5,56 +5,69 @@
     import InfoHelpButton from '../../components/sessionForm/labels/infoHelpButton.vue';
     import type { PopoverMethods } from 'primevue';
     import { CheckIcon } from 'lucide-vue-next';
+    import { RegExp_HexColorCode } from '@sessionsbot/shared';
+    import OptionGroup from './fieldGroups/template.vue';
+    import AccentColor from './fieldGroups/accentColor.vue';
+    import PublicSessions from './fieldGroups/publicSessions.vue';
 
     // Root Preference Form States & Methods:
     const usePreferencesForm = () => {
-        const formRef = ref<FormInstance>();
 
-        const resolver = zodResolver(z.object({
-            accentColor: z.union([z.string(), z.number()])
-        }))
-
-        const values = reactive({
-            accentColor: '#000000'
+        const schema = z.object({
+            accentColor: z.string().regex(RegExp_HexColorCode, 'Invalid hex color code!'),
+            publicSessions: z.boolean(),
+            addToCalendarButton: z.boolean(),
         })
 
-        function submit(e: FormSubmitEvent) {
-            console.info(`{i} Form Submission - Valid: ${e.valid}`, e.values)
+
+        const values = reactive({
+            accentColor: '#000000',
+            publicSessions: true,
+            addToCalendarButton: false,
+        })
+        type FieldName = keyof typeof values
+
+        const errors = ref<Map<FieldName, string[]>>(new Map());
+
+        function validateFields(fields: PreferenceFormFields[]) {
+            for (const field of fields) {
+                const fieldSchema = schema.shape[field]
+                const result = fieldSchema.safeParse(values[field])
+
+                if (!result.success) {
+                    const errs = z.treeifyError(result.error as any)
+                    errors.value.set(
+                        field,
+                        errs?.errors || []
+                    )
+                } else {
+                    errors.value.delete(field)
+                }
+            }
+        }
+
+
+        function submit() {
+            console.info(`{i} Form Submission`)
         }
 
         return {
-            formRef,
+            schema,
             values,
-            resolver,
-            submit
+            errors,
+            validateFields,
+            submit,
         }
     }
     const preferenceForm = usePreferencesForm()
+    export type PreferenceFormInterface = z.infer<typeof preferenceForm.schema>
+    export type PreferenceFormFields = keyof PreferenceFormInterface
 
 
-    // Input - Accent Color (Select)
-    const selectColorPopoverIsActive = ref(false)
-    const selectColorPopoverRef = ref<PopoverMethods | undefined>()
-    function openSelectColorPopover(e: Event) {
-        // open
-        selectColorPopoverRef.value?.toggle(e)
-    }
-    const hexColorInputVal = computed({
-        get: () => {
-            return preferenceForm.values.accentColor.replace('#', '')
-        },
-        set: (v) => {
-            if (!v) { v = '000000' }
-            if (v.startsWith('#')) { v = v.replace('#', '') }
-            const HexColorSchema = z.string().regex(/^#([a-f0-9]{6}|[a-f0-9]{3})$/i, 'Invalid hex color code!');
-            const isHex = z.safeParse(HexColorSchema, `#${v}`)
-            if (!isHex.success) {
-                preferenceForm.values.accentColor = ('#000000')
-            } else {
-                preferenceForm.values.accentColor = `#${v}`
-            }
-
-        }
+    // Test  - Load Real Existing Prefs:
+    onMounted(() => {
+        console.info('Preferences Tab Mounted')
+        preferenceForm.values.accentColor = '#123123'
     })
 
 </script>
@@ -89,72 +102,22 @@
         <div class="tab-content-wrap">
 
             <!-- Preferences - Form/Inputs -->
-            <Form v-slot="$form" :ref="preferenceForm.formRef" :resolver="preferenceForm.resolver"
-                @submit="preferenceForm.submit" class="preferences-form">
+            <div class="preferences-form">
+
+
+                <!-- Input - Public Sessions -->
+                <PublicSessions v-model:field-value="preferenceForm.values.publicSessions"
+                    :input-errors="preferenceForm.errors.value.get('publicSessions') || []"
+                    @validate="preferenceForm.validateFields(['publicSessions'])" />
+
 
                 <!-- Input - Accent Color -->
-                <span class="input-group">
-                    <!-- Label -->
-                    <div class="label">
-                        <span class="flex items-center gap-1 flex-wrap">
-                            <Iconify :size="18" icon="mdi:color" />
-                            Accent Color
-                            <!-- Premium Feature Badge -->
-                            <span
-                                class="mx-0.5 flex flex-row gap-0 p-0.5 pr-0.75 bg-black/10 text-white/85 border-indigo-400/70 border-2 rounded-lg">
-                                <DiamondIcon class="size-4 " />
-                                <p class="font-extrabold text-xs"> Premium </p>
-                            </span>
-                        </span>
-
-                        <InfoHelpButton doc-path="/" />
-                    </div>
-
-                    <!-- Input -->
-                    <div class="input">
-
-                        <!-- Simulated Input -->
-                        <div @click="openSelectColorPopover"
-                            class="h-11 w-full p-1.25 py-1.5 bg-black/30 flex items-center justify-center border-2 border-zinc-300 hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
-                            :class="{
-                                'border-indigo-400!': selectColorPopoverIsActive
-                            }">
-
-                            <!-- Selected Color Display -->
-                            <span class="w-full h-full rounded relative" :style="{
-                                backgroundColor: preferenceForm.values.accentColor
-                            }">
-                                <p class="absolute right-0 opacity-55 font-bold h-full w-fit p-1 flex items-center">
-                                    {{ (preferenceForm.values.accentColor || '#??????') }}
-                                </p>
-                            </span>
+                <AccentColor v-model:field-value="preferenceForm.values.accentColor"
+                    :input-errors="preferenceForm.errors.value.get('accentColor') || []"
+                    @validate="preferenceForm.validateFields(['accentColor'])" />
 
 
-                        </div>
-                        <!-- Select Color - Popover -->
-                        <Popover ref="selectColorPopoverRef" @show="selectColorPopoverIsActive = true"
-                            @hide="selectColorPopoverIsActive = false">
-                            <span class="flex items-center justify-center gap-2 flex-col">
-                                <ColorPicker v-model="hexColorInputVal" inline />
-                                <InputMask v-model="hexColorInputVal" fluid size="small" mask="#******"
-                                    :default-value="'000000'" placeholder="#hexColor" class="hex-color-input" />
-                            </span>
-                        </Popover>
-
-                    </div>
-
-
-
-                    <!-- Errors -->
-                    <div class="errors" v-if="$form.accentColor?.invalid">
-                        <p v-for="err in $form.accentColor?.errors">
-                            - {{ err?.message || 'Invalid Input!' }}
-                        </p>
-                    </div>
-
-                </span>
-
-                <!-- Action Row -->
+                <!-- Action(s) Row -->
                 <span class="form-actions-footer">
 
                     <!-- Submit/Save -->
@@ -168,7 +131,15 @@
 
                 </span>
 
-            </Form>
+                <!-- Debug View -->
+                <span class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
+
+                    <span
+                        v-html="JSON.stringify(preferenceForm.values, null, '<br>').replace(/}$/, '') + '<br>}' || {}" />
+
+                </span>
+
+            </div>
 
         </div>
 
@@ -193,6 +164,7 @@
     .tab-content-wrap {
         /* Root & Override Variables */
         --p-inputtext-placeholder-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
+        --p-inputtext-background: color-mix(in oklab, var(--color-white) 7%, transparent) !important;
 
         @apply flex flex-col gap-1 p-7 items-center justify-center w-full h-fit grow;
     }
@@ -201,7 +173,7 @@
         @apply bg-surface border-2 border-ring rounded-md gap-2 p-3 mb-4 w-full max-w-135 flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
     }
 
-    .input-group {
+    :deep(.input-group) {
         @apply w-full flex gap-1 flex-col items-center justify-center flex-wrap h-fit;
 
         .label {
@@ -209,7 +181,7 @@
         }
 
         .input {
-            @apply w-full;
+            @apply w-full p-0.5 flex flex-row gap-1 items-center justify-between flex-nowrap;
         }
 
         .errors {

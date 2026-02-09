@@ -35,10 +35,10 @@
             }
         } else {
             const { action: actionRaw } = route.query
-            if (actionRaw) { 
-                console.warn('Pre defined action has failed!, data was not ready or errored...', v) 
+            if (actionRaw) {
+                console.warn('Pre defined action has failed!, data was not ready or errored...', v)
             }
-            
+
         }
     }, { deep: true })
 
@@ -66,13 +66,13 @@
                 class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
 
                 <TransitionGroup name="slide" type="animation">
-                    <KeepAlive key="tab_keep_alive">
-                        <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
-                        <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
-                        <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
-                        <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
-                        <PreferencesTab v-else-if="currentTab == 'Preferences'" key="preferences_tab" />
-                    </KeepAlive>
+                    <!-- <KeepAlive key="tab_keep_alive"> -->
+                    <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
+                    <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
+                    <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
+                    <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
+                    <PreferencesTab v-else-if="currentTab == 'Preferences'" key="preferences_tab" />
+                    <!-- </KeepAlive> -->
                 </TransitionGroup>
 
 
