@@ -5,7 +5,7 @@
     import { number } from 'motion-v';
     import { Popover, type PopoverMethods } from 'primevue';
     import { RRule } from 'rrule';
-    import DayViewDialog from './DayViewDialog.vue';
+    import DayViewDialog from './dayView/DayViewDialog.vue';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -54,12 +54,8 @@
             let years = [];
             let cursor = minMonth.startOf('year');
             while (true) {
-
                 const isAfterMin = cursor >= minMonth.startOf('year');
                 const isBeforeMax = cursor <= maxMonth.startOf('year');
-
-                console.info({ cursor, isAfterMin, isBeforeMax })
-
                 if (!isAfterMin || !isBeforeMax) break;
                 else {
                     years.push(cursor.year)

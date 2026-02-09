@@ -75,13 +75,11 @@
 <template>
     <!-- Day View - Modal/Dialog -->
     <Dialog v-model:visible="isVisible" modal block-scroll :pt="{ root: 'bg-transparent! border-0! text-white/80!' }"
-        class="w-[85%] max-w-130 bg-transparent! max-h-[90%] overflow-clip! rounded-md!">
+        class="w-[85%] max-w-130 bg-transparent! m-7! overflow-clip! rounded-md!">
         <template #container>
-            <div
-                class="flex flex-col w-full h-full justify-start items-start overflow-y-auto border-2 bg-surface border-ring rounded-md">
+            <div class="dialog-container">
                 <!-- Header -->
-                <div
-                    class="flex bg-black/20 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full">
+                <div class="dialog-header">
                     <span>
                         <p class="uppercase font-black text-xs text-white/40">
                             Day View - {{ selectedDay?.toFormat('D') || '?/?/?' }}
@@ -90,10 +88,18 @@
                             {{ selectedDay?.toFormat(`DDDD`) }}
                         </p>
                     </span>
-                    <Button unstyled @click="isVisible = false"
-                        class="p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer">
-                        <XIcon :size="20" />
-                    </Button>
+                    <!-- Action Buttons -->
+                    <span class="flex flex-row items-center justify-center flex-wrap gap-0.5">
+                        <!-- Schedule New -->
+                        <Button v-if="!pastDay" title="New Session for Day" unstyled
+                            @click="dashboard.sessionForm.createNew()" class="header-button">
+                            <Iconify :size="20" icon="tabler:calendar-plus" />
+                        </Button>
+                        <!-- Close -->
+                        <Button title="Close Day" unstyled @click="isVisible = false" class="header-button">
+                            <XIcon :size="20" />
+                        </Button>
+                    </span>
 
                 </div>
 
@@ -108,7 +114,7 @@
                         <div v-for="session in thisDaysSessions" class="list-item-card ">
                             <!-- Title / Details -->
                             <span class="flex flex-col gap-2">
-                                <p class="font-bold text-[17px] truncate">
+                                <p class="font-bold text-[17px]">
                                     {{ session?.title || 'Unknown Title' }}
                                 </p>
                                 <p>
@@ -123,10 +129,10 @@
                                 <Iconify icon="material-symbols:chat-paste-go-rounded" />
                             </Button>
                         </div>
-
+                        <!--  No Sessions - Card -->
                         <div v-if="!thisDaysSessions.length" class="list-item-card bg-white/10!">
                             <p v-if="pastDay" class="font-semibold italic opacity-55 inline">
-                                No sessions occurred on this day!
+                                Day has already concluded!
                             </p>
                             <p v-else="pastDay" class="font-semibold italic opacity-55 inline">
                                 No Sessions Created Yet!
@@ -140,7 +146,7 @@
                         <div v-for="template in thisDaysTemplates" class="list-item-card">
                             <!-- Title / Details -->
                             <span class="flex flex-col gap-2">
-                                <p class="font-bold text-[17px] truncate">
+                                <p class="font-bold text-[17px]">
                                     {{ template?.title || 'Unknown Title' }}
                                 </p>
                                 <p>
@@ -158,12 +164,13 @@
                                 <Iconify icon="mdi:pencil" />
                             </Button>
                         </div>
+                        <!-- No Schedules - Card -->
                         <div v-if="!thisDaysTemplates.length" class="list-item-card bg-white/10!">
                             <p v-if="!pastDay" class="font-semibold italic opacity-55">
                                 No Sessions Scheduled!
                             </p>
                             <p v-else class="font-semibold italic opacity-55">
-                                This day has already concluded!
+                                Day has already concluded!
                             </p>
                             <br>
                             <Button v-if="!pastDay" unstyled title="Create Schedule"
@@ -187,12 +194,25 @@
 
     @reference "@/styles/main.css";
 
+    .dialog-container {
+        @apply flex flex-col w-full h-full justify-start items-start overflow-y-auto border-2 bg-surface border-ring rounded-md;
+    }
+
+    .dialog-header {
+        @apply flex bg-black/20 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full;
+
+        .header-button {
+            @apply p-1 flex items-center text-white/75 justify-center hover:bg-white/10 active:scale-95 transition-all rounded-md cursor-pointer;
+        }
+
+    }
+
     .content-wrap {
         @apply w-full flex gap-2 p-2 items-center justify-start flex-col overflow-auto;
     }
 
     .section-heading {
-        @apply uppercase text-sm self-start font-extrabold text-white/50 text-center bg-black/15 border-2 border-ring p-0.5 px-1.75 rounded-md;
+        @apply uppercase !sticky text-sm self-start font-extrabold text-white/60 text-center bg-black/15 border-2 border-ring drop-shadow-sm drop-shadow-black/40 p-0.5 px-1.75 rounded-md;
     }
 
     .section-wrap {
@@ -200,7 +220,7 @@
     }
 
     .list-item-card {
-        @apply flex p-2 w-full max-w-[80%] gap-1.5 rounded-md bg-white/12 flex-row items-center justify-between;
+        @apply flex p-2 w-full max-w-[80%] gap-1.5 rounded-md bg-white/12 flex-row items-center justify-between border-2 border-ring drop-shadow-md drop-shadow-black/40;
 
         .action-button {
             @apply bg-black/27 font-bold cursor-pointer text-sm hover:bg-black/20 active:scale-95 transition-all rounded-md flex items-center justify-center gap-2 p-2;
