@@ -40,7 +40,7 @@
                 </p>
             </Button>
 
-            <RouterLink :to="`/pricing?guild=${dashboard.guildId}`">
+            <RouterLink :to="`/pricing?guild=${dashboard?.guildId}`">
                 <Button unstyled class="option-button">
                     <CircleDollarSignIcon :size="17" />
                     <p class="text-sm">

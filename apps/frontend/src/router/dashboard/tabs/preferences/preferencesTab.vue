@@ -6,22 +6,23 @@
     import AccentColor from './inputs/fieldGroups/accentColor.vue';
     import AddToCalendar from './inputs/fieldGroups/addToCalendar.vue';
     import ThreadStartMessage from './inputs/fieldGroups/threadMessage/threadStartMessage.vue';
+    import SubscriptionPlan from './inputs/fieldGroups/subscriptionPlan.vue';
 
     // Root Preference Form States & Methods:
     const usePreferencesForm = () => {
 
         /** Form Schema / Validation */
         const schema = z.object({
-            accentColor: z.string().regex(RegExp_HexColorCode, 'Invalid hex color code!'),
-            publicSessions: z.boolean(),
-            addToCalendarButton: z.boolean(),
-            threadStartMessageTitle: z.string().transform((s) => s.replace('### ', '')).check(z.regex(/^[a-zA-Z0-9 %_\p{Extended_Pictographic}]+$/gu)),
-            threadStartMessageDescription: z.string().max(225).normalize().nullish()
+            accentColor: z.string("Invalid Accent Color!").regex(RegExp_HexColorCode, 'Invalid Hex Color Code!'),
+            publicSessions: z.boolean("Invalid Choice!"),
+            addToCalendarButton: z.boolean("Invalid Choice!"),
+            threadStartMessageTitle: z.string('Invalid Title!').transform((v: string) => v.replace('### ', '')).pipe(z.string().regex(/^[a-zA-Z0-9%_ !&?,.\p{Extended_Pictographic}]+$/gu, 'Title cannot include special characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!')),
+            threadStartMessageDescription: z.string('Invalid Description!').max(225, 'Description cannot exceed 225 characters!').normalize()
         })
 
         /** Form Current Values (v-modeled)*/
         const values = reactive({
-            accentColor: '#000000',
+            accentColor: '',
             publicSessions: true,
             addToCalendarButton: false,
             threadStartMessageTitle: '',
@@ -71,7 +72,7 @@
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
         console.info('Preferences Tab Mounted')
-        preferenceForm.values.accentColor = '#123123'
+        preferenceForm.values.accentColor = '#f777f3'
         preferenceForm.values.publicSessions = true
         preferenceForm.values.addToCalendarButton = true
         preferenceForm.values.threadStartMessageTitle = 'DEFAULT'
@@ -131,13 +132,15 @@
                     @validate="preferenceForm.validateFields(['accentColor'])" />
 
 
-
-
                 <!-- Input - Thread Start Message -->
                 <ThreadStartMessage v-model:field-title="preferenceForm.values.threadStartMessageTitle"
                     v-model:field-description="preferenceForm.values.threadStartMessageDescription"
                     :input-errors="preferenceForm.errors.value"
                     @validate="preferenceForm.validateFields(['threadStartMessageTitle', 'threadStartMessageDescription'])" />
+
+
+                <!-- Input / Details - Subscription Plan -->
+                <SubscriptionPlan />
 
 
                 <!-- Action(s) Row -->
@@ -160,10 +163,6 @@
                     <span
                         v-html="JSON.stringify(preferenceForm.values, null, '<br>').replace(/}$/, '') + '<br>}' || {}" />
 
-
-                    <span>
-                        {{ preferenceForm.errors.value }}
-                    </span>
                 </span>
 
             </div>
@@ -178,14 +177,6 @@
 <style scoped>
 
     @reference '@/styles/main.css';
-
-    .hex-color-input {
-        @apply !p-1 !px-1.25 !text-sm;
-        --p-inputtext-placeholder-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
-        --p-inputtext-border-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
-        --p-inputtext-hover-border-color: color-mix(in oklab, var(--color-white) 65%, transparent) !important;
-        --p-inputtext-color: color-mix(in oklab, var(--color-white) 75%, transparent) !important;
-    }
 
 
     .tab-content-wrap {

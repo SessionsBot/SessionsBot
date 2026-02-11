@@ -42,7 +42,7 @@
 
     // Default Values:
     const defaultTitle = "### 📅 Sessions for %day_sm%";
-    const defaultDescription = "-# You can view todays scheduled events/sessions by opening the attached thread below. 😊";
+    const defaultDescription = "-# You can view today's scheduled events/sessions by opening the __attached thread below__. 😊";
 
     // Display Values
     const displayTitle = computed({
@@ -113,7 +113,7 @@
         <InputLabel title="Thread Start Message" icon-name="tabler:message-2-filled" :premium-type="'ENTERPRISE'"
             :doc-path="'/'" />
 
-        <!-- Display Inputs -->
+        <!-- Display (Simulated) Inputs -->
         <div @click="editDialog.attemptEdit()" class="w-full flex flex-col gap-1.5 p-0.5 flex-wrap group/di">
 
             <!-- Thread Title - Simulated Input -->
@@ -193,7 +193,7 @@
 
                     <!-- Content -->
                     <span
-                        class="flex flex-col lg:flex-row items-center justify-start w-full h-fit min-h-fit divide-ring divide-x-2 ">
+                        class="flex flex-col lg:flex-row items-start justify-start w-full h-fit min-h-fit divide-ring divide-x-2 ">
 
 
                         <!-- Inputs - Area -->
@@ -204,7 +204,8 @@
                                 <InputLabel title="Thread Title" icon-name="fe:text-size" />
                                 <InputText :default-value="displayTitle?.replace('### ', '')"
                                     @value-change="(v: string | undefined) => { displayTitle = '### ' + v; $emit('validate') }"
-                                    class="heading-input max-w-120! shadow-sm! shadow-black/30!" fluid />
+                                    class="heading-input max-w-120! shadow-sm! shadow-black/30!"
+                                    :invalid="inputErrors?.size >= 1" fluid />
                                 <!-- Errors -->
                                 <div class="input-errors" v-if="inputErrors.get('threadStartMessageTitle')?.length">
                                     <p v-for="err of inputErrors.get('threadStartMessageTitle')"
@@ -218,7 +219,7 @@
                             <span class="input-wrap">
                                 <InputLabel title="Description" icon-name="majesticons:text" />
                                 <DiscordEditor v-model:text-input-value="displayDescription"
-                                    @value-change="(v) => { console.info('changed', v); $emit('validate') }" />
+                                    @value-change="(v) => $emit('validate')" />
                                 <!-- Errors -->
                                 <div class="input-errors"
                                     v-if="inputErrors.get('threadStartMessageDescription')?.length">
@@ -237,7 +238,7 @@
 
                         <!-- Preview - Area -->
                         <span
-                            class="flex flex-col border-t-2 lg:border-t-0 h-full gap-1 border-ring w-full items-start justify-start p-2 px-4">
+                            class="flex flex-col border-t-2 lg:border-t-0 h-full gap-1 border-ring w-full items-start justify-start p-2 px-4 pb-3.5">
 
                             <InputLabel title="Preview Message" icon-name="mdi:eye-outline" />
                             <MessagePreview :text-value="previewTextValue" :thread-title="displayTitle" />

@@ -138,7 +138,7 @@
                         </span>
 
 
-                        <span class="flex grow items-center justify-between font-medium flex-wrap">
+                        <span class="flex grow items-center justify-start gap-2 font-medium flex-wrap">
                             <p class="opacity-50">
                                 Sessions
                             </p>

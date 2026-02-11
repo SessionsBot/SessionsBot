@@ -2,7 +2,7 @@
     import z from 'zod';
     import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
     import { RegExp_HexColorCode } from '@sessionsbot/shared';
-    import type { PopoverMethods } from 'primevue';
+    import type { InputMask, PopoverMethods } from 'primevue';
     import InputLabel from '../inputLabel.vue';
 
 
@@ -26,12 +26,13 @@
     const selectColorPopoverIsActive = ref(false)
     const selectColorPopoverRef = ref<PopoverMethods | undefined>()
     const hexInputIsInvalid = ref(false)
-    function processHexColorInput(v: string) {
-        // Remove empty "_" & ensure starts w "#":
+    function processHexColorInput(v: string | undefined) {
+        // Confirm value:
+        if (!v) return
         v = v.replace(/_/g, '')
+        // Ensure starts w "#":
         if (!v.startsWith('#')) v = ('#' + v);
         // Validate hex color:
-        if (v.length != 4 && v.length != 7) return
         const r = z.safeParse(z.string().regex(RegExp_HexColorCode, 'Invalid Hex Color!'), v)
         if (r.success) {
             // Assign valid color:
@@ -39,15 +40,12 @@
             fieldValue.value = v
         } else {
             // Show invalid text input state:
-            if (hexInputIsInvalid.value != true) {
-                hexInputIsInvalid.value = true;
-                setTimeout(() => { hexInputIsInvalid.value = false }, 2_000);
-            }
+            hexInputIsInvalid.value = true;
         }
     }
 
     // Dynamic Hex Code Text Color:
-    const hexCodeColor = computed(() => {
+    const hexCodeTextColor = computed(() => {
         if (!fieldValue.value) return '#ffffff'
         let hex = fieldValue.value.replace('#', '')
         // Expand shorthand (#abc → #aabbcc)
@@ -89,7 +87,7 @@
                 <span class="w-full h-full rounded relative opacity-85" :style="{
                     backgroundColor: fieldValue
                 }">
-                    <p :style="{ color: hexCodeColor }"
+                    <p :style="{ color: hexCodeTextColor }"
                         class="absolute transition-all right-0 font-bold h-full w-fit p-1 flex items-center">
                         {{ (fieldValue || '#??????') }}
                     </p>
@@ -100,11 +98,10 @@
             <Popover ref="selectColorPopoverRef" @show="selectColorPopoverIsActive = true"
                 @hide="selectColorPopoverIsActive = false">
                 <span class="flex items-center justify-center gap-2 flex-col">
-                    <ColorPicker @value-change="processHexColorInput" :default-color="fieldValue" inline />
-                    <InputMask @value-change="processHexColorInput" :default-value="fieldValue" fluid size="small"
-                        mask="#******" placeholder="#hexColor" class="hex-color-input" :class="{
-                            'border-red-400!': hexInputIsInvalid
-                        }" />
+                    <ColorPicker @value-change="processHexColorInput" :model-value="fieldValue" inline />
+                    <InputText class="hex-color-input" @value-change="processHexColorInput" :default-value="fieldValue"
+                        placeholder="#hexColor" fluid size="small" :invalid="hexInputIsInvalid"
+                        :class="{ 'border-red-400!': hexInputIsInvalid }" :maxlength="7" />
                 </span>
             </Popover>
 
@@ -121,4 +118,16 @@
 </template>
 
 
-<style scoped></style>
+<style scoped>
+
+    @reference "@/styles/main.css";
+
+    .hex-color-input {
+        @apply !p-1 !px-1.25 !text-sm;
+        --p-inputtext-placeholder-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
+        --p-inputtext-border-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
+        --p-inputtext-hover-border-color: color-mix(in oklab, var(--color-white) 65%, transparent) !important;
+        --p-inputtext-color: color-mix(in oklab, var(--color-white) 75%, transparent) !important;
+    }
+
+</style>

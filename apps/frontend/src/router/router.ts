@@ -10,6 +10,7 @@ import Support from "./support/support.vue";
 import { useAuthStore } from "@/stores/auth";
 import Pricing from "./pricing/pricing.vue";
 import TestPage from "./test/TestPage.vue";
+import Sessions from "./sessions/Sessions.vue";
 
 // ALL Page Routes:
 const routes: RouterOptions['routes'] = [
@@ -29,6 +30,12 @@ const routes: RouterOptions['routes'] = [
         path: "/account",
         alias: ['/my-account', '/profile', '/signin', '/sign-in', '/login', '/log-in'],
         component: MyAccount,
+    },
+    {
+        name: "Session",
+        path: "/sessions/:sessionId",
+        alias: ['/session/:sessionId', '/s/:sessionId'],
+        component: Sessions
     },
 
     // Information:
