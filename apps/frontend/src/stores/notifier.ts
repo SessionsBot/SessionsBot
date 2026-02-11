@@ -167,7 +167,23 @@ const useNotifier = defineStore('notifier', () => {
                 content: markRaw(notificationOpts.content as Component)
             }
         }
-        notifications.value.set(msgId, notificationOpts)
+
+        // Prevent Duplicates:
+        for (const [id, existing] of notifications.value.entries()) {
+            if (
+                existing.header === notificationOpts.header &&
+                existing.content === notificationOpts.content &&
+                existing.level === notificationOpts.level
+            ) {
+                console.warn("Prevented duplicate notification");
+                return;
+            }
+        }
+
+        // Send/Add Notification:
+        notifications.value.set(msgId, notificationOpts);
+
+        // If Duration - Start Timer
         if (notificationOpts.duration != false) {
             // Hide after Duration:
             const showMs = ((notificationOpts.duration ?? 7) * 1000);

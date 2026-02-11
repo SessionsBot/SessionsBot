@@ -16,7 +16,7 @@
     const getRandomLevel = () => {
         let level = levelOpts[cursor]
         let newCursor = cursor + 1
-        if (newCursor > maxCursor) {
+        if (newCursor >= maxCursor + 1) {
             newCursor = 0
         }
         cursor = newCursor
@@ -44,6 +44,14 @@
     }
 
 
+    const baseText = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, autem tempore! Itaque quos architecto provident recusandae sapiente consequatur quo excepturi fugit corporis maxime nam id voluptatem, accusantium quia commodi veniam facere eos sunt consequuntur, ut reiciendis inventore similique at! Alias."
+    const randomText = (min = 5, max?: number) => {
+        const fullLength = baseText.length;
+        const randomStart = Math.max(Math.abs(Math.random() * fullLength), min)
+        const randomEnd = Math.max(Math.min(Math.floor((Math.random() * fullLength) + randomStart), fullLength), (randomStart + 10))
+        return baseText.slice(randomStart, randomEnd)
+    }
+
     // Testing:
     let intervalId = ref<NodeJS.Timeout>()
     let sendTests = false;
@@ -56,12 +64,12 @@
             // send random test notification:
             notifier.send({
                 header: 'Notification!',
-                content: 'Example content!',
+                content: 'Example content! ' + randomText(0, 0),
                 level: getRandomLevel() as any,
                 actions: getRandomActions(),
-                duration: 10
+                duration: 15
             })
-        }, 5_000)
+        }, 3_000)
     })
     onUnmounted(() => clearInterval(intervalId.value))
 
@@ -72,8 +80,6 @@
 <template>
     <!-- Notification(s) Wrap -->
     <div class="notifier-app-container">
-
-
 
         <TransitionGroup name="notification" type="transition">
             <!-- Notification Card -->
@@ -191,7 +197,7 @@
     }
 
     .notification-card {
-        @apply max-w-95 bg-zinc-800 w-full p-2 gap-0 border-2 border-ring rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
+        @apply max-w-95 bg-zinc-800 w-full p-2.5 pt-2 gap-0.5 border-2 border-ring rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
 
         @apply drop-shadow-xl drop-shadow-black/25;
 
@@ -250,7 +256,7 @@
         }
 
         .header-wrap {
-            @apply flex gap-1 items-start justify-center w-fit;
+            @apply flex gap-1.25 items-start justify-center w-fit;
         }
 
         .header-icon {
@@ -259,11 +265,11 @@
     }
 
     .notification-content-wrap {
-        @apply w-full flex items-center justify-center wrap-break-word text-sm;
+        @apply w-full flex font-nunito font-medium items-center justify-center wrap-break-word text-sm;
     }
 
     .notification-action-row {
-        @apply w-full flex flex-row items-start justify-center gap-2.25 pt-1.25 pb-0.75 flex-wrap;
+        @apply w-full flex flex-row items-start justify-center gap-2.25 pt-1.75 pb-0.75 flex-wrap;
 
         .action-button {
             @apply flex bg-zinc-600 relative hover:bg-zinc-600/80 drop-shadow-sm drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;

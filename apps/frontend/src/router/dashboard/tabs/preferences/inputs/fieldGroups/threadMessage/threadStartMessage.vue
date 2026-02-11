@@ -6,7 +6,6 @@
     import { XIcon } from 'lucide-vue-next';
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
     import MessagePreview from './DiscordEditor/Previewer.vue'
-    import { DateTime } from 'luxon';
     import ReplaceableTextKey from './ReplaceableTextKey.vue';
 
     // Services:
@@ -82,7 +81,7 @@
                 notifier.send({
                     level: 'upgrade',
                     header: 'Enterprise Feature!',
-                    content: `- Unfortunately your current bot subscription plan doesn't allow for you to customize this option! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`,
+                    content: `Unfortunately your current subscription plan <b>doesn't allow for you to customize this option</b>! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`,
                 })
             } else {
                 // allowed - show edit form:
