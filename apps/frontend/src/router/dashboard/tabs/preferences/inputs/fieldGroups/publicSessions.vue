@@ -1,5 +1,6 @@
 <script lang="ts" setup>
     import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
+    import InputLabel from '../inputLabel.vue';
 
 
     // Props
@@ -8,7 +9,7 @@
     }>()
 
     // Field Value - Modal:
-    const fieldValue = defineModel<string>('field-value')
+    const fieldValue = defineModel<boolean>('field-value')
 
     // Emits:
     const emits = defineEmits<{
@@ -24,19 +25,16 @@
     <!-- Input - Public Sessions -->
     <span class="input-group">
         <!-- Label -->
-        <div class="label">
-            <span class="flex items-center gap-1 flex-wrap">
-                <Iconify :size="18" />
-                Input Title
-            </span>
-
-            <InfoHelpButton doc-path="/" />
-        </div>
+        <InputLabel title="Public Sessions" iconName="material-symbols:lock" docPath="/" />
 
         <!-- Input -->
         <div class="input">
 
-            <InputText v-model="fieldValue" fluid @blur="$emit('validate')" />
+            <ToggleSwitch name="publicSessions" v-model:model-value="fieldValue" />
+
+            <p hidden class="opacity-65 text-xs italic font-bold">
+                Sessions are {{ fieldValue ? 'PUBLIC' : 'PRIVATE' }}
+            </p>
 
         </div>
 

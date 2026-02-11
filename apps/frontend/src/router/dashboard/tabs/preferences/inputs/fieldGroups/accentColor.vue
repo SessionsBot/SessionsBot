@@ -3,6 +3,7 @@
     import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
     import { RegExp_HexColorCode } from '@sessionsbot/shared';
     import type { PopoverMethods } from 'primevue';
+    import InputLabel from '../inputLabel.vue';
 
 
 
@@ -45,6 +46,21 @@
         }
     }
 
+    // Dynamic Hex Code Text Color:
+    const hexCodeColor = computed(() => {
+        if (!fieldValue.value) return '#ffffff'
+        let hex = fieldValue.value.replace('#', '')
+        // Expand shorthand (#abc → #aabbcc)
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('')
+        }
+        const r = parseInt(hex.substring(0, 2), 16)
+        const g = parseInt(hex.substring(2, 4), 16)
+        const b = parseInt(hex.substring(4, 6), 16)
+        // Perceived luminance formula
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b)
+        return luminance > 186 ? '#000000' : '#ffffff'
+    })
 
 
 </script>
@@ -55,37 +71,26 @@
     <span class="input-group">
 
         <!-- Label -->
-        <div class="label">
-            <span class="flex items-center gap-1 flex-wrap">
-                <Iconify :size="18" icon="mdi:color" />
-                Accent Color
-                <!-- Premium Feature Badge -->
-                <span
-                    class="mx-0.5 flex flex-row gap-px p-0.5 pr-1 bg-black/5 text-white/80 border-indigo-400/70 border-2 rounded-lg">
-                    <DiamondIcon class="size-4! fill-transparent!" />
-                    <p class="font-bold text-xs"> Premium </p>
-                </span>
-            </span>
+        <InputLabel title="Accent Color" icon-name="mdi:color" :premium-type="'PREMIUM'" :doc-path="undefined" />
 
-            <InfoHelpButton doc-path="/" />
-        </div>
 
         <!-- Input -->
         <div class="input">
 
             <!-- Simulated Input -->
             <div @click="selectColorPopoverRef?.toggle" name="accentColor"
-                class="h-11 w-full p-1.25 py-1.5 bg-black/30 flex items-center justify-center border-2 border-zinc-300 hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
+                class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
                 :class="{
                     'border-indigo-400!': selectColorPopoverIsActive,
                     'border-red-400!': hexInputIsInvalid
                 }">
 
                 <!-- Selected Color Display -->
-                <span class="w-full h-full rounded relative" :style="{
+                <span class="w-full h-full rounded relative opacity-85" :style="{
                     backgroundColor: fieldValue
                 }">
-                    <p class="absolute right-0 opacity-55 font-bold h-full w-fit p-1 flex items-center">
+                    <p :style="{ color: hexCodeColor }"
+                        class="absolute transition-all right-0 font-bold h-full w-fit p-1 flex items-center">
                         {{ (fieldValue || '#??????') }}
                     </p>
                 </span>

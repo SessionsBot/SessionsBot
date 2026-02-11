@@ -1,34 +1,38 @@
 <script lang="ts" setup>
-    import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
-    import { zodResolver } from '@primevue/forms/resolvers/zod';
     import { z } from 'zod'
-    import InfoHelpButton from '../../components/sessionForm/labels/infoHelpButton.vue';
-    import type { PopoverMethods } from 'primevue';
     import { CheckIcon } from 'lucide-vue-next';
     import { RegExp_HexColorCode } from '@sessionsbot/shared';
-    import OptionGroup from './fieldGroups/template.vue';
-    import AccentColor from './fieldGroups/accentColor.vue';
-    import PublicSessions from './fieldGroups/publicSessions.vue';
+    import PublicSessions from './inputs/fieldGroups/publicSessions.vue';
+    import AccentColor from './inputs/fieldGroups/accentColor.vue';
+    import AddToCalendar from './inputs/fieldGroups/addToCalendar.vue';
+    import ThreadStartMessage from './inputs/fieldGroups/threadMessage/threadStartMessage.vue';
 
     // Root Preference Form States & Methods:
     const usePreferencesForm = () => {
 
+        /** Form Schema / Validation */
         const schema = z.object({
             accentColor: z.string().regex(RegExp_HexColorCode, 'Invalid hex color code!'),
             publicSessions: z.boolean(),
             addToCalendarButton: z.boolean(),
+            threadStartMessageTitle: z.string().transform((s) => s.replace('### ', '')).check(z.regex(/^[a-zA-Z0-9 %_\p{Extended_Pictographic}]+$/gu)),
+            threadStartMessageDescription: z.string().max(225).normalize().nullish()
         })
 
-
+        /** Form Current Values (v-modeled)*/
         const values = reactive({
             accentColor: '#000000',
             publicSessions: true,
             addToCalendarButton: false,
+            threadStartMessageTitle: '',
+            threadStartMessageDescription: ''
         })
         type FieldName = keyof typeof values
 
+        /** Current Form Input Errors - Map */
         const errors = ref<Map<FieldName, string[]>>(new Map());
 
+        /** Method - Validate Specified Form Fields */
         function validateFields(fields: PreferenceFormFields[]) {
             for (const field of fields) {
                 const fieldSchema = schema.shape[field]
@@ -46,7 +50,7 @@
             }
         }
 
-
+        /** Method - Form Submission */
         function submit() {
             console.info(`{i} Form Submission`)
         }
@@ -68,6 +72,10 @@
     onMounted(() => {
         console.info('Preferences Tab Mounted')
         preferenceForm.values.accentColor = '#123123'
+        preferenceForm.values.publicSessions = true
+        preferenceForm.values.addToCalendarButton = true
+        preferenceForm.values.threadStartMessageTitle = 'DEFAULT'
+        preferenceForm.values.threadStartMessageDescription = 'DEFAULT'
     })
 
 </script>
@@ -111,10 +119,25 @@
                     @validate="preferenceForm.validateFields(['publicSessions'])" />
 
 
+                <!-- Input - Enable Add to Calendar Button -->
+                <AddToCalendar v-model:field-value="preferenceForm.values.addToCalendarButton"
+                    :input-errors="preferenceForm.errors.value.get('addToCalendarButton') || []"
+                    @validate="preferenceForm.validateFields(['addToCalendarButton'])" />
+
+
                 <!-- Input - Accent Color -->
                 <AccentColor v-model:field-value="preferenceForm.values.accentColor"
                     :input-errors="preferenceForm.errors.value.get('accentColor') || []"
                     @validate="preferenceForm.validateFields(['accentColor'])" />
+
+
+
+
+                <!-- Input - Thread Start Message -->
+                <ThreadStartMessage v-model:field-title="preferenceForm.values.threadStartMessageTitle"
+                    v-model:field-description="preferenceForm.values.threadStartMessageDescription"
+                    :input-errors="preferenceForm.errors.value"
+                    @validate="preferenceForm.validateFields(['threadStartMessageTitle', 'threadStartMessageDescription'])" />
 
 
                 <!-- Action(s) Row -->
@@ -132,11 +155,15 @@
                 </span>
 
                 <!-- Debug View -->
-                <span class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
+                <span hidden class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
 
                     <span
                         v-html="JSON.stringify(preferenceForm.values, null, '<br>').replace(/}$/, '') + '<br>}' || {}" />
 
+
+                    <span>
+                        {{ preferenceForm.errors.value }}
+                    </span>
                 </span>
 
             </div>
@@ -170,15 +197,11 @@
     }
 
     .preferences-form {
-        @apply bg-surface border-2 border-ring rounded-md gap-2 p-3 mb-4 w-full max-w-135 flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
+        @apply bg-surface gap-2.5 p-3 mb-4 w-full max-w-135 border-2 border-ring rounded-md flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
     }
 
     :deep(.input-group) {
         @apply w-full flex gap-1 flex-col items-center justify-center flex-wrap h-fit;
-
-        .label {
-            @apply w-full p-0.5 flex flex-row gap-1 items-center justify-between flex-nowrap font-bold;
-        }
 
         .input {
             @apply w-full p-0.5 flex flex-row gap-1 items-center justify-between flex-nowrap;

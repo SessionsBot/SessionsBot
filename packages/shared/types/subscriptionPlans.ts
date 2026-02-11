@@ -25,6 +25,8 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     ALLOW_NOTIFICATIONS: boolean;
     /** Weather to allow custom message accent colors based on subscription level. */
     CUSTOM_ACCENT_COLOR: boolean
+    /** Weather to allow a custom "thread start" message based on subscription level. */
+    CUSTOM_THREAD_START_MESSAGE: boolean
     /** Weather to display a "Powered by Sessions Bot" text within Discord interactions/messages. */
     SHOW_WATERMARK: boolean
 }> = {
@@ -36,6 +38,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         ALLOW_MENTION_ROLES: false,
         ALLOW_NOTIFICATIONS: false,
         CUSTOM_ACCENT_COLOR: false,
+        CUSTOM_THREAD_START_MESSAGE: false,
         SHOW_WATERMARK: true,
     },
     PREMIUM: {
@@ -46,6 +49,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         ALLOW_MENTION_ROLES: true,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
+        CUSTOM_THREAD_START_MESSAGE: false,
         SHOW_WATERMARK: false,
     },
     ENTERPRISE: {
@@ -56,6 +60,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         ALLOW_MENTION_ROLES: true,
         ALLOW_NOTIFICATIONS: true,
         CUSTOM_ACCENT_COLOR: true,
+        CUSTOM_THREAD_START_MESSAGE: true,
         SHOW_WATERMARK: false,
     },
 } as const;

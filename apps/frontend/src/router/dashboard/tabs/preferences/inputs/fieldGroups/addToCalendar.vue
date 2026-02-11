@@ -1,5 +1,6 @@
 <script lang="ts" setup>
     import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
+    import InputLabel from '../inputLabel.vue';
 
 
     // Props
@@ -24,23 +25,13 @@
     <!-- Input - Public Sessions -->
     <span class="input-group">
         <!-- Label -->
-        <div class="label">
-            <span class="flex items-center gap-1 flex-wrap">
-                <Iconify :size="18" icon="material-symbols:lock" />
-                Public Sessions
-            </span>
+        <InputLabel title="Add to Calendar Button" icon-name="fa6-solid:calendar-plus" :doc-path="undefined" />
 
-            <InfoHelpButton doc-path="/" />
-        </div>
 
         <!-- Input -->
         <div class="input">
 
-            <ToggleSwitch name="publicSessions" v-model:model-value="fieldValue" />
-
-            <p class="opacity-65 text-xs italic font-bold">
-                Sessions are {{ fieldValue ? 'PUBLIC' : 'PRIVATE' }}
-            </p>
+            <ToggleSwitch v-model="fieldValue" @value-change="$emit('validate')" />
 
         </div>
 

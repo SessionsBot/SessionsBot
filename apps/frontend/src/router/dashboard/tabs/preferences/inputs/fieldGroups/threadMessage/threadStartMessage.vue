@@ -1,0 +1,275 @@
+<script lang="ts" setup>
+    import InputLabel from '../../inputLabel.vue';
+    import type { PreferenceFormFields } from '../../../preferencesTab.vue';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import useNotifier from '@/stores/notifier';
+    import { XIcon } from 'lucide-vue-next';
+    import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
+    import MessagePreview from './DiscordEditor/Previewer.vue'
+    import { DateTime } from 'luxon';
+    import ReplaceableTextKey from './ReplaceableTextKey.vue';
+
+    // Services:
+    const dashboard = useDashboardStore();
+    const notifier = useNotifier();
+
+    // Props
+    const props = defineProps<{
+        inputErrors: Map<PreferenceFormFields, string[] | undefined>
+    }>()
+
+    // Field Value - Modal:
+    const fieldTitle = defineModel<string>('fieldTitle')
+    const fieldDescription = defineModel<string>('fieldDescription')
+
+    // Emits:
+    const emits = defineEmits<{
+        validate: []
+    }>()
+
+    // Field - Input Errors:
+    const fieldErrors = computed(() => {
+        let r = [];
+        if (props.inputErrors.get('threadStartMessageTitle')?.length) {
+            r.push(...props.inputErrors.get('threadStartMessageTitle') as string[])
+        }
+        if (props.inputErrors.get('threadStartMessageDescription')?.length) {
+            r.push(...props.inputErrors.get('threadStartMessageDescription') as string[])
+        }
+        if (r.length) return r
+        else return []
+    })
+
+    // Default Values:
+    const defaultTitle = "### 📅 Sessions for %day_sm%";
+    const defaultDescription = "-# You can view todays scheduled events/sessions by opening the attached thread below. 😊";
+
+    // Display Values
+    const displayTitle = computed({
+        get() {
+            if (fieldTitle.value == 'DEFAULT') return defaultTitle
+            else return fieldTitle.value
+        },
+        set(v: string) {
+            fieldTitle.value = v
+        }
+    })
+    const displayDescription = computed({
+        get() {
+            if (fieldDescription.value == 'DEFAULT') return defaultDescription
+            else return fieldDescription.value
+        },
+        set(v: string) {
+            fieldDescription.value = v
+        }
+    })
+    const previewTextValue = computed(() => {
+        const titleText = String(displayTitle.value)
+        const descText = String(displayDescription.value)
+        return (titleText + '\n' + descText)
+    })
+
+
+    // Edit Dialog - States & Methods:
+    const useEditDialog = () => {
+
+        const isVisible = ref<boolean>(false)
+
+        function attemptEdit() {
+            const subscription = dashboard.guildData.subscription.state
+            if (!subscription || !subscription.limits.CUSTOM_THREAD_START_MESSAGE) {
+                // not allowed - alert upgrade:
+                notifier.send({
+                    level: 'upgrade',
+                    header: 'Premium Feature!',
+                    content: `Unfortunately your current bot subscription plan doesn't allow for you to customize this option! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`,
+                })
+            } else {
+                // allowed - show edit form:
+                isVisible.value = !isVisible.value
+            }
+        }
+
+        function submit() {
+            console.log('submitted')
+        }
+
+        // Return States & Methods:
+        return {
+            isVisible,
+            attemptEdit,
+            submit
+        }
+    }
+    const editDialog = useEditDialog();
+
+</script>
+
+
+<template>
+    <!-- Input - Public Sessions -->
+    <span class="input-group">
+        <!-- Label -->
+        <InputLabel title="Thread Start Message" icon-name="tabler:message-2-filled" :premium-type="'ENTERPRISE'"
+            :doc-path="'/'" />
+
+        <!-- Display Inputs -->
+        <div @click="editDialog.attemptEdit()" class="w-full flex flex-col gap-1.5 p-0.5 flex-wrap group/di">
+
+            <!-- Thread Title - Simulated Input -->
+            <div class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
+                :class="{
+                    'border-red-400!': fieldErrors.length
+                }">
+
+                <!-- Display Text -->
+                <span class="flex p-1 w-full grow max-w-full overflow-auto text-nowrap flex-nowrap">
+                    <p class="font-bold px-1 py-0.5 truncate">
+                        {{ displayTitle?.replace('### ', '') }}
+                    </p>
+                </span>
+            </div>
+
+            <!-- Thread Description - Simulated Input -->
+            <div class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
+                :class="{
+                    'border-red-400!': fieldErrors.length
+                }">
+
+                <!-- Display Text -->
+                <span class="flex p-1 w-full grow max-w-full overflow-clip text-nowrap flex-nowrap">
+                    <p class="font-bold px-1 py-0.5 truncate">
+                        {{ displayDescription }}
+                    </p>
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- Errors -->
+        <div class="errors" v-if="fieldErrors?.length">
+            <p v-for="err of fieldErrors" :key="err.slice(0, 15)">
+                - {{ err || 'Invalid Input!' }}
+            </p>
+        </div>
+
+
+
+        <!-- Edit - Input Dialog -->
+        <Dialog :visible="editDialog.isVisible.value" modal block-scroll class="w-[90%]! max-w-320! m-7!">
+            <template #container="$dialog">
+                <div
+                    class="flex w-full border-2 border-ring rounded-md shadow-md shadow-black/40 flex-col h-fit overflow-auto">
+
+                    <!-- Header -->
+                    <span class="flex flex-col p-2 w-full items-center justify-between border-b-2 border-inherit">
+
+                        <!-- Title & Close Btn -->
+                        <span class="flex w-full justify-between items-center gap-4">
+                            <!-- Title & Icon -->
+                            <div class="flex items-center gap-1 w-full">
+                                <Iconify icon="tabler:message-2-filled" />
+                                <p class="text-lg font-extrabold">
+                                    Thread Start Message
+                                </p>
+                            </div>
+
+
+                            <!-- Close Button -->
+                            <Button unstyled @click="editDialog.isVisible.value = false"
+                                class="aspect-square min-w-fit size-7 p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer active:scale-95 transition-all">
+                                <XIcon />
+                            </Button>
+                        </span>
+
+                        <!-- Subheading - Description -->
+                        <span class="p-1 pb-0 w-full opacity-50 text-xs">
+                            This is the message that is sent to any designated "post channel" if there's no existing
+                            session thread for the day.
+                        </span>
+                    </span>
+
+
+                    <!-- Content -->
+                    <span
+                        class="flex flex-col lg:flex-row items-center justify-start w-full h-fit min-h-fit divide-ring divide-x-2 ">
+
+
+                        <!-- Inputs - Area -->
+                        <span class="flex flex-col p-4 pt-1 gap-2 w-full">
+
+                            <!-- Input - Title -->
+                            <span class="input-wrap">
+                                <InputLabel title="Thread Title" icon-name="fe:text-size" />
+                                <InputText :default-value="displayTitle?.replace('### ', '')"
+                                    @value-change="(v: string | undefined) => { displayTitle = '### ' + v; $emit('validate') }"
+                                    class="heading-input max-w-120! shadow-sm! shadow-black/30!" fluid />
+                                <!-- Errors -->
+                                <div class="input-errors" v-if="inputErrors.get('threadStartMessageTitle')?.length">
+                                    <p v-for="err of inputErrors.get('threadStartMessageTitle')"
+                                        :key="err.slice(0, 15)">
+                                        - {{ err || 'Invalid Input!' }}
+                                    </p>
+                                </div>
+                            </span>
+
+                            <!-- Input - Description -->
+                            <span class="input-wrap">
+                                <InputLabel title="Description" icon-name="majesticons:text" />
+                                <DiscordEditor v-model:text-input-value="displayDescription"
+                                    @value-change="(v) => { console.info('changed', v); $emit('validate') }" />
+                                <!-- Errors -->
+                                <div class="input-errors"
+                                    v-if="inputErrors.get('threadStartMessageDescription')?.length">
+                                    <p v-for="err of inputErrors.get('threadStartMessageDescription')"
+                                        :key="err.slice(0, 15)">
+                                        - {{ err || 'Invalid Input!' }}
+                                    </p>
+                                </div>
+                            </span>
+
+                            <!-- Replacable Text Key -->
+                            <ReplaceableTextKey />
+
+                        </span>
+
+
+                        <!-- Preview - Area -->
+                        <span
+                            class="flex flex-col border-t-2 lg:border-t-0 h-full gap-1 border-ring w-full items-start justify-start p-2 px-4">
+
+                            <InputLabel title="Preview Message" icon-name="mdi:eye-outline" />
+                            <MessagePreview :text-value="previewTextValue" :thread-title="displayTitle" />
+
+                        </span>
+
+
+                    </span>
+
+                </div>
+            </template>
+        </Dialog>
+
+    </span>
+</template>
+
+
+<style scoped>
+
+    @reference "@/styles/main.css";
+
+    .input-wrap {
+        @apply flex flex-col w-full items-center justify-center gap-1;
+    }
+
+    .input-errors {
+        @apply text-red-400 text-sm w-full;
+    }
+
+    .heading-input {
+        --p-inputtext-border-color: var(--color-ring);
+        --p-inputtext-background: color-mix(in oklab, var(--color-white) 3%, transparent) !important;
+    }
+
+</style>
