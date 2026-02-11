@@ -81,8 +81,8 @@
                 // not allowed - alert upgrade:
                 notifier.send({
                     level: 'upgrade',
-                    header: 'Premium Feature!',
-                    content: `Unfortunately your current bot subscription plan doesn't allow for you to customize this option! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`,
+                    header: 'Enterprise Feature!',
+                    content: `- Unfortunately your current bot subscription plan doesn't allow for you to customize this option! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`,
                 })
             } else {
                 // allowed - show edit form:

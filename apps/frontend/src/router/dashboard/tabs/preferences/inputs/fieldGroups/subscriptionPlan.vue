@@ -16,11 +16,6 @@
         validate: []
     }>()
 
-    onMounted(() => {
-        console.info('RE ASSIGNING SUBSCRIPTION  LEVEL')
-        dashboard.guildData.subscription.state = SubscriptionLevel.PREMIUM
-    })
-
 
 </script>
 
