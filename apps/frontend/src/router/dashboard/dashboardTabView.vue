@@ -13,6 +13,21 @@
     const router = useRouter();
     const currentTab = computed(() => dashboard.nav.currentTab)
 
+    const activeTabComponent = computed(() => {
+        switch (true) {
+            case currentTab.value == 'Sessions':
+                return SessionsTab
+            case currentTab.value == 'Calendar':
+                return CalendarTab
+            case currentTab.value == 'AuditLog':
+                return AuditLogTab
+            case currentTab.value == 'Preferences':
+                return PreferencesTab
+            default:
+                return SessionsTab
+        }
+    })
+
     // Guild Data State:
     const guildDataState = computed(() => dashboard.guildDataState)
 
@@ -65,15 +80,9 @@
         <div v-if="guildDataState?.allReady"
             class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
 
-            <TransitionGroup name="dashboard-tab" type="transition">
-                <!-- <KeepAlive key="tab_keep_alive"> -->
-                <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
-                <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
-                <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
-                <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
-                <PreferencesTab v-else-if="currentTab == 'Preferences'" key="preferences_tab" />
-                <!-- </KeepAlive> -->
-            </TransitionGroup>
+            <Transition name="dashboard-tab">
+                <component :is="activeTabComponent" />
+            </Transition>
 
 
         </div>
