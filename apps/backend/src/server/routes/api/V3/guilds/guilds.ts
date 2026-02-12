@@ -8,6 +8,7 @@ import { ChannelType } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";
 import { getGuildEntitlementsFromId } from "../../../../../utils/bot/entitlements.js";
+import guildPreferencesRouter from "./preferences.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();
@@ -87,6 +88,7 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async
 
 // Session Template - Endpoints:
 guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
+guildsRouter.use('/:guildId/preferences', guildPreferencesRouter)
 
 
 // Export Router:

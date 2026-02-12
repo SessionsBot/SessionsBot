@@ -46,7 +46,7 @@ const verifyGuildAdmin = async (req: authorizedRequest, res: Response, next: Nex
     try {
         // Get user & guild from request:
         const guildId = req.params?.guildId.toString();
-        const userId = req?.auth.user.user_metadata.id // Discord ID
+        const userId = req?.auth?.user.user_metadata.id // Discord ID
         if (!guildId) return new APIResponse(res).failure(`Bad Request - Couldn't verify guild membership, a guild id was unprovided.`, 400);
         if (!userId) return new APIResponse(res).failure(`Internal Error - Couldn't access authed user from req data.`);
 

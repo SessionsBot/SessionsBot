@@ -6,7 +6,7 @@
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
     import MessagePreview from './DiscordEditor/Previewer.vue'
     import ReplaceableTextKey from './ReplaceableTextKey.vue';
-    import type { SubscriptionLevelType } from '@sessionsbot/shared';
+    import { API_GuildPreferencesDefaults, type SubscriptionLevelType } from '@sessionsbot/shared';
 
     // Services:
     const notifier = useNotifier();
@@ -29,19 +29,19 @@
     // Field - Input Errors:
     const fieldErrors = computed(() => {
         let r = [];
-        if (props.inputErrors.get('threadStartMessageTitle')?.length) {
-            r.push(...props.inputErrors.get('threadStartMessageTitle') as string[])
+        if (props.inputErrors.get('thread_message_title')?.length) {
+            r.push(...props.inputErrors.get('thread_message_title') as string[])
         }
-        if (props.inputErrors.get('threadStartMessageDescription')?.length) {
-            r.push(...props.inputErrors.get('threadStartMessageDescription') as string[])
+        if (props.inputErrors.get('thread_message_description')?.length) {
+            r.push(...props.inputErrors.get('thread_message_description') as string[])
         }
         if (r.length) return r
         else return []
     })
 
     // Default Values:
-    const defaultTitle = "### 📅 Sessions for %day_sm%";
-    const defaultDescription = "-# You can view today's scheduled events/sessions by opening the __attached thread below__. 😊";
+    const defaultTitle = API_GuildPreferencesDefaults.thread_message_title;
+    const defaultDescription = API_GuildPreferencesDefaults.thread_message_description;
 
     // Display Values
     const displayTitle = computed({
@@ -176,6 +176,7 @@
 
                             <!-- Close Button -->
                             <Button unstyled @click="editDialog.isVisible.value = false"
+                                :disabled="fieldErrors?.length >= 1" :class="{ 'opacity-50': fieldErrors?.length >= 1 }"
                                 class="aspect-square min-w-fit size-7 p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer active:scale-95 transition-all">
                                 <XIcon />
                             </Button>
@@ -205,9 +206,8 @@
                                     class="heading-input max-w-120! shadow-sm! shadow-black/30!"
                                     :invalid="inputErrors?.size >= 1" fluid />
                                 <!-- Errors -->
-                                <div class="input-errors" v-if="inputErrors.get('threadStartMessageTitle')?.length">
-                                    <p v-for="err of inputErrors.get('threadStartMessageTitle')"
-                                        :key="err.slice(0, 15)">
+                                <div class="input-errors" v-if="inputErrors.get('thread_message_title')?.length">
+                                    <p v-for="err of inputErrors.get('thread_message_title')" :key="err.slice(0, 15)">
                                         - {{ err || 'Invalid Input!' }}
                                     </p>
                                 </div>
@@ -219,9 +219,8 @@
                                 <DiscordEditor v-model:text-input-value="displayDescription"
                                     @value-change="(v) => $emit('validate')" />
                                 <!-- Errors -->
-                                <div class="input-errors"
-                                    v-if="inputErrors.get('threadStartMessageDescription')?.length">
-                                    <p v-for="err of inputErrors.get('threadStartMessageDescription')"
+                                <div class="input-errors" v-if="inputErrors.get('thread_message_description')?.length">
+                                    <p v-for="err of inputErrors.get('thread_message_description')"
                                         :key="err.slice(0, 15)">
                                         - {{ err || 'Invalid Input!' }}
                                     </p>

@@ -1,16 +1,21 @@
 <script lang="ts" setup>
     import { z } from 'zod'
     import { CheckIcon } from 'lucide-vue-next';
-    import { RegExp_HexColorCode, type SubscriptionLevelType } from '@sessionsbot/shared';
+    import { API_GuildPreferencesDefaults, RegExp_HexColorCode, type APIResponseValue, type SubscriptionLevelType } from '@sessionsbot/shared';
     import PublicSessions from './inputs/fieldGroups/publicSessions.vue';
     import AccentColor from './inputs/fieldGroups/accentColor.vue';
     import AddToCalendar from './inputs/fieldGroups/addToCalendar.vue';
     import ThreadStartMessage from './inputs/fieldGroups/threadMessage/threadStartMessage.vue';
     import SubscriptionPlan from './inputs/fieldGroups/subscriptionPlan.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { API } from '@/utils/api';
+    import { useAuthStore } from '@/stores/auth';
+    import useNotifier from '@/stores/notifier';
+    import { externalUrls } from '@/stores/nav';
 
     // Services:
     const dashboard = useDashboardStore();
+    const auth = useAuthStore();
     const subscription = computed(() => dashboard.guildData.subscription.state as SubscriptionLevelType)
 
     // Root Preference Form States & Methods:
@@ -18,20 +23,20 @@
 
         /** Form Schema / Validation */
         const schema = z.object({
-            accentColor: z.string("Invalid Accent Color!").regex(RegExp_HexColorCode, 'Invalid Hex Color Code!'),
-            publicSessions: z.boolean("Invalid Choice!"),
-            addToCalendarButton: z.boolean("Invalid Choice!"),
-            threadStartMessageTitle: z.string('Invalid Title!').transform((v: string) => v.replace('### ', '')).pipe(z.string().regex(/^[a-zA-Z0-9%_ !&?,.\p{Extended_Pictographic}]+$/gu, 'Title cannot include special characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!')),
-            threadStartMessageDescription: z.string('Invalid Description!').max(225, 'Description cannot exceed 225 characters!').normalize()
+            accent_color: z.string("Invalid Accent Color!").regex(RegExp_HexColorCode, 'Invalid Hex Color Code!'),
+            public_sessions: z.boolean("Invalid Choice!"),
+            calendar_button: z.boolean("Invalid Choice!"),
+            thread_message_title: z.string('Invalid Title!').transform((v: string) => v.replace('### ', '')).pipe(z.string().regex(/^[a-zA-Z0-9%_ !&?,.\p{Extended_Pictographic}]+$/gu, 'Title cannot include special characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!').normalize()),
+            thread_message_description: z.string('Invalid Description!').max(225, 'Description cannot exceed 225 characters!').normalize()
         })
 
         /** Form Current Values (v-modeled)*/
         const values = reactive({
-            accentColor: '',
-            publicSessions: true,
-            addToCalendarButton: false,
-            threadStartMessageTitle: '',
-            threadStartMessageDescription: ''
+            accent_color: '#777777',
+            public_sessions: true,
+            calendar_button: true,
+            thread_message_title: 'DEFAULT',
+            thread_message_description: 'DEFAULT'
         })
         type FieldName = keyof typeof values
 
@@ -57,8 +62,72 @@
         }
 
         /** Method - Form Submission */
-        function submit() {
-            console.info(`{i} Form Submission`)
+        const submitState = ref<'idle' | 'loading' | 'success' | 'failed'>('idle')
+        async function submit() {
+            try {
+                submitState.value = 'idle'
+                console.info(`{i} Form Submission`)
+                // Validate Form Fields:
+                const validation = z.safeParse(schema, values)
+                if (!validation.success) {
+                    // Input Errors - Return:
+                    submitState.value = 'failed'
+                    const input_errors = z.treeifyError(validation.error)
+                    return console.warn('Invalid Submission!', { input_errors, values })
+                } else {
+                    // Valid Submission - Parse Validated Data:
+                    errors.value.clear()
+                    let fields = validation.data;
+                    // Default Thread Start Msg(s):
+                    if (fields.thread_message_title == API_GuildPreferencesDefaults.thread_message_title)
+                        fields.thread_message_title = "DEFAULT";
+                    else
+                        fields.thread_message_title = '### ' + fields.thread_message_title
+                    if (fields.thread_message_description == API_GuildPreferencesDefaults.thread_message_description)
+                        fields.thread_message_description = "DEFAULT";
+                    // Send API Update/Patch Request:
+                    const access_token = auth.session?.access_token
+                    if (!access_token) throw { display_error: 'Cannot update guild preferences - No access token....' };
+                    if (!dashboard.guildId) throw { display_error: 'Cannot update guild preferences - No guild selected....' };
+
+                    console.info('Sending API Req', { fields })
+
+                    const result = await API.patch<APIResponseValue>(`/guilds/${dashboard.guildId}/preferences`, { data: fields }, {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`
+                        }
+                    })
+
+                    // Read API Req Results:
+                    if (result.data.success) {
+                        console.info('API Success', result.data)
+                        submitState.value = 'success'
+                    } else throw { display_error: 'API Request - Failed - ' + result.data.error }
+                }
+            } catch (err: any) {
+                // Submission - Error:
+                const display_error = err?.display_error
+                // Show Alert:
+                submitState.value = 'failed'
+                const notifier = useNotifier();
+                notifier.send({
+                    level: 'error',
+                    header: 'Failed to Update!',
+                    content: display_error
+                        ? `We failed to update your server's preferences! <br> <span class="text-xs opacity-55"> Reason: ${display_error} </span>`
+                        : `We failed to update your server's preferences! <br> <span class="text-xs opacity-55"> Reason: UNKNOWN </span>`,
+                    actions: [
+                        {
+                            button: { title: 'Get Support', href: externalUrls.discordServer.supportInvite }
+                        }
+                    ]
+                })
+            } finally {
+                // Reset Submit State:
+                setTimeout(() => {
+                    submitState.value = 'idle'
+                }, 2_000)
+            }
         }
 
         return {
@@ -66,6 +135,7 @@
             values,
             errors,
             validateFields,
+            submitState,
             submit,
         }
     }
@@ -77,11 +147,11 @@
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
         console.info('Preferences Tab Mounted')
-        preferenceForm.values.accentColor = '#f777f3'
-        preferenceForm.values.publicSessions = true
-        preferenceForm.values.addToCalendarButton = true
-        preferenceForm.values.threadStartMessageTitle = 'DEFAULT'
-        preferenceForm.values.threadStartMessageDescription = 'DEFAULT'
+        preferenceForm.values.accent_color = '#f777f3'
+        preferenceForm.values.public_sessions = true
+        preferenceForm.values.calendar_button = true
+        preferenceForm.values.thread_message_title = 'DEFAULT'
+        preferenceForm.values.thread_message_description = 'DEFAULT'
     })
 
 </script>
@@ -120,28 +190,28 @@
 
 
                 <!-- Input - Public Sessions -->
-                <PublicSessions v-model:field-value="preferenceForm.values.publicSessions"
-                    :input-errors="preferenceForm.errors.value.get('publicSessions') || []"
-                    @validate="preferenceForm.validateFields(['publicSessions'])" />
+                <PublicSessions v-model:field-value="preferenceForm.values.public_sessions"
+                    :input-errors="preferenceForm.errors.value.get('public_sessions') || []"
+                    @validate="preferenceForm.validateFields(['public_sessions'])" />
 
 
                 <!-- Input - Enable Add to Calendar Button -->
-                <AddToCalendar v-model:field-value="preferenceForm.values.addToCalendarButton"
-                    :input-errors="preferenceForm.errors.value.get('addToCalendarButton') || []"
-                    @validate="preferenceForm.validateFields(['addToCalendarButton'])" />
+                <AddToCalendar v-model:field-value="preferenceForm.values.calendar_button"
+                    :input-errors="preferenceForm.errors.value.get('calendar_button') || []"
+                    @validate="preferenceForm.validateFields(['calendar_button'])" />
 
 
                 <!-- Input - Accent Color -->
-                <AccentColor v-model:field-value="preferenceForm.values.accentColor"
-                    :input-errors="preferenceForm.errors.value.get('accentColor') || []"
-                    @validate="preferenceForm.validateFields(['accentColor'])" :subscription />
+                <AccentColor v-model:field-value="preferenceForm.values.accent_color"
+                    :input-errors="preferenceForm.errors.value.get('accent_color') || []"
+                    @validate="preferenceForm.validateFields(['accent_color'])" :subscription />
 
 
                 <!-- Input - Thread Start Message -->
-                <ThreadStartMessage v-model:field-title="preferenceForm.values.threadStartMessageTitle"
-                    v-model:field-description="preferenceForm.values.threadStartMessageDescription"
+                <ThreadStartMessage v-model:field-title="preferenceForm.values.thread_message_title"
+                    v-model:field-description="preferenceForm.values.thread_message_description"
                     :input-errors="preferenceForm.errors.value" :subscription
-                    @validate="preferenceForm.validateFields(['threadStartMessageTitle', 'threadStartMessageDescription'])" />
+                    @validate="preferenceForm.validateFields(['thread_message_title', 'thread_message_description'])" />
 
 
                 <!-- Input / Details - Subscription Plan -->
@@ -152,8 +222,13 @@
                 <span class="form-actions-footer">
 
                     <!-- Submit/Save -->
-                    <Button unstyled type="submit"
-                        class="bg-zinc-500/80 flex items-center justify-center gap-0.75 p-1 rounded-md cursor-pointer active:scale-95 transition-all drop-shadow-md drop-shadow-black/40">
+                    <Button unstyled type="submit" :disabled="preferenceForm.submitState.value != 'idle'"
+                        class="bg-zinc-500/80 flex items-center justify-center gap-0.75 p-1 rounded-md cursor-pointer active:scale-95 transition-all drop-shadow-md drop-shadow-black/40"
+                        :class="{
+                            'scale-95! opacity-50!': preferenceForm.submitState.value == 'failed',
+                            'bg-red-400!': preferenceForm.submitState.value == 'failed',
+                            'bg-emerald-500!': preferenceForm.submitState.value == 'success',
+                        }" @click="preferenceForm.submit">
                         <!-- <Iconify /> -->
                         <CheckIcon :size="20" />
                         <p class="flex sm:hidden!"> Save </p>
