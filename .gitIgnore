@@ -2,4 +2,8 @@
 node_modules/
 private*
 *.private*
+
 apps/backend/src/utils/migration/**
+
+apps/docs/.vitepress/cache
+apps/docs/.vitepress/dist
