@@ -2,7 +2,6 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowLeftCircleIcon, ArrowRightCircleIcon, XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import { number } from 'motion-v';
     import { Popover, type PopoverMethods } from 'primevue';
     import { RRule } from 'rrule';
     import DayViewDialog from './dayView/DayViewDialog.vue';

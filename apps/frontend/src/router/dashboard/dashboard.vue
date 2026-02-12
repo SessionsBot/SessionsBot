@@ -3,7 +3,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import DashboardNav from './components/nav/dashboardNav.vue';
     import SelectServer from './components/selectServer.vue';
-    import DashboardTabView from './tabs/dashboardTabView.vue';
+    import DashboardTabView from './dashboardTabView.vue';
     import { useAuthStore } from '@/stores/auth';
     import { TriangleAlertIcon } from 'lucide-vue-next';
     import useNotifier from '@/stores/notifier';

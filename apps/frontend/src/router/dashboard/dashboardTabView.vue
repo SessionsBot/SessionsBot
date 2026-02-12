@@ -1,11 +1,11 @@
 <script lang="ts" setup>
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import SessionForm from '../components/sessionForm/sesForm.vue';
-    import SessionsTab from './sessions/sessionsTab.vue';
-    import CalendarTab from './calendar/calendarTab.vue';
-    import AuditLogTab from './auditLog/auditLogTab.vue';
-    import NotificationsTab from './notifications/notificationsTab.vue';
-    import PreferencesTab from './preferences/preferencesTab.vue';
+    import SessionForm from './components/sessionForm/sesForm.vue';
+    import SessionsTab from './tabs/sessions/sessionsTab.vue';
+    import CalendarTab from './tabs/calendar/calendarTab.vue';
+    import AuditLogTab from './tabs/auditLog/auditLogTab.vue';
+    import NotificationsTab from './tabs/notifications/notificationsTab.vue';
+    import PreferencesTab from './tabs/preferences/preferencesTab.vue';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -58,26 +58,26 @@
                     <p class="text-xs italic"> Please Wait</p>
                 </div>
             </div>
-
-
-
-            <!-- Main Page Content -->
-            <div v-else
-                class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
-
-                <TransitionGroup name="slide" type="animation">
-                    <!-- <KeepAlive key="tab_keep_alive"> -->
-                    <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
-                    <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
-                    <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
-                    <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
-                    <PreferencesTab v-else-if="currentTab == 'Preferences'" key="preferences_tab" />
-                    <!-- </KeepAlive> -->
-                </TransitionGroup>
-
-
-            </div>
         </Transition>
+
+
+        <!-- Main Page Content -->
+        <div v-if="guildDataState?.allReady"
+            class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
+
+            <TransitionGroup name="dashboard-tab" type="transition">
+                <!-- <KeepAlive key="tab_keep_alive"> -->
+                <SessionsTab v-if="currentTab == 'Sessions'" key="sessions_tab" />
+                <CalendarTab v-else-if="currentTab == 'Calendar'" key="calendar_tab" />
+                <NotificationsTab v-else-if="currentTab == 'Notifications'" key="notifications_tab" />
+                <AuditLogTab v-else-if="currentTab == 'AuditLog'" key="audit_log_tab" />
+                <PreferencesTab v-else-if="currentTab == 'Preferences'" key="preferences_tab" />
+                <!-- </KeepAlive> -->
+            </TransitionGroup>
+
+
+        </div>
+
 
         <!-- Dialogs/Forms -->
         <SessionForm />
@@ -99,5 +99,30 @@
         @apply flex !p-5 flex-col flex-wrap !w-full !max-w-full !min-h-fit grow flex-1 justify-start items-center content-center;
     }
 
+    /* Dashboard Tab - Animation */
+    .dashboard-tab-enter-from {
+        transform: translate(40px);
+        opacity: 0;
+    }
+
+    .dashboard-tab-enter-to,
+    .dashboard-tab-leave-from {
+        transform: translate(0px);
+        opacity: 1;
+    }
+
+    .dashboard-tab-leave-to {
+        transform: translate(-40px);
+        opacity: 0;
+    }
+
+    .dashboard-tab-enter-active {
+        transition: all .33s ease .33s;
+    }
+
+    .dashboard-tab-leave-active {
+        transition: all .33s ease;
+        position: absolute;
+    }
 
 </style>
