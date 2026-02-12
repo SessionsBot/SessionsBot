@@ -1,16 +1,18 @@
 <script lang="ts" setup>
     import z from 'zod';
-    import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
-    import { RegExp_HexColorCode } from '@sessionsbot/shared';
-    import type { InputMask, PopoverMethods } from 'primevue';
+    import { RegExp_HexColorCode, type SubscriptionLevelType } from '@sessionsbot/shared';
+    import type { PopoverMethods } from 'primevue';
     import InputLabel from '../inputLabel.vue';
+    import useNotifier from '@/stores/notifier';
 
 
-
+    // Services:
+    const notifier = useNotifier();
 
     // Props
     const props = defineProps<{
         inputErrors: string[]
+        subscription: SubscriptionLevelType
     }>()
 
     // Field Value - Modal:
@@ -44,6 +46,25 @@
         }
     }
 
+
+    // Method - Attempt Edit:
+    function attemptEdit(e: Event) {
+        // Check if subscription plan allows edit:
+        if (!props.subscription.limits.CUSTOM_ACCENT_COLOR) {
+            // Alert un-allowed:
+            notifier.send({
+                level: 'upgrade',
+                header: 'Premium Feature!',
+                content: `Unfortunately your current subscription plan <b>doesn't allow for you to customize this option</b>! <br> <span class="w-full opacity-50 text-xs italic"> Consider upgrading today - Cancel Anytime!</span>`
+            })
+
+        } else {
+            // Allowed - Open Edit Panel:
+            selectColorPopoverRef.value?.toggle(e)
+        }
+    }
+
+
     // Dynamic Hex Code Text Color:
     const hexCodeTextColor = computed(() => {
         if (!fieldValue.value) return '#ffffff'
@@ -76,7 +97,7 @@
         <div class="input">
 
             <!-- Simulated Input -->
-            <div @click="selectColorPopoverRef?.toggle" name="accentColor"
+            <div @click="attemptEdit" name="accentColor"
                 class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
                 :class="{
                     'border-indigo-400!': selectColorPopoverIsActive,

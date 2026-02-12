@@ -1,20 +1,20 @@
 <script lang="ts" setup>
     import InputLabel from '../../inputLabel.vue';
     import type { PreferenceFormFields } from '../../../preferencesTab.vue';
-    import useDashboardStore from '@/stores/dashboard/dashboard';
     import useNotifier from '@/stores/notifier';
     import { XIcon } from 'lucide-vue-next';
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
     import MessagePreview from './DiscordEditor/Previewer.vue'
     import ReplaceableTextKey from './ReplaceableTextKey.vue';
+    import type { SubscriptionLevelType } from '@sessionsbot/shared';
 
     // Services:
-    const dashboard = useDashboardStore();
     const notifier = useNotifier();
 
     // Props
     const props = defineProps<{
-        inputErrors: Map<PreferenceFormFields, string[] | undefined>
+        inputErrors: Map<PreferenceFormFields, string[] | undefined>,
+        subscription: SubscriptionLevelType
     }>()
 
     // Field Value - Modal:
@@ -75,8 +75,7 @@
         const isVisible = ref<boolean>(false)
 
         function attemptEdit() {
-            const subscription = dashboard.guildData.subscription.state
-            if (!subscription || !subscription.limits.CUSTOM_THREAD_START_MESSAGE) {
+            if (!props.subscription || !props.subscription.limits.CUSTOM_THREAD_START_MESSAGE) {
                 // not allowed - alert upgrade:
                 notifier.send({
                     level: 'upgrade',

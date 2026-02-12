@@ -1,12 +1,17 @@
 <script lang="ts" setup>
     import { z } from 'zod'
     import { CheckIcon } from 'lucide-vue-next';
-    import { RegExp_HexColorCode } from '@sessionsbot/shared';
+    import { RegExp_HexColorCode, type SubscriptionLevelType } from '@sessionsbot/shared';
     import PublicSessions from './inputs/fieldGroups/publicSessions.vue';
     import AccentColor from './inputs/fieldGroups/accentColor.vue';
     import AddToCalendar from './inputs/fieldGroups/addToCalendar.vue';
     import ThreadStartMessage from './inputs/fieldGroups/threadMessage/threadStartMessage.vue';
     import SubscriptionPlan from './inputs/fieldGroups/subscriptionPlan.vue';
+    import useDashboardStore from '@/stores/dashboard/dashboard';
+
+    // Services:
+    const dashboard = useDashboardStore();
+    const subscription = computed(() => dashboard.guildData.subscription.state as SubscriptionLevelType)
 
     // Root Preference Form States & Methods:
     const usePreferencesForm = () => {
@@ -129,13 +134,13 @@
                 <!-- Input - Accent Color -->
                 <AccentColor v-model:field-value="preferenceForm.values.accentColor"
                     :input-errors="preferenceForm.errors.value.get('accentColor') || []"
-                    @validate="preferenceForm.validateFields(['accentColor'])" />
+                    @validate="preferenceForm.validateFields(['accentColor'])" :subscription />
 
 
                 <!-- Input - Thread Start Message -->
                 <ThreadStartMessage v-model:field-title="preferenceForm.values.threadStartMessageTitle"
                     v-model:field-description="preferenceForm.values.threadStartMessageDescription"
-                    :input-errors="preferenceForm.errors.value"
+                    :input-errors="preferenceForm.errors.value" :subscription
                     @validate="preferenceForm.validateFields(['threadStartMessageTitle', 'threadStartMessageDescription'])" />
 
 

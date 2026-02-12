@@ -93,6 +93,9 @@ export const SubscriptionLevel: Record<SubscriptionPlanName, {
 } as const;
 
 
+/** {@link SubscriptionLevel} Type / Interface */
+export type SubscriptionLevelType = typeof SubscriptionLevel[SubscriptionPlanName]
+
 /** **Util:** Get Subscription Plan/Limits from a Discord Interaction */
 export const getSubscriptionFromInteraction = (i: BaseInteraction) => {
     const activeSubscriptions = i.entitlements.filter(e => (e.isActive() && e.isGuildSubscription)).map(s => s.skuId);

@@ -172,7 +172,12 @@ const useNotifier = defineStore('notifier', () => {
         for (const [id, existing] of notifications.value.entries()) {
             if (
                 existing.header === notificationOpts.header &&
-                existing.content === notificationOpts.content &&
+                (
+                    (typeof existing.content == 'object' &&
+                        typeof notificationOpts.content == 'object' &&
+                        existing.content?.template == notificationOpts.content?.template)
+                    || (typeof notificationOpts.content == 'string' && notificationOpts.content == existing.content)
+                ) &&
                 existing.level === notificationOpts.level
             ) {
                 console.warn("Prevented duplicate notification");

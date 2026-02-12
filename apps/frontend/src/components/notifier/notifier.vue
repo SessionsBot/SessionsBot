@@ -9,18 +9,16 @@
     const notifier = useNotifier()
     const { notifications } = storeToRefs(notifier)
 
-    let levelOpts = ['default', 'upgrade', 'warn', 'error', 'info',]
-    // const getRandomLevel = () => opts[Math.floor((opts.length * Math.random()))]
-    let cursor = 0;
-    let maxCursor = levelOpts.length
+    // Testing:
+    let sendTests = false;
+
+    let availableLevels = ['default', 'upgrade', 'warn', 'error', 'info']
+    let levelCursor = 0;
     const getRandomLevel = () => {
-        let level = levelOpts[cursor]
-        let newCursor = cursor + 1
-        if (newCursor >= maxCursor + 1) {
-            newCursor = 0
-        }
-        cursor = newCursor
-        return level
+        if (levelCursor >= availableLevels.length) levelCursor = 0;
+        const returnLevel = availableLevels[levelCursor];
+        levelCursor += 1
+        return returnLevel
     }
     const getRandomActions = () => {
         let count = Math.floor(Math.random() * 3) // random 0-2
@@ -43,7 +41,6 @@
         return r
     }
 
-
     const baseText = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, autem tempore! Itaque quos architecto provident recusandae sapiente consequatur quo excepturi fugit corporis maxime nam id voluptatem, accusantium quia commodi veniam facere eos sunt consequuntur, ut reiciendis inventore similique at! Alias."
     const randomText = (min = 5, max?: number) => {
         const fullLength = baseText.length;
@@ -52,9 +49,9 @@
         return baseText.slice(randomStart, randomEnd)
     }
 
-    // Testing:
+
+    // on mount - tests
     let intervalId = ref<NodeJS.Timeout>()
-    let sendTests = false;
     onMounted(() => {
         // Send Cookie Prompt:
         // if (!sendTests) return
@@ -64,7 +61,7 @@
             // send random test notification:
             notifier.send({
                 header: 'Notification!',
-                content: 'Example content! ' + randomText(0, 0),
+                content: randomText(),
                 level: getRandomLevel() as any,
                 actions: getRandomActions(),
                 duration: 15
