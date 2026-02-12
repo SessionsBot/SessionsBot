@@ -16,11 +16,6 @@
         validate: []
     }>()
 
-    onMounted(() => {
-        console.info('REASSIGNING SERVER SUBSCRIPTION LEVEL!')
-        dashboard.guildData.subscription.state = SubscriptionLevel.FREE
-    })
-
 
 </script>
 
