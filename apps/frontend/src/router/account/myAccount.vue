@@ -14,21 +14,29 @@
 </script>
 
 <template>
-    <main class="flex flex-wrap w-full h-full flex-1 p-5 justify-center items-center content-center">
-        <Transition name="zoom" mode="out-in">
+    <main class="flex flex-col w-full flex-1 grow justify-between">
 
-            <!-- Main Account Panel -->
-            <AccountPanel v-if="auth.signedIn" v-model:deleteDataDialogVisible="deleteDataDialogVisible" />
+        <!-- Content Area -->
+        <span class="flex items-center justify-center flex-col gap-1 p-5 grow flex-1 w-full">
 
-            <!-- Sign In - No Account Panel -->
-            <SignInCard v-else />
+            <Transition name="zoom" mode="out-in">
 
-        </Transition>
+                <!-- Main Account Panel -->
+                <AccountPanel v-if="auth.signedIn" v-model:deleteDataDialogVisible="deleteDataDialogVisible" />
 
+                <!-- Sign In - No Account Panel -->
+                <SignInCard v-else />
 
+            </Transition>
+
+        </span>
 
         <!-- Delete Data - Dialog -->
         <DeleteData v-model:is-visible="deleteDataDialogVisible" />
+
+
+        <!-- Footer -->
+        <SiteFooter />
     </main>
 </template>
 

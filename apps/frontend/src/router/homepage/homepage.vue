@@ -7,7 +7,8 @@
 </script>
 
 <template>
-  <main class="flex-1 text-gray-100 flex-col flex-wrap! justify-between items-center mb-8">
+  <main class="flex flex-1 flex-col grow w-full h-full justify-between items-center text-gray-100">
+
 
     <!-- Hero Section -->
     <div class="flex justify-center items-center flex-col flex-wrap flex-1">
@@ -64,7 +65,8 @@
           </template>
           <template #content>
             <p class="text-gray-300/70">
-              Configure multiple session schedules, signup channels, custom session rsvps, and more for completley free!
+              Configure multiple session schedules, signup channels, custom session rsvps, and more for completley
+              free!
             </p>
           </template>
         </Card>
@@ -86,6 +88,10 @@
 
       </section>
     </div>
+
+
+    <!-- Site Footer -->
+    <SiteFooter class="mt-8" />
 
   </main>
 

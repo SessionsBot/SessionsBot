@@ -31,7 +31,7 @@
             <!-- Scroll to Top -->
             <Transition name="slide-up" mode="out-in">
                 <Button v-if="showScrollUp" @click="scrollToTop" unstyled title="Scroll to Top"
-                    class="p-1.5 gap-1 flex items-center justify-center fixed! bottom-3 right-3 ring-ring bg-surface ring-2 rounded-md cursor-pointer hover:bg-zinc-900 active:scale-95 transition-all">
+                    class="p-1.5 gap-1 z-3 flex items-center justify-center fixed! bottom-3 right-3 ring-ring bg-surface ring-2 rounded-md cursor-pointer hover:bg-zinc-900 active:scale-95 transition-all">
                     <ArrowUpCircleIcon class="opacity-70" :size="28" />
                 </Button>
             </Transition>
@@ -263,6 +263,9 @@
             </p>
 
         </div>
+
+        <!-- Site Footer -->
+        <SiteFooter class="mt-8!" />
     </main>
 </template>
 
