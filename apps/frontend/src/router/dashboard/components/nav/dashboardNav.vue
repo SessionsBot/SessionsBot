@@ -1,14 +1,12 @@
 <script lang="ts" setup>
-    import useDashboardStore from '@/stores/dashboard/dashboard';
+    import useDashboardStore, { type DashboardTabName } from '@/stores/dashboard/dashboard';
     import ServerDetails from './serverDetails.vue';
     import { HelpCircle } from 'lucide-vue-next';
     import DiscordLogo from '/discord-grey.png'
-    import { useAuthStore } from '@/stores/auth';
 
 
     // Services:
     const dashboard = useDashboardStore();
-    const auth = useAuthStore();
 
     // Compute - Is Small Screen:
     const { width } = useWindowSize()
@@ -19,6 +17,14 @@
 
     // Compute - Is Nav Expanded (from store):
     const navExpanded = computed(() => dashboard.nav.expanded)
+
+    // Fn - Open Tab:
+    function openTab(name: DashboardTabName) {
+        dashboard.nav.currentTab = name;
+        if (isSmallScreen.value) {
+            dashboard.nav.expanded = false
+        }
+    }
 
     watch(isSmallScreen, (isSmall) => {
         if (isSmall) dashboard.nav.expanded = false;
@@ -56,6 +62,7 @@
             </Button>
         </div>
 
+
         <!-- Selected Server - Details PopOver -->
         <div class="flex pt-1 flex-col w-full h-fit items-center justify-center">
             <p v-if="navExpanded" class=" px-1.5 text-xs uppercase font-black text-white/50 w-full pb-1.5">
@@ -79,6 +86,7 @@
             </ServerDetails>
         </div>
 
+
         <!-- Dashboard Tab View(s) -->
         <div class="pt-4 flex grow flex-col items-center justify-start bg-emerald-700/0 w-full h-full">
 
@@ -87,11 +95,10 @@
             </p>
 
             <!-- Sessions Tab -->
-            <Button title="Sessions" unstyled class="tab-view-button border-t"
-                @click="dashboard.nav.currentTab = 'Sessions'" :class="{
-                    'expanded': navExpanded,
-                    'selected': dashboard.nav.currentTab == 'Sessions'
-                }">
+            <Button title="Sessions" unstyled class="tab-view-button border-t" @click="openTab('Sessions')" :class="{
+                'expanded': navExpanded,
+                'selected': dashboard.nav.currentTab == 'Sessions'
+            }">
                 <div class="w-fit h-full aspect-square">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
                         <path fill="currentColor"
@@ -105,11 +112,10 @@
             </Button>
 
             <!-- Calendar Tab -->
-            <Button title="Calendar" unstyled class="tab-view-button" @click="dashboard.nav.currentTab = 'Calendar'"
-                :class="{
-                    'expanded': navExpanded,
-                    'selected': dashboard.nav.currentTab == 'Calendar'
-                }">
+            <Button title="Calendar" unstyled class="tab-view-button" @click="openTab('Calendar')" :class="{
+                'expanded': navExpanded,
+                'selected': dashboard.nav.currentTab == 'Calendar'
+            }">
                 <div class="w-fit h-full aspect-square">
                     <svg class="size-5.5! transition-none!" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
                         viewBox="0 0 24 24">
@@ -140,11 +146,10 @@
             </Button>
 
             <!-- Audit Log Tab -->
-            <Button title="Audit Log" unstyled class="tab-view-button" @click="dashboard.nav.currentTab = 'AuditLog'"
-                :class="{
-                    'expanded': navExpanded,
-                    'selected': dashboard.nav.currentTab == 'AuditLog'
-                }">
+            <Button title="Audit Log" unstyled class="tab-view-button" @click="openTab('AuditLog')" :class="{
+                'expanded': navExpanded,
+                'selected': dashboard.nav.currentTab == 'AuditLog'
+            }">
                 <div class="w-fit h-full aspect-square">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 48 48">
                         <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4">
@@ -157,11 +162,10 @@
             </Button>
 
             <!-- Preferences Tab -->
-            <Button title="Audit Log" unstyled class="tab-view-button" @click="dashboard.nav.currentTab = 'Preferences'"
-                :class="{
-                    'expanded': navExpanded,
-                    'selected': dashboard.nav.currentTab == 'Preferences'
-                }">
+            <Button title="Audit Log" unstyled class="tab-view-button" @click="openTab('Preferences')" :class="{
+                'expanded': navExpanded,
+                'selected': dashboard.nav.currentTab == 'Preferences'
+            }">
                 <div class="w-fit h-full aspect-square">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
                         <g fill="none" stroke="currentColor" stroke-width="2">
@@ -193,7 +197,7 @@
             </RouterLink>
 
             <!-- Give Feedback - Button -->
-            <RouterLink to="/feedback">
+            <RouterLink hidden to="/feedback">
                 <div title="Give Feedback"
                     class="flex flex-row items-center justify-center gap-1 p-1 py-0.5 cursor-pointer rounded-sm hover:bg-white/5 hover:ring-ring ring-2 ring-transparent active:scale-95"
                     :class="{ 'aspect-square': !navExpanded }">

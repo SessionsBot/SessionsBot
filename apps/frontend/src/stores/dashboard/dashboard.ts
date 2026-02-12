@@ -9,7 +9,7 @@ import router from "@/router/router";
 import useNotifier from "../notifier";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
 
-type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
+export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
 const useDashboardStore = defineStore('dashboard', () => {
     /** Private Variables */
