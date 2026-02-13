@@ -41,7 +41,6 @@ export const useCookieConsent = defineStore('cookieConsent', () => {
 
         const allowed: typeof cookies[number][] = JSON.parse(localStorage.getItem(save_key) || '[]')
         // update gtag consent:
-        // @ts-ignore
         gtag('consent', 'update', {
             'ad_storage': allowed?.includes('ad_storage') ? 'granted' : 'denied',
             'ad_user_data': allowed?.includes('ad_user_data') ? 'granted' : 'denied',

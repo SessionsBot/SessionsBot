@@ -1,0 +1,8 @@
+{
+    // "extends": ".vitepress/tsconfig",
+    "include": [
+    "**/*.ts",
+    "**/*.vue",
+    "types/**/*.d.ts"
+  ]
+}

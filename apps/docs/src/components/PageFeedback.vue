@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import z from 'zod';
-    import { useData, useRouter } from 'vitepress'
-    import { computed, onMounted, ref, Transition } from 'vue';
+    import { useData, useRoute } from 'vitepress'
+    import { computed, onMounted, ref, Transition, watch } from 'vue';
 
     // Props:
     const props = defineProps<{
@@ -10,10 +10,10 @@
 
     // Services:
     const page = useData();
-    const router = useRouter()
+    const route = useRoute()
     const pageTitle = computed(() => page.page.value?.title || 'Unknown Title')
 
-    // Feedback Options & States:
+    // Feedback Form Options & States:
     const pageIsHelpful = ref<null | true | false>(null)
     const reasonTextValue = ref<string>('')
     const reasonTextValueMaxCharacters = 95
@@ -28,55 +28,79 @@
             }
         }
     }
+    function resetForm() {
+        pageIsHelpful.value = null;
+        reasonTextValue.value = ''
+        showThanksForFeedback.value = false;
+    }
 
 
-    const formSchema = z.object({
+    // GTag Event Schema:
+    const eventSchema = z.object({
         is_helpful: z.boolean(),
-        reason: z.nullish(z.string().max(95).normalize())
+        reason: z.nullish(z.string().max(100).normalize().transform((v) => {
+            if (v?.trim()?.length == 0) {
+                return undefined
+            } else {
+                return v
+            }
+        })),
+        page_title: z.string()
     })
 
-    // Next:
-    /**
-     * - setup GA
-     * - send custom events? / spreadsheet MAYBE
-     */
-
     // Feedback Submission:
-    const submissionDelayRef = ref<NodeJS.Timeout | null>(null)
-    async function submitPageFeedback(is_helpful: boolean | null, reason: string | null) {
+
+
+    function submitPageFeedback(is_helpful: boolean | null, reason: string | null, page_title: string) {
         cancelSubmissionDelay()
         showThanksForFeedback.value = true;
-        console.info('FEEDBACK SUBMISSION SENDING!', { is_helpful, reason, pageTitle: pageTitle.value })
         // Validate Submission:
-        const validation = z.safeParse(formSchema, { is_helpful, reason })
-        // Send to analytics:
-        console.info(validation)
+
+        const validation = z.safeParse(eventSchema, { is_helpful, reason, page_title })
+        if (validation.success) {
+            // console.warn('Valid Feedback - SENT', validation.data)
+            gtag('event', 'documentation_feedback', validation.data)
+        } else {
+            console.warn('INVALID Feedback - Not Recorded..', { errors: z.treeifyError(validation.error)?.properties })
+        }
     }
 
     // Submission Delays:
+    const submissionDelayRef = ref<NodeJS.Timeout | null>(null)
+    const submissionDelayValues = ref<z.infer<typeof eventSchema> | null>(null)
     function startSubmissionDelay() {
+        submissionDelayValues.value = {
+            is_helpful: pageIsHelpful.value,
+            reason: reasonTextValue.value,
+            page_title: pageTitle.value
+        }
         submissionDelayRef.value = setTimeout(() => {
-            submitPageFeedback(pageIsHelpful.value, reasonTextValue.value)
+            // Submit after delay - w/ stored values:
+            const delayedValues = submissionDelayValues.value
+            submitPageFeedback(delayedValues.is_helpful, delayedValues.reason, delayedValues.page_title)
+            // Reset submission delays:
+            submissionDelayRef.value = null;
+            submissionDelayValues.value = null;
         }, 3_500);
     }
     function cancelSubmissionDelay() {
         if (submissionDelayRef.value) clearTimeout(submissionDelayRef.value)
         submissionDelayRef.value = null;
-    }
-    async function submitImmediately() {
-        await submitPageFeedback(pageIsHelpful.value, reasonTextValue.value)
+        submissionDelayValues.value = null;
     }
 
 
     // Reset on Route Change:
-    router.onAfterPageLoad = (async (to) => {
-        // If submit delay active - immediately submit:
+    watch(() => route.path, (to, from) => {
         if (submissionDelayRef.value) {
-            await submitImmediately()
+
+            // If delayed submit on change - submit immediately:
+            // Get delayed values:
+            const delayedValues = submissionDelayValues.value
+            submitPageFeedback(delayedValues.is_helpful, delayedValues.reason, delayedValues.page_title)
         }
-        // Reset component:
-        showThanksForFeedback.value = false;
-        pageIsHelpful.value = null;
+        // reset form / ui values:
+        resetForm()
     })
 
 </script>
@@ -183,7 +207,8 @@
                             </a>
 
                             <!-- Submit -->
-                            <button @click="submitImmediately" class="action-button">
+                            <button @click="submitPageFeedback(pageIsHelpful, reasonTextValue, pageTitle)"
+                                class="action-button">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="mr-px" width="14" height="14"
                                     viewBox="0 0 24 24">
                                     <path fill="currentColor"

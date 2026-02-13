@@ -149,11 +149,11 @@
                 <div v-for="opt of form_options" class="option-wrap">
 
                     <!-- Title & Checkbox -->
-                    <span class="w-full flex flex-row gap-1.75 items-center justify-start">
+                    <span @click="() => { if (!opt.required) { opt.allowed = !opt.allowed } }"
+                        class="w-full flex flex-row gap-1.75 items-center justify-start">
                         <!-- Checkbox -->
                         <button class="option-checkbox"
-                            :class="{ 'selected': opt.allowed, 'cursor-not-allowed!': opt.required }"
-                            @click="opt.allowed = !opt.allowed" :disabled="opt.required">
+                            :class="{ 'selected': opt.allowed, 'cursor-not-allowed!': opt.required }">
                             <Transition name="zoom">
                                 <svg v-if="opt.allowed" class="text-white/85 w-full h-full p-px"
                                     xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -166,7 +166,7 @@
                         <!-- Title -->
                         <p class="option-title"> {{ opt.title }} </p>
 
-                        <div v-if="opt.required" class="text-xs opacity-50 italic">
+                        <div v-if="opt.required" class="text-xs scale-90 right-1 relative opacity-50 italic">
                             (Always on)
                         </div>
                     </span>
@@ -230,7 +230,7 @@
 
 
     .cookie-preferences-dialog {
-        @apply max-w-150 bg-(--vp-c-bg) border border-(--vp-c-text-2) rounded-md p-4 m-10 z-55 fixed inset-0 self-center justify-self-center;
+        @apply max-w-150 max-h-[90%] bg-(--vp-c-bg) border border-(--vp-c-text-2) rounded-md p-4 m-10 z-55 fixed inset-0 self-center justify-self-center overflow-y-auto;
 
         .dialog-header {
             @apply w-full;
@@ -243,7 +243,7 @@
                 @apply w-full flex flex-col gap-0.5 p-2 bg-(--vp-c-text-3)/30 rounded-md;
 
                 .option-title {
-                    @apply flex w-fit text-lg font-semibold;
+                    @apply flex w-fit text-[14px] font-semibold;
                 }
 
                 .option-checkbox {

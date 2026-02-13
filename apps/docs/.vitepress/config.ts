@@ -21,6 +21,7 @@ export default defineConfig({
 
         sidebar: [
             {
+                collapsed: false,
                 text: 'Information',
                 items: [
                     { text: 'About Sessions Bot', link: '/about' },
@@ -31,11 +32,22 @@ export default defineConfig({
             },
 
             {
+                collapsed: false,
                 text: 'Usage',
                 items: [
 
                     { text: 'Commands', link: '/commands' },
-                    { text: 'Configurations', link: '/configurations' },
+                    {
+                        text: 'Sessions', link: '#', base: '/sessions', items: [
+                            {
+                                text: 'Schedules', link: '#schedules',
+                            },
+                            {
+                                text: 'RSVPS', link: '#rsvps'
+                            }
+                        ]
+                    },
+                    { text: 'Preferences', link: '/preferences' },
 
                 ],
             }
@@ -78,10 +90,9 @@ export default defineConfig({
         [
             'script',
             {}, `
+            // Define Data Layer & gtag:
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-EV6Y942G4B');
             // Consent Defaults:
             gtag('consent', 'default', {
                 'ad_storage': 'denied',
@@ -90,6 +101,9 @@ export default defineConfig({
                 'analytics_storage': 'denied',
                 'wait_for_update': 10000
             });
+            // Initial Event
+            gtag('js', new Date());
+            gtag('config', 'G-EV6Y942G4B');
             `
         ]
     ],
