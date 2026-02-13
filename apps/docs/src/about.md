@@ -4,9 +4,9 @@ Sessions Bot is a _Discord Application_ developed to help servers manage collabo
 
 ### What are `Sessions`?
 
-> `Sessions` == `Events` <span class="test-class bg-pink-500!">(calendar occurrence)</span>
+> `Session` = `Event` <span class="italic opacity-60 text-xs">(or any calendar occurrence)</span>
 
-Sessions can be for whatever you need them to be! Each session represents a calendar event customized to your liking with the available
+Sessions can be for whatever you need them to be! Each session represents a calendar event customized to your liking with the available options.
 
 ### Highly Customizable
 

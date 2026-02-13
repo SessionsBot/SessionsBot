@@ -1,9 +1,10 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitepress'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     srcDir: "src",
-    lang: 'EN',
 
     title: "Sessions Bot - Docs",
     description: "An informational guide for all things Sessions Bot!",
@@ -66,5 +67,44 @@ export default defineConfig({
             },
             text: 'Last Updated'
         }
+    },
+
+    head: [
+        // Google Analytics:
+        [
+            'script',
+            { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-EV6Y942G4B' }
+        ],
+        [
+            'script',
+            {}, `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-EV6Y942G4B');
+            // Consent Defaults:
+            gtag('consent', 'default', {
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'analytics_storage': 'denied',
+                'wait_for_update': 10000
+            });
+            `
+        ]
+    ],
+
+    vite: {
+        plugins: [
+            tailwindcss(),
+        ],
+        resolve: {
+            alias: {
+                '@theme': fileURLToPath(new URL('./theme', import.meta.url)),
+                '@components': fileURLToPath(new URL('../src/components', import.meta.url))
+            }
+        },
     }
 })
+
+
