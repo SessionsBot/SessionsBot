@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-    import { SubscriptionLevel } from '@sessionsbot/shared';
     import InputLabel from '../inputLabel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ExternalLinkIcon } from 'lucide-vue-next';
@@ -7,9 +6,6 @@
 
     // Services:
     const dashboard = useDashboardStore();
-
-    // Field Value - Modal:
-    // const fieldValue = defineModel<any>('field-value')
 
     // Emits:
     const emits = defineEmits<{

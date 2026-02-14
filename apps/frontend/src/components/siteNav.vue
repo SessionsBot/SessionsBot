@@ -12,6 +12,23 @@
     // Util: Close Nav Menu:
     const closeNav = (): void => nav.closeNav();
 
+    // On Color Mode Change - Apply to HTML:
+    const colorMode = useColorMode({
+        disableTransition: false,
+    })
+    watch(colorMode, (mode) => {
+        console.info('Color Mode Changed!', mode)
+        const html = document.documentElement
+
+        if (mode === 'dark') {
+            html.setAttribute('data-theme', 'dark')
+        } else if (mode === 'light') {
+            html.setAttribute('data-theme', 'light')
+        } else {
+            html.removeAttribute('data-theme')
+        }
+    }, { immediate: true })
+
 </script>
 
 <template>
@@ -224,6 +241,9 @@
                     <span> Source Code </span>
                     <ExternalLinkIcon class="inline!" :size="12" />
                 </span>
+
+                <!-- Color Mode - Toggler -->
+                <ColorModeToggle />
 
                 <p hidden class="font-medium text-white/30 text-[11px]">© {{ new Date().getFullYear() }} - Sessions Bot
                 </p>

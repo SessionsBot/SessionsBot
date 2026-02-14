@@ -78,7 +78,7 @@
                     // Valid Submission - Parse Validated Data:
                     errors.value.clear()
                     let fields = validation.data;
-                    // Default Thread Start Msg(s):
+                    // Prepare API Req Data - Default Thread Start Msg(s):
                     if (fields.thread_message_title == API_GuildPreferencesDefaults.thread_message_title)
                         fields.thread_message_title = "DEFAULT";
                     else
@@ -147,7 +147,7 @@
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
         console.info('Preferences Tab Mounted')
-        preferenceForm.values.accent_color = '#f777f3'
+        preferenceForm.values.accent_color = '#9e54e8'
         preferenceForm.values.public_sessions = true
         preferenceForm.values.calendar_button = true
         preferenceForm.values.thread_message_title = 'DEFAULT'

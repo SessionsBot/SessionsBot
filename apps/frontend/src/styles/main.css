@@ -6,6 +6,51 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Light Mode Colors */
+:root {
+
+  --c-bg-1: #D6D6D6;
+  --c-bg-2: #A8A8A8;
+  --c-bg-3: #7A7A7A;
+
+  --c-text-1: #0B0B0C;
+  --c-text-2: #2D2D31;
+  --c-text-3: #4F4F55;
+
+    --c-ring-1: #0B0B0C;
+    --c-ring-2: #2D2D31;
+    --c-ring-3: #4F4F55;
+
+  --c-brand-1: #615bd7;
+  --c-brand-2: #8683ce;
+  --c-brand-3: #302b5e;
+}
+
+
+
+/* Dark Mode Colors */
+[data-theme="dark"] {
+
+  --c-bg-1: #0B0B0C;
+  --c-bg-2: #2D2D31;
+  --c-bg-3: #4F4F55;
+
+  --c-text-1: #D6D6D6;
+  --c-text-2: #A8A8A8;
+  --c-text-3: #7A7A7A;
+
+  --c-ring-1: #D6D6D6;
+  --c-ring-2: #A8A8A8;
+  --c-ring-3: #7A7A7A;
+
+  --c-brand-1: #615bd7;
+  --c-brand-2: #8683ce;
+  --c-brand-3: #302b5e;
+
+
+}
+
+
 @theme inline {
   --color-ring: var(--color-zinc-600);
 
@@ -18,6 +63,35 @@
   --font-cut-letters: "Protest Guerrilla";
   --default-font-family: var(--font-rubik);
   
+  /* --color-*: initial; */
+
+  /* Background - App */
+  --color-bg-1: var(--c-bg-1);
+  --color-bg-2: var(--c-bg-2);
+  --color-bg-3: var(--c-bg-3);
+  --color-bg-soft: color-mix(in oklab, var(--color-bg-3), transparent 50%);
+
+  /* Text - Color */
+  --color-text-1: var(--c-text-1);
+  --color-text-2: var(--c-text-2);
+  --color-text-3: var(--c-text-3);
+  --color-text-soft: color-mix(in oklab, var(--color-text-1), transparent 50%);
+
+  /* Border - Color */
+  --color-ring-1: var(--c-ring-1);
+  --color-ring-2: var(--c-ring-2);
+  --color-ring-3: var(--c-ring-3);
+  --color-ring-soft: color-mix(in oklab, var(--color-ring-1), transparent 50%);
+
+
+  /* Color - Brand */
+    --color-brand-1: var(--c-brand-1);
+    --color-brand-2: var(--c-brand-2);
+    --color-brand-3: var(--c-brand-3);
+    --color-brand-soft: color-mix(in oklab, var(--color-brand-1), transparent 50%);
+
+
+
 
 }
 
@@ -26,13 +100,12 @@
 
 html,
 body {
-  background: var(--color-zinc-900);
+  background: var(--c-bg-1);
   /* background: radial-gradient(circle at top, #1e1b4b 0%, #111827 60%); */
-  color: white;
+  color: var(--c-text-1);
   font-family: var(--font-nunito) !important;
   box-sizing: border-box;
   position: relative;
-  color-scheme: dark !important;
 }
 
 #app {
@@ -45,7 +118,7 @@ body {
 }
 
 .p-select-label {
-  --p-select-color: white;
+  --p-select-color: var(--c-text-1);
 }
 
 .scroll-hidden {

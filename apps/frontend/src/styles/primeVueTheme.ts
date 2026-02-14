@@ -8,12 +8,12 @@ import type { PrimeVueConfiguration, PrimeVuePTOptions } from "primevue";
 const customButtonColors = {
     root: <ButtonTokenSections.Root>{
         primary: {
-            activeBackground: 'oklch(0.5500 0.2002 270.64)', /* darkest */
-            activeBorderColor: 'oklch(0.5500 0.2002 270.64)',
-            hoverBackground: 'oklch(0.6000 0.2002 270.64)', /* dark */
-            hoverBorderColor: 'oklch(0.6000 0.2002 270.64)',
-            background: 'oklch(0.6506 0.2002 270.64)', /* reg */
-            borderColor: 'oklch(0.6506 0.2002 270.64)',
+            activeBackground: 'color-mix(in oklab, var(--c-brand-1), black 14%)', /* darkest */
+            activeBorderColor: 'color-mix(in oklab, var(--c-brand-1), black 14%)',
+            hoverBackground: 'color-mix(in oklab, var(--c-brand-1), black 9%)', /* dark */
+            hoverBorderColor: 'color-mix(in oklab, var(--c-brand-1), black 9%)',
+            background: 'var(--c-brand-1)', /* reg */
+            borderColor: 'var(--c-brand-1)',
             color: 'white', activeColor: 'white', hoverColor: 'white',
             focusRing: { color: 'none', shadow: 'none' }
         },
@@ -28,22 +28,22 @@ const customButtonColors = {
             focusRing: { color: 'none', shadow: 'none' }
         },
         warn: {
-            background: "oklch(0.65 0.1547 66.12)",
-            borderColor: "oklch(0.65 0.1547 66.12)",
-            hoverBackground: "oklch(0.61 0.1547 66.12)",
-            hoverBorderColor: "oklch(0.61 0.1547 66.12)",
-            activeBackground: "oklch(0.57 0.1547 66.12)",
-            activeBorderColor: "oklch(0.57 0.1547 66.12)",
+            background: "oklch(0.63 0.1547 66.12)",
+            borderColor: "oklch(0.63 0.1547 66.12)",
+            hoverBackground: "oklch(0.57 0.1547 66.12)",
+            hoverBorderColor: "oklch(0.57 0.1547 66.12)",
+            activeBackground: "oklch(0.51 0.1547 66.12)",
+            activeBorderColor: "oklch(0.51 0.1547 66.12)",
             color: 'white', activeColor: 'white', hoverColor: 'white',
             focusRing: { color: 'none', shadow: 'none' }
         },
         success: {
-            background: "oklch(0.7 0.1455 144.47)",
-            borderColor: "oklch(0.7 0.1455 144.47)",
-            hoverBackground: "oklch(0.64 0.1455 144.47)",
-            hoverBorderColor: "oklch(0.64 0.1455 144.47)",
-            activeBackground: "oklch(0.58 0.1455 144.47)",
-            activeBorderColor: "oklch(0.58 0.1455 144.47)",
+            background: "oklch(0.58 0.175 145)",
+            borderColor: "oklch(0.58 0.1707 144.47)",
+            hoverBackground: "oklch(0.52 0.1707 144.47)",
+            hoverBorderColor: "oklch(0.52 0.1707 144.47)",
+            activeBackground: "oklch(0.48 0.1707 144.47)",
+            activeBorderColor: "oklch(0.48 0.1707 144.47)",
             color: 'white', activeColor: 'white', hoverColor: 'white',
             focusRing: { color: 'none', shadow: 'none' }
         },
@@ -116,14 +116,14 @@ const customPreset = definePreset(Aura, {
                 light: {
                     root: {
                         ...customButtonColors.root,
-                        contrast: {
-                            background: 'oklch(0.35 0.0392 257.29)',
-                            borderColor: 'oklch(0.35 0.0392 257.29)',
-                            hoverBackground: 'oklch(0.40 0.0392 257.29)',
-                            hoverBorderColor: 'oklch(0.40 0.0392 257.29)',
-                            activeBackground: 'oklch(0.45 0.0392 257.29)',
-                            activeBorderColor: 'oklch(0.45 0.0392 257.29)',
-                        }
+                        // contrast: {
+                        //     background: 'oklch(0.35 0.0392 257.29)',
+                        //     borderColor: 'oklch(0.35 0.0392 257.29)',
+                        //     hoverBackground: 'oklch(0.40 0.0392 257.29)',
+                        //     hoverBorderColor: 'oklch(0.40 0.0392 257.29)',
+                        //     activeBackground: 'oklch(0.45 0.0392 257.29)',
+                        //     activeBorderColor: 'oklch(0.45 0.0392 257.29)',
+                        // }
                     }
                 },
             },

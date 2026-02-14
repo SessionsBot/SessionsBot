@@ -1,79 +1,145 @@
 <script lang="ts" setup>
-    import DiscordEditor1 from './DiscordEditor1.vue';
     import DiscordEditor2 from './DiscordEditor/DiscordEditor.vue';
-    import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { externalUrls, useNavStore } from '@/stores/nav';
-    import { ExternalLink } from 'lucide-vue-next';
+    import StatusBadge from './StatusBadge.vue';
 
-    const nav = useNavStore();
+    const colorMode = useColorMode()
 
-    const systemStatus = computed(() => nav.systemStatus)
-
-    const statusLevel = computed(() => {
-        // Status Fetch Error
-        if (systemStatus.value.error) return { color: 'bg-purple-500', text: 'UNKNOWN Status' };
-
-        const upMonitors = systemStatus.value.state?.data.data?.up;
-        const downMonitors = systemStatus.value.state?.data.data?.down;
-        // Maintenance Ongoing:
-        if (upMonitors?.some(m => m.status?.toLowerCase()?.includes('maintenance')) || downMonitors?.some(m => m.status?.toLowerCase()?.includes('maintenance'))) return {
-            color: 'bg-sky-500', text: 'System Maintenance'
-        }
-
-        // If BACKEND is Down:
-        if (downMonitors?.some(m => m.name?.toLowerCase()?.includes('backend') && m.status.includes('down'))) return {
-            color: 'bg-red-500', text: 'MAJOR Outage'
-        }
-
-        // If ANY Monitor is Down:
-        if (downMonitors?.some(m => m.status.toLowerCase()?.includes('down'))) return {
-            color: 'bg-red-400', text: 'System(s) Down'
-        }
-
-        // If ANY Monitor is Degraded:
-        if (downMonitors?.some(m => m.status.toLowerCase()?.includes('degraded'))) return {
-            color: 'bg-amber-400', text: 'System(s) Degraded'
-        }
-
-        // Passed ALL Checks - Operational
-        return {
-            color: 'bg-emerald-400', text: "All Systems Online"
-        }
-    })
+    function toggleColorMode() {
+        if (colorMode.value == 'auto')
+            return colorMode.value = 'dark'
+        if (colorMode.value == 'dark')
+            return colorMode.value = 'light'
+        if (colorMode.value == 'light')
+            return colorMode.value = 'auto'
+    }
 
 
 </script>
 
 
 <template>
-    <div class="flex flex-col justify-center items-center content-center p-5 grow bg-emerald-500/0 w-full h-full">
+    <div class="flex flex-col gap-2 justify-center items-center content-center p-5 grow w-full h-full bg-bg-1!">
 
 
         <DiscordEditor2 hidden />
 
-        <!-- Status Indicator -->
-        <a :href="externalUrls.statusPage" target="_blank">
-            <div
-                class="bg-surface active:scale-95 transition-all border-2 select-none cursor-pointer border-ring rounded-lg p-2 gap-2 flex flex-row items-center justify-start flex-nowrap overflow-auto">
+        <StatusBadge hidden />
 
-                <!-- Status - Color -->
-                <span :class="statusLevel.color || ''"
-                    class="h-3.5 p-0.5 transition-all aspect-square rounded-full border-2 border-ring animate-pulse">
-                </span>
+        <span class="flex flex-wrap gap-4 p-4 w-full text-text-1">
 
-                <!-- Text -->
-                <p class="font-extrabold text-sm text-white/85">
-                    {{ statusLevel.text || 'Loading...' }}
-                </p>
+            <p class="w-full ">
+                Color / Theme Variables
+            </p>
 
-                <!-- External Icon -->
-                <ExternalLink class="aspect-square! w-fit! size-3! opacity-50" :stroke-width="2.5" />
+            <span class="display-area">
 
-            </div>
-        </a>
+                <p class="title"> Bg 1 </p>
+
+                <p class="text-text-1!"> Text 1 </p>
+                <p class="text-text-2!"> Text 2 </p>
+                <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-soft!"> Text S </p>
+
+            </span>
+
+
+            <span class="display-area bg-bg-2! border-ring-3!">
+
+                <p class="title"> Bg 2 </p>
+
+                <p class="text-text-1!"> Text 1 </p>
+                <p class="text-text-2!"> Text 2 </p>
+                <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-soft!"> Text S </p>
+
+            </span>
+
+            <span class="display-area bg-bg-3! border-ring-2!">
+
+                <p class="title"> Bg 3 </p>
+
+                <p class="text-text-1!"> Text 1 </p>
+                <p class="text-text-2!"> Text 2 </p>
+                <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-soft!"> Text S </p>
+
+            </span>
+
+            <span class="display-area bg-bg-soft! border-ring-2!">
+
+                <p class="title"> Bg SOFT </p>
+
+                <p class="text-text-1!"> Text 1 </p>
+                <p class="text-text-2!"> Text 2 </p>
+                <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-soft!"> Text S </p>
+
+            </span>
+
+
+            <!-- Toggle - Color Mode -->
+
+            <span class="w-full flex items-center justify-center">
+                <button class="bg-bg-2 rounded-md p-2 border-2 border-ring-soft" @click="toggleColorMode()">
+                    Mode {{ colorMode }}
+                </button>
+            </span>
+
+
+            <span class="w-full flex p-4 gap-2 flex-wrap items-center justify-center">
+                <p class="w-full text-lg font-bold"> Prime Vue Buttons </p>
+
+                <Button label="default" />
+                <Button severity="contrast" label="contrast" />
+                <Button severity="danger" label="danger" />
+                <Button severity="help" label="help" />
+                <Button severity="info" label="info" />
+                <Button severity="secondary" label="secondary" />
+                <Button severity="success" label="success" />
+                <Button severity="warn" label="warn" />
+
+
+            </span>
+
+
+            <span class="w-full flex p-4 gap-2 flex-wrap items-center justify-center">
+                <p class="w-full text-lg font-bold"> Brand Colors </p>
+
+                <div class="p-3 rounded-full bg-brand-1">
+                    Brand 1
+                </div>
+                <div class="p-3 rounded-full bg-brand-2">
+                    Brand 2
+                </div>
+                <div class="p-3 rounded-full bg-brand-3">
+                    Brand 3
+                </div>
+                <div class="p-3 rounded-full bg-brand-soft">
+                    Brand Soft
+                </div>
+
+
+            </span>
+
+
+
+        </span>
 
     </div>
 </template>
 
 
-<style scoped></style>
+<style scoped>
+
+    @reference "@/styles/main.css";
+
+    .display-area {
+        @apply flex flex-col gap-2 p-4 bg-bg-1 text-text-1 font-bold text-lg rounded-md border-2 border-ring-1;
+
+        .title {
+            @apply opacity-50 text-sm;
+        }
+    }
+
+
+</style>
