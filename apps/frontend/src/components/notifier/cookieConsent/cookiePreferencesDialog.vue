@@ -16,6 +16,7 @@
                 content: CookieInformation,
                 icon: false, // 'sidekickicons:cookie-20-solid',
                 duration: false,
+                close_button: false,
                 actions: [
                     {
                         button: {

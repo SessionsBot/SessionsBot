@@ -26,7 +26,9 @@ type NotificationOpts = {
         header?: string,
         headerIcon?: string,
         content?: string
-    }
+    },
+    /** Set to `false` to disable the default close button on the notification. */
+    close_button?: false
 
     // - In Progress
     /** If this notification should be initially displayed onto the app screen.
