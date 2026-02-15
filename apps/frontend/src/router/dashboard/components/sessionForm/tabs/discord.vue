@@ -72,7 +72,7 @@
             <div class="gap-3 p-1 px-0 w-full h-fit flex flex-wrap justify-start items-center content-center">
 
                 <Button class="postDayBtn" v-for="opt in ['Day of', 'Day before']" unstyled :title="opt"
-                    :class="{ 'bg-indigo-500/70! border-white!': postDay == opt }" @click="setPostDay(opt)">
+                    :class="{ 'bg-brand-1/80! border-text-1!': postDay == opt }" @click="setPostDay(opt)">
                     <p class="text-sm font-medium p-1"> {{ opt }} </p>
                 </Button>
 
@@ -117,7 +117,8 @@
     @reference "@/styles/main.css";
 
     .postDayBtn {
-        @apply px-2 py-1 gap-1 grow bg-zinc-800 border-2 border-white rounded-md cursor-pointer flex justify-center items-center transition-all;
+        background: color-mix(in oklab, var(--c-bg-2), black 11%);
+        @apply px-2 py-1 gap-1 grow border-2 border-ring-soft rounded-md cursor-pointer flex justify-center items-center transition-all;
     }
 
     .postDayBtn:hover {

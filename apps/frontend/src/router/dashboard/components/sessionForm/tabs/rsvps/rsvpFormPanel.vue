@@ -179,13 +179,13 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-zinc-900! text-white! ring-2! ring-ring! m-7! p-2 overflow-y-auto! overflow-x-clip!">
+        class="bg-bg-3! ring-0! border-2! border-ring-3! m-7! p-2 overflow-y-auto! overflow-x-clip!">
 
         <!-- Header -->
         <template #header class="w-full! grow!">
             <div class="flex flex-row gap-1.25 items-center justify-start grow w-full flex-wrap">
                 <UserCheckIcon :size="23" class="" />
-                <p class="font-medium text-lg"> {{ actionMode }} RSVP </p>
+                <p class="font-semibold text-lg"> {{ actionMode }} RSVP </p>
             </div>
         </template>
         <template #closebutton>
@@ -194,8 +194,7 @@
 
         <!-- Body / Form -->
 
-        <Form v-slot="$form" ref="rsvpFormRef"
-            class="flex flex-col gap-2 p-2! w-70 bg-zinc-700/25 pb-4 pt-3 rounded-md "
+        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2! w-70 bg-bg-1/35 pb-4 pt-3 rounded-md "
             :resolver="zodResolver(RsvpFormSchema)" @submit="submitRsvpForm" :initial-values="RsvpFormValues">
 
             <!-- INPUT: Title -->
@@ -265,7 +264,7 @@
                     <MultiSelect :disabled="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" name="required_roles"
                         fluid v-model="RsvpFormValues.required_roles" :options="guildRoles" option-label="name"
                         option-value="value" :show-toggle-all="false" filter
-                        class="disabled:border-2! disabled:border-ring!" />
+                        class="disabled:border-2! disabled:border-ring-soft/50!" />
                     <!-- Premium Only - Wrapper -->
                     <a v-if="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" href="./pricing" target="_blank"
                         class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-white/50 hover:text-emerald-400/70 rounded-md">

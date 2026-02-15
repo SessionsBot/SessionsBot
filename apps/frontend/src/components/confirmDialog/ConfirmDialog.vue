@@ -9,9 +9,9 @@
     <!-- Default Dialog - Headless w/ Question Icon - Red Confirm Button -->
     <ConfirmDialog class="m-7! border-none!">
         <template #container="{ message, acceptCallback, rejectCallback }">
-            <div class="flex ring-2 ring-zinc-700 flex-col items-center p-8 bg-zinc-900 text-white rounded max-w-120">
+            <div class="flex text-text-1 ring-2 ring-ring-3 flex-col items-center p-8 bg-bg-2 rounded max-w-120">
                 <div
-                    class="rounded-full bg-(--p-button-danger-background) ring-3 ring-ring text-white inline-flex justify-center items-center h-24 w-24 -mt-20">
+                    class="rounded-full bg-(--p-button-danger-background) ring-3 ring-ring-3 text-white inline-flex justify-center items-center h-24 w-24 -mt-20">
                     <Iconify v-if="message?.icon" :size="68" :icon="message?.icon" class="size-full! grow! flex!" />
                     <CircleQuestionMarkIcon v-else
                         class="grow! flex! size-max! p-3 drop-shadow-md drop-shadow-black/40" />
@@ -22,7 +22,7 @@
                 <p v-html="message.message" class="mb-0" />
                 <div class="flex items-center gap-2 mt-6">
 
-                    <Button label="Cancel" variant="outlined" severity="contrast" @click="rejectCallback"
+                    <Button label="Cancel" variant="outlined" severity="secondary" @click="rejectCallback"
                         class="w-32"></Button>
                     <Button label="Confirm" @click="acceptCallback" severity="danger" class="w-32"></Button>
                 </div>

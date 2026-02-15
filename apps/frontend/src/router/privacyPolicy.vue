@@ -31,8 +31,8 @@
             <!-- Scroll to Top -->
             <Transition name="slide-up" mode="out-in">
                 <Button v-if="showScrollUp" @click="scrollToTop" unstyled title="Scroll to Top"
-                    class="p-1.5 gap-1 z-3 flex items-center justify-center fixed! bottom-3 right-3 ring-ring bg-surface ring-2 rounded-md cursor-pointer hover:bg-zinc-900 active:scale-95 transition-all">
-                    <ArrowUpCircleIcon class="opacity-70" :size="28" />
+                    class="p-1.5 gap-1 z-3 flex items-center justify-center fixed! bottom-3 right-3 ring-ring-3 text-text-3 bg-bg-2 hover:bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-text-1)_10%)] ring-2 rounded-md cursor-pointer  active:scale-95 transition-all">
+                    <ArrowUpCircleIcon :size="28" />
                 </Button>
             </Transition>
 

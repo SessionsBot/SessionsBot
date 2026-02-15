@@ -63,11 +63,11 @@
 
 
 <template>
-    <div class="bg-surface ring-ring ring-2 rounded-md overflow-clip w-[80%] max-w-120">
+    <div class="bg-bg-soft ring-ring-3 ring-2 rounded-md overflow-clip w-[80%] max-w-120">
 
         <!-- Panel Header -->
         <header
-            class="bg-black/30 gap-1.5 p-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-b-2 border-ring">
+            class="bg-text-1/10 gap-1.5 p-2 w-full flex flex-row flex-wrap justify-between items-center content-center border-b-2 border-ring">
             <!-- Title & Icon -->
             <div class="flex flex-row gap-1.5 items-center">
                 <Iconify icon="solar:user-id-bold" />
@@ -75,7 +75,7 @@
             </div>
             <!-- Delete Button -->
             <Button unstyled title="Delete my Data" @click="deleteDataDialogVisible = !deleteDataDialogVisible"
-                class="p-1 rounded-md active:scale-95 hover:bg-white/10 hover:text-red-400/60 text-white/50 transition-all aspect-square cursor-pointer">
+                class="p-1 rounded-md active:scale-95 hover:bg-(--c-text-2)/30 hover:text-red-400/75 text-text-1/50 transition-all aspect-square cursor-pointer dark:hover:bg-(--c-text-2)/15">
                 <Iconify icon="solar:trash-bin-trash-bold" size="20" />
             </Button>
         </header>
@@ -127,7 +127,7 @@
 
             <!-- User - Icon/Avatar -->
             <div class="aspect-square w-25 sm:w-30 p-1 py-2.5">
-                <img class="w-full aspect-square rounded-full border-2 border-zinc-500"
+                <img class="w-full aspect-square rounded-full border-2 border-ring-3"
                     :src="userIconUrl || DefaultAvatar" />
             </div>
 
@@ -141,11 +141,11 @@
 
             <!-- Refresh Data -->
             <Button unstyled @click="resyncDiscordData()" title="Resync Discord Data"
-                class="bg-ring hover:bg-[#46464F] active:bg-[#3A3A42] gap-0.75! action-button"
+                class="bg-zinc-500/80 hover:bg-zinc-500/72 active:bg-zinc-500/64 gap-0.75! action-button"
                 :disabled="resyncStatus != 'idle'" :class="{
                     'opacity-50! scale-96! cursor-progress!': resyncStatus == 'busy',
                     'bg-emerald-500/80! scale-96! cursor-wait!': resyncStatus == 'succeeded',
-                    'bg-[#B34248]/90! scale-96! cursor-wait!': resyncStatus == 'failed'
+                    'bg-[#B34248]/80! scale-96! cursor-wait!': resyncStatus == 'failed'
                 }">
                 <Transition name="fade" mode="out-in" :duration="0.2">
                     <LoadingIcon v-if="resyncStatus == 'busy'" class="p-0.5" />
@@ -159,7 +159,7 @@
 
             <!-- Sign Out -->
             <Button @click="auth.signOut()" unstyled
-                class="bg-[#B34248]/90 hover:bg-[#99393D] active:bg-[#802F33] action-button">
+                class="bg-[#B34248]/80 hover:bg-[#99393D]/80 active:bg-[#802F33]/80 action-button">
                 <Iconify icon="line-md:logout" size="20" />
                 <p class="font-semibold text-sm sm:text-[16px]"> Sign Out </p>
             </Button>
@@ -169,7 +169,7 @@
 
         <!-- Footer -->
         <footer v-if="userAppRoles?.includes('admin')"
-            class="bg-black/30 text-white/45 text-[11px] text-center gap-2 sm:gap-4 p-1.5 px-2 w-full flex flex-col sm:flex-row flex-wrap justify-between items-center content-center border-t-2 border-ring">
+            class="bg-text-1/10 text-text-1/50 text-[11px] text-center gap-2 sm:gap-4 p-1.5 px-2 w-full flex flex-col sm:flex-row flex-wrap justify-between items-center content-center border-t-2 border-ring">
             <p class="w-full sm:w-fit">
                 <b>UID:</b> {{ user?.id }}
             </p>
@@ -191,7 +191,7 @@
     @reference "@/styles/main.css";
 
     .detail-field-title {
-        @apply text-xs px-1 py-px font-extrabold uppercase bg-black/10 text-white/70 rounded-md ring ring-ring;
+        @apply text-xs px-1 py-px font-extrabold uppercase bg-text-1/10 text-text-1/70 rounded-md ring ring-ring;
     }
 
     .detail-field-value {

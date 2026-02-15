@@ -21,7 +21,7 @@
         return returnLevel
     }
     const getRandomActions = () => {
-        let count = Math.floor(Math.random() * 3) // random 0-2
+        let count = Math.floor(Math.random() * 1) // random 0-2
 
         let r = []
         for (let i = 0; i < count; i++) {
@@ -29,7 +29,7 @@
                 {
                     button: {
                         title: 'Example',
-                        class: 'bg-emerald-500/70! hover:bg-emerald-500/50! text-white!',
+                        // class: 'bg-emerald-500/70! hover:bg-emerald-500/50! text-white!',
                         icon: 'material-symbols:check'
                     },
                     onClick(e: Event, ctx: any) {
@@ -162,7 +162,7 @@
                     <span v-if="(!data.actions || !data.actions?.length) && data.level == 'upgrade'"
                         class="flex flex-row items-center justify-center gap-2.25 w-fit!">
                         <a :href="externalUrls.discordStore" target="_blank">
-                            <Button unstyled class="bg-indigo-500/90! hover:bg-indigo-500/70! action-button">
+                            <Button unstyled class="bg-brand-1/90! hover:bg-brand-1/80! text-text-1/90! action-button">
                                 <Iconify icon="grommet-icons:upgrade" :size="17" />
                                 <p>
                                     Upgrade Now!
@@ -195,7 +195,7 @@
     }
 
     .notification-card {
-        @apply max-w-95 bg-zinc-800 w-full p-2.5 pt-2 gap-0.5 border-2 border-ring rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
+        @apply max-w-95 bg-bg-2 w-full p-2.5 pt-2 gap-0.5 border-2 border-ring-3 rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
 
         @apply drop-shadow-xl drop-shadow-black/25;
 
@@ -246,11 +246,11 @@
         @apply flex w-full flex-row gap-1 flex-nowrap items-start justify-between;
 
         .close-button {
-            @apply rounded-md hover:bg-zinc-400/20 transition-all cursor-pointer active:scale-95 !flex !self-start justify-self-end;
+            @apply rounded-md hover:bg-bg-3/50 transition-all cursor-pointer active:scale-95 !flex !self-start justify-self-end;
         }
 
         .close-icon {
-            @apply p-1 text-white/50 transition-all;
+            @apply p-1 text-text-1/50 transition-all;
         }
 
         .header-wrap {
@@ -270,7 +270,7 @@
         @apply w-full flex flex-row items-start justify-center gap-2.25 pt-1.75 pb-0.75 flex-wrap;
 
         .action-button {
-            @apply flex bg-zinc-600 relative hover:bg-zinc-600/80 drop-shadow-sm drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
+            @apply flex bg-bg-3 relative hover:bg-bg-3/80 drop-shadow-sm drop-shadow-black/15 dark:drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
 
             p {
                 @apply text-sm font-bold;

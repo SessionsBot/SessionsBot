@@ -1,19 +1,6 @@
 <script lang="ts" setup>
     import DiscordEditor2 from './DiscordEditor/DiscordEditor.vue';
     import StatusBadge from './StatusBadge.vue';
-
-    const colorMode = useColorMode()
-
-    function toggleColorMode() {
-        if (colorMode.value == 'auto')
-            return colorMode.value = 'dark'
-        if (colorMode.value == 'dark')
-            return colorMode.value = 'light'
-        if (colorMode.value == 'light')
-            return colorMode.value = 'auto'
-    }
-
-
 </script>
 
 
@@ -24,6 +11,8 @@
         <DiscordEditor2 hidden />
 
         <StatusBadge hidden />
+
+        <ColorModeToggle />
 
         <span class="flex flex-wrap gap-4 p-4 w-full text-text-1">
 
@@ -43,7 +32,7 @@
             </span>
 
 
-            <span class="display-area bg-bg-2! border-ring-3!">
+            <span class="display-area bg-bg-2! border-ring-2!">
 
                 <p class="title"> Bg 2 </p>
 
@@ -54,7 +43,7 @@
 
             </span>
 
-            <span class="display-area bg-bg-3! border-ring-2!">
+            <span class="display-area bg-bg-3! border-ring-3!">
 
                 <p class="title"> Bg 3 </p>
 
@@ -65,7 +54,7 @@
 
             </span>
 
-            <span class="display-area bg-bg-soft! border-ring-2!">
+            <span class="display-area bg-bg-soft! border-ring-soft!">
 
                 <p class="title"> Bg SOFT </p>
 
@@ -79,12 +68,6 @@
 
             <!-- Toggle - Color Mode -->
 
-            <span class="w-full flex items-center justify-center">
-                <button class="bg-bg-2 rounded-md p-2 border-2 border-ring-soft" @click="toggleColorMode()">
-                    Mode {{ colorMode }}
-                </button>
-            </span>
-
 
             <span class="w-full flex p-4 gap-2 flex-wrap items-center justify-center">
                 <p class="w-full text-lg font-bold"> Prime Vue Buttons </p>
@@ -97,6 +80,28 @@
                 <Button severity="secondary" label="secondary" />
                 <Button severity="success" label="success" />
                 <Button severity="warn" label="warn" />
+
+
+                <Button outlined label="default" />
+                <Button outlined severity="contrast" label="contrast" />
+                <Button outlined severity="danger" label="danger" />
+                <Button outlined severity="help" label="help" />
+                <Button outlined severity="info" label="info" />
+                <Button outlined severity="secondary" label="secondary" />
+                <Button outlined severity="success" label="success" />
+                <Button outlined severity="warn" label="warn" />
+
+                <Button text label="default" />
+                <Button text severity="contrast" label="contrast" />
+                <Button text severity="danger" label="danger" />
+                <Button text severity="help" label="help" />
+                <Button text severity="info" label="info" />
+                <Button text severity="secondary" label="secondary" />
+                <Button text severity="success" label="success" />
+                <Button text severity="warn" label="warn" />
+
+
+
 
 
             </span>

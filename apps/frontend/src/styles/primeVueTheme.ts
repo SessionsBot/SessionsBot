@@ -14,7 +14,7 @@ const customButtonColors = {
             hoverBorderColor: 'color-mix(in oklab, var(--c-brand-1), black 9%)',
             background: 'var(--c-brand-1)', /* reg */
             borderColor: 'var(--c-brand-1)',
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         secondary: {
@@ -24,7 +24,7 @@ const customButtonColors = {
             hoverBorderColor: 'oklch(0.55 0 298.58 / 90%)',
             background: 'oklch(0.60 0 298.58 / 90%)', /* reg */
             borderColor: 'oklch(0.60 0 298.58 / 90%)',
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         warn: {
@@ -34,7 +34,7 @@ const customButtonColors = {
             hoverBorderColor: "oklch(0.57 0.1547 66.12)",
             activeBackground: "oklch(0.51 0.1547 66.12)",
             activeBorderColor: "oklch(0.51 0.1547 66.12)",
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         success: {
@@ -44,7 +44,7 @@ const customButtonColors = {
             hoverBorderColor: "oklch(0.52 0.1707 144.47)",
             activeBackground: "oklch(0.48 0.1707 144.47)",
             activeBorderColor: "oklch(0.48 0.1707 144.47)",
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         help: {
@@ -54,7 +54,7 @@ const customButtonColors = {
             hoverBorderColor: "oklch(0.65 0.1469 103.09)",
             activeBackground: "oklch(0.59 0.1469 103.09)",
             activeBorderColor: "oklch(0.59 0.1469 103.09)",
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         contrast: {
@@ -64,7 +64,7 @@ const customButtonColors = {
             hoverBorderColor: 'oklch(0.36 0.0074 257.29)',
             activeBackground: 'oklch(0.42 0.0074 257.29)',
             activeBorderColor: 'oklch(0.42 0.0074 257.29)',
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         info: {
@@ -74,7 +74,7 @@ const customButtonColors = {
             hoverBorderColor: 'oklch(0.49 0.1323 252)',
             activeBackground: 'oklch(0.43 0.1323 252)',
             activeBorderColor: 'oklch(0.43 0.1323 252)',
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
         },
         danger: {
@@ -84,10 +84,116 @@ const customButtonColors = {
             hoverBorderColor: 'oklch(0.49 0.1554 22.97)',
             activeBackground: 'oklch(0.43 0.1554 22.97)',
             activeBorderColor: 'oklch(0.43 0.1554 22.97)',
-            color: 'white', activeColor: 'white', hoverColor: 'white',
+            color: 'var(--c-text-1)', activeColor: 'var(--c-text-1)', hoverColor: 'var(--c-text-1)',
             focusRing: { color: 'none', shadow: 'none' }
-        }
-    }
+        },
+    },
+
+    outlined: <ButtonTokenSections.Outlined>{
+        contrast: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.3 0.0074 257.29)',
+            hoverBackground: 'oklch(0.36 0.0074 257.29 / 20%)',
+            activeBackground: 'oklch(0.42 0.0074 257.29 / 20%)',
+        },
+        danger: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.55 0.1554 22.97)',
+            hoverBackground: 'oklch(0.49 0.1554 22.97 / 20%)',
+            activeBackground: 'oklch(0.43 0.1554 22.97 / 23%)'
+        },
+        help: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.71 0.1469 103.09)',
+            hoverBackground: 'oklch(0.65 0.1469 103.09 / 20%)',
+            activeBackground: 'oklch(0.59 0.1469 103.09 / 23%)'
+        },
+        info: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.55 0.1323 252)',
+            hoverBackground: 'oklch(0.49 0.1323 252 / 20%)',
+            activeBackground: 'oklch(0.43 0.1323 252 / 23%)'
+        },
+        plain: {
+            color: 'var(--c-text-1)',
+            borderColor: 'var(--c-text-1)',
+            hoverBackground: 'color-mix(in oklab, var(--c-text-2) 20%, transparent)',
+            activeBackground: 'color-mix(in oklab, var(--c-text-2) 23%, transparent)'
+        },
+        primary: {
+            color: 'var(--c-text-1)',
+            borderColor: 'var(--c-brand-1)',
+            hoverBackground: 'color-mix(in oklab, var(--c-brand-1) 20%, transparent)',
+            activeBackground: 'color-mix(in oklab, var(--c-brand-1) 23%, transparent)'
+        },
+        secondary: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.60 0 298.58 / 90%)',
+            hoverBackground: 'oklch(0.55 0 298.58 / 20%)',
+            activeBackground: 'oklch(0.50 0 298.58 / 23%)'
+        },
+        success: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.58 0.1707 144.47)',
+            hoverBackground: 'oklch(0.52 0.1707 144.47 / 20%)',
+            activeBackground: 'oklch(0.52 0.1707 144.47 / 23%)'
+        },
+        warn: {
+            color: 'var(--c-text-1)',
+            borderColor: 'oklch(0.63 0.1547 66.12)',
+            hoverBackground: 'oklch(0.57 0.1547 66.12 / 20%)',
+            activeBackground: 'oklch(0.51 0.1547 66.12 / 23%)'
+        },
+    },
+
+    text: <ButtonTokenSections.Text>{
+        contrast: {
+            color: 'oklch(0.36 0.0074 257.29 / 85%)',
+            hoverBackground: 'oklch(0.36 0.0074 257.29 / 20%)',
+            activeBackground: 'oklch(0.42 0.0074 257.29 / 20%)'
+        },
+        danger: {
+            color: 'oklch(0.49 0.1554 22.97 / 85%)',
+            hoverBackground: 'oklch(0.49 0.1554 22.97 / 20%)',
+            activeBackground: 'oklch(0.43 0.1554 22.97 / 23%)'
+        },
+        help: {
+            color: 'oklch(0.65 0.1469 103.09 / 85%)',
+            hoverBackground: 'oklch(0.65 0.1469 103.09 / 20%)',
+            activeBackground: 'oklch(0.59 0.1469 103.09 / 23%)'
+        },
+        info: {
+            color: 'oklch(0.49 0.1323 252 / 85%)',
+            hoverBackground: 'oklch(0.49 0.1323 252 / 20%)',
+            activeBackground: 'oklch(0.43 0.1323 252 / 23%)'
+        },
+        plain: {
+            color: 'color-mix(in oklab, var(--c-text-2) 85%, transparent)',
+            hoverBackground: 'color-mix(in oklab, var(--c-text-2) 20%, transparent)',
+            activeBackground: 'color-mix(in oklab, var(--c-text-2) 23%, transparent)'
+        },
+        primary: {
+            color: 'color-mix(in oklab, var(--c-brand-1) 85%, transparent)',
+            hoverBackground: 'color-mix(in oklab, var(--c-brand-1) 20%, transparent)',
+            activeBackground: 'color-mix(in oklab, var(--c-brand-1) 23%, transparent)'
+        },
+        secondary: {
+            color: 'oklch(0.55 0 298.58 / 85%)',
+            hoverBackground: 'oklch(0.55 0 298.58 / 20%)',
+            activeBackground: 'oklch(0.50 0 298.58 / 23%)'
+        },
+        success: {
+            color: 'oklch(0.52 0.1707 144.47 / 85%)',
+            hoverBackground: 'oklch(0.52 0.1707 144.47 / 20%)',
+            activeBackground: 'oklch(0.52 0.1707 144.47 / 23%)'
+        },
+        warn: {
+            color: 'oklch(0.57 0.1547 66.12 / 85%)',
+            hoverBackground: 'oklch(0.57 0.1547 66.12 / 20%)',
+            activeBackground: 'oklch(0.51 0.1547 66.12 / 23%)'
+        },
+    },
+
 }
 
 /** Main Theme Preset - For PrimeVue */
@@ -111,22 +217,13 @@ const customPreset = definePreset(Aura, {
     components: {
         button: {
             root: customButtonColors.root,
+            outlined: customButtonColors.outlined,
+
             colorScheme: {
-                dark: { root: customButtonColors.root },
-                light: {
-                    root: {
-                        ...customButtonColors.root,
-                        // contrast: {
-                        //     background: 'oklch(0.35 0.0392 257.29)',
-                        //     borderColor: 'oklch(0.35 0.0392 257.29)',
-                        //     hoverBackground: 'oklch(0.40 0.0392 257.29)',
-                        //     hoverBorderColor: 'oklch(0.40 0.0392 257.29)',
-                        //     activeBackground: 'oklch(0.45 0.0392 257.29)',
-                        //     activeBorderColor: 'oklch(0.45 0.0392 257.29)',
-                        // }
-                    }
-                },
+                dark: { root: customButtonColors.root, outlined: customButtonColors.outlined, text: customButtonColors.text },
+                light: { root: customButtonColors.root, outlined: customButtonColors.outlined, text: customButtonColors.text },
             },
+
             css: `
                 .p-button {
                     transition: scale ease 0.2s, background ease 0.25s, box-shadow ease 0.25s;
@@ -140,49 +237,69 @@ const customPreset = definePreset(Aura, {
         },
         select: {
             root: {
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                borderColor: `var(--color-ring-soft)`,
                 focusBorderColor: 'var(--color-indigo-400)',
                 invalidBorderColor: 'var(--color-red-400)',
                 hoverBorderColor: 'var(--color-indigo-300)',
+                color: `var(--color-text-1)`
             },
             overlay: {
-                background: 'var(--color-zinc-800)',
-                color: 'var(--color-white)/75 !important',
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                color: 'var(--color-text-1)/75 !important',
+                borderColor: `var(--color-ring-soft)`,
             },
             option: {
-                focusBackground: 'color-mix(in oklab, var(--color-white) /* #fff = #ffffff */ 5%, transparent);',
+                focusBackground: 'color-mix(in oklab, var(--color-text-1) 15%, transparent);',
                 selectedBackground: 'var(--color-indigo-400)',
                 selectedFocusBackground: 'var(--color-indigo-400)',
-                selectedFocusColor: 'var(--color-white)',
-                selectedColor: 'var(--color-white) !important',
-                focusColor: 'var(--color-white)',
+                selectedFocusColor: 'var(--color-text-1)',
+                selectedColor: 'var(--color-text-1) !important',
+                focusColor: 'var(--color-text-1)',
+                color: `var(--color-text-2)`
             },
+        },
+        checkbox: {
+            root: {
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                borderColor: `var(--color-ring-soft)`,
+                hoverBorderColor: `var(--color-ring-2)`,
+                focusBorderColor: `var(--color-ring-2)`,
+                checkedBackground: `color-mix(in oklab, var(--c-brand-1), transparent 20%)`,
+                checkedHoverBackground: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                checkedBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                checkedHoverBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                checkedFocusBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                invalidBorderColor: `var(--color-red-400)`,
+            }
         },
         multiselect: {
             root: {
-                color: 'var(--color-white)',
-                background: `var(--color-zinc-800)`,
+                color: 'var(--color-text-1)',
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                borderColor: `var(--color-ring-soft)`,
                 focusBorderColor: 'var(--color-indigo-400)',
                 invalidBorderColor: 'var(--color-red-400)',
                 hoverBorderColor: 'var(--color-indigo-300)',
                 focusRing: {
                     color: 'var(--color-indigo-400)'
                 },
-                disabledBackground: `var(--color-zinc-800)`
+                disabledBackground: `color-mix(in oklab, var(--c-bg-2), transparent 50%)`,
             },
             overlay: {
-                background: `var(--color-zinc-800)`,
-                color: 'var(--color-white)',
-                borderColor: `var(--color-ring)`
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                color: 'var(--color-text-1)',
+                borderColor: `var(--color-ring-soft)`
             },
             option: {
                 focusBackground: 'var(--color-indigo-300/30)',
-                selectedBackground: 'var(--color-emerald-500/30)',
-                selectedFocusBackground: 'var(--color-emerald-500/30)',
-                color: `var(--color-white)`,
-                focusColor: `var(--color-white)`,
-                selectedColor: `var(--color-white)`,
-                selectedFocusColor: `var(--color-white)`,
-            }
+                selectedBackground: 'var(--color-brand-1/30)',
+                selectedFocusBackground: 'var(--color-brand-1/30)',
+                color: `var(--color-text-1)`,
+                focusColor: `var(--color-text-1)`,
+                selectedColor: `var(--color-text-1)`,
+                selectedFocusColor: `var(--color-text-1)`,
+            },
 
         },
         inputnumber: {
@@ -190,8 +307,8 @@ const customPreset = definePreset(Aura, {
             colorScheme: {
                 dark: {
                     button: {
-                        background: 'var(--color-zinc-800)',
-                        borderColor: 'var(--color-white)',
+                        background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                        borderColor: 'var(--color-ring-soft)',
                         hoverBorderColor: 'var(--color-indigo-400)',
                         activeBorderColor: 'var(--color-indigo-400)',
                     },
@@ -208,19 +325,37 @@ const customPreset = definePreset(Aura, {
             option: {
                 focusBackground: 'none',
                 selectedBackground: 'none'
+            },
+            overlay: {
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                color: 'var(--color-text-1)',
+                borderColor: `var(--color-ring-soft)`
+            },
+            dropdown: {
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%) !important`,
+                hoverBackground: `color-mix(in oklab, var(--c-bg-2), black 11%) !important`,
+                activeBackground: `color-mix(in oklab, var(--c-bg-2), black 11%) !important`,
+                color: `var(--color-text-1)`,
+                borderColor: `var(--color-text-soft)`,
+                hoverBorderColor: `var(--color-indigo-300)`,
+                activeBorderColor: 'var(--color-indigo-400)',
+                focusRing: {
+                    color: 'var(--color-indigo-400)'
+                }
             }
         },
         popover: {
             root: {
-                background: `var(--color-zinc-800)`,
-                borderColor: `var(--color-ring)`,
-                color: `var(--color-white)`
+                background: `var(--c-bg-2)`,
+                borderColor: `var(--c-ring-2)`,
+                color: `var(--c-text-1)`
             }
         },
         inputtext: {
             root: {
-                background: `var(--color-zinc-800)`,
-                color: `var(--color-white)`,
+                background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
+                color: `var(--color-text-1)`,
+                borderColor: `var(--color-text-soft)`,
                 hoverBorderColor: `var(--color-indigo-300)`,
                 focusBorderColor: `var(--color-indigo-400)`,
                 invalidBorderColor: 'var(--color-red-400)',
@@ -228,6 +363,39 @@ const customPreset = definePreset(Aura, {
                 focusRing: {
                     color: 'var(--color-indigo-400)'
                 },
+            }
+        },
+        dialog: {
+            root: {
+                background: `var(--c-bg-2)`,
+                color: `var(--c-text-1)`,
+                borderColor: 'var(--c-ring-2)'
+            }
+        },
+        toggleswitch: {
+            colorScheme: {
+                light: {
+                    root: {
+                        background: `var(--c-bg-3)`,
+                        hoverBackground: `color-mix(in oklab, var(--c-bg-3), black 10%)`,
+                        checkedBackground: `color-mix(in oklab, var(--c-brand-1), transparent 20%)`,
+                        checkedHoverBackground: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                    }
+                },
+                dark: {
+                    root: {
+                        background: `var(--c-bg-3)`,
+                        hoverBackground: `color-mix(in oklab, var(--c-bg-3), black 10%)`,
+                        checkedBackground: `color-mix(in oklab, var(--c-brand-1), transparent 20%)`,
+                        checkedHoverBackground: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
+                    }
+                }
+            },
+
+        },
+        datepicker: {
+            date: {
+                selectedBackground: `color-mix(in oklab, var(--c-brand-1), transparent 40%)`
             }
         }
     },
@@ -246,46 +414,37 @@ const primePT: PrimeVuePTOptions = {
         root: 'bg-zinc-700/60! text-white! font-bold backdrop-blur-md border-2! hover:border-indigo-300! active:border-indigo-400! focus:border-indigo-400!'
     },
     datepicker: {
-        root: 'text-white!',
-        panel: 'bg-zinc-800! ',
-        header: 'bg-zinc-800! text-white!',
-        day: 'hover:bg-black/35! text-white!',
-        month: 'hover:bg-black/35! text-white!',
-        year: 'hover:bg-black/35! text-white!',
-        selectMonth: 'hover:bg-black/35! text-white!',
-        selectYear: 'hover:bg-black/35! text-white!',
-        weekDay: 'text-white/80!',
-        hour: 'text-white!',
-        minute: 'text-white!',
-        ampm: 'text-white!'
+        root: 'text-text-1! border-ring-soft!',
+        panel: 'bg-[color-mix(in_oklab,var(--c-bg-2),black_11%)]! ',
+        header: 'bg-[color-mix(in_oklab,var(--c-bg-2),black_11%)]! text-text-1!',
+        day: 'hover:bg-black/35! text-text-1! has[.p-datepicker-day-selected]:bg-red-500!',
+        month: 'hover:bg-black/35! text-text-1!',
+        year: 'hover:bg-black/35! text-text-1!',
+        selectMonth: 'hover:bg-black/35! text-text-1!',
+        selectYear: 'hover:bg-black/35! text-text-1!',
+        weekDay: 'text-text-1/70!',
+        hour: 'text-text-1!',
+        minute: 'text-text-1!',
+        ampm: 'text-text-1!',
     },
     select: {
-        root: 'bg-zinc-800! text-white border-2! font-bold',
-        overlay: 'text-white! border-2! border-zinc-600! overflow-clip',
-        // option: 'hover:bg-white/5!',
-        list: 'bg-zinc-800!',
-        label: 'text-white',
-        optionLabel: 'text-white',
-        optionGroupLabel: 'text-white',
-        optionGroup: 'bg-black/20! rounded-md'
+        root: 'border-2! font-bold',
+        overlay: 'border-2!',
+        optionGroup: 'bg-bg-1/25! rounded-md text-text-1!'
     },
     multiselect: {
-        root: ` text-white! font-bold border-2!`,
+        root: `font-bold border-2!`,
         overlay: `border-2!`
     },
     autocomplete: {
-        root: 'group group-hover:border-indigo-300! active:border-indigo-400! group-focus-within:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
-        dropdown: 'border-2! border-l-0! invalid:border-red-400! group-hover:border-indigo-300! group-focus-within:border-indigo-400! group-[.p-invalid]:border-red-400!',
+        root: 'group/ac group-hover/ac:border-indigo-300! active:border-indigo-400! group-focus-within/ac:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
+        dropdown: 'border-2! border-l-0! invalid:border-red-400! group-hover/ac:border-indigo-300! group-focus-within/ac:border-indigo-400! group-[.p-invalid]/ac:border-red-400!',
         overlay: 'overflow-x-auto!',
-        list: 'bg-zinc-800!',
-        listContainer: 'overflow-y-scroll! overflow-x-auto! ring-2! ring-ring! rounded-md!',
-        option: 'text-white! bg-none! hover:bg-black/15! focus:bg-black/15! rounded-md!',
-        emptyMessage: 'text-white!',
-        searchResultMessage: 'text-white!',
+        option: 'text-text-1! bg-none! hover:bg-text-1/15! focus:bg-brand-1/15! rounded-md!',
+        emptyMessage: 'text-text-1!',
+        searchResultMessage: 'text-text-1!',
     },
-    dialog: {
-        root: 'bg-zinc-800! border-0! text-white!',
-    }
+
 
 }
 

@@ -44,14 +44,13 @@
 
     <div ref="elmRef" @mouseenter="show" @mouseleave="hide" @touchstart.prevent="toggle" @click="handleClick"
         class="flex extra-content overflow-clip flex-nowrap p-0.5 py-0.25 gap-0.75 justify-center items-center cursor-pointer rounded-full transition-[0.4s] active:bg-zinc-800 ring-ring"
-        :class="{ 'bg-zinc-700 ring-2': isActive }">
+        :class="{ 'bg-bg-3 ring-2': isActive }">
         <Transition name="slide-in">
-            <p v-if="isActive" class="text-[11px] pl-1  text-nowrap relative ">
+            <p v-if="isActive" class="text-[11px]/tight pl-1 font-medium  text-nowrap relative ">
                 Learn more
             </p>
         </Transition>
-        <HelpCircleIcon :class="{ 'bg-zinc-700! rounded-full opacity-85': isActive }"
-            class="bg-zinc-900 opacity-70 transition-all" :size="15" />
+        <HelpCircleIcon :class="{ 'rounded-full opacity-85': isActive }" class="opacity-70 transition-all" :size="15" />
 
     </div>
 

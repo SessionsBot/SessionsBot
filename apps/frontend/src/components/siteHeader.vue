@@ -30,7 +30,7 @@
 
 <template>
     <header ref="headerRef"
-        class="flex flex-col z-5 transition-all drop-shadow-2xl drop-shadow-black/40 fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-black/40 backdrop-blur-sm">
+        class="flex flex-col z-5 transition-all fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-bg-1/50 backdrop-blur-sm">
 
         <!-- Main Header Contents -->
         <span class="flex flex-row justify-between items-center w-full flex-wrap">
@@ -47,7 +47,7 @@
             <!-- Nav Button -->
             <span class="flex items-center justify-center content-center gap-1 m-1">
                 <Button @click="nav.openNav()" unstyled
-                    class="bg-indigo-500 p-2 m-3 rounded-md drop-shadow-black active:scale-95 transition-all cursor-pointer">
+                    class="bg-brand-1 hover:bg-brand-1/85 dark:active:bg-brand-1/75 p-2 m-3 rounded-md drop-shadow-black active:scale-95 transition-all cursor-pointer">
                     <MenuIcon class="text-xs size-5 sm:size-6" />
                     <p class="hidden">View Menu</p>
                 </Button>
@@ -57,7 +57,10 @@
         <!-- Status Alert Bar -->
         <Transition name="slide" mode="out-in">
             <div v-if="showStatusAlert"
-                class="bg-zinc-800/55 p-2 w-full gap-1 m-0! min-h-fit! h-fit flex flex-row flex-wrap justify-center items-center">
+                class="bg-black/10 dark:bg-white/10 relative border-t sm:border-t-0 border-t-transparent p-2 w-full gap-1 m-0! min-h-fit! h-fit flex flex-row flex-wrap justify-center items-center">
+
+                <div
+                    class="absolute inset-x-0 top-0 h-px sm:h-0.5 bg-ring-3 dark:bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse" />
 
                 <!-- Icon Area -->
                 <div
@@ -81,7 +84,7 @@
 
                     <p class="font-bold text-sm block p-1">
                         It seems we're currently experiencing a service disruption! Please view our
-                        <a class="text-sky-400 underline" href="https://status.sessionsbot.fyi" target="_blank">
+                        <a class="text-sky-500 underline" href="https://status.sessionsbot.fyi" target="_blank">
                             status page</a>
                         for more information.
                     </p>
@@ -101,7 +104,7 @@
 
         <!-- Accent Color - Bar -->
         <div v-if="!showStatusAlert"
-            class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-radial from-indigo-500 via-purple-500 to-pink-500 animate-pulse" />
+            class="absolute inset-x-0 bottom-0 h-px sm:h-0.5 bg-ring-3 dark:bg-radial from-indigo-500 via-purple-500 to-pink-500 dark:animate-pulse" />
 
 
     </header>

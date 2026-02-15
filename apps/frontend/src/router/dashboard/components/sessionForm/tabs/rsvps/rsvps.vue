@@ -7,6 +7,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useToast } from 'vue-toastification';
     import { SubscriptionLevel } from '@sessionsbot/shared';
+    import { externalUrls } from '@/stores/nav';
 
 
     // Incoming Props:
@@ -71,14 +72,14 @@
         <!-- RSVP Configuration Panel -->
         <Transition name="zoom" :duration=".75" mode="out-in">
             <section v-if="rsvpsEnabled"
-                class="flex flex-col flex-wrap overflow-auto  transition-all gap-0 w-full relative rounded-lg border-2 border-ring bg-zinc-800 items-center justify-center">
+                class="flex flex-col flex-wrap overflow-auto  transition-all gap-0 w-full relative rounded-lg border-2 border-ring-soft bg-bg-2 items-center justify-center">
                 <!-- RSVPs List -->
                 <div
-                    class="flex gap-0 flex-wrap bg-black/25 items-center justify-center content-center flex-col min-w-full min-h-15 border-ring border-b-2">
+                    class="flex gap-0 flex-wrap bg-bg-1/25 items-center justify-center content-center flex-col min-w-full min-h-15 border-ring-soft border-b-2">
 
                     <!-- No RSVPs Added -->
                     <div v-if="(rsvps?.length || 0) <= 0"
-                        class=" bg-white/5 gap-0.75 py-2.25 opacity-55 px-4 min-w-full rounded-md flex flex-row  items-center content-center justify-center drop-shadow-md drop-shadow-black">
+                        class=" bg-text-1/10 gap-0.75 py-2.25 opacity-55 px-4 min-w-full flex flex-row  items-center content-center justify-center drop-shadow-md drop-shadow-black/20">
                         <FileQuestionMarkIcon class="size-5" />
                         <p class="text-sm font-medium"> No RSVPs</p>
                     </div>
@@ -120,24 +121,24 @@
                 <!-- Add Rsvp Btn -->
                 <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                     @click="rsvpDialogVisible = !rsvpDialogVisible"
-                    class="bg-zinc-600 py-0.75 px-2.25 pl-1.25 my-3 mx-3 rounded-lg transition-all cursor-pointer font-medium hover:bg-zinc-700 flex items-center flex-row">
+                    class="bg-bg-3  py-0.75 px-2.25 pl-1.25 my-3 mx-3 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
                     <PlusIcon class="size-5 p-0.5" />
                     <p class="text-sm"> Add </p>
                 </Button>
 
                 <!-- Upgrade Btn -->
-                <p v-if="rsvps.length >= maxRsvpSlots" class="text-white/40 mt-2 italic text-xs mx-5 text-center">
-                    Maximum allowed RSVP slots reached for your current subscription plan. Upgrade you bot
+                <span v-if="rsvps.length >= maxRsvpSlots" class="text-text-1/40 mb-0 italic text-xs mx-5 text-center">
+                    Maximum allowed RSVP slots reached for your current subscription plan. Upgrade your bot
                     today to increase your limits!
-                </p>
-                <RouterLink to="/pricing">
+                </span>
+                <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
                     <Button v-if="rsvps.length >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                         @click="rsvpDialogVisible = !rsvpDialogVisible"
-                        class="bg-emerald-400/40 py-0.75 px-2.25 pl-1.25 my-3 mx-3 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-emerald-400/30 flex items-center flex-row">
+                        class="bg-emerald-400/40 py-0.75 px-2.25 pl-1.25 my-3 mt-2 mx-3 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-emerald-400/30 flex items-center flex-row">
                         <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
                         <p class="text-sm"> Upgrade Bot </p>
                     </Button>
-                </RouterLink>
+                </a>
 
 
 

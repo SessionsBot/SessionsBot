@@ -37,11 +37,11 @@
 <template>
     <Transition name="fade">
         <div v-if="navExpanded && isSmallScreen" @click="dashboard.nav.expanded = false;"
-            class="z-2 bg-black/70 w-full h-full absolute" />
+            class="z-2 bg-black/35 dark:bg-black/50 backdrop-blur-sm w-full h-full absolute" />
     </Transition>
 
     <aside
-        class="w-15 min-w-15 z-4 bg-zinc-900 ring-2 ring-ring/80 relative h-full flex flex-col overflow-x-clip overflow-y-auto"
+        class="w-15 min-w-15 z-4 bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-bg-1)_50%)] border-r sm:border-r-2 border-ring-soft relative h-full flex flex-col overflow-x-clip overflow-y-auto"
         :class="{
             'expanded': navExpanded,
             'small-screen': isSmallScreen
@@ -56,26 +56,26 @@
             <!-- Expander Button -->
             <Button :title="navExpanded ? 'Fold Nav' : 'Expand Nav'" unstyled
                 @click="dashboard.nav.expanded = !dashboard.nav.expanded"
-                class="size-8 aspect-square rounded-md hover:bg-zinc-600/50 active:scale-95 cursor-pointer transition-all flex items-center justify-center">
+                class="size-8 aspect-square rounded-md text-text-1 hover:bg-zinc-600/50 active:scale-95 cursor-pointer transition-all flex items-center justify-center">
                 <iconify-icon icon="proicons:panel-right-expand" height="29" width="29"
-                    class="transition-all rotate-180 text-white/40" :class="{ 'rotate-0!': navExpanded }" />
+                    class="transition-all rotate-180" :class="{ 'rotate-0!': navExpanded }" />
             </Button>
         </div>
 
 
         <!-- Selected Server - Details PopOver -->
         <div class="flex pt-1 flex-col w-full h-fit items-center justify-center">
-            <p v-if="navExpanded" class=" px-1.5 text-xs uppercase font-black text-white/50 w-full pb-1.5">
+            <p v-if="navExpanded" class=" px-1.5 text-xs uppercase font-black text-text-1/50 w-full pb-1.5">
                 Server
             </p>
             <ServerDetails>
                 <template #default="{ togglePopOver }">
 
                     <Button unstyled @click="togglePopOver"
-                        class="bg-white/5 mx-2.5! ring-2 ring-ring hover:ring-white/40 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
+                        class="bg-white/5 mx-2.5! ring-2 ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
                         :class="{ 'aspect-square': !navExpanded }">
 
-                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring"
+                        <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring-1"
                             :src="userGuildData?.icon || DiscordLogo" />
                         <p v-if="navExpanded" class="font-bold text-nowrap text-sm truncate">
                             {{ userGuildData?.name || 'Select a Server' }}
@@ -90,7 +90,7 @@
         <!-- Dashboard Tab View(s) -->
         <div class="pt-4 flex grow flex-col items-center justify-start bg-emerald-700/0 w-full h-full">
 
-            <p v-if="navExpanded" class=" px-1.5 text-xs uppercase font-black text-white/50 w-full pb-1.5">
+            <p v-if="navExpanded" class=" px-1.5 text-xs uppercase font-black text-text-1/50 w-full pb-1.5">
                 Views
             </p>
 
@@ -238,10 +238,10 @@
 
     /* Tab View Button - Styles */
     .tab-view-button {
-        @apply flex relative flex-row !border-r-0 !border-r-transparent flex-nowrap gap-1.25 p-1.75 items-center justify-center w-full min-h-fit border-b border-white/40 bg-white/5 cursor-pointer transition-all;
+        @apply flex relative flex-row !border-r-0 !border-r-transparent flex-nowrap gap-1.25 p-1.75 items-center justify-center w-full min-h-fit border-b border-text-2/40 bg-text-1/5 cursor-pointer transition-all;
 
         &:hover {
-            @apply ring-white/30 bg-white/12;
+            @apply ring-text-1/30 bg-text-1/20;
         }
 
         &.expanded {

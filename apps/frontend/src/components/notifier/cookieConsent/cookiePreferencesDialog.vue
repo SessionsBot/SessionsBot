@@ -66,22 +66,23 @@
 
 
 <template>
-    <Dialog :visible="analytics.cookieConsent.showManagePreferences" class="border-2! border-ring! m-7! max-w-95!"
-        block-scroll modal>
+    <Dialog :visible="analytics.cookieConsent.showManagePreferences" class="border-0! m-7! max-w-95!" block-scroll
+        modal>
         <template #container>
-            <div class="flex flex-col relative gap-2 p-4 items-start justify-start min-h-fit h-fit overflow-auto">
+            <div
+                class="bg-bg-2! rounded-md border-2 border-ring-2 text-text-1! flex flex-col relative gap-2 p-4 items-start justify-start min-h-fit h-fit overflow-auto">
 
                 <h1 class="font-extrabold w-full text-lg"> 🍪 Cookie Preferences </h1>
 
-                <div class="w-[88%] self-center h-[2px] rounded-full bg-ring" />
+                <div class="w-[88%] self-center h-[2px] rounded-full bg-ring-2" />
 
                 <!-- Necessary Cookies -->
                 <div class="flex flex-row flex-nowrap w-full">
                     <!-- Cookie Detail -->
                     <div class="flex flex-wrap flex-col gap-1">
-                        <p class="font-bold text-sm"> Necessary <span class="text-xs text-zinc-400 italic"> (Always
+                        <p class="font-bold text-sm"> Necessary <span class="text-xs text-text-2 italic"> (Always
                                 on) </span> </p>
-                        <p class="text-zinc-400 mx-3 text-xs"> Essential for the website to function properly (e.g.
+                        <p class="text-text-2 mx-3 text-xs"> Essential for the website to function properly (e.g.
                             remembering your cookie preferences, security, and core features). These cannot be disabled.
                         </p>
                     </div>
@@ -96,7 +97,7 @@
                     <!-- Cookie Detail -->
                     <div class="flex flex-wrap flex-col gap-1">
                         <p class="font-bold text-sm"> Analytics </p>
-                        <p class="text-zinc-400 mx-3 text-xs"> Helps us understand how visitors use our site so we can
+                        <p class="text-text-2 mx-3 text-xs"> Helps us understand how visitors use our site so we can
                             improve performance and content. (e.g. Google Analytics) </p>
                     </div>
                     <!-- Cookie Toggle -->
@@ -110,7 +111,7 @@
                     <!-- Cookie Detail -->
                     <div class="flex flex-wrap flex-col gap-1">
                         <p class="font-bold text-sm"> Preferences </p>
-                        <p class="text-zinc-400 mx-3 text-xs"> Allows the site to remember your choices (like language,
+                        <p class="text-text-2 mx-3 text-xs"> Allows the site to remember your choices (like language,
                             theme, or layout) to give you a more personalized experience. </p>
                     </div>
                     <!-- Cookie Toggle -->
@@ -124,7 +125,7 @@
                     <!-- Cookie Detail -->
                     <div class="flex flex-wrap flex-col gap-1">
                         <p class="font-bold text-sm"> Marketing </p>
-                        <p class="text-zinc-400 mx-3 text-xs"> Used to deliver relevant ads and measure their
+                        <p class="text-text-2 mx-3 text-xs"> Used to deliver relevant ads and measure their
                             effectiveness, often across different websites and apps. </p>
                     </div>
                     <!-- Cookie Toggle -->
@@ -152,6 +153,8 @@
 <style scoped>
 
     :deep().p-toggleswitch {
+        --p-toggleswitch-background: var(--c-bg-3);
+        --p-toggleswitch-hover-background: color-mix(in oklab, var(--c-bg-3), transparent 40%);
         --p-toggleswitch-checked-background: var(--color-indigo-500);
         --p-toggleswitch-checked-hover-background: var(--color-indigo-400);
     }

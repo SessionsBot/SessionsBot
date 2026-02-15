@@ -210,7 +210,7 @@
                 <p>
                     You're about to <strong>leave this form</strong> and may have <b>unsaved changes</b>.
                 </p><br>
-                <p class="w-full font-bold text-center text-red-400">
+                <p class="w-full font-bold text-center text-red-500/80 underline">
                     This cannot be undone!
                 </p>
             `,
@@ -662,19 +662,20 @@
 
 <template>
     <!-- Form Background -->
-    <Dialog append-to="body" v-bind:visible="sessionsFormVisible" modal block-scroll class="max-w-[90%]! max-h-[90%]!">
+    <Dialog append-to="body" v-bind:visible="sessionsFormVisible" modal block-scroll
+        class="max-w-[90%]! max-h-[90%]! border-0!">
 
 
         <template #container="{ closeCallback, initDragCallback }">
             <!-- Form Card -->
             <div
-                class="bg-zinc-900 ring-ring ring-2 rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
+                class="bg-bg-2 border-2 border-ring-soft rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
 
                 <!-- Form Header/Tab Bar -->
                 <div class="flex flex-col items-center justify-start w-full">
                     <!-- Header -->
                     <section
-                        class="w-full p-1.5 z-2 bg-zinc-800/70 ring-ring ring-2 rounded-md flex gap-1 justify-between flex-wrap items-center content-center">
+                        class="w-full p-1.5 z-2 bg-text-1/10 border-ring-soft border-b-2 flex gap-1 justify-between flex-wrap items-center content-center">
                         <!-- New Session - Title -->
                         <span v-if="formAction == 'new'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarPlusIcon />
@@ -688,16 +689,16 @@
 
                         <!-- Abort/Delete Session - Button -->
                         <Button unstyled @click="abortForm()" :disabled="submitState != 'idle'"
-                            class="p-0.5 hover:bg-red-400/15 active:scale-95 cursor-pointer transition-all rounded-lg"
+                            class="p-0.5 hover:bg-red-400/50 active:scale-95 cursor-pointer transition-all rounded-lg"
                             :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState == 'loading' }">
-                            <XIcon v-if="submitState == 'idle'" class="p-px text-white/70" />
+                            <XIcon v-if="submitState == 'idle'" class="p-px text-text-1/70" />
                             <LoadingIcon v-else class="size-5" />
                         </Button>
                     </section>
 
                     <!-- Tab Bar -->
                     <section
-                        class="flex flex-wrap bg-zinc-800/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full bg-black/05  ring-2 ring-ring">
+                        class="flex flex-wrap bg-text-soft/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full border-b-2 border-ring-soft">
                         <!-- Information Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'information'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'information', 'formTabBtn-invalid': invalidTabs.has('information') }">
@@ -764,19 +765,7 @@
 
                 <!-- Form Footer -->
                 <div
-                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-zinc-800/70 ring-ring ring-2 rounded-md">
-
-                    <!-- Created By - Badge -->
-                    <div hidden class="flex gap-1 items-center flex-row ml-1 text-sm">
-                        <p> Created By: </p>
-                        <!-- User Name/Icon -->
-                        <a :href="'https://discord.com/users/' + auth?.userData?.id"
-                            class="bg-white/5 ring-2 ring-ring p-0.5 px-1.5 gap-1 rounded-sm flex flex-row  items-center justify-center flex-wrap">
-                            <img :src="auth.userData?.avatar" alt="(user avatar)"
-                                class="size-4 rounded-full ring-2 ring-zinc-600">
-                            <p> {{ auth.userData?.username }}</p>
-                        </a>
-                    </div>
+                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-text-1/10 ring-ring-soft ring-2 rounded-md">
 
                     <!-- Invalid Fields - Badge - EDIT Actions -->
                     <div class="flex justify-center items-center p-2 overflow-clip">
@@ -796,12 +785,12 @@
 
                             <span v-else-if="formAction == 'edit'" class="gap-2 flex flex-row">
                                 <Button unstyled title="Duplicate" @click="startNewDuplicate"
-                                    class="aspect-square p-1 bg-ring hover:bg-emerald-500/80 cursor-pointer rounded-md active:bg-emerald-500/60 active:scale-95 transition-all">
+                                    class="aspect-square p-1 bg-[color-mix(in_oklab,var(--c-bg-3),black_10%)] hover:bg-emerald-500/50 cursor-pointer rounded-md active:bg-emerald-500/50 active:scale-95 transition-all">
                                     <Layers2Icon :size="20" />
                                 </Button>
 
                                 <Button unstyled title="Delete" @click="startDeletionPrompt"
-                                    class="aspect-square p-1 bg-ring hover:bg-red-400/60 cursor-pointer rounded-md active:bg-red-400/50 active:scale-95 transition-all">
+                                    class="aspect-square p-1 bg-[color-mix(in_oklab,var(--c-bg-3),black_10%)] hover:bg-red-400/50 cursor-pointer rounded-md active:bg-red-400/50 active:scale-95 transition-all">
                                     <Trash2Icon :size="20" />
                                 </Button>
                             </span>
@@ -814,7 +803,7 @@
 
                         <!-- Back Tab Button -->
                         <Button v-if="tabSelected != 'information'" @click="backTab()"
-                            class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-zinc-500 hover:bg-zinc-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                            class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-bg-4 hover:bg-bg-4/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm mx-0.75 font-medium"> Back </p>
                             <ArrowLeft hidden :stroke-width="'2'" :size="17" />
@@ -822,7 +811,7 @@
 
                         <!-- Next Tab Button -->
                         <Button v-if="tabSelected != 'discord'" @click="nextTab()"
-                            class="gap-0.25! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-indigo-500 hover:bg-indigo-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                            class="gap-0.25! p-button-success! p-2 py-1.75 flex flex-row items-center content-center justify-center  active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm font-bold"> Next </p>
                             <ArrowRight :stroke-width="'3'" :size="17" />
@@ -830,7 +819,7 @@
 
                         <!-- Submit Form Button -->
                         <Button v-else @click="submitForm()" :disabled="submitState != 'idle'"
-                            class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                            class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-500/62 dark:bg-emerald-500/70 hover:bg-emerald-500/50 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             :class="{
                                 'bg-zinc-600! opacity-80! scale-95! cursor-progress!': submitState == 'loading',
                                 'bg-red-400/70!  scale-100! cursor-not-allowed!': submitState == 'failed'
@@ -868,11 +857,11 @@
     @reference '@/styles/main.css';
 
     .formTabBtn {
-        @apply bg-zinc-600 flex-1 gap-px border-ring border-2 p-1.5 px-10 font-semibold rounded-md flex flex-col justify-center items-center content-center cursor-pointer transition-colors
+        @apply bg-bg-3 flex-1 gap-px border-ring-soft border-2 p-1.5 px-10 font-semibold rounded-md flex flex-col justify-center items-center content-center cursor-pointer transition-colors
     }
 
     .formTabBtn:hover {
-        @apply bg-zinc-500 !border-zinc-500
+        @apply bg-bg-soft !border-ring-3
     }
 
     .noShrink {
@@ -880,7 +869,7 @@
     }
 
     .formTabBtn-selected, .formTabBtn-selected:hover {
-        @apply !bg-indigo-500 !border-indigo-500/30
+        @apply !bg-brand-1/80 !border-indigo-500/30
     }
 
     .formTabBtn-invalid, .formTabBtn-invalid:hover {

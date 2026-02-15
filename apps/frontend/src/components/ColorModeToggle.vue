@@ -4,6 +4,8 @@
         disableTransition: false,
     })
 
+    const mode = computed(() => colorMode.value)
+
     function toggleColorMode() {
         if (colorMode.value == 'auto')
             return colorMode.value = 'dark'
@@ -21,8 +23,27 @@
 <template>
 
     <!-- Toggler -->
-    <div @click="toggleColorMode" class="bg-bg-2 border-2 border-ring-2">
-        Toggle Color Mode {{ colorMode }}
+    <div @click="toggleColorMode"
+        class="bg-bg-2 group/cm hover:border-ring-2 w-11 rounded-full cursor-pointer h-5 border-2 border-ring-3 gap-1.5 flex overflow-auto relative transition-all">
+        <!-- Handle -->
+        <div class="h-full bg-bg-3 group-hover/cm:bg-bg-3 w-fit flex p-1 rounded-full aspect-square absolute transition-all items-center justify-center"
+            :class="{
+                'right-0 text-purple-500': colorMode == 'dark',
+                'left-0 text-yellow-400': (colorMode == 'light' || colorMode == 'auto')
+            }">
+            <!-- SUN Icon -->
+
+            <svg v-if="colorMode == 'auto' || colorMode == 'light'" xmlns="http://www.w3.org/2000/svg" width="24"
+                height="24" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 2.25a.75.75 0 0 1 .75.75v2a.75.75 0 1 1-1.5 0V3a.75.75 0 0 1 .75-.75m0 16.004a.75.75 0 0 1 .75.75v2a.75.75 0 1 1-1.5 0v-2a.75.75 0 0 1 .75-.75M2.25 12a.75.75 0 0 1 .75-.75h2a.75.75 0 0 1 0 1.5H3a.75.75 0 0 1-.75-.75m16 0a.75.75 0 0 1 .75-.75h2a.75.75 0 1 1 0 1.5h-2a.75.75 0 0 1-.75-.75m1.28-7.53a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 1 1-1.06-1.06l2-2a.75.75 0 0 1 1.06 0m-15.06 0a.75.75 0 0 1 1.06 0l2 2a.75.75 0 0 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06m3.06 12a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 0 1-1.06-1.06l2-2a.75.75 0 0 1 1.06 0m8.94 0a.75.75 0 0 1 1.06 0l2 2a.75.75 0 1 1-1.06 1.06l-2-2a.75.75 0 0 1 0-1.06M12 7.25a4.75 4.75 0 1 0 0 9.5a4.75 4.75 0 0 0 0-9.5" />
+            </svg>
+            <!-- MOON Icon -->
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M12 22c5.523 0 10-4.477 10-10c0-.463-.694-.54-.933-.143a6.5 6.5 0 1 1-8.924-8.924C12.54 2.693 12.463 2 12 2C6.477 2 2 6.477 2 12s4.477 10 10 10" />
+            </svg>
+        </div>
     </div>
 
 </template>
