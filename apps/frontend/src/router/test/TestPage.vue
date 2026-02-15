@@ -127,6 +127,110 @@
             </span>
 
 
+            <span class="w-full flex p-4 gap-2 flex-wrap items-center justify-center">
+                <p class="w-full text-lg font-bold"> Reg Colors (500/50) </p>
+
+                <div class="w-fit aspect-square p-1 rounded-md bg-red-500/50">
+                    Red
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-orange-500/50">
+                    Orange
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-amber-500/50">
+                    Amber
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-yellow-500/50">
+                    Yellow
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-lime-500/50">
+                    Lime
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-green-500/50">
+                    Green
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-emerald-500/50">
+                    Emerald
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-teal-500/50">
+                    Teal
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-cyan-500/50">
+                    Cyan
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-sky-500/50">
+                    Sky
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-blue-500/50">
+                    Blue
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-indigo-500/50">
+                    Indigo
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-violet-500/50">
+                    Violet
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-purple-500/50">
+                    Purple
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-fuchsia-500/50">
+                    Fushih
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-pink-500/50">
+                    Pink
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-rose-500/50">
+                    Rose
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-slate-500/50">
+                    Slate
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-gray-500/50">
+                    Gray
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-zinc-500/50">
+                    Zinc
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-neutral-500/50">
+                    Neutral
+                </div>
+                <div class="w-fit aspect-square p-1 rounded-md bg-stone-500/50">
+                    Stone
+                </div>
+
+
+
+            </span>
+
+
+
+            <span class="w-full flex p-4 gap-2 flex-wrap items-center justify-center">
+                <p class="w-full text-lg font-bold"> Error Colors (500/50) </p>
+
+
+                <span class="flex gap-2 p-2 bg-bg-1">
+                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-1">
+                        Red 400
+                    </div>
+                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-2">
+                        Red 500
+                    </div>
+
+                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-3">
+                        Red 400/50
+                    </div>
+                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-soft">
+                        Red 500/50
+                    </div>
+                </span>
+
+
+            </span>
+
+            <p class="bg-(--sf-invalid-border)"> This tried using a scoped class! </p>
+
+
+            <ColorModeToggle />
+
 
         </span>
 

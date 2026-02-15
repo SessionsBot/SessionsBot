@@ -181,13 +181,13 @@
         </div>
 
         <!-- Nav Footer - Help & Feedback Links -->
-        <div class="flex text-white/40 gap-1 flex-col flex-nowrap w-full h-fit p-2 items-center justify-center">
+        <div class="flex text-text-1/40 gap-1 flex-col flex-nowrap w-full h-fit p-2 items-center justify-center">
 
 
             <!-- Get Support - Button -->
             <RouterLink to="/support">
                 <div title="Get Support"
-                    class="flex flex-row items-center justify-center gap-1 p-1 py-0.5 cursor-pointer rounded-sm hover:bg-white/5 hover:ring-ring ring-2 ring-transparent active:scale-95"
+                    class="flex flex-row items-center justify-center gap-1 p-1 py-0.5 cursor-pointer rounded-sm hover:bg-text-1/5 hover:ring-ring-1/40 ring-2 ring-transparent active:scale-95"
                     :class="{ 'aspect-square': !navExpanded }">
                     <HelpCircle class="size-fit!" :size="17" />
                     <p v-if="navExpanded" class="text-sm font-medium text-nowrap">

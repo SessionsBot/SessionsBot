@@ -35,8 +35,8 @@
 
     // Local Form Schema:
     const localFormSchema = z.object({
-        frequency: z.enum(Frequency),
-        interval: z.number().min(1, "Interval must be greater than or equal to 1."),
+        frequency: z.enum(Frequency, 'Please select a valid Frequency.'),
+        interval: z.number().min(1, "Interval must be greater than or equal to 1.").max(500, 'Interval cannot exceed 500.'),
         weekdays: z.array(z.any()).optional().nullish().default([]),
         endRepeatDate: z.nullish(z.date()),
         endRepeatCount: z.nullish(z.number().min(1))
@@ -218,7 +218,7 @@
 
                 <!-- INPUT: Frequency -->
                 <div class="flex flex-col gap-1 w-full items-start"
-                    :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('frequency') }">
+                    :class="{ 'text-invalid-1!': localForm.invalidFields.has('frequency') }">
                     <InputTitle fieldTitle="Frequency" required :icon="CalendarDaysIcon" />
                     <Select name="frequency" :options="[
                         { name: 'Daily', value: Frequency.DAILY },
@@ -228,7 +228,7 @@
                     ]" option-label="name" option-value="value" fluid v-model="localForm.formValues['frequency']"
                         @value-change="(v) => { validateLocalField('frequency', v); clearWeekdays(); localForm.formValues.interval = 1; }"
                         :invalid="localForm.invalidFields.has('frequency')" />
-                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                         v-for="err in localForm.invalidFields.get('frequency') || []">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
@@ -238,16 +238,15 @@
 
                 <!-- INPUT: Interval -->
                 <div class="flex flex-col gap-1 w-full items-start"
-                    :class="{ 'text-red-400! ring-red-400 border-red-400!': localForm.invalidFields.has('interval') }">
+                    :class="{ 'text-invalid-1!': localForm.invalidFields.has('interval') }">
                     <InputTitle fieldTitle="Interval" required :icon="RefreshCcwDotIcon" />
                     <InputNumber :invalid="localForm.invalidFields.has('interval')"
                         @value-change="(v) => validateLocalField('interval', v)" v-model="localForm.formValues.interval"
                         inputId="horizontal-buttons" showButtons :step="1" :min="1" :suffix="intervalSuffix" fluid
-                        :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"
-                        :class="{ 'border-red-400!': localForm.invalidFields.has('interval') }">
+                        :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }">
 
                     </InputNumber>
-                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                         v-for="err in localForm.invalidFields.get('interval') || []">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
@@ -258,7 +257,7 @@
                 <!-- INPUT: Weekdays -->
                 <div v-if="localForm.formValues.frequency == Frequency.WEEKLY as any"
                     class="flex flex-col gap-1 w-full items-start"
-                    :class="{ 'text-red-400! ring-red-400 border-red-400!': localForm.invalidFields.has('weekdays') }">
+                    :class="{ 'text-invalid-1!': localForm.invalidFields.has('weekdays') }">
                     <InputTitle fieldTitle="Weekdays" :icon="CalendarRangeIcon" />
 
                     <!-- Selection Input -->
@@ -273,13 +272,13 @@
                             { value: 'SA', name: 'Saturday' },
                             { value: 'SU', name: 'Sunday' },
                         ]" unstyled :title="value.toString()"
-                            :class="{ 'bg-indigo-500/70! border-white!': weekdaysSelected.has(value as any) }"
+                            :class="{ 'bg-brand-1/70! border-text-1!': weekdaysSelected.has(value as any) }"
                             @click="toggleWeekday(value as any)">
                             <p class="text-sm font-medium"> {{ name }} </p>
                         </Button>
 
                     </div>
-                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                    <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                         v-for="err in localForm.invalidFields.get('weekdays') || []">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
@@ -300,15 +299,14 @@
                 <!-- INPUT: End Repeat Date -->
                 <Transition name="zoom" :duration=".75" mode="out-in">
                     <div v-if="endRepeatDateEnabled" class="flex flex-col gap-1 w-full items-start"
-                        :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('endRepeatDate') }">
+                        :class="{ 'text-invalid-1!': localForm.invalidFields.has('endRepeatDate') }">
 
                         <InputTitle fieldTitle="End Repeat Date" :icon="CalendarX2Icon" />
                         <DatePicker name="endRepeatDate" v-model="localForm.formValues.endRepeatDate" fluid
                             date-format="m/d/y" class="w-full flex " show-clear :min-date="new Date()"
                             @value-change="(v) => validateLocalField('endRepeatDate', v)"
                             :invalid="localForm.invalidFields.has('endRepeatDate')" />
-                        <Message unstyled
-                            class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400! hover:bg-white/5"
+                        <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                             v-for="err in localForm.invalidFields.get('endRepeatDate') || []">
                             <p class="text-sm! pl-0.5">
                                 {{ err || 'Invalid Input!' }}
@@ -331,18 +329,16 @@
                 <!-- INPUT: Max Repeat Count -->
                 <Transition name="zoom" :duration=".75" mode="out-in">
                     <div v-if="endRepeatCountEnabled" class="flex flex-col gap-1 w-full items-start"
-                        :class="{ 'text-red-400! ring-red-400!': localForm.invalidFields.has('endRepeatCount') }">
+                        :class="{ 'text-invalid-1!': localForm.invalidFields.has('endRepeatCount') }">
                         <InputTitle fieldTitle="Max Repeat Count" required :icon="CalendarSyncIcon" />
 
                         <InputNumber :invalid="localForm.invalidFields.has('endRepeatCount')"
                             @value-change="(v) => validateLocalField('endRepeatCount', v)"
                             v-model="localForm.formValues.endRepeatCount as any" inputId="horizontal-buttons"
                             showButtons show-clear :step="1" :min="1" suffix=" Repeats" fluid
-                            :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"
-                            :class="{ 'border-red-400!': localForm.invalidFields.has('endRepeatCount') }" />
+                            :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }" />
 
-                        <Message unstyled
-                            class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400! hover:bg-white/5"
+                        <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                             v-for="err in localForm.invalidFields.get('endRepeatCount') || []">
                             <p class="text-sm! pl-0.5">
                                 {{ err || 'Invalid Input!' }}
@@ -357,7 +353,7 @@
                     <p class="opacity-50 w-full"> <span class="pi pi-info-circle relative top-[2px]" /> This
                         session
                         will repeat: </p>
-                    <p class="ml-1.5 mt-0.5 bg-yellow-500/40 text-sm px-2 py-0.5 rounded-md ring-2 ring-white/50">
+                    <p class="ml-1.5 mt-0.5 bg-yellow-500/45 text-sm px-2 py-0.5 rounded-md ring-2 ring-ring-2">
                         {{ RRuleText || 'Add more information to fields...' }}
                     </p>
 
@@ -374,7 +370,8 @@
     @reference '@/styles/main.css';
 
     .weekdayBtn {
-        @apply px-2 py-1 gap-1 grow bg-zinc-800 border-2 border-white rounded-md cursor-pointer flex justify-center items-center transition-all;
+        background: color-mix(in oklab, var(--c-bg-2), black 11%);
+        @apply px-2 py-1 gap-1 grow border-2 border-ring-soft rounded-md cursor-pointer flex justify-center items-center transition-all;
     }
 
     .weekdayBtn:hover {

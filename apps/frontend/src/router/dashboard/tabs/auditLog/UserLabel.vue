@@ -35,7 +35,7 @@
     <!-- Discord / Member Icon & User -->
     <div v-else class="flex items-center justify-center gap-1">
         <img :src="userIdentity?.avatarUrl || defaultDiscordIcon"
-            class="size-5.5 mx-px rounded-full border-2 border-white/50" />
+            class="size-5.5 mx-px rounded-full border-2 border-ring-2/50" />
         <p>
             {{ userIdentity?.username ?? 'Unknown' }}
         </p>

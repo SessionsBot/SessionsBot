@@ -332,7 +332,7 @@
                     You're about to <strong>permanently delete</strong> this session
                     & any recurring session that stems from it.
                 </p><br>
-                <p class="w-full text-center text-red-400">
+                <p class="w-full text-center font-bold underline text-invalid-2">
                     This cannot be undone!
                 </p>
             `,
@@ -664,18 +664,16 @@
     <!-- Form Background -->
     <Dialog append-to="body" v-bind:visible="sessionsFormVisible" modal block-scroll
         class="max-w-[90%]! max-h-[90%]! border-0!">
-
-
         <template #container="{ closeCallback, initDragCallback }">
             <!-- Form Card -->
             <div
-                class="bg-bg-2 border-2 border-ring-soft rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
+                class="sessions-form-dialog bg-bg-2 border-2 border-ring-3 rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
 
                 <!-- Form Header/Tab Bar -->
                 <div class="flex flex-col items-center justify-start w-full">
                     <!-- Header -->
                     <section
-                        class="w-full p-1.5 z-2 bg-text-1/10 border-ring-soft border-b-2 flex gap-1 justify-between flex-wrap items-center content-center">
+                        class="w-full p-1.5 z-2 bg-text-1/10 border-ring-3 border-b-2 flex gap-1 justify-between flex-wrap items-center content-center">
                         <!-- New Session - Title -->
                         <span v-if="formAction == 'new'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarPlusIcon />
@@ -698,7 +696,7 @@
 
                     <!-- Tab Bar -->
                     <section
-                        class="flex flex-wrap bg-text-soft/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full border-b-2 border-ring-soft">
+                        class="flex flex-wrap bg-text-soft/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full border-b-2 border-ring-3">
                         <!-- Information Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'information'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'information', 'formTabBtn-invalid': invalidTabs.has('information') }">
@@ -765,14 +763,14 @@
 
                 <!-- Form Footer -->
                 <div
-                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-text-1/10 ring-ring-soft ring-2 rounded-md">
+                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-text-1/10 ring-ring-3 ring-2 rounded-md">
 
                     <!-- Invalid Fields - Badge - EDIT Actions -->
                     <div class="flex justify-center items-center p-2 overflow-clip">
 
                         <Transition name="zoom" mode="out-in">
                             <span v-if="invalidFields.size >= 1"
-                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-red-400/70 drop-shadow-sm rounded-md">
+                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-invalid-1/60 dark:bg-invalid-2/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
                                 <p class="text-xs font-bold"> Fix invalid fields! </p>
                             </span>
@@ -803,7 +801,7 @@
 
                         <!-- Back Tab Button -->
                         <Button v-if="tabSelected != 'information'" @click="backTab()"
-                            class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-bg-4 hover:bg-bg-4/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                            class="gap-0.25! bg-text-soft hover:bg-text-soft/75 p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-bg-4 hover:bg-bg-4/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm mx-0.75 font-medium"> Back </p>
                             <ArrowLeft hidden :stroke-width="'2'" :size="17" />
@@ -811,7 +809,7 @@
 
                         <!-- Next Tab Button -->
                         <Button v-if="tabSelected != 'discord'" @click="nextTab()"
-                            class="gap-0.25! p-button-success! p-2 py-1.75 flex flex-row items-center content-center justify-center  active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                            class="gap-0.25! bg-brand-1/70 hover:bg-brand-1/85 p-button-success! p-2 py-1.75 flex flex-row items-center content-center justify-center  active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             unstyled>
                             <p class="text-sm font-bold"> Next </p>
                             <ArrowRight :stroke-width="'3'" :size="17" />
@@ -822,7 +820,7 @@
                             class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-500/62 dark:bg-emerald-500/70 hover:bg-emerald-500/50 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                             :class="{
                                 'bg-zinc-600! opacity-80! scale-95! cursor-progress!': submitState == 'loading',
-                                'bg-red-400/70!  scale-100! cursor-not-allowed!': submitState == 'failed'
+                                'bg-invalid-1/70!  scale-100! cursor-not-allowed!': submitState == 'failed'
                             }" unstyled>
                             <div v-if="submitState == 'idle'"
                                 class="flex gap-0.75 flex-row items-center content-center justify-center">
@@ -847,7 +845,6 @@
 
             </div>
         </template>
-
     </Dialog>
 </template>
 
@@ -869,11 +866,11 @@
     }
 
     .formTabBtn-selected, .formTabBtn-selected:hover {
-        @apply !bg-brand-1/80 !border-indigo-500/30
+        @apply !bg-brand-1/70 !border-brand-1
     }
 
     .formTabBtn-invalid, .formTabBtn-invalid:hover {
-        @apply !bg-red-400/70 !border-red-400/30
+        @apply !bg-invalid-3/50 !border-invalid-1/80
     }
 
 

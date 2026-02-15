@@ -20,16 +20,16 @@
 
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {
-        root: {
-            background: `var(--color-zinc-700)`,
-            borderColor: `var(--color-zinc-700)`,
-            focusBorderColor: `var(--color-zinc-400)`,
-            hoverBorderColor: `var(--color-zinc-400)`,
-            checkedHoverBorderColor: `var(--color-indigo-400)`,
-            checkedBackground: `var(--color-indigo-400)`,
-            checkedBorderColor: `var(--color-indigo-400)`,
-            checkedHoverBackground: `var(--color-indigo-400)`,
-        },
+        // root: {
+        //     background: `var(--color-zinc-700)`,
+        //     borderColor: `var(--color-zinc-700)`,
+        //     focusBorderColor: `var(--color-zinc-400)`,
+        //     hoverBorderColor: `var(--color-zinc-400)`,
+        //     checkedHoverBorderColor: `var(--color-indigo-400)`,
+        //     checkedBackground: `var(--color-indigo-400)`,
+        //     checkedBorderColor: `var(--color-indigo-400)`,
+        //     checkedHoverBackground: `var(--color-indigo-400)`,
+        // },
         icon: {
             checkedColor: 'black',
             checkedHoverColor: 'black',
@@ -82,7 +82,7 @@
     <div class="flex justify-center items-center w-full! flex-1">
         <!-- Select Server - Authenticated -->
         <section
-            class="flex flex-col justify-center items-center bg-neutral-900 ring-2 ring-ring w-full m-10 max-w-150 rounded-sm"
+            class="flex flex-col justify-center items-center bg-bg-2 ring-2 ring-ring-3 w-full m-10 max-w-150 rounded-sm"
             v-if="auth.signedIn">
 
             <!-- Ready to Go - Server Selection -->
@@ -90,15 +90,15 @@
                 <p class="font-black text-2xl p-5 pb-0"> Select a Server: </p>
                 <p class="p-5 pt-0 opacity-70"> Ready to go, already has Sessions Bot.</p>
                 <div
-                    class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-white/5 border-y-2 border-ring">
+                    class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-bg-1/15 border-y-2 border-ring-3">
                     <!-- Guilds List -->
                     <span
                         class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
-
+                        <!-- Guild Button - Select -->
                         <Button v-for="guild of guildsWSession" :title="guild.name"
                             @click="selectReadyServer(guild?.id)" unstyled
-                            class="bg-black/40 grow hover:bg-black/20 hover:ring-[2px] ring-indigo-400/80 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
-                            <img :src="guild?.icon" class="size-11 rounded-full ring-2 ring-ring" />
+                            class="bg-text-soft/60 hover:bg-text-soft/45 ring-2 ring-ring-3 hover:ring-brand-1 grow cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
+                            <img :src="guild?.icon" class="size-11 bg-text-1/50 rounded-full ring-2 ring-ring-3" />
                             <p class="font-semibold"> {{ guild.name }} </p>
                         </Button>
                     </span>
@@ -119,7 +119,7 @@
                         <p class="opacity-70 mx-5 text-xs text-center w-full">
                             Not seeing the server you're looking for?
                             Refresh your data on your
-                            <RouterLink to="/account" class="text-sky-500 cursor-pointer hover:underline">
+                            <RouterLink to="/account" class="text-link cursor-pointer hover:underline">
                                 account</RouterLink>
                             page.
                         </p>
@@ -153,7 +153,7 @@
                 <!-- Basic - Invite Button -->
                 <a :href="externalUrls.inviteBot">
                     <Button unstyled
-                        class="px-2 mb-5 py-1.25 rounded-sm drop-shadow-md bg-zinc-500/80 hover:bg-indigo-500 transition-all cursor-pointer flex flex-row gap-1.25 items-center justify-center">
+                        class="px-2 mb-5 py-1.25 rounded-sm drop-shadow-md bg-text-soft hover:bg-brand-1/70 transition-all cursor-pointer flex flex-row gap-1.25 items-center justify-center">
                         <i class="pi pi-discord drop-shadow-sm" />
                         <p class="font-medium text-sm text-shadow-sm"> Invite the Bot </p>
                     </Button>
@@ -173,7 +173,8 @@
         <!-- Loading - Not Signed In -->
         <section v-else>
 
-            <div class="bg-black/40 max-w-75 p-5 rounded-md text-white/70 flex items-center justify-center flex-col">
+            <div
+                class="bg-bg-2 ring-2 ring-ring-3 max-w-75 p-5 rounded-md text-text-1/70 flex items-center justify-center flex-col">
                 <ProgressSpinner stroke-width="5" class="size-12!" />
 
                 <span v-if="showStillLoadingCard" class="flex items-center justify-center flex-col">
@@ -182,7 +183,7 @@
                         an account. </p>
                     <RouterLink to="/account" class="pt-2">
                         <Button unstyled
-                            class="bg-zinc-700/40 hover:bg-zinc-700/60 p-1 py-0.5 cursor-pointer active:scale-95 transition-all rounded-md flex gap-0.75 flex-row items-center justify-center">
+                            class="bg-text-soft hover:bg-text-soft/80 p-1 py-0.5 cursor-pointer active:scale-95 transition-all rounded-md flex gap-0.75 flex-row items-center justify-center">
                             <UserCircle2Icon :size="19" :stroke-width="1.5" />
                             <p> My account </p>
                         </Button>

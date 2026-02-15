@@ -240,7 +240,7 @@ const customPreset = definePreset(Aura, {
                 background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
                 borderColor: `var(--color-ring-soft)`,
                 focusBorderColor: 'var(--color-indigo-400)',
-                invalidBorderColor: 'var(--color-red-400)',
+                invalidBorderColor: 'var(--color-invalid-1)',
                 hoverBorderColor: 'var(--color-indigo-300)',
                 color: `var(--color-text-1)`
             },
@@ -270,7 +270,7 @@ const customPreset = definePreset(Aura, {
                 checkedBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
                 checkedHoverBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
                 checkedFocusBorderColor: `color-mix(in oklab, var(--c-brand-1), black 10%)`,
-                invalidBorderColor: `var(--color-red-400)`,
+                invalidBorderColor: `var(--color-invalid-1)`,
             }
         },
         multiselect: {
@@ -279,7 +279,7 @@ const customPreset = definePreset(Aura, {
                 background: `color-mix(in oklab, var(--c-bg-2), black 11%)`,
                 borderColor: `var(--color-ring-soft)`,
                 focusBorderColor: 'var(--color-indigo-400)',
-                invalidBorderColor: 'var(--color-red-400)',
+                invalidBorderColor: 'var(--color-invalid-1)',
                 hoverBorderColor: 'var(--color-indigo-300)',
                 focusRing: {
                     color: 'var(--color-indigo-400)'
@@ -358,8 +358,8 @@ const customPreset = definePreset(Aura, {
                 borderColor: `var(--color-text-soft)`,
                 hoverBorderColor: `var(--color-indigo-300)`,
                 focusBorderColor: `var(--color-indigo-400)`,
-                invalidBorderColor: 'var(--color-red-400)',
-                invalidPlaceholderColor: 'var(--color-red-400)',
+                invalidBorderColor: 'var(--color-invalid-1)',
+                invalidPlaceholderColor: 'var(--color-invalid-1)',
                 focusRing: {
                     color: 'var(--color-indigo-400)'
                 },
@@ -438,7 +438,7 @@ const primePT: PrimeVuePTOptions = {
     },
     autocomplete: {
         root: 'group/ac group-hover/ac:border-indigo-300! active:border-indigo-400! group-focus-within/ac:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
-        dropdown: 'border-2! border-l-0! invalid:border-red-400! group-hover/ac:border-indigo-300! group-focus-within/ac:border-indigo-400! group-[.p-invalid]/ac:border-red-400!',
+        dropdown: 'border-2! border-l-0! invalid:invalid-1! group-hover/ac:border-indigo-300! group-focus-within/ac:border-indigo-400! group-[.p-invalid]/ac:border-invalid-1!',
         overlay: 'overflow-x-auto!',
         option: 'text-text-1! bg-none! hover:bg-text-1/15! focus:bg-brand-1/15! rounded-md!',
         emptyMessage: 'text-text-1!',

@@ -11,7 +11,12 @@
     const dashboard = useDashboardStore();
 
     // Dashboard Data
-    const auditEvents = computed(() => dashboard.guildData.auditLog.state?.sort((a, b) => DateTime.fromISO(b.created_at).toSeconds() - DateTime.fromISO(a.created_at).toSeconds()))
+    const auditEvents = computed(() => {
+        let allEvents = dashboard.guildData.auditLog.state
+            ?.sort((a, b) => DateTime.fromISO(b.created_at).toSeconds() - DateTime.fromISO(a.created_at).toSeconds())
+        allEvents?.splice(75)
+        return allEvents
+    })
 
     // Event Details Modal:
     const useEventDetailsModal = () => {
@@ -60,7 +65,7 @@
         </div>
 
         <!-- Desc -->
-        <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
+        <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
             Take a look below at any of the recent actions Sessions Bot or server members have made in relation to
             sessions, RSVPs, etc.
         </p>
@@ -76,19 +81,19 @@
                     Date
                 </p>
 
-                <p class="heading-cell rounded-tr-md">
+                <p class="heading-cell ">
                     Action
                 </p>
 
-                <p class="heading-cell">
+                <p class="heading-cell rounded-tr-md">
                     User
                 </p>
 
             </div>
 
             <!-- Content Row(s) -->
-            <div title="View Details" v-for="e of auditEvents" class="content-row group odd:bg-white/5"
-                @click="eventDetailsModal.openDetails(e)">
+            <div title="View Details" v-for="e of auditEvents"
+                class="content-row group odd:bg-text-1/5 even:bg-text-1/10" @click="eventDetailsModal.openDetails(e)">
                 <!-- Date -->
                 <p class="content-cell ">
                     {{ DateTime.fromISO(e.created_at).toFormat('M/d/yy - h:mm a') }}
@@ -109,10 +114,11 @@
 
             <!-- Footer / No Events -->
             <p v-if="!auditEvents?.length"
-                class="italic font-black ring-ring ring w-full py-2 text-center uppercase text-xs text-white/40">
+                class="italic font-black ring-ring-3 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
                 No Events Found!
             </p>
-            <p v-else class="italic font-black ring-ring ring w-full py-2 text-center uppercase text-xs text-white/40">
+            <p v-else
+                class="italic font-black ring-ring-3 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
                 END OF EVENTS
             </p>
 
@@ -133,10 +139,10 @@
     @reference "@/styles/main.css";
 
     .auditLogTable {
-        @apply mt-5 mx-3 max-w-195 !max-h-fit block bg-surface ring-ring ring-2 rounded-md overflow-clip;
+        @apply mt-5 mx-3 max-w-195 !max-h-fit block bg-bg-1 ring-ring-3 ring-2 rounded-md overflow-clip;
 
         *.heading-cell {
-            @apply w-full text-center font-extrabold p-2 bg-black/30 ring-1 ring-ring;
+            @apply w-full text-center font-extrabold p-2 bg-text-1/15 ring-1 ring-ring-3;
         }
 
         *.content-row {
@@ -144,7 +150,7 @@
         }
 
         *.content-cell {
-            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-ring/40 group-hover:cursor-pointer group-active:bg-ring/25 flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring font-medium text-white/65;
+            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-text-soft/25 group-active:bg-text-soft/12 group-hover:cursor-pointer flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring-3 font-medium text-text-1/65;
         }
 
     }

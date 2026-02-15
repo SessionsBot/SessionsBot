@@ -147,8 +147,7 @@
 
 <template>
     <!-- Calendar Container -->
-    <div
-        class="flex bg-surface flex-col justify-center items-center w-fit h-fit lg:scale-108 mb-10 xl:scale-115 lg:m-5">
+    <div class="flex bg-bg-2 flex-col justify-center items-center w-fit h-fit lg:scale-108 mb-10 xl:scale-115 lg:m-5">
 
         <!-- Calendar Header -->
         <div class="calendar-header">
@@ -258,6 +257,7 @@
     <!-- Calendar - Day View - Dialog -->
     <DayViewDialog v-model:visible="dayViewVisible" v-model:selected-day="dayViewDaySelected" />
 
+    <ColorModeToggle />
 
 </template>
 
@@ -267,13 +267,13 @@
     @reference '@/styles/main.css';
 
     .calendar-header {
-        @apply bg-black/20 w-full p-2 sm:text-lg rounded-md rounded-b-none border-2 border-ring flex justify-between items-center;
+        @apply bg-bg-1/30 w-full p-2 sm:text-lg rounded-md rounded-b-none border-2 border-ring-3 flex justify-between items-center;
 
         .adjust-month-button {
-            @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-white/20;
+            @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-text-1/20;
 
             &:active {
-                @apply bg-white/15
+                @apply bg-text-1/15
             }
 
             &:disabled {
@@ -282,55 +282,55 @@
         }
 
         .select-month-button {
-            @apply p-0.5 px-2 gap-1 bg-white/15 hover:bg-white/10 flex flex-row items-center justify-center text-center font-extrabold text-nowrap rounded-md select-none cursor-pointer transition-all;
+            @apply p-0.5 px-2 gap-1 bg-text-1/10 hover:bg-text-1/15 flex flex-row items-center justify-center text-center font-extrabold text-nowrap rounded-md select-none cursor-pointer transition-all;
 
             &:active {
-                @apply bg-white/8
+                @apply bg-text-1/10;
             }
         }
     }
 
 
     .calendar-wrap {
-        @apply bg-surface w-full !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring flex flex-col;
+        @apply bg-bg-1/30 w-full !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring-3 flex flex-col;
 
         .weekday-header-row {
-            @apply bg-black/20 border-b-2 border-b-ring/30 w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
+            @apply bg-text-1/10 border-b-2 border-b-ring-3/30 w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
 
             .weekday-header {
-                @apply w-full p-1 text-center font-semibold italic text-white/60;
+                @apply w-full p-1 text-center font-semibold italic text-text-1/60;
             }
         }
 
         .calendar-days-wrap {
-            @apply grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
+            @apply bg-text-1/10 grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
 
             .calendar-day {
-                @apply relative bg-black/25 text-white/40 w-full aspect-square rounded-sm ring-2 ring-ring p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
+                @apply relative bg-bg-1/70 dark:bg-bg-1/32 text-text-1/50 w-full aspect-square rounded-sm ring-2 ring-ring-3 p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
 
                 &:hover {
-                    @apply ring-white/60 text-white/60 cursor-pointer;
+                    @apply ring-ring-1/80 text-text-1/80 cursor-pointer;
                 }
 
                 &.today-day {
-                    @apply !text-amber-400/60;
+                    @apply text-orange-500/80 dark:text-amber-400/60;
                 }
             }
         }
 
         .calendar-footer-row {
-            @apply gap-2 p-2 bg-black/20 border-t-2 border-ring/30 w-full !h-fit flex items-center justify-between content-center flex-wrap;
+            @apply gap-2 p-2 border-t-2 border-ring-3/30 w-full !h-fit flex items-center justify-between content-center flex-wrap;
 
             .key-item {
-                @apply p-0.75 px-1 gap-1 bg-black/10 rounded-lg border-2 border-ring/40 flex flex-row items-center justify-center;
+                @apply p-0.75 px-1 gap-1 bg-bg-1/50 rounded-lg border-2 border-ring-3/40 flex flex-row items-center justify-center;
 
                 p {
-                    @apply text-xs font-medium text-white/50 wrap-break-word;
+                    @apply text-xs font-medium text-text-1/50 wrap-break-word;
                 }
             }
 
             .today-button {
-                @apply hover:bg-white/10 hover:text-white/80 text-white/50 px-1.25 p-0.75 text-xs font-medium rounded-md cursor-pointer transition-all active:scale-95;
+                @apply hover:bg-bg-soft hover:text-text-1/80 text-text-1/50 px-1.25 p-0.75 text-xs font-medium rounded-md cursor-pointer transition-all active:scale-95;
             }
         }
 

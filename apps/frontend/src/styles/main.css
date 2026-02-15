@@ -78,7 +78,7 @@
   --color-text-1: var(--c-text-1);
   --color-text-2: var(--c-text-2);
   --color-text-3: var(--c-text-3);
-  --color-text-link: color-mix(in oklab, var(--color-text-1), var(--color-sky-400) 88%);
+  --color-link: color-mix(in oklab, var(--color-text-1), var(--color-sky-400) 88%);
   --color-text-soft: color-mix(in oklab, var(--color-text-3), transparent 50%);
 
   /* Border - Color */
@@ -94,6 +94,12 @@
     --color-brand-3: var(--c-brand-3);
     --color-brand-soft: color-mix(in oklab, var(--color-brand-1), transparent 55%);
 
+
+  /* Color - Invalid */
+  --color-invalid-1: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 15%);
+  --color-invalid-2: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 25%);
+  --color-invalid-3: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 35%);
+  --color-invalid-soft: color-mix(in oklab, var(--color-invalid-3), transparent 50%);
 
 
 

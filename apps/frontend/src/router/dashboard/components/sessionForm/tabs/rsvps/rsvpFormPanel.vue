@@ -179,7 +179,7 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-bg-3! ring-0! border-2! border-ring-3! m-7! p-2 overflow-y-auto! overflow-x-clip!">
+        class="bg-bg-3! ring-0! border-2! border-ring-3! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
 
         <!-- Header -->
         <template #header class="w-full! grow!">
@@ -198,11 +198,10 @@
             :resolver="zodResolver(RsvpFormSchema)" @submit="submitRsvpForm" :initial-values="RsvpFormValues">
 
             <!-- INPUT: Title -->
-            <div class="flex flex-col gap-1 w-full items-start"
-                :class="{ 'text-red-400! ring-red-400!': $form.name?.invalid }">
+            <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': $form.name?.invalid }">
                 <InputTitle fieldTitle="Title" :icon="BaselineIcon" required />
                 <inputText name="name" fluid v-model="RsvpFormValues.name" />
-                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
                     v-for="err in $form?.name?.errors || []">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
@@ -212,14 +211,13 @@
 
 
             <!-- INPUT: Emoji -->
-            <div class="flex flex-col gap-1 w-full items-start"
-                :class="{ 'text-red-400! ring-red-400!': $form.emoji?.invalid }">
+            <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': $form.emoji?.invalid }">
                 <InputTitle fieldTitle="Emoji" :icon="SmileIcon" />
                 <!-- Emoji Input -->
                 <div class="relative w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
                     <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1" />
                 </div>
-                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
                     v-for="err in $form?.emoji?.errors || []">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
@@ -228,7 +226,7 @@
 
                 <!-- Emoji Picker -->
                 <Popover unstyled ref="emojiPickerPORef" class="p-2!" @show="focusEmojiSearch">
-                    <EmojiPicker ref="emojiPickerElRef" disable-skin-tones native theme="dark" @select="(e) => {
+                    <EmojiPicker class="text-text-1!" ref="emojiPickerElRef" disable-skin-tones native @select="(e) => {
                         RsvpFormValues.emoji = e.i;
                         rsvpFormRef?.setFieldValue('emoji', e.i)
                         emojiPickerPORef.hide();
@@ -239,15 +237,14 @@
 
 
             <!-- INPUT: Capacity -->
-            <div class="flex flex-col gap-1 w-full items-start"
-                :class="{ 'text-red-400! ring-red-400!': $form.capacity?.invalid }">
+            <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': $form.capacity?.invalid }">
                 <InputTitle fieldTitle="Capacity" :icon="UsersRoundIcon" required />
                 <InputNumber name="capacity" v-model="RsvpFormValues.capacity" inputId="horizontal-buttons" showButtons
                     :step="1" :min="1" fluid
                     :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }"
                     :class="{ 'border-red-400!': $form?.capacity?.invalid }" />
 
-                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
                     v-for="err in $form?.capacity?.errors || []">
                     <p class="text-sm! pl-0.5" v-html="err?.message || 'Invalid Input'">
                     </p>
@@ -257,7 +254,7 @@
 
             <!-- INPUT: Required Roles -->
             <div class="flex relative flex-col gap-1 w-full items-start"
-                :class="{ 'text-red-400! ring-red-400!': $form.required_roles?.invalid }">
+                :class="{ 'text-invalid-1!': $form.required_roles?.invalid }">
                 <InputTitle fieldTitle="Required Role(s)" :icon="UserStarIcon" :show-help="{ path: '/' }" />
 
                 <div class="relative w-full">
@@ -267,7 +264,7 @@
                         class="disabled:border-2! disabled:border-ring-soft/50!" />
                     <!-- Premium Only - Wrapper -->
                     <a v-if="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" href="./pricing" target="_blank"
-                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-white/50 hover:text-emerald-400/70 rounded-md">
+                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-text-1/50 hover:text-emerald-500/50 rounded-md">
                         <iconify-icon icon="tabler:diamond" class="scale-120" />
                         <p class=" font-black"> Premium Feature </p>
                     </a>
@@ -276,7 +273,7 @@
 
 
 
-                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-red-400!"
+                <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
                     v-for="err in $form?.required_roles?.errors || []">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
@@ -305,7 +302,7 @@
 
                 <!-- Delete Button -->
                 <Button v-if="actionMode == 'Edit'" @click="confirmRSVPDelete()"
-                    class="gap-0.75! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-red-500/70 hover:bg-red-500/50 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                    class="gap-0.75! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-red-500/60 hover:bg-red-500/45 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                     unstyled>
                     <p class="text-sm font-medium"> Delete </p>
                     <Trash2Icon :stroke-width="'3'" :size="17" class="scale-90" />
@@ -313,7 +310,7 @@
 
                 <!-- Save Button -->
                 <Button @click="rsvpFormRef?.submit()"
-                    class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-600 hover:bg-emerald-600/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
+                    class="gap-0.75! p-2 py-1.75 flex flex-row items-center content-center justify-center bg-emerald-500/60 hover:bg-emerald-600/60 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                     unstyled>
                     <p class="text-sm font-medium"> Save </p>
                     <CheckIcon :stroke-width="'4'" :size="17" class="scale-90" />
@@ -328,12 +325,24 @@
 
 <style scoped>
 
-    .v3-emoji-picker,
-    .v3-emoji-picker.v3-color-theme-dark {
-        --v3-picker-bg: var(--color-zinc-900) !important;
+    .v3-emoji-picker {
+        --v3-picker-bg: var(--c-bg-2);
+        --v3-picker-fg: color-mix(in oklab, var(--c-bg-2), var(--c-text-1) 11%);
+        --v3-picker-border: var(--c-ring-2);
+        --v3-picker-input-bg: color-mix(in oklab, var(--c-bg-2), black 11%);
+        --v3-picker-input-border: var(--c-ring-2);
+        --v3-picker-input-focus-border: var(--color-indigo-500);
+        --v3-group-image-filter: none;
+        --v3-picker-emoji-hover: transparent;
+
     }
 
-    :deep().p-dialog-content {
+    [data-theme="dark"] .v3-emoji-picker {
+        --v3-group-image-filter: invert(1) !important;
+    }
+
+
+    .p-dialog-content {
         overflow-x: hidden !important;
     }
 

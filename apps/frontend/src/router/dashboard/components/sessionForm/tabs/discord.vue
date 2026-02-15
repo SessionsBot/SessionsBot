@@ -55,7 +55,7 @@
 
         <!-- INPUT: Post Channel -->
         <div class="flex flex-col gap-1 w-full items-start"
-            :class="{ 'text-red-400! ring-red-400!': invalidFields.has('channelId') }">
+            :class="{ 'text-invalid-1!': invalidFields.has('channelId') }">
             <InputTitle fieldTitle="Post Channel" required :icon="BaselineIcon" />
             <Select v-model="channelId" @value-change="(val) => validateField('channelId')" fluid
                 :options="selectChannelOpts" option-group-label="name" option-group-children="items"
@@ -66,7 +66,7 @@
 
         <!-- INPUT: Post Day -->
         <div class="flex flex-col gap-1 w-full items-start"
-            :class="{ 'text-red-400! ring-red-400!': invalidFields.has('postDay') }">
+            :class="{ 'text-invalid-1!': invalidFields.has('postDay') }">
             <InputTitle fieldTitle="Post Day" required :icon="CalendarArrowUpIcon" />
             <!-- Selection Input -->
             <div class="gap-3 p-1 px-0 w-full h-fit flex flex-wrap justify-start items-center content-center">
@@ -83,7 +83,7 @@
 
         <!-- INPUT: Post Time -->
         <div class="flex relative bottom-1 flex-col gap-1 w-full items-start"
-            :class="{ 'text-red-400! ring-red-400!': invalidFields.has('postTime') }">
+            :class="{ 'text-invalid-1!': invalidFields.has('postTime') }">
             <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" />
             <DatePicker input-id="postTime" time-only fluid class="w-full!" :step-minute="5" hour-format="12"
                 @value-change="() => { validateFields(['postTime', 'startDate']) }" v-model="postTime" />
