@@ -98,10 +98,10 @@
 
             <!-- Simulated Input -->
             <div @click="attemptEdit" name="accentColor"
-                class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
+                class="h-11 w-full p-1.25 py-1.5 bg-(--input-background) flex items-center justify-center border-2 border-ring-soft hover:border-indigo-300 active:border-indigo-400 transition-all cursor-pointer rounded-md"
                 :class="{
                     'border-indigo-400!': selectColorPopoverIsActive,
-                    'border-red-400!': hexInputIsInvalid
+                    'border-invalid-1!': hexInputIsInvalid
                 }">
 
                 <!-- Selected Color Display -->
@@ -121,8 +121,7 @@
                 <span class="flex items-center justify-center gap-2 flex-col">
                     <ColorPicker @value-change="processHexColorInput" :model-value="fieldValue" inline />
                     <InputText class="hex-color-input" @value-change="processHexColorInput" :default-value="fieldValue"
-                        placeholder="#hexColor" fluid size="small" :invalid="hexInputIsInvalid"
-                        :class="{ 'border-red-400!': hexInputIsInvalid }" :maxlength="7" />
+                        placeholder="#hexColor" fluid size="small" :invalid="hexInputIsInvalid" :maxlength="7" />
                 </span>
             </Popover>
 

@@ -1,3 +1,4 @@
+@import url("./color-theme.css");
 @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@100..800&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
@@ -5,53 +6,6 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-/* Light Mode Colors */
-:root {
-
-
-  --c-bg-1: #CCDBDE;
-  --c-bg-2: #B4C1C4;
-  --c-bg-3: #9CA7AA;
-
-  --c-text-1: #0B0B0C;
-  --c-text-2: #2D2D31;
-  --c-text-3: #4F4F55;
-
-    --c-ring-1: #0B0B0C;
-    --c-ring-2: #2D2D31;
-    --c-ring-3: #4F4F55;
-
-
-  --c-brand-1: #7472FE;
-  --c-brand-2: #8685FD;
-  --c-brand-3: #302b5e;
-
-} 
-
-
-
-/* Dark Mode Colors */
-[data-theme="dark"] {
-
-  --c-bg-1: #0B0B0C;
-  --c-bg-2: #2D2D31;
-  --c-bg-3: #4F4F55;
-
-  --c-text-1: #f5f5f5;
-  --c-text-2: #A8A8A8;
-  --c-text-3: #7A7A7A;
-
-  --c-ring-1: #f5f5f5;
-  --c-ring-2: #A8A8A8;
-  --c-ring-3: #7A7A7A;
-
-  --c-brand-1: #615bd7;
-  --c-brand-2: #8683ce;
-  --c-brand-3: #302b5e;
-
-
-}
 
 
 @theme inline {
@@ -72,34 +26,35 @@
   --color-bg-1: var(--c-bg-1);
   --color-bg-2: var(--c-bg-2);
   --color-bg-3: var(--c-bg-3);
-  --color-bg-soft: color-mix(in oklab, var(--color-bg-3), transparent 50%);
+  --color-bg-4: var(--c-bg-4);
+  --color-bg-soft: color-mix(in oklab, var(--color-bg-3), var(--color-bg-1) 50%);
 
   /* Text - Color */
   --color-text-1: var(--c-text-1);
   --color-text-2: var(--c-text-2);
   --color-text-3: var(--c-text-3);
+  --color-text-4: var(--c-text-4);
   --color-link: color-mix(in oklab, var(--color-text-1), var(--color-sky-400) 88%);
-  --color-text-soft: color-mix(in oklab, var(--color-text-3), transparent 50%);
+  --color-text-soft: color-mix(in oklab, var(--color-text-3), var(--color-bg-1) 50%);
 
   /* Border - Color */
   --color-ring-1: var(--c-ring-1);
   --color-ring-2: var(--c-ring-2);
   --color-ring-3: var(--c-ring-3);
-  --color-ring-soft: color-mix(in oklab, var(--color-ring-3), transparent 50%);
+  --color-ring-4: var(--c-ring-4);
+  --color-ring-soft: color-mix(in oklab, var(--color-ring-3), var(--color-bg-1) 50%);
 
 
   /* Color - Brand */
     --color-brand-1: var(--c-brand-1);
     --color-brand-2: var(--c-brand-2);
     --color-brand-3: var(--c-brand-3);
-    --color-brand-soft: color-mix(in oklab, var(--color-brand-1), transparent 55%);
+    --color-brand-soft: color-mix(in oklab, var(--color-brand-1), var(--color-bg-1) 55%);
 
 
   /* Color - Invalid */
   --color-invalid-1: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 15%);
-  --color-invalid-2: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 25%);
-  --color-invalid-3: color-mix(in oklab, var(--color-red-500), var(--c-text-1) 35%);
-  --color-invalid-soft: color-mix(in oklab, var(--color-invalid-3), transparent 50%);
+  --color-invalid-soft: color-mix(in oklab, var(--color-invalid-1), var(--color-bg-1) 50%);
 
 
 
@@ -126,14 +81,10 @@ body {
   min-height: 100vh; /* Full screen height */
 }
 
-.p-select-label {
-  --p-select-color: var(--c-text-1);
-}
-
-.scroll-hidden {
+.scroll-hide {
   overflow-y: scroll;
   scrollbar-width: none; /* Firefox */
 }
-.scroll-hidden::-webkit-scrollbar {
+.scroll-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Edge */
 }

@@ -62,7 +62,7 @@
 
                 <!--- MAIN/Homepage - Nav Page -->
                 <section
-                    class="flex bg-white/2.5 p-3.5 pt-0 gap-3.5 scroll-hidden flex-col w-full scroll-w-0 justify-start items-center content-center flex-1">
+                    class="flex bg-white/2.5 p-3.5 pt-0 gap-3.5 scroll-hide flex-col w-full scroll-w-0 justify-start items-center content-center flex-1">
                     <!-- MOST VISITED SECTION -->
                     <span class="flex flex-col gap-2 w-full">
                         <!-- Divider -->

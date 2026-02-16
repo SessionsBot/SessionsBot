@@ -171,7 +171,7 @@
 
         <!-- Editor -->
         <span v-if="selectedTab == 'Editor'"
-            class="flex-col flex justify-between items-center flex-wrap w-full h-full grow">
+            class="flex-col bg-bg-2 flex justify-between items-center flex-wrap w-full h-full grow">
 
             <!-- Toolbar -->
             <div class="editor-toolbar">
@@ -261,19 +261,19 @@
         <div class="editor-footer">
 
             <!-- Discord Markdown - Icon/Link -->
-            <a hidden :href="discordMarkdownDocsUrl" target="_blank"
-                class="gap-0.75 p-0.5 text-white/40 group/dm flex items-center justify-center w-fit h-full transition-all">
-                <DiscordIcon class="size-4  group-hover/dm:text-indigo-400! transition-all" />
+            <a :href="discordMarkdownDocsUrl" target="_blank"
+                class="gap-0.75 p-0.5 text-text-1/40 group/dm flex items-center justify-center w-fit h-full transition-all">
+                <DiscordIcon class="size-4  group-hover/dm:text-brand-2/90! transition-all" />
                 <p
-                    class="font-extrabold text-xs group-hover/dm:text-indigo-400! relative top-px uppercase truncate transition-all">
+                    class="font-extrabold text-xs group-hover/dm:text-brand-2/90! relative top-px uppercase truncate transition-all">
                     Markdown
                 </p>
             </a>
 
             <!-- Character Count -->
-            <p class="text-white/50 p-0.5 font-semibold text-xs uppercase italic w-full text-end" :class="{
-                'text-amber-500!': (curCharacters / maxCharacters) > 0.75,
-                'text-red-400!': (curCharacters / maxCharacters) > 0.95,
+            <p class="text-text-1/50 p-0.5 font-semibold text-xs uppercase italic w-full text-end" :class="{
+                'text-amber-400/50!': (curCharacters / maxCharacters) > 0.75,
+                'text-invalid-1/80!': (curCharacters / maxCharacters) > 0.95,
             }">
                 {{ curCharacters }}/{{ maxCharacters }}
             </p>
@@ -289,26 +289,27 @@
 
     .editor-wrap {
         /* Style Variables */
-        --borderColor: var(--color-zinc-600);
+        --borderColor: var(--color-ring-soft);
         --hoverBorderColor: var(--color-indigo-300);
         --activeBorderColor: var(--color-indigo-400);
         --invalidBorderColor: var(--color-red-400);
-        --accentBackground: color-mix(in oklab, var(--color-surface), black 12%);
+        --accentBackground: var(--color-bg-3);
+        /* --accentBackground: color-mix(in oklab, var(--color-surface), black 12%); */
 
         /* Editor Wrap Root Styles */
-        @apply relative !min-w-60 !min-h-50 !w-full max-w-120 flex flex-col flex-nowrap items-center justify-between bg-surface shadow-sm shadow-black/30 border-2 border-(--borderColor) rounded-md transition-colors;
+        @apply relative !min-w-60 !min-h-50 !w-full max-w-120 flex flex-col flex-nowrap items-center justify-between bg-bg-3 shadow-sm shadow-black/30 border-2 border-(--borderColor) rounded-md overflow-clip transition-colors;
 
         /* Toolbar Styles */
         .editor-toolbar {
 
-            @apply gap-2.5 p-1.5 w-full min-w-full h-fit flex flex-row items-center justify-between flex-wrap content-center border-b-2 border-(--borderColor) bg-(--accent-background) transition-colors;
+            @apply bg-bg-3/50 gap-2.5 p-1.5 w-full min-w-full h-fit flex flex-row items-center justify-between flex-wrap content-center border-b-2 border-(--borderColor) transition-colors;
 
             .toolbar-section {
                 @apply gap-1.25 flex items-center justify-start flex-wrap;
             }
 
             .toolbar-button {
-                @apply p-0.5 rounded bg-zinc-400/22 hover:bg-ring active:bg-ring/80 active:scale-95 aspect-square transition-all cursor-pointer flex items-center justify-center content-center;
+                @apply p-0.5 rounded bg-ring-soft hover:bg-ring-soft/75 active:bg-ring-soft/65 active:scale-95 aspect-square transition-all cursor-pointer flex items-center justify-center content-center;
             }
 
         }
@@ -316,7 +317,8 @@
 
         /* Text Input Styles */
         .editor-textInput {
-            @apply bg-white/3 p-1.5 h-35 resize-none w-full flex grow outline-none;
+            background: color-mix(in oklab, var(--c-bg-2), black 12%);
+            @apply p-1.5 h-35 resize-none w-full flex grow outline-none;
         }
 
         /* Footer Styles */

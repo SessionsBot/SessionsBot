@@ -27,6 +27,7 @@
                 <p class="text-text-1!"> Text 1 </p>
                 <p class="text-text-2!"> Text 2 </p>
                 <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-4!"> Text 4 </p>
                 <p class="text-text-soft!"> Text S </p>
 
             </span>
@@ -39,6 +40,7 @@
                 <p class="text-text-1!"> Text 1 </p>
                 <p class="text-text-2!"> Text 2 </p>
                 <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-4!"> Text 4 </p>
                 <p class="text-text-soft!"> Text S </p>
 
             </span>
@@ -50,6 +52,19 @@
                 <p class="text-text-1!"> Text 1 </p>
                 <p class="text-text-2!"> Text 2 </p>
                 <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-4!"> Text 4 </p>
+                <p class="text-text-soft!"> Text S </p>
+
+            </span>
+
+            <span class="display-area bg-bg-4! border-ring-3!">
+
+                <p class="title"> Bg 4 </p>
+
+                <p class="text-text-1!"> Text 1 </p>
+                <p class="text-text-2!"> Text 2 </p>
+                <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-4!"> Text 4 </p>
                 <p class="text-text-soft!"> Text S </p>
 
             </span>
@@ -61,8 +76,27 @@
                 <p class="text-text-1!"> Text 1 </p>
                 <p class="text-text-2!"> Text 2 </p>
                 <p class="text-text-3!"> Text 3 </p>
+                <p class="text-text-4!"> Text 4 </p>
                 <p class="text-text-soft!"> Text S </p>
 
+            </span>
+
+            <span class="flex p-2 gap-2 flex-wrap">
+                <span class="px-10 py-2.5 ring-2 ring-ring-1 rounded-md w-fit h-fit">
+                    <p class="text-ring-1"> Ring 1 </p>
+                </span>
+                <span class="px-10 py-2.5 ring-2 ring-ring-2 rounded-md w-fit h-fit">
+                    <p class="text-ring-2"> Ring 2 </p>
+                </span>
+                <span class="px-10 py-2.5 ring-2 ring-ring-3 rounded-md w-fit h-fit">
+                    <p class="text-ring-3"> Ring 3 </p>
+                </span>
+                <span class="px-10 py-2.5 ring-2 ring-ring-4 rounded-md w-fit h-fit">
+                    <p class="text-ring-4"> Ring 4 </p>
+                </span>
+                <span class="px-10 py-2.5 ring-2 ring-ring-soft rounded-md w-fit h-fit">
+                    <p class="text-ring-soft"> Ring S </p>
+                </span>
             </span>
 
 
@@ -209,24 +243,15 @@
 
                 <span class="flex gap-2 p-2 bg-bg-1">
                     <div class="w-fit aspect-square p-1 rounded-md bg-invalid-1">
-                        Red 400
-                    </div>
-                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-2">
-                        Red 500
-                    </div>
-
-                    <div class="w-fit aspect-square p-1 rounded-md bg-invalid-3">
-                        Red 400/50
+                        Invalid 1
                     </div>
                     <div class="w-fit aspect-square p-1 rounded-md bg-invalid-soft">
-                        Red 500/50
+                        Invalid Soft
                     </div>
                 </span>
 
 
             </span>
-
-            <p class="bg-(--sf-invalid-border)"> This tried using a scoped class! </p>
 
 
             <ColorModeToggle />

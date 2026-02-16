@@ -74,14 +74,14 @@
 
 <template>
     <!-- Day View - Modal/Dialog -->
-    <Dialog v-model:visible="isVisible" modal block-scroll :pt="{ root: 'bg-transparent! border-0! text-white/80!' }"
+    <Dialog v-model:visible="isVisible" modal block-scroll :pt="{ root: 'bg-transparent! border-0! text-text-1/80!' }"
         class="w-[85%] max-w-130 bg-transparent! m-7! overflow-clip! rounded-md!">
         <template #container>
             <div class="dialog-container">
                 <!-- Header -->
                 <div class="dialog-header">
                     <span>
-                        <p class="uppercase font-black text-xs text-white/40">
+                        <p class="uppercase font-black text-xs text-text-1/40">
                             Day View - {{ selectedDay?.toFormat('D') || '?/?/?' }}
                         </p>
                         <p class="font-extrabold text-lg p-0.5 pl-0">
@@ -130,7 +130,7 @@
                             </Button>
                         </div>
                         <!--  No Sessions - Card -->
-                        <div v-if="!thisDaysSessions.length" class="list-item-card bg-white/10!">
+                        <div v-if="!thisDaysSessions.length" class="list-item-card bg-text-1/13">
                             <p v-if="pastDay" class="font-semibold italic opacity-55 inline">
                                 Day has already concluded!
                             </p>
@@ -165,7 +165,7 @@
                             </Button>
                         </div>
                         <!-- No Schedules - Card -->
-                        <div v-if="!thisDaysTemplates.length" class="list-item-card bg-white/10!">
+                        <div v-if="!thisDaysTemplates.length" class="list-item-card bg-text-1/13!">
                             <p v-if="!pastDay" class="font-semibold italic opacity-55">
                                 No Sessions Scheduled!
                             </p>
@@ -182,7 +182,6 @@
 
                 </div>
 
-
             </div>
 
         </template>
@@ -195,14 +194,14 @@
     @reference "@/styles/main.css";
 
     .dialog-container {
-        @apply flex flex-col w-full h-full justify-start items-start overflow-y-auto border-2 bg-surface border-ring rounded-md;
+        @apply flex flex-col w-full h-full justify-start items-start overflow-y-auto border-2 bg-bg-2 border-ring-soft rounded-md;
     }
 
     .dialog-header {
-        @apply flex bg-black/20 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full;
+        @apply flex bg-bg-3/30 border-b-2 border-inherit p-2 pb-1 gap-4 flex-row justify-between items-center w-full;
 
         .header-button {
-            @apply p-1 flex items-center text-white/75 justify-center hover:bg-white/10 active:scale-95 transition-all rounded-md cursor-pointer;
+            @apply p-1 flex items-center text-text-1/75 justify-center hover:bg-bg-3 active:scale-95 transition-all rounded-md cursor-pointer;
         }
 
     }
@@ -212,7 +211,7 @@
     }
 
     .section-heading {
-        @apply uppercase !sticky text-sm self-start font-extrabold text-white/60 text-center bg-black/15 border-2 border-ring drop-shadow-sm drop-shadow-black/40 p-0.5 px-1.75 rounded-md;
+        @apply uppercase !sticky text-sm self-start font-extrabold text-text-1/60 text-center bg-black/15 border-2 border-ring-soft drop-shadow-sm drop-shadow-black/20 p-0.5 px-1.75 rounded-md;
     }
 
     .section-wrap {
@@ -220,10 +219,10 @@
     }
 
     .list-item-card {
-        @apply flex p-2 w-full max-w-[80%] gap-1.5 rounded-md bg-white/12 flex-row items-center justify-between border-2 border-ring drop-shadow-md drop-shadow-black/40;
+        @apply flex p-2 w-full max-w-[80%] gap-1.5 rounded-md bg-text-1/13 flex-row items-center justify-between border-2 border-ring-soft drop-shadow-md drop-shadow-black/20;
 
         .action-button {
-            @apply bg-black/27 font-bold cursor-pointer text-sm hover:bg-black/20 active:scale-95 transition-all rounded-md flex items-center justify-center gap-2 p-2;
+            @apply bg-black/25 font-bold cursor-pointer text-sm hover:bg-black/20 active:scale-95 transition-all rounded-md flex items-center justify-center gap-2 p-2;
         }
 
     }

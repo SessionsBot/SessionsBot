@@ -114,11 +114,11 @@
 
             <!-- Footer / No Events -->
             <p v-if="!auditEvents?.length"
-                class="italic font-black ring-ring-3 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
+                class="italic font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
                 No Events Found!
             </p>
             <p v-else
-                class="italic font-black ring-ring-3 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
+                class="italic font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
                 END OF EVENTS
             </p>
 
@@ -139,10 +139,10 @@
     @reference "@/styles/main.css";
 
     .auditLogTable {
-        @apply mt-5 mx-3 max-w-195 !max-h-fit block bg-bg-1 ring-ring-3 ring-2 rounded-md overflow-clip;
+        @apply mt-5 mx-3 max-w-195 !max-h-fit block bg-bg-1 ring-ring-soft ring-2 rounded-md overflow-clip;
 
         *.heading-cell {
-            @apply w-full text-center font-extrabold p-2 bg-text-1/15 ring-1 ring-ring-3;
+            @apply w-full text-center font-extrabold p-2 bg-text-1/15 ring-1 ring-ring-soft;
         }
 
         *.content-row {
@@ -150,7 +150,7 @@
         }
 
         *.content-cell {
-            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-text-soft/25 group-active:bg-text-soft/12 group-hover:cursor-pointer flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring-3 font-medium text-text-1/65;
+            @apply min-w-0 p-2 px-2.5 break-inside-auto wrap-anywhere whitespace-pre-line group-hover:bg-text-soft/25 group-active:bg-text-soft/12 group-hover:cursor-pointer flex items-center justify-start flex-wrap text-wrap !min-h-fit h-full w-full ring-1 ring-ring-soft font-medium text-text-1/65;
         }
 
     }

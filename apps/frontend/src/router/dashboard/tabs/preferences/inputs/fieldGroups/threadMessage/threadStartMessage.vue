@@ -115,7 +115,7 @@
         <div @click="editDialog.attemptEdit()" class="w-full flex flex-col gap-1.5 p-0.5 flex-wrap group/di">
 
             <!-- Thread Title - Simulated Input -->
-            <div class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
+            <div class="h-11 w-full p-1.25 py-1.5 bg-(--input-background) flex items-center justify-center border-2 border-ring-soft group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
                 :class="{
                     'border-red-400!': fieldErrors.length
                 }">
@@ -129,7 +129,7 @@
             </div>
 
             <!-- Thread Description - Simulated Input -->
-            <div class="h-11 w-full p-1.25 py-1.5 bg-white/7 flex items-center justify-center border-2 border-zinc-300 group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
+            <div class="h-11 w-full p-1.25 py-1.5 bg-(--input-background) flex items-center justify-center border-2 border-ring-soft group-hover/di:border-indigo-300 group-active/di:border-indigo-400 transition-all cursor-pointer rounded-md"
                 :class="{
                     'border-red-400!': fieldErrors.length
                 }">
@@ -155,7 +155,7 @@
 
 
         <!-- Edit - Input Dialog -->
-        <Dialog :visible="editDialog.isVisible.value" modal block-scroll class="w-[90%]! max-w-320! m-7!">
+        <Dialog :visible="editDialog.isVisible.value" modal block-scroll class="w-[90%]! max-w-320! m-7! border-0!">
             <template #container="$dialog">
                 <div
                     class="flex w-full border-2 border-ring rounded-md shadow-md shadow-black/40 flex-col h-fit overflow-auto">
@@ -192,7 +192,7 @@
 
                     <!-- Content -->
                     <span
-                        class="flex flex-col lg:flex-row items-start justify-start w-full h-fit min-h-fit divide-ring divide-x-2 ">
+                        class="flex flex-col overflow-y-auto lg:flex-row items-start justify-start w-full h-fit min-h-fit divide-ring divide-x-2 ">
 
 
                         <!-- Inputs - Area -->
@@ -262,12 +262,8 @@
     }
 
     .input-errors {
-        @apply text-red-400 text-sm w-full;
+        @apply text-invalid-1 text-sm w-full;
     }
 
-    .heading-input {
-        --p-inputtext-border-color: var(--color-ring);
-        --p-inputtext-background: color-mix(in oklab, var(--color-white) 3%, transparent) !important;
-    }
 
 </style>

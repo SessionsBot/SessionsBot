@@ -176,7 +176,7 @@
                 </p>
             </div>
 
-            <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
+            <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
                 Review your server wide preferences, this changes how things work with Sessions Bot across your <b>whole
                     server</b>.
             </p>
@@ -223,11 +223,11 @@
 
                     <!-- Submit/Save -->
                     <Button unstyled type="submit" :disabled="preferenceForm.submitState.value != 'idle'"
-                        class="bg-zinc-500/80 flex items-center justify-center gap-0.75 p-1 rounded-md cursor-pointer active:scale-95 transition-all drop-shadow-md drop-shadow-black/40"
+                        class="bg-bg-4 hover:bg-bg-4/80 flex items-center justify-center gap-0.75 p-1 rounded-md cursor-pointer active:scale-95 transition-all drop-shadow-sm drop-shadow-black/25"
                         :class="{
                             'scale-95! opacity-50!': preferenceForm.submitState.value == 'failed',
-                            'bg-red-400!': preferenceForm.submitState.value == 'failed',
-                            'bg-emerald-500!': preferenceForm.submitState.value == 'success',
+                            'bg-invalid-soft!': preferenceForm.submitState.value == 'failed',
+                            'bg-emerald-500/50!': preferenceForm.submitState.value == 'success',
                         }" @click="preferenceForm.submit">
                         <!-- <Iconify /> -->
                         <CheckIcon :size="20" />
@@ -258,17 +258,19 @@
 
     @reference '@/styles/main.css';
 
+    :deep(.tab-content-wrap) {
+        /* Root & Override Variables */
+        --input-background: color-mix(in oklab, var(--color-bg-2), black 12%) !important;
+        --p-inputtext-placeholder-color: color-mix(in oklab, var(--color-text-1) 45%, transparent) !important;
+        --p-inputtext-background: var(--input-background);
+    }
 
     .tab-content-wrap {
-        /* Root & Override Variables */
-        --p-inputtext-placeholder-color: color-mix(in oklab, var(--color-white) 45%, transparent) !important;
-        --p-inputtext-background: color-mix(in oklab, var(--color-white) 7%, transparent) !important;
-
         @apply flex flex-col gap-1 p-7 items-center justify-center w-full h-fit grow;
     }
 
     .preferences-form {
-        @apply bg-surface gap-2.5 p-3 mb-4 w-full max-w-135 border-2 border-ring rounded-md flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
+        @apply bg-bg-2 gap-2.5 p-3 mb-4 w-full max-w-135 border-2 border-ring-soft rounded-md flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
     }
 
     :deep(.input-group) {
@@ -279,7 +281,7 @@
         }
 
         .errors {
-            @apply text-red-400 text-sm font-semibold w-full flex flex-col flex-wrap gap-0.75;
+            @apply text-invalid-1 text-sm font-semibold w-full flex flex-col flex-wrap gap-0.75;
         }
     }
 

@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <main class="flex flex-1 flex-col grow w-full h-full justify-between items-center text-gray-100">
+  <main class="flex flex-1 flex-col grow w-full h-full justify-between items-center text-text-1">
 
 
     <!-- Hero Section -->
@@ -19,17 +19,17 @@
         <h1 class="text-5xl md:text-6xl font-extrabold mb-4">
           Welcome to <span class="text-indigo-400 font-stretch-125% font-cut-letters!">Sessions Bot</span>
         </h1>
-        <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+        <p class="text-text-3 text-lg md:text-xl max-w-2xl mx-auto mb-8">
           Manage your Discord sessions effortlessly — schedule, organize, and host events with ease!
         </p>
         <div class="flex justify-center gap-4">
           <a :href="externalUrls.inviteBot" target="_blank" rel="noopener noreferrer">
             <Button label="Invite to Discord" icon="pi pi-discord"
-              class="!bg-indigo-500 hover:!bg-indigo-600 border-none! shadow-md px-5 py-3 text-white font-semibold rounded-xl transition-all duration-300" />
+              class="!bg-indigo-500 hover:!bg-indigo-600 border-none! shadow-md px-5 py-3 font-semibold rounded-xl transition-all duration-300" />
           </a>
           <RouterLink to="/dashboard">
             <Button label="Dashboard" outlined @click="$router.push('/dashboard')" icon="pi pi-home"
-              class="!border-indigo-400 !text-indigo-300 hover:!bg-indigo-800 px-5 py-3 hover:!text-white/70 rounded-xl transition-all duration-300" />
+              class="!border-indigo-400 hover:!bg-indigo-800 px-5 py-3 rounded-xl transition-all duration-300" />
           </RouterLink>
         </div>
       </section>
@@ -40,8 +40,7 @@
       <section class="mt-14 grid gap-8 grid-cols-1 md:grid-cols-3 px-8 max-w-6xl w-full">
 
         <!-- Smart Scheduling -->
-        <Card
-          class="backdrop-blur-md bg-black/15! border border-gray-700 rounded-2xl shadow-lg hover:shadow-indigo-500/20 transition-all duration-300">
+        <Card class="feature-card">
           <template #title>
             <div class="flex items-center gap-2 text-xl text-indigo-400 font-semibold">
               <i class="pi pi-calendar "></i>
@@ -49,14 +48,13 @@
             </div>
           </template>
           <template #content>
-            <p class="text-gray-300/70">
+            <p class="text-text-3">
               Automatically create and manage training sessions or meetings with seamless time zone support.
             </p>
           </template>
         </Card>
         <!-- Generous Limits -->
-        <Card
-          class="backdrop-blur-md bg-black/15! border border-gray-700 rounded-2xl shadow-lg hover:shadow-indigo-500/20 transition-all duration-300">
+        <Card class="feature-card">
           <template #title>
             <div class="flex items-center gap-2 text-xl text-indigo-400 font-semibold">
               <i class="pi pi-dollar "></i>
@@ -64,15 +62,14 @@
             </div>
           </template>
           <template #content>
-            <p class="text-gray-300/70">
+            <p class="text-text-3">
               Configure multiple session schedules, signup channels, custom session rsvps, and more for completley
               free!
             </p>
           </template>
         </Card>
         <!-- Built for Everyone -->
-        <Card
-          class="backdrop-blur-md bg-black/15! border border-gray-700 rounded-2xl shadow-lg hover:shadow-indigo-500/20 transition-all duration-300">
+        <Card class="feature-card">
           <template #title>
             <div class="flex items-center gap-2 text-xl text-indigo-400 font-semibold">
               <i class="pi pi-dollar "></i>
@@ -80,7 +77,7 @@
             </div>
           </template>
           <template #content>
-            <p class="text-gray-300/70">
+            <p class="text-text-3">
               Our session management bot works great for all sorts of Discord Servers!
             </p>
           </template>
@@ -97,4 +94,12 @@
 
 </template>
 
-<style scoped></style>
+<style scoped>
+
+  @reference "@/styles/main.css";
+
+  .feature-card {
+    @apply backdrop-blur-md !bg-bg-2 border border-brand-1 rounded-2xl shadow-lg hover:shadow-indigo-500/20 transition-all duration-300;
+  }
+
+</style>

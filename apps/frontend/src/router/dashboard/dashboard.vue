@@ -81,22 +81,23 @@
             <span v-else-if="guildDataState?.errors?.length"
                 class="w-full h-full flex grow items-center justify-center flex-wrap p-5">
                 <div
-                    class="flex flex-col gap-2 items-center justify-center self-center p-7 m-5 max-w-135 bg-black/40 rounded-md shadow-lg">
+                    class="flex flex-col gap-2 items-center justify-center self-center p-7 m-5 max-w-135 bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
                     <p class="font-black text-lg">
-                        <TriangleAlertIcon class="inline bottom-0.5 relative text-yellow-500" />
+                        <TriangleAlertIcon class="inline bottom-0.5 relative text-invalid-1" />
                         Uh oh! We ran into a data error...
                     </p>
                     <p>
                         Wait a few seconds and refresh this page. If this issue persists, please get in contact
                         with
-                        <RouterLink class="text-sky-500 hover:underline" to="/support">bot support</RouterLink>.
+                        <RouterLink class="text-link/90 hover:underline" to="/support">bot support</RouterLink>.
                     </p>
                 </div>
             </span>
 
 
             <!-- Dashboard View - Page/Wrap -->
-            <div v-else class="absolute flex flex-row inset-0 w-full! h-full! max-w-full! max-h-full!">
+            <div v-else-if="dashboard.guildId != null && !guildDataState.errors?.length"
+                class="absolute flex flex-row inset-0 w-full! h-full! max-w-full! max-h-full!">
 
                 <!-- Dashboard - Nav/Sidebar -->
                 <DashboardNav />

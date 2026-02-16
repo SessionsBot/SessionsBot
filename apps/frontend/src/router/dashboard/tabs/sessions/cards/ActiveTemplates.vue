@@ -71,7 +71,7 @@
                 </p>
             </div>
             <!-- All Schedules - List -->
-            <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap first:bg-red-500!">
+            <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap">
                 <TemplateCard v-for="t in guildTemplates?.slice(tPageIndexStart ?? 0, ((tPageIndexStart ?? 0) + 5))"
                     kind="template" :template="t" :key="t.id" />
             </span>
@@ -90,27 +90,16 @@
 
     @reference "@/styles/main.css";
 
-    /* Paginator Styles */
-    .paginator {
-        @apply !w-full p-1 border-t-2 border-ring;
-        --p-paginator-background: var(--color-surface);
-        --p-paginator-nav-button-hover-background: var(--color-ring);
-        --p-paginator-nav-button-selected-background: var(--color-indigo-500);
-        --p-paginator-nav-button-color: var(--color-white);
-        --p-paginator-nav-button-hover-color: var(--color-white);
-        --p-paginator-nav-button-selected-color: var(--color-white);
-    }
-
 
     .upcoming-sessions-card {
-        @apply bg-surface w-[90%] max-w-140 h-fit ring-ring ring-2 rounded-md flex flex-col items-center justify-center content-center flex-wrap;
+        @apply bg-bg-2 w-[90%] max-w-140 h-fit ring-ring-soft ring-2 rounded-md flex flex-col items-center justify-center content-center flex-wrap;
 
         .card-header {
-            @apply bg-black/20 border-b-2 border-ring flex w-full gap-8 p-3 justify-between items-center content-center flex-row;
+            @apply bg-bg-4/20 border-b-2 border-ring-soft flex w-full gap-8 p-3 justify-between items-center content-center flex-row;
         }
 
         .section-heading {
-            @apply bg-black/20 border-2 border-ring/50 text-white/50 p-1.5 py-0.75 gap-0.5 flex self-start relative left-1.5 w-fit mt-2 rounded-lg flex-row items-center justify-center;
+            @apply bg-bg-4/20 border-2 border-ring-soft/50 text-text-1/50 p-1.5 py-0.75 gap-0.5 flex self-start relative left-1.5 w-fit mt-2 rounded-lg flex-row items-center justify-center;
 
             p {
                 @apply font-extrabold text-sm

@@ -127,7 +127,7 @@
                 </span>
                 <!-- Posts Soon - Badge -->
                 <div v-if="props.kind == 'template' && DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
-                    class="px-1.25 py-0.5 border-2 bg-white/10 border-ring rounded-full flex items-center justify-center">
+                    class="px-1.25 py-0.5 border-2 bg-text-1/10 border-ring-soft rounded-full flex items-center justify-center">
                     <p class="text-amber-400 text-[10px] relative italic font-black">
                         Soon
                     </p>
@@ -135,7 +135,7 @@
             </span>
             <!-- Edit Button -->
             <Button @click="editSchedule" unstyled class="action-button">
-                <PencilIcon :size="22" class="p-0.5! mr-0.5! icon text-amber-400/80!" />
+                <PencilIcon :size="22" class="p-0.5! mr-0.5! icon text-amber-400/50!" />
                 <p class="inline-flex gap-1 h-full items-center pt-0.5">
                     Edit <span hidden class="hidden sm:inline"> Schedule</span>
                 </p>
@@ -143,7 +143,7 @@
 
             <a v-if="props.kind == 'session'" :href="signupMsgUrl" target="_blank">
                 <Button unstyled class="action-button">
-                    <DiscordIconOutlined class="size-5 text-indigo-400 mr-1! relative bottom-px icon" />
+                    <DiscordIconOutlined class="size-5 text-brand-1/70 mr-1! relative bottom-px icon" />
                     <p class="inline-flex gap-1 h-full items-center pt-0.5">
                         View <span hidden class="hidden sm:inline"> on Discord</span>
                     </p>
@@ -160,7 +160,11 @@
     @reference "@/styles/main.css";
 
     .session-card {
-        @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-black/20 border-ring w-full !h-fit text-center transition-all border-2 hover:border-white/50 rounded-md;
+        @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-bg-3 w-full !h-fit text-center transition-all border-2 border-ring-soft rounded-md;
+
+        &:hover {
+            border-color: var(--c-brand-1) !important;
+        }
 
         .name-and-time {
             @apply flex grow-2 gap-2 p-1 items-center justify-center text-center flex-col flex-wrap;
@@ -179,7 +183,7 @@
             }
 
             .session-zone {
-                @apply text-zinc-400
+                @apply text-text-4/80
             }
         }
 
@@ -188,14 +192,14 @@
             @apply flex gap-1 items-center justify-center flex-row sm:flex-col py-2 sm:py-0 flex-wrap;
 
             .option-flag {
-                @apply bg-black/15 border-2 border-ring/50 p-1 py-0.75 rounded-lg font-extrabold text-sm;
+                @apply bg-black/15 border-2 border-ring-soft p-1 py-0.75 rounded-lg font-extrabold text-sm;
 
                 &.disabled {
-                    @apply text-white/15 border-ring/30 line-through;
+                    @apply text-text-1/15 border-ring-soft/70 line-through;
                 }
 
                 &.enabled {
-                    @apply text-white/65;
+                    @apply text-text-1/65;
                 }
             }
 
@@ -206,11 +210,11 @@
             @apply flex gap-2.5 sm:gap-2 pb-2 items-center justify-center flex-wrap h-full;
 
             .post-time {
-                @apply text-white/75 font-extrabold opacity-70 text-sm p-0.5 pb-2 sm:pb-0 text-center w-full inline-flex truncate items-center justify-center gap-1 flex-wrap;
+                @apply text-text-1/75 font-extrabold opacity-70 text-sm p-0.5 pb-2 sm:pb-0 text-center w-full inline-flex truncate items-center justify-center gap-1 flex-wrap;
             }
 
             .action-button {
-                @apply px-2 pr-2.75 py-0.75 rounded-lg active:scale-95 font-bold bg-zinc-700 hover:bg-zinc-700/80 cursor-pointer transition-all block;
+                @apply px-2 pr-2.75 py-0.75 rounded-lg active:scale-95 font-bold bg-neutral-600/80 hover:bg-zinc-700/80 cursor-pointer transition-all block;
 
                 .icon {
                     @apply inline aspect-square min-w-fit !p-0 h-full flex items-center;

@@ -168,7 +168,7 @@
 
     .discord-preview {
 
-        @apply bg-white/7 border border-zinc-500 p-2 rounded-md w-full shadow-md shadow-black/10;
+        @apply bg-white/7 border border-ring-soft p-2 rounded-md w-full shadow-md shadow-black/10;
 
         strong {
             font-weight: 800 !important;
@@ -218,12 +218,12 @@
         }
 
         blockquote {
-            @apply pl-6 bg-white/7 w-full py-3 px-1 relative font-semibold text-white/80 rounded-md;
+            @apply pl-6 !bg-text-1/14 w-full !py-2 !mt-2.5 mb-1.5 px-1 relative font-semibold !text-text-1/80 rounded-md;
 
             &::after {
                 z-index: 1;
                 content: '';
-                @apply bg-white/40 h-[70%] w-1 rounded-full absolute left-2 top-[15%]
+                @apply !bg-text-1/40 h-[70%] w-1 rounded-full absolute left-2 top-[15%]
             }
         }
 

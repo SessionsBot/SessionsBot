@@ -26,7 +26,7 @@
             </p>
         </div>
 
-        <p class="mx-4 mb-7 pt-1 text-sm text-start w-full text-white/70">
+        <p class="mx-4 mb-7 pt-1 text-sm text-start w-full text-text-1/70">
             View your Discord Server's personal calendar below. Here you can inspect individual days and look back
             at
             session

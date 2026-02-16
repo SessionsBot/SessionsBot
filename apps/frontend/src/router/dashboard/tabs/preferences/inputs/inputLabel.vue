@@ -19,7 +19,7 @@
             {{ props?.title || 'Input Title?' }}
             <!-- Premium Feature Badge -->
             <span v-if="props.premiumType"
-                class="mx-0.5 flex flex-row gap-px p-0.5 pr-1 bg-black/5 text-white/80 border-indigo-400/70 border-2 rounded-lg">
+                class="mx-0.5 flex flex-row gap-px p-0.5 pr-1 bg-text-1/8 text-text-1/80 border-indigo-400/70 border-2 rounded-lg">
                 <DiamondIcon class="size-4! fill-transparent!" />
                 <p v-if="props.premiumType == 'PREMIUM'" class="font-bold text-xs"> Premium </p>
                 <p v-if="props.premiumType == 'ENTERPRISE'" class="font-bold text-xs"> Enterprise </p>

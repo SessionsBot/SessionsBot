@@ -332,7 +332,7 @@
                     You're about to <strong>permanently delete</strong> this session
                     & any recurring session that stems from it.
                 </p><br>
-                <p class="w-full text-center font-bold underline text-invalid-2">
+                <p class="w-full text-center font-bold underline text-invalid-1">
                     This cannot be undone!
                 </p>
             `,
@@ -770,7 +770,7 @@
 
                         <Transition name="zoom" mode="out-in">
                             <span v-if="invalidFields.size >= 1"
-                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-invalid-1/60 dark:bg-invalid-2/70 drop-shadow-sm rounded-md">
+                                class="flex flex-row gap-0.5 p-1.5 py-0.5 justify-center items-center bg-invalid-1/60 dark:bg-invalid-1/70 drop-shadow-sm rounded-md">
                                 <AlertCircleIcon :stroke-width="2.75" :size="14" />
                                 <p class="text-xs font-bold"> Fix invalid fields! </p>
                             </span>
@@ -870,7 +870,7 @@
     }
 
     .formTabBtn-invalid, .formTabBtn-invalid:hover {
-        @apply !bg-invalid-3/50 !border-invalid-1/80
+        @apply !bg-invalid-1/60 !border-invalid-1/80
     }
 
 

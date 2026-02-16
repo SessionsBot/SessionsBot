@@ -39,7 +39,7 @@
             </p>
         </div>
 
-        <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
+        <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
             View your Discord Server's recently posted sessions and any active session schedules you have configured.
         </p>
 
@@ -83,4 +83,19 @@
 </template>
 
 
-<style scoped></style>
+<style scoped>
+
+    @reference "@/styles/main.css";
+
+    /* Paginator Styles */
+    :deep(.paginator) {
+        @apply !w-full p-1 border-t-2 border-ring-soft;
+        --p-paginator-background: var(--color-bg-2);
+        --p-paginator-nav-button-hover-background: var(--color-ring-soft);
+        --p-paginator-nav-button-selected-background: var(--color-indigo-500);
+        --p-paginator-nav-button-color: var(--color-text-1);
+        --p-paginator-nav-button-hover-color: var(--color-text-1);
+        --p-paginator-nav-button-selected-color: var(--color-text-1);
+    }
+
+</style>

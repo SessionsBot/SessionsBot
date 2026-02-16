@@ -19,38 +19,12 @@
             </p>
         </div>
 
-        <p class="mx-4 pt-1 text-sm text-start w-full text-white/70">
+        <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
             Take a look below at any of the recent actions Sessions Bot or server members have made in relation to
             sessions, RSVPs, etc.
         </p>
 
-        <!-- Audit Log - Table -->
-        <div class="auditLog">
 
-            <!-- Header Row -->
-            <div class="font-bold uppercase grid grid-cols-3">
-                <p class="heading-cell rounded-tl-md">
-                    ~~~~~
-                </p>
-
-                <p class="heading-cell">
-                    ~~~~~~
-                </p>
-
-                <p class="heading-cell rounded-tr-md">
-                    ~~~~~~~~
-                </p>
-            </div>
-
-
-
-
-            <p class="italic font-black w-full mt-2 text-center uppercase text-xs text-white/40">
-                . . .<br>
-                END OF EVENTS
-            </p>
-
-        </div>
 
     </div>
 </template>
@@ -60,21 +34,5 @@
 
     @reference "@/styles/main.css";
 
-    .auditLog {
-        @apply mt-5 pb-2 bg-white/5 ring-ring ring-2 rounded-md w-[95%];
-
-        *.heading-cell {
-            @apply w-full text-center p-2 bg-black/10 ring-1 ring-ring;
-        }
-
-        *.content-row {
-            @apply w-full grid grid-cols-3 grid-rows-1
-        }
-
-        *.content-cell {
-            @apply bg-white/7 flex items-center w-full p-1 px-1.5 ring-1 ring-ring font-medium text-white/85;
-        }
-
-    }
 
 </style>

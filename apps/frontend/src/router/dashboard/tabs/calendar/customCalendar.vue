@@ -147,7 +147,8 @@
 
 <template>
     <!-- Calendar Container -->
-    <div class="flex bg-bg-2 flex-col justify-center items-center w-fit h-fit lg:scale-108 mb-10 xl:scale-115 lg:m-5">
+    <div
+        class="flex bg-bg-2 rounded-md flex-col justify-center items-center w-fit h-fit lg:scale-108 mb-10 xl:scale-115 lg:m-5">
 
         <!-- Calendar Header -->
         <div class="calendar-header">
@@ -214,10 +215,10 @@
                     <div class="absolute bottom-0.75 w-full h-1.75 gap-1 py-px flex items-center justify-center">
                         <!-- Single Session - Chip -->
                         <div :class="{ 'flex!': dayHasSessions(day) }"
-                            class="hidden h-full w-fit rounded-full aspect-square bg-slate-600" />
+                            class="hidden h-full w-fit rounded-full aspect-square bg-slate-600/55" />
                         <!-- Repeating Session - Chip -->
                         <div :class="{ 'flex!': dayHasTemplates(day) }"
-                            class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/80" />
+                            class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/55" />
                     </div>
                 </Button>
 
@@ -230,13 +231,13 @@
                 <span class="flex flex-row items-center justify-center gap-2 w-fit h-full">
                     <!-- Session Item - Key -->
                     <div class="key-item">
-                        <div class="size-2! rounded-full bg-slate-600" />
+                        <div class="size-2! rounded-full bg-slate-600/55" />
                         <p> Occurred </p>
                     </div>
 
                     <!-- Template Item - Key -->
                     <div class="key-item">
-                        <div class="size-2! rounded-full bg-indigo-500/80" />
+                        <div class="size-2! rounded-full bg-indigo-500/55" />
                         <p> Scheduled </p>
                     </div>
                 </span>
@@ -257,8 +258,6 @@
     <!-- Calendar - Day View - Dialog -->
     <DayViewDialog v-model:visible="dayViewVisible" v-model:selected-day="dayViewDaySelected" />
 
-    <ColorModeToggle />
-
 </template>
 
 
@@ -267,7 +266,7 @@
     @reference '@/styles/main.css';
 
     .calendar-header {
-        @apply bg-bg-1/30 w-full p-2 sm:text-lg rounded-md rounded-b-none border-2 border-ring-3 flex justify-between items-center;
+        @apply w-full p-2 sm:text-lg rounded-md rounded-b-none border-2 border-ring-soft flex justify-between items-center;
 
         .adjust-month-button {
             @apply p-0.5 rounded-md cursor-pointer transition-all hover:bg-text-1/20;
@@ -292,10 +291,10 @@
 
 
     .calendar-wrap {
-        @apply bg-bg-1/30 w-full !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring-3 flex flex-col;
+        @apply w-full !h-fit rounded-md rounded-t-none border-2 border-t-0 border-ring-soft flex flex-col;
 
         .weekday-header-row {
-            @apply bg-text-1/10 border-b-2 border-b-ring-3/30 w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
+            @apply bg-text-1/0 border-b-2 border-b-ring-soft w-full !h-fit grid px-2 grid-cols-7 grid-rows-1;
 
             .weekday-header {
                 @apply w-full p-1 text-center font-semibold italic text-text-1/60;
@@ -303,26 +302,26 @@
         }
 
         .calendar-days-wrap {
-            @apply bg-text-1/10 grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
+            @apply bg-text-1/0 grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
 
             .calendar-day {
-                @apply relative bg-bg-1/70 dark:bg-bg-1/32 text-text-1/50 w-full aspect-square rounded-sm ring-2 ring-ring-3 p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
+                @apply relative bg-bg-soft text-text-1/50 w-full aspect-square rounded-sm ring-2 ring-ring-soft p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
 
                 &:hover {
                     @apply ring-ring-1/80 text-text-1/80 cursor-pointer;
                 }
 
                 &.today-day {
-                    @apply text-orange-500/80 dark:text-amber-400/60;
+                    @apply text-blue-700/70 dark:text-blue-400/60;
                 }
             }
         }
 
         .calendar-footer-row {
-            @apply gap-2 p-2 border-t-2 border-ring-3/30 w-full !h-fit flex items-center justify-between content-center flex-wrap;
+            @apply gap-2 p-2 border-t-2 border-ring-soft w-full !h-fit flex items-center justify-between content-center flex-wrap;
 
             .key-item {
-                @apply p-0.75 px-1 gap-1 bg-bg-1/50 rounded-lg border-2 border-ring-3/40 flex flex-row items-center justify-center;
+                @apply p-0.75 px-1 gap-1 bg-bg-1/50 rounded-lg border-2 border-ring-soft flex flex-row items-center justify-center;
 
                 p {
                     @apply text-xs font-medium text-text-1/50 wrap-break-word;

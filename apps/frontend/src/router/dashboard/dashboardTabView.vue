@@ -66,9 +66,9 @@
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
             <div v-if="!guildDataState?.allReady"
-                class="flex gap-2 items-center justify-center p-4 bg-black/40 rounded-md shadow-lg">
+                class="flex gap-2 items-center justify-center p-4 bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
                 <ProgressSpinner />
-                <div class="text-white/70 p-2 text-center">
+                <div class="text-text-1/70 p-2 text-center">
                     <p class="font-bold text-lg"> Loading Dashboard </p>
                     <p class="text-xs italic"> Please Wait</p>
                 </div>
