@@ -45,7 +45,7 @@
 
 
         <!-- Spacer -->
-        <span class="w-4 flex grow bg-rose-400/30" />
+        <span class="w-4 flex grow bg-brand-2/25" />
 
         <SiteFooter />
 

@@ -71,15 +71,15 @@
 
         <!-- DESKTOP TABLE -->
         <div
-            class="hidden md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 bg-ring border-2 border-ring rounded-md overflow-hidden">
+            class="hidden bg-bg-1 md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 border-2 border-ring-2 rounded-md overflow-hidden">
 
             <!-- Header -->
-            <div class="bg-black/80 p-3 flex flex-row items-center gap-0.75">
+            <div class="bg-bg-3/75 p-3 flex flex-row items-center gap-0.75">
                 <StarIcon :size="18" class="w-fit! aspect-square! fill-amber-400/60" />
                 <p class="font-bold"> Feature </p>
             </div>
-            <div class="bg-black/80 p-3 flex flex-row items-center justify-center gap-0.75">
-                <svg class="fill-zinc-500/30!" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+                <svg class="fill-zinc-500/25!" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                     viewBox="0 0 24 24">
                     <g fill="inherit" stroke="currentColor" stroke-width="1.5">
                         <path
@@ -89,24 +89,24 @@
                 </svg>
                 <p class="font-bold"> Free </p>
             </div>
-            <div class="bg-black/80 p-3 flex flex-row items-center justify-center gap-0.75">
-                <DiamondIcon class="size-5.5 fill-sky-700" />
+            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+                <DiamondIcon class="size-5.5 fill-sky-700/50" />
                 <p class="font-bold"> Premium </p>
             </div>
-            <div class="bg-black/80 p-3 flex flex-row items-center justify-center gap-0.75">
-                <DiamondIcon class="size-5.5 fill-purple-700" />
+            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+                <DiamondIcon class="size-5.5 fill-purple-700/50" />
                 <p class="font-bold"> Enterprise </p>
             </div>
 
 
             <!-- Rows -->
             <template v-for="feature in features" :key="feature.key">
-                <div class="bg-black/75 p-3 font-medium text-white/70">
+                <div class="bg-bg-3/75 p-3 font-medium text-text-1/70">
                     {{ feature.title }}
                 </div>
 
                 <div v-for="plan in plans" :key="feature.key + plan"
-                    class="bg-black/65 p-3 flex items-center justify-center">
+                    class=" bg-bg-2/70 dark:bg-text-1/17 p-3 flex items-center justify-center">
                     <FeatureValue :value="feature.values[plan]" />
                 </div>
             </template>
@@ -115,17 +115,17 @@
         <!-- MOBILE CARDS -->
         <div class="md:hidden flex flex-col items-center gap-4">
             <div v-for="feature in features" :key="feature.key"
-                class="bg-black/30 max-w-122 space-y-1 w-full border-2 border-ring hover:border-white/60 transition-all rounded-md p-4">
+                class="bg-bg-2 max-w-122 space-y-1 w-full border-2 border-ring-soft hover:border-ring-2/80 transition-all rounded-md p-4">
                 <div class="p-1 pt-0 pl-0 flex gap-0.75 items-center">
-                    <StarIcon :size="18" class="fill-zinc-400/30" />
+                    <StarIcon :size="18" class="fill-zinc-500/40" />
                     <p class="font-bold">
                         {{ feature.title }}
                     </p>
                 </div>
 
-                <div class="flex flex-col gap-0 rounded overflow-clip border border-ring/40">
+                <div class="flex flex-col gap-0 rounded overflow-clip border border-ring-soft/70">
                     <div v-for="plan in plans" :key="plan"
-                        class="flex items-center justify-between bg-black/20 border border-ring/40 p-2">
+                        class="flex items-center justify-between bg-black/7 dark:bg-bg-3/40 border border-ring-soft/70 p-2">
                         <span class="font-semibold text-sm">
                             {{ plan }}
                         </span>

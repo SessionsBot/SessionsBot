@@ -2,9 +2,8 @@
 
     const colorMode = useColorMode({
         disableTransition: false,
+        initialValue: 'dark'
     })
-
-    const mode = computed(() => colorMode.value)
 
     function toggleColorMode() {
         if (colorMode.value == 'auto')
@@ -12,9 +11,8 @@
         if (colorMode.value == 'dark')
             return colorMode.value = 'light'
         if (colorMode.value == 'light')
-            return colorMode.value = 'auto'
+            return colorMode.value = 'dark'
     }
-
 
 
 </script>
@@ -24,12 +22,13 @@
 
     <!-- Toggler -->
     <div @click="toggleColorMode"
-        class="bg-bg-2 group/cm hover:border-ring-2 w-11 rounded-full cursor-pointer h-5 border-2 border-ring-3 gap-1.5 flex overflow-auto relative transition-all">
+        class="bg-bg-3/20 group/cm hover:border-ring-4 w-11 rounded-full cursor-pointer h-5 border-2 border-ring-soft gap-1.5 flex overflow-auto relative transition-all">
+
         <!-- Handle -->
-        <div class="h-full bg-bg-3 group-hover/cm:bg-bg-3 w-fit flex p-1 rounded-full aspect-square absolute transition-all items-center justify-center"
+        <div class="h-full left-0 bg-bg-3 group-hover/cm:bg-bg-4 w-fit flex p-1 rounded-full aspect-square absolute items-center justify-center transition-all duration-250 ease-in-out"
             :class="{
-                'right-0 text-purple-500': colorMode == 'dark',
-                'left-0 text-yellow-400': (colorMode == 'light' || colorMode == 'auto')
+                'translate-x-0 text-purple-500': colorMode == 'dark',
+                'translate-x-6 text-yellow-400': (colorMode == 'light' || colorMode == 'auto')
             }">
             <!-- SUN Icon -->
 
@@ -44,6 +43,7 @@
                     d="M12 22c5.523 0 10-4.477 10-10c0-.463-.694-.54-.933-.143a6.5 6.5 0 1 1-8.924-8.924C12.54 2.693 12.463 2 12 2C6.477 2 2 6.477 2 12s4.477 10 10 10" />
             </svg>
         </div>
+
     </div>
 
 </template>

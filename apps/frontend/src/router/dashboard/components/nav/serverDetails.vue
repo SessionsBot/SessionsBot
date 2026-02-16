@@ -13,6 +13,9 @@
         switchServerPoRef.value?.toggle(e)
     }
 
+    // Last Fetch Date: 
+    const lastGuildFetchDate = computed(() => null);
+
     // FN - Refresh API Data:
     async function refreshApiData() {
         let prevSelectionId = dashboard.guildId;
@@ -44,7 +47,7 @@
                 <Button unstyled class="option-button">
                     <CircleDollarSignIcon :size="17" />
                     <p class="text-sm">
-                        View subscription plan
+                        Upgrade Bot Plan
                     </p>
                 </Button>
             </RouterLink>
@@ -60,7 +63,7 @@
                         stroke-width="35" d="m135.87 256l23.59-23.6l24.67 23.6m192 0l-23.59 23.6l-24.67-23.6" />
                 </svg>
                 <p class="text-sm">
-                    Refresh API Data
+                    Refresh Server Data
                 </p>
             </Button>
 
@@ -79,10 +82,10 @@
     }
 
     .options-list {
-        @apply flex flex-col items-center justify-center p-0 gap-2.25;
+        @apply flex flex-col p-0 gap-2.25;
     }
 
     .option-button {
-        @apply bg-black/2 text-text-1/80 hover:bg-text-1/10 ring-1 hover:ring-ring-1 ring-ring-3 active:scale-98 w-full flex items-center justify-start p-1 gap-0.75 rounded-md transition-all font-bold cursor-pointer;
+        @apply bg-text-1/2 text-text-1/80 hover:bg-text-1/10 ring-1 hover:ring-ring-1 ring-ring-3 active:scale-98 w-full flex items-center justify-start p-1 gap-0.75 rounded-md transition-all font-bold cursor-pointer;
     }
 </style>

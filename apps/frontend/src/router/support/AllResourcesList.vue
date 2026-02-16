@@ -87,7 +87,7 @@
         <!-- Header -->
         <div class="w-full flex flex-wrap justify-between items-center content-center p-0">
             <!-- Title -->
-            <div class="text-white/70 flex flex-row gap-0.5 items-center justify-start w-fit">
+            <div class="text-text-1/70 flex flex-row gap-0.5 items-center justify-start w-fit">
                 <Iconify icon="material-symbols:list-alt-outline" :size="22" />
                 <p class=" font-extrabold uppercase text-sm">
                     All Resources:
@@ -96,9 +96,9 @@
 
             <!-- Search - Input Wrap -->
             <div
-                class="bg-zinc-800 relative w-45 h-7 p-1.5 rounded-md ring-ring ring-2 hover:ring-white/70 focus-within:ring-white/70 flex flex-row gap-1">
+                class="bg-bg-3 relative w-45 h-7 p-1.5 rounded-md ring-ring-soft ring-2 hover:ring-ring-3 focus-within:ring-ring-4! flex flex-row gap-1 transition-all">
                 <input v-model="searchValue" type="search" @focusin="autoCompleteVisible = true"
-                    @focusout="hideAutoComplete" class="w-full! h-full! text-sm focus:outline-none!"
+                    @focusout="hideAutoComplete" class="w-full! h-full! text-sm focus:outline-none! transition-all"
                     :class="{ 'pr-4.75': searchValue?.trim()?.length }" placeholder="Search for a resource...">
 
                 <!-- Clear Button -->
@@ -110,10 +110,10 @@
                 <!-- Autocomplete -->
                 <Transition name="autocomplete-slide" mode="out-in">
                     <div v-if="autoCompleteVisible"
-                        class="gap-1 p-1 z-3 absolute top-[calc(100%+4px)] bg-zinc-800 -left-0.5 w-[calc(100%+4px)] h-fit max-h-20 overflow-y-auto flex flex-col items-center justify-start border-ring border-2 rounded-lg transition-all">
+                        class="gap-1 p-1 z-3 absolute top-[calc(100%+4px)] bg-bg-3 -left-0.5 w-[calc(100%+4px)] h-fit max-h-20 overflow-y-auto flex flex-col items-center justify-start border-ring-4 border-2 rounded-lg transition-all">
                         <button v-if="autoCompleteOptions.length" v-for="o in autoCompleteOptions"
                             @click="() => { autoCompleteVisible = false; searchValue = o }"
-                            class="w-full text-left p-1 hover:bg-white/5 active:bg-white/3 rounded cursor-pointer transition-all">
+                            class="w-full text-left p-1 hover:bg-text-1/7 active:bg-text-1/4 rounded cursor-pointer transition-all">
                             <p class="text-xs font-medium w-full p-0.5 opacity-80 truncate"> {{ o }} </p>
                         </button>
 
@@ -133,7 +133,7 @@
 
             <!-- Resource Button(s) -->
             <Button unstyled v-for="r in filteredResources" :class="r?.classes?.root"
-                class="bg-zinc-800/80 relative w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring hover:ring-white/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
+                class="bg-bg-3 relative w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring-soft hover:ring-ring-2/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
                 <!-- Icon -->
                 <Iconify v-if="typeof r.icon == 'string'" class="p-2" :class="r?.classes?.icon" :icon="r.icon"
                     :size="22" />

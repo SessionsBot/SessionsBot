@@ -30,7 +30,7 @@
 
 <template>
     <header ref="headerRef"
-        class="flex flex-col z-5 transition-all fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-bg-1/50 backdrop-blur-sm">
+        class="bg-bg-2/80 flex flex-col z-5 transition-all fixed top-0 w-full justify-between items-center content-center overflow-y-hidden overflow-x-clip gap-0 sm:gap-2 flex-wrap bg-bg-1/50 backdrop-blur-sm">
 
         <!-- Main Header Contents -->
         <span class="flex flex-row justify-between items-center w-full flex-wrap">

@@ -73,10 +73,10 @@
     }
 
     :deep(.button-secondary) {
-        @apply bg-zinc-700/80 hover:bg-zinc-700/60 active:bg-zinc-700/50;
+        @apply bg-zinc-500/50 hover:bg-zinc-500/60 active:bg-zinc-500/50;
 
         &.action-button {
-            @apply hover:bg-indigo-500/70;
+            @apply hover:bg-brand-1/60;
         }
     }
 

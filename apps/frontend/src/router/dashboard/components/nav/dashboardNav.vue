@@ -37,11 +37,11 @@
 <template>
     <Transition name="fade">
         <div v-if="navExpanded && isSmallScreen" @click="dashboard.nav.expanded = false;"
-            class="z-2 bg-black/35 dark:bg-black/50 backdrop-blur-sm w-full h-full absolute" />
+            class="z-2 bg-black/35 dark:bg-black/50 w-full h-full absolute" />
     </Transition>
 
     <aside
-        class="w-15 min-w-15 z-4 bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-bg-1)_50%)] border-r sm:border-r-2 border-ring-soft relative h-full flex flex-col overflow-x-clip overflow-y-auto"
+        class="w-15 min-w-15 z-4 bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-bg-1)_50%)] bg-bg-2/80! border-r sm:border-r-2 border-ring-soft relative h-full flex flex-col overflow-x-clip overflow-y-auto"
         :class="{
             'expanded': navExpanded,
             'small-screen': isSmallScreen

@@ -63,7 +63,7 @@
                     <p class="font-bold opacity-45 pr-1">
                         $
                     </p>
-                    <p class="text-4xl font-black text-indigo-500">
+                    <p class="text-4xl font-black text-brand-1">
                         {{ plan.price }}
                     </p>
 
@@ -72,7 +72,7 @@
                     </p>
                 </div>
 
-                <p class="text-sm font-semibold text-white/40 px-2 w-full line-clamp-3">
+                <p class="text-sm font-semibold text-text-4 px-2 w-full line-clamp-3">
                     {{ plan.description }}
                 </p>
             </div>
@@ -86,12 +86,12 @@
 
                 <div v-for="[i, feat] of Array.from(plan.features).entries()" :key="plan.title + '-feat-' + i"
                     class="flex relative flex-row flex-nowrap gap-2 px-4 p-2 pb-2.5 w-full items-center justify-center">
-                    <CheckIcon class="min-w-fit! text-emerald-400/70 aspect-square" />
+                    <CheckIcon class="min-w-fit! text-emerald-500/70 aspect-square" />
                     <p>
                         {{ feat }}
                     </p>
                     <div v-if="i != plan.features?.length - 1"
-                        class="absolute bottom-0.5 w-[85%] h-0.75 bg-ring/40  rounded-full" />
+                        class="absolute bottom-0.5 w-[85%] h-0.75 bg-ring-4/40  rounded-full" />
                 </div>
             </div>
 
@@ -125,7 +125,7 @@
         @apply w-full h-fit flex flex-wrap gap-5 px-7 py-0 items-center justify-center;
 
         .subscription-plan-card {
-            @apply bg-black/30 border-2 gap-2 min-w-65 max-w-60 grow flex-1 border-ring hover:border-white/60 transition-all rounded-md flex flex-col items-center justify-center;
+            @apply bg-bg-2 border-2 gap-2 min-w-65 max-w-60 grow flex-1 border-ring-soft hover:border-ring-2 transition-all rounded-md flex flex-col items-center justify-center;
         }
     }
 

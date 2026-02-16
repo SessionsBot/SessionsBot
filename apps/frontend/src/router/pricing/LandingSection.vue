@@ -30,7 +30,7 @@
             </a>
             <!-- DIRECT - Discord Shop Link -->
             <a :href="externalUrls.discordStore" target="_blank">
-                <Button unstyled class="action-button bg-indigo-500/80 hover:bg-indigo-500/60 active:bg-indigo-500/50">
+                <Button unstyled class="action-button bg-brand-1/80 hover:bg-brand-1/65 active:bg-brand-1/50">
                     <ShopIcon />
                     View Discord Shop
                 </Button>
@@ -44,7 +44,7 @@
     @reference '@/styles/main.css';
 
     .landing-section {
-        @apply bg-black/20 w-full flex flex-col gap-2 p-7 items-center justify-center;
+        @apply bg-bg-2 w-full flex flex-col gap-2 p-7 items-center justify-center;
 
         *.title {
             @apply text-4xl sm:text-5xl font-black font-rubik uppercase;

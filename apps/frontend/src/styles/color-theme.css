@@ -1,50 +1,48 @@
-/* Light Mode Colors */
-:root {
-    --c-bg-1: #C7C7C7;
-    --c-bg-2: #B2B2B2;
-    --c-bg-3: #9A9A9A;
-    --c-bg-4: #7F7F7F;
+ /* Light Mode Colors */
+ :root {
+     --c-bg-1: #D9D9D9;
+     --c-bg-2:  color-mix(in oklab, #A6A6A6, var(--c-bg-1) 60%);
+     --c-bg-3: color-mix(in oklab, #8C8C8C, var(--c-bg-1) 49%);
+     --c-bg-4:  color-mix(in oklab, #737373, var(--c-bg-1) 38%); 
+
 
     --c-text-1: #191919;
     --c-text-2: #1F1F1F;
     --c-text-3: #313131;
     --c-text-4: #474747;
-
+    
     --c-ring-1: #191919;
     --c-ring-2: #1F1F1F;
     --c-ring-3: #313131;
     --c-ring-4: #474747;
 
-
     --c-brand-1: #7472FE;
-    --c-brand-2: #8685FD;
+    --c-brand-2: #9A98FF;
     --c-brand-3: #302b5e;
 
-}
+ }
 
 
 
-/* Dark Mode Colors */
-[data-theme="dark"] {
+ /* Dark Mode Colors */
+ [data-theme="dark"] {
 
-    --c-bg-1: #191919;
-    --c-bg-2: #1F1F1F;
-    --c-bg-3: #313131;
-    --c-bg-4: #474747;
+     --c-bg-1: #191919;
+     --c-bg-2: #1F1F1F;
+     --c-bg-3: #313131;
+     --c-bg-4: #474747;
 
-    --c-text-1: #C7C7C7;
-    --c-text-2: #B2B2B2;
-    --c-text-3: #9A9A9A;
-    --c-text-4: #7F7F7F;
+     --c-text-1: #C7C7C7;
+     --c-text-2: #B2B2B2;
+     --c-text-3: #9A9A9A;
+     --c-text-4: #7F7F7F;
 
-    --c-ring-1: #C7C7C7;
-    --c-ring-2: #B2B2B2;
-    --c-ring-3: #9A9A9A;
-    --c-ring-4: #7F7F7F;
-    
-    --c-brand-1: #615bd7;
-    --c-brand-2: #8683ce;
-    --c-brand-3: #302b5e;
+     --c-ring-1: #C7C7C7;
+     --c-ring-2: #B2B2B2;
+     --c-ring-3: #9A9A9A;
+     --c-ring-4: #7F7F7F;
 
-
-}
+     --c-brand-1: #615bd7;
+     --c-brand-2: #8683ce;
+     --c-brand-3: #302b5e;
+ }

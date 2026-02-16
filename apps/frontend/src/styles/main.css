@@ -46,10 +46,10 @@
 
 
   /* Color - Brand */
-    --color-brand-1: var(--c-brand-1);
-    --color-brand-2: var(--c-brand-2);
-    --color-brand-3: var(--c-brand-3);
-    --color-brand-soft: color-mix(in oklab, var(--color-brand-1), var(--color-bg-1) 55%);
+  --color-brand-1: var(--c-brand-1);
+  --color-brand-2: var(--c-brand-2);
+  --color-brand-3: var(--c-brand-3);
+  --color-brand-soft: color-mix(in oklab, var(--color-brand-1), var(--color-bg-1) 55%);
 
 
   /* Color - Invalid */

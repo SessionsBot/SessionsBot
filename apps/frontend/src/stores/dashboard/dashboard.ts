@@ -53,17 +53,19 @@ const useDashboardStore = defineStore('dashboard', () => {
 
 
     const guildFetchReady = computed(() => {
-        if (guildId.value == null) return []
+        if (guildId.value == null) return false
         return Object.values(guildData).every(s => s?.isReady.value == true)
     })
     const guildFetchErrors = computed(() => {
         if (guildId.value == null) return []
         return Object.values(guildData).filter(s => s?.error.value != null)?.map(s => s?.error.value)
     })
+    const guildLastFetchDate = ref<DateTime | null>(null)
     /** Selected Guild Data Fetch State - **NESTED** */
     const guildDataState = {
         allReady: guildFetchReady,
-        errors: guildFetchErrors
+        errors: guildFetchErrors,
+        fetchedAt: guildLastFetchDate
     }
 
     /** Selected Guild Data - **NESTED** */
@@ -270,9 +272,16 @@ const useDashboardStore = defineStore('dashboard', () => {
         }
 
         // CHECKS PASSED - Fetch Data for selected Guild Id:
+        let promises = [];
         for (const state of Object.values(guildData)) {
-            state.execute()
+            promises.push(state.executeImmediate())
         }
+        // Await All States to Fetch:
+        console.info('(i) Guild STARTED Fetching at:', DateTime.local().toFormat('M/d/yy tt'))
+        const allFetched = await Promise.allSettled(promises)
+        // Assign Guild's Last Fetch Date:
+        guildLastFetchDate.value = DateTime.now()
+        console.info('(i) Guild FINISHED Fetching at:', DateTime.local().toFormat('M/d/yy tt'))
 
     })
 

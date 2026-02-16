@@ -19,14 +19,14 @@
         <div class="actions-wrap">
             <!-- Documentation -->
             <a :href="externalUrls.documentation" target="_blank">
-                <Button unstyled class="action-button bg-zinc-500/80 hover:bg-zinc-500/60 active:bg-zinc-500/50">
+                <Button unstyled class="action-button bg-zinc-500/75 hover:bg-zinc-500/60 active:bg-zinc-500/65">
                     <Iconify icon="mingcute:paper-fill" :size="23" />
                     Read Documentation
                 </Button>
             </a>
             <!-- Chat with Support -->
             <a :href="externalUrls.discordServer.supportInvite" target="_blank">
-                <Button unstyled class="action-button bg-indigo-500/80 hover:bg-indigo-500/60 active:bg-indigo-500/50">
+                <Button unstyled class="action-button bg-brand-1/80 hover:bg-brand-1/60 active:bg-brand-1/50">
                     <ChatIcon />
                     Chat with Support
                 </Button>
@@ -40,7 +40,7 @@
     @reference '@/styles/main.css';
 
     .landing-section {
-        @apply bg-black/20 w-full flex flex-col gap-2 p-7 items-center justify-center;
+        @apply bg-bg-2 w-full flex flex-col gap-2 p-7 items-center justify-center;
 
         .title {
             @apply text-4xl sm:text-5xl font-black font-rubik uppercase;
