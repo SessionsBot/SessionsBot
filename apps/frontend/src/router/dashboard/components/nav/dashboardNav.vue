@@ -41,7 +41,7 @@
     </Transition>
 
     <aside
-        class="w-15 min-w-15 z-4 bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-bg-1)_50%)] bg-bg-2/80! border-r sm:border-r-2 border-ring-soft relative h-full flex flex-col overflow-x-clip overflow-y-auto"
+        class="w-15 min-w-15 z-4 bg-[color-mix(in_oklab,var(--c-bg-2),var(--c-bg-1)_20%)] border-r sm:border-r-2 border-ring-soft relative h-full flex flex-col overflow-x-clip overflow-y-auto"
         :class="{
             'expanded': navExpanded,
             'small-screen': isSmallScreen
@@ -72,7 +72,7 @@
                 <template #default="{ togglePopOver }">
 
                     <Button unstyled @click="togglePopOver"
-                        class="bg-white/5 mx-2.5! ring-2 ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
+                        class="bg-white/5 hover:bg-text-1/10 mx-2.5! ring-2 ring-ring-soft hover:ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
                         :class="{ 'aspect-square': !navExpanded }">
 
                         <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring-1"

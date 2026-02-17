@@ -5,13 +5,26 @@
         initialValue: 'dark'
     })
 
+    function gTagColorMode(mode: string) {
+        if (typeof gtag == undefined) return console.warn('No gTag available for color mode change!');
+        else gtag('event', 'color_mode_change', {
+            theme: mode
+        })
+    }
+
     function toggleColorMode() {
-        if (colorMode.value == 'auto')
+        if (colorMode.value == 'light'
+            || colorMode.value == 'auto') {
+            document.documentElement.style.colorScheme = 'dark'
+            gTagColorMode('dark')
             return colorMode.value = 'dark'
+        }
+
         if (colorMode.value == 'dark')
-            return colorMode.value = 'light'
-        if (colorMode.value == 'light')
-            return colorMode.value = 'dark'
+            document.documentElement.style.colorScheme = 'light'
+        gTagColorMode('light')
+        return colorMode.value = 'light'
+
     }
 
 
@@ -28,7 +41,7 @@
         <div class="h-full left-0 bg-bg-3 group-hover/cm:bg-bg-4 w-fit flex p-1 rounded-full aspect-square absolute items-center justify-center transition-all duration-250 ease-in-out"
             :class="{
                 'translate-x-0 text-purple-500': colorMode == 'dark',
-                'translate-x-6 text-yellow-400': (colorMode == 'light' || colorMode == 'auto')
+                'translate-x-6 text-orange-500': (colorMode == 'light' || colorMode == 'auto')
             }">
             <!-- SUN Icon -->
 

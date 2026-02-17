@@ -195,7 +195,7 @@
     }
 
     .notification-card {
-        @apply max-w-95 bg-bg-2 w-full p-2.5 pt-2 gap-0.5 border-2 border-ring-3 rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
+        @apply max-w-95 bg-bg-2 w-full p-2.5 pt-2 gap-0.5 border-2 border-ring-soft rounded-md flex flex-row flex-wrap items-center justify-start transition-all;
 
         @apply drop-shadow-xl drop-shadow-black/25;
 

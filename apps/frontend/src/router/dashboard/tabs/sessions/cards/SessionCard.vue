@@ -135,15 +135,21 @@
             </span>
             <!-- Edit Button -->
             <Button @click="editSchedule" unstyled class="action-button">
-                <PencilIcon :size="22" class="p-0.5! mr-0.5! icon text-amber-400/50!" />
+                <PencilIcon hidden :size="22" class="p-0.5! mr-0.5! icon text-amber-400/50!" />
+                <div class="icon mr-0.5">
+                    <Iconify icon="mdi:pencil" class="text-text-3" />
+                </div>
                 <p class="inline-flex gap-1 h-full items-center pt-0.5">
                     Edit <span hidden class="hidden sm:inline"> Schedule</span>
                 </p>
             </Button>
 
             <a v-if="props.kind == 'session'" :href="signupMsgUrl" target="_blank">
-                <Button unstyled class="action-button">
-                    <DiscordIconOutlined class="size-5 text-brand-1/70 mr-1! relative bottom-px icon" />
+                <Button unstyled class="action-button flex-row!">
+                    <div class="icon mr-0.5">
+                        <Iconify icon="mdi:eye" class="text-text-3" />
+                    </div>
+
                     <p class="inline-flex gap-1 h-full items-center pt-0.5">
                         View <span hidden class="hidden sm:inline"> on Discord</span>
                     </p>
@@ -163,7 +169,7 @@
         @apply p-2 sm:grid sm:grid-rows-none sm:grid-cols-[1fr_0.5fr_1fr] bg-bg-3 w-full !h-fit text-center transition-all border-2 border-ring-soft rounded-md;
 
         &:hover {
-            border-color: var(--c-brand-1) !important;
+            border-color: var(--c-ring-3) !important;
         }
 
         .name-and-time {
@@ -214,7 +220,7 @@
             }
 
             .action-button {
-                @apply px-2 pr-2.75 py-0.75 rounded-lg active:scale-95 font-bold bg-neutral-600/80 hover:bg-zinc-700/80 cursor-pointer transition-all block;
+                @apply px-2 pr-2.75 py-0.75 rounded-lg active:scale-95 font-bold bg-zinc-500/60 hover:bg-zinc-500/45 cursor-pointer transition-all flex flex-row items-center justify-center border border-text-soft/40 dark:border-none;
 
                 .icon {
                     @apply inline aspect-square min-w-fit !p-0 h-full flex items-center;

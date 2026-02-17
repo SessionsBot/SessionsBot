@@ -667,13 +667,12 @@
         <template #container="{ closeCallback, initDragCallback }">
             <!-- Form Card -->
             <div
-                class="sessions-form-dialog bg-bg-2 border-2 border-ring-3 rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
-
+                class="sessions-form-dialog bg-bg-2 border-2 border-ring-4 dark:border-ring-soft rounded-md gap-2 w-full max-w-115 flex flex-nowrap flex-col overflow-hidden">
                 <!-- Form Header/Tab Bar -->
                 <div class="flex flex-col items-center justify-start w-full">
                     <!-- Header -->
                     <section
-                        class="w-full p-1.5 z-2 bg-text-1/10 border-ring-3 border-b-2 flex gap-1 justify-between flex-wrap items-center content-center">
+                        class="w-full p-1.5 z-2 bg-text-1/10 border-ring-soft border-b-2 flex gap-1 justify-between flex-wrap items-center content-center">
                         <!-- New Session - Title -->
                         <span v-if="formAction == 'new'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarPlusIcon />
@@ -696,7 +695,7 @@
 
                     <!-- Tab Bar -->
                     <section
-                        class="flex flex-wrap bg-text-soft/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full border-b-2 border-ring-3">
+                        class="flex flex-wrap bg-text-soft/20 justify-center px-5 py-6 items-center content-center gap-1.75 w-full border-b-2 border-ring-soft">
                         <!-- Information Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'information'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'information', 'formTabBtn-invalid': invalidTabs.has('information') }">
@@ -763,7 +762,7 @@
 
                 <!-- Form Footer -->
                 <div
-                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-text-1/10 ring-ring-3 ring-2 rounded-md">
+                    class="w-full min-h-fit flex flex-row items-center justify-between p-1.5 bg-text-1/10 ring-ring-soft ring-2 rounded-md">
 
                     <!-- Invalid Fields - Badge - EDIT Actions -->
                     <div class="flex justify-center items-center p-2 overflow-clip">

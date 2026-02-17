@@ -44,15 +44,11 @@
                     <CalendarClockIcon class="size-4.5 sm:size-5.5" />
                     <h1 class="sm:text-lg"> Schedules </h1>
                 </div>
+
+
                 <!-- Create Schedule - Button -->
-                <Button unstyled @click="(e) => dashboard.sessionForm.createNew()"
-                    class="bg-[#178954] hover:bg-[#178954]/80 py-0.5 p-2.25 rounded-sm active:scale-95 transition-all cursor-pointer">
-                    <span class=" font-extrabold text-sm">
-                        Create
-                        <span class="hidden sm:inline">
-                            Schedule
-                        </span>
-                    </span>
+                <Button unstyled class="button-primary" @click="dashboard.sessionForm.createNew()">
+                    <Iconify icon="mdi:plus" />
                 </Button>
             </div>
 

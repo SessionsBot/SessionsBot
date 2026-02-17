@@ -179,13 +179,13 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-bg-3! ring-0! border-2! border-ring-3! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
+        class="bg-bg-3! ring-0! border-2! border-ring-4! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
 
         <!-- Header -->
         <template #header class="w-full! grow!">
             <div class="flex flex-row gap-1.25 items-center justify-start grow w-full flex-wrap">
                 <UserCheckIcon :size="23" class="" />
-                <p class="font-semibold text-lg"> {{ actionMode }} RSVP </p>
+                <p class="font-bold text-lg"> {{ actionMode }} RSVP </p>
             </div>
         </template>
         <template #closebutton>

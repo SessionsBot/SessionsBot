@@ -8,6 +8,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 
+/* Tailwind Theme Additions */
 @theme inline {
   --color-ring: var(--color-zinc-600);
 
@@ -60,8 +61,23 @@
 
 }
 
+/* Tailwind Utility Additions */
+@utility flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@utility button-base {
+  @apply flex-center flex-wrap gap-0.75 cursor-pointer p-0.5 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility button-primary {
+  @apply button-base bg-brand-1 hover:bg-brand-1/80;
+}
 
 
+
+/* App/Body Styles */
 html,
 body {
   background: var(--c-bg-1);

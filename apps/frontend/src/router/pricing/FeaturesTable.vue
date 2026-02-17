@@ -71,14 +71,14 @@
 
         <!-- DESKTOP TABLE -->
         <div
-            class="hidden bg-bg-1 md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 border-2 border-ring-2 rounded-md overflow-hidden">
+            class="hidden bg-text-soft md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 border-2 border-ring-soft rounded-md overflow-hidden">
 
             <!-- Header -->
-            <div class="bg-bg-3/75 p-3 flex flex-row items-center gap-0.75">
+            <div class="bg-bg-3 p-3 flex flex-row items-center gap-0.75">
                 <StarIcon :size="18" class="w-fit! aspect-square! fill-amber-400/60" />
                 <p class="font-bold"> Feature </p>
             </div>
-            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
                 <svg class="fill-zinc-500/25!" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                     viewBox="0 0 24 24">
                     <g fill="inherit" stroke="currentColor" stroke-width="1.5">
@@ -89,11 +89,11 @@
                 </svg>
                 <p class="font-bold"> Free </p>
             </div>
-            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
                 <DiamondIcon class="size-5.5 fill-sky-700/50" />
                 <p class="font-bold"> Premium </p>
             </div>
-            <div class="bg-bg-3/75 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
                 <DiamondIcon class="size-5.5 fill-purple-700/50" />
                 <p class="font-bold"> Enterprise </p>
             </div>
@@ -101,12 +101,12 @@
 
             <!-- Rows -->
             <template v-for="feature in features" :key="feature.key">
-                <div class="bg-bg-3/75 p-3 font-medium text-text-1/70">
+                <div class="bg-bg-3 p-3 font-medium text-text-1/70">
                     {{ feature.title }}
                 </div>
 
                 <div v-for="plan in plans" :key="feature.key + plan"
-                    class=" bg-bg-2/70 dark:bg-text-1/17 p-3 flex items-center justify-center">
+                    class=" bg-bg-2 p-3 flex items-center justify-center">
                     <FeatureValue :value="feature.values[plan]" />
                 </div>
             </template>

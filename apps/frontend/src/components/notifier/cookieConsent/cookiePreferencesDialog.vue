@@ -70,7 +70,7 @@
         modal>
         <template #container>
             <div
-                class="bg-bg-2! rounded-md border-2 border-ring-2 text-text-1! flex flex-col relative gap-2 p-4 items-start justify-start min-h-fit h-fit overflow-auto">
+                class="bg-bg-2! rounded-md border-2 border-ring-4 text-text-1! flex flex-col relative gap-2 p-4 items-start justify-start min-h-fit h-fit overflow-auto">
 
                 <h1 class="font-extrabold w-full text-lg"> 🍪 Cookie Preferences </h1>
 
