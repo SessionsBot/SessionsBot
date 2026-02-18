@@ -122,12 +122,14 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal block-scroll :draggable="false"
-        class="m-10 max-w-130 ring-ring ring-3! bg-surface! overflow-auto! text-zinc-300! flex!">
+        class="m-10 max-w-130 ring-ring-3 ring-2! bg-bg-2! overflow-auto! border-0! text-text-1! flex!">
         <template #container="{ closeCallback }">
 
             <!-- Header -->
             <section
-                class="flex p-2 bg-black/30 flex-row gap-0.75 flex-wrap items-center justify-between w-full border-b-2 border-ring">
+                class="flex p-2 bg-black/30 flex-row gap-0.75 flex-wrap items-center justify-between w-full border-b-2 border-ring-soft">
+
+                <ColorModeToggle />
 
                 <span class="flex flex-row gap-0.75 items-center justify-center">
                     <Trash2Icon class="relative bottom-px" :size="21" />
@@ -143,13 +145,13 @@
 
             <!-- Content -->
             <section
-                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-start bg-black/15 w-full border-b-2 border-ring">
+                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-start bg-black/15 w-full border-b-2 border-ring-3">
                 <!-- Subheading / Top Info -->
                 <p>
                     As an individual you have certain rights over your personal information and if you wish to have it
                     <b>deleted</b>.
                 </p>
-                <div class="w-10 h-1 rounded-full self-start bg-ring/50 flex my-2" />
+                <div class="w-10 h-1 rounded-full self-start bg-ring-3/50 flex my-2" />
                 <p class="text-sm opacity-75 inline w-full mb-2">
                     Please select below which data you wish to have deleted:
                 </p>
@@ -187,7 +189,7 @@
                 <span v-if="deleteServerData"
                     class="w-full flex flex-col flex-wrap justify-center items-center gap-0.5 px-3 mb-1">
                     <div
-                        class="bg-black/15 ring-1 ring-ring/50 w-full p-2 pt-px rounded-md flex flex-col flex-wrap items-start justify-center">
+                        class="bg-black/15 ring-1 ring-ring-3/50 w-full p-2 pt-px rounded-md flex flex-col flex-wrap items-start justify-center">
                         <label for="selectServer" class="font-semibold pt-1">
                             <p class=""> Server to Delete </p>
                         </label>
@@ -201,19 +203,19 @@
                             placeholder="Select a Server..." :options="userOwnedGuilds">
                             <!-- Selected -->
                             <template #value="{ value, placeholder }" v-slot="a">
-                                <p v-if="!value" class="text-zinc-400! truncate"> {{ placeholder }} </p>
+                                <p v-if="!value" class="text-text-1! truncate"> {{ placeholder }} </p>
                                 <div v-else
-                                    class="text-white w-full flex flex-row flex-nowrap gap-1.5 items-center justify-start">
+                                    class="text-text-1 w-full flex flex-row flex-nowrap gap-1.5 items-center justify-start">
                                     <img :src="value?.iconUrl || defaultDiscordIcon"
-                                        class="size-5 ring-ring ring-2 rounded-full" />
+                                        class="size-5 ring-ring-soft ring-2 rounded-full" />
                                     <p class="text-wrap truncate"> {{ value?.name || '%GUILD_NAME%' }} </p>
                                 </div>
                             </template>
                             <!-- Options -->
                             <template #option="{ option: { name, title, iconUrl }, selected }">
-                                <div class="text-white flex flex-row flex-wrap gap-1.5 items-center justify-center">
+                                <div class="text-text-1 flex flex-row flex-wrap gap-1.5 items-center justify-center">
                                     <img :src="iconUrl || defaultDiscordIcon"
-                                        class="size-5 ring-ring ring-2 rounded-full" />
+                                        class="size-5 ring-ring-soft ring-2 rounded-full" />
                                     <p class="truncate"> {{ name }}</p>
                                 </div>
                             </template>
@@ -224,7 +226,7 @@
                         <div v-if="formErrors.has('deletionGuildId')"
                             class="p-1 pl-0.5 pt-1.25 pb-0 gap-1 w-full flex flex-col items-center justify-center content-center flex-wrap">
                             <p v-for="err in formErrors?.get('deletionGuildId')"
-                                class="text-xs w-full font-bold text-start text-red-400">
+                                class="text-xs w-full font-bold text-start text-invalid-1">
                                 {{ err }}
                             </p>
                         </div>
@@ -242,15 +244,15 @@
 
             <!-- Warning -->
             <section
-                class="flex flex-col p-2 gap-1.5 flex-wrap items-center justify-center bg-black/15 w-full border-b-2 border-ring">
+                class="flex flex-col p-2 gap-1.5 flex-wrap items-center justify-center bg-black/15 w-full border-b-2 border-ring-1">
                 <div
-                    class="text-sm opacity-75 bg-zinc-500/30 gap-0.5 p-1 rounded w-full flex items-center justify-center flex-wrap self-start">
+                    class="text-sm opacity-75 bg-bg-4/30 gap-0.5 p-1 rounded w-full flex items-center justify-center flex-wrap self-start">
                     <AlertTriangleIcon class="size-5 aspect-square min-w-fit!" />
                     <p class="font-extrabold">
                         Please Note:
                     </p>
                 </div>
-                <p class="text-red-400 text-xs font-medium">
+                <p class="text-invalid-1 text-xs font-medium">
                     This action is <span class="font-bold underline">permanent</span> and <span
                         class="font-bold underline">cannot
                         be undone</span>!

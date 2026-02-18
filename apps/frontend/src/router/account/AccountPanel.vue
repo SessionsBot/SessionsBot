@@ -76,7 +76,7 @@
                 <p class="font-extrabold">My Account</p>
             </div>
             <!-- Delete Button -->
-            <Button unstyled title="Delete my Data" @click="deleteDataDialogVisible = !deleteDataDialogVisible"
+            <Button hidden unstyled title="Delete my Data" @click="deleteDataDialogVisible = !deleteDataDialogVisible"
                 class="p-1 rounded-md active:scale-95 hover:bg-(--c-text-2)/30 hover:text-red-400/75 text-text-1/50 transition-all aspect-square cursor-pointer dark:hover:bg-(--c-text-2)/15">
                 <Iconify icon="solar:trash-bin-trash-bold" size="20" />
             </Button>
