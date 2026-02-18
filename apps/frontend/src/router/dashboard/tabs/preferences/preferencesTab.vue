@@ -11,6 +11,7 @@
     import { API } from '@/utils/api';
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
+    import { fetchGuildData } from '@/stores/dashboard/dashboard.api';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -67,8 +68,7 @@
         const submitState = ref<'idle' | 'loading' | 'success' | 'failed'>('idle')
         async function submit() {
             try {
-                submitState.value = 'idle'
-                console.info(`{i} Form Submission`)
+                submitState.value = 'loading'
                 // Validate Form Fields:
                 const validation = z.safeParse(schema, values)
                 if (!validation.success) {
@@ -90,8 +90,6 @@
                     if (!access_token) throw { display_error: 'Cannot update guild preferences - No access token....' };
                     if (!dashboard.guildId) throw { display_error: 'Cannot update guild preferences - No guild selected....' };
 
-                    console.info('Sending API Req', { fields })
-
                     const result = await API.patch<APIResponseValue>(`/guilds/${dashboard.guildId}/preferences`, { data: fields }, {
                         headers: {
                             Authorization: `Bearer ${access_token}`
@@ -102,6 +100,7 @@
                     if (result.data.success) {
                         console.info('API Success', result.data)
                         submitState.value = 'success'
+                        dashboard.guildData.guild.state = await fetchGuildData(dashboard.guildId)
                     } else throw { display_error: 'API Request - Failed - ' + `Error - ${result.status}` }
                 }
             } catch (err: any) {
@@ -154,7 +153,6 @@
         // Watch form 'Dirty' state:
         preferenceForm.touched.value = false;
         watchOnce(preferenceForm.values, (v) => {
-            console.info('Form NOW dirty oooo')
             preferenceForm.touched.value = true;
         })
     })

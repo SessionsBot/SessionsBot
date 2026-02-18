@@ -70,6 +70,21 @@
             <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap">
                 <TemplateCard v-for="t in guildTemplates?.slice(tPageIndexStart ?? 0, ((tPageIndexStart ?? 0) + 5))"
                     kind="template" :template="t" :key="t.id" />
+
+                <!-- No Schedules - Card -->
+                <div v-if="!guildTemplates?.length">
+                    <p class="text-bold text-text-1">
+                        No Schedules!
+                    </p>
+                    <p class="text-text-3 px-1 text-sm">
+                        Start utilizing Sessions Bot and configure your first schedule..
+                    </p>
+                    <Button unstyled
+                        class="button-base mt-1.5 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
+                        <Iconify icon="mdi:plus" size="21" />
+                        <p class="text-sm"> Create Schedule </p>
+                    </Button>
+                </div>
             </span>
             <!-- All Schedules - Paginator -->
             <Paginator v-model:first="tPageIndexStart" v-if="guildTemplates?.length"

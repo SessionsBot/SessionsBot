@@ -86,6 +86,22 @@
                 <TemplateCard v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))"
                     kind="session" :session="s" :key="s.id" />
 
+                <!-- No Schedules - Card -->
+                <div v-if="!guildSessions?.length">
+                    <p class="text-bold text-text-1">
+                        No Sessions Yet!
+                    </p>
+                    <p class="text-text-3 text-sm px-1">
+                        Start utilizing Sessions Bot and configure your first schedule.. once you've done so wait for
+                        your sessions to be posted!
+                    </p>
+                    <Button unstyled
+                        class="button-base mt-1.5 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
+                        <Iconify icon="mdi:plus" size="21" />
+                        <p class="text-sm"> Create Schedule </p>
+                    </Button>
+                </div>
+
             </div>
             <!-- Sessions Paginator -->
             <Paginator v-model:first="sPageIndexStart" v-if="guildSessions?.length"
