@@ -33,10 +33,7 @@ const core = {
 
     /** Custom emoji strings formatted for use within Discord. 
      * * (loaded by `ready` event) */
-    emojiStrings: <Record<BotEmojiName, string>>{
-        sessions: ':null:',
-        sessionsWText: ':null:'
-    },
+    emojiStrings: <Partial<Record<BotEmojiName | undefined, string | undefined>>>{},
 
     /** Holds application/bot command related data. */
     commands: {
@@ -89,5 +86,3 @@ if (ENVIRONMENT_TYPE != 'production') {
 }
 
 export default core;
-export const urls = core.urls;
-export const colors = core.colors;

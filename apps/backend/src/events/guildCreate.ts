@@ -36,7 +36,7 @@ export default {
         const welcomeMsg = new ContainerBuilder({
             accent_color: core.colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${core.emojiStrings.sessions} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
+                new TextDisplayBuilder({ content: `## ${core.emojiStrings?.logo} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
                 new SeparatorBuilder(),
                 new SectionBuilder({
                     components: <any>[

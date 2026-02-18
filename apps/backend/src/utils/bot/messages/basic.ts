@@ -58,5 +58,5 @@ export const defaultFooterText = (opts:
         lightFont: false
     }
 ) => {
-    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings['sessions']} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
+    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings?.logo} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
 }

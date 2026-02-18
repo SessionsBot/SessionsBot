@@ -2,7 +2,7 @@ import { calculateNextPostUTC, mapRsvps, AuditEvent } from "@sessionsbot/shared"
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
-import core, { urls } from "../../core";
+import core from "../../core";
 import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionSignup";
 import { ChannelType, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
@@ -102,7 +102,7 @@ async function executeTemplateCreationSchedule() {
                 if (createSessionErr || !session) {
                     createLog.for('Database').error('FAILED TO SAVE/CREATE - New Session - See Details...', { template: t, err: createSessionErr, session });
                     // Send Failure Message:
-                    const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
+                    const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${core.urls.statusPage}) or get in touch with our [bot support](${core.urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
                     sendWithFallback(guildId, errMsg);
                     continue;
                 }
@@ -126,7 +126,7 @@ async function executeTemplateCreationSchedule() {
                             // Delete Created Session
                             await supabase.from('sessions').delete().eq('id', session.id);
                             // Send Failure Message:
-                            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${urls.statusPage}) or get in touch with our [bot support](${urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
+                            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${core.urls.statusPage}) or get in touch with our [bot support](${core.urls.support.serverInvite}) team! \n**Support Details:** \`\`\`Template Id: ${t.id} \nGuild Id: ${t.guild_id} \`\`\`` })
                             sendWithFallback(guildId, errMsg);
                             break;
                         }
