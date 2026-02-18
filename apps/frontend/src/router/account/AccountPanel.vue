@@ -6,6 +6,7 @@
     import type { ToastID } from 'vue-toastification/dist/types/types';
     import { supabase } from '@/utils/supabase';
     import { CheckCircle2, CheckCircle2Icon, XCircleIcon } from 'lucide-vue-next';
+    import useAnalyticsStore from '@/stores/analytics';
 
     // Incoming Modal - Delete Data Dialog Visible:
     const deleteDataDialogVisible = defineModel<boolean>('deleteDataDialogVisible')
@@ -13,7 +14,8 @@
     // Services:
     const auth = useAuthStore();
     const clipboard = useClipboard();
-    const toaster = useToast()
+    const toaster = useToast();
+    const analytics = useAnalyticsStore();
 
     // Auth Data:
     const user = computed(() => auth.user)
@@ -179,6 +181,10 @@
             <a @click="console.log({ session: auth.session, user: auth.user })"
                 class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                 Log User/Session Data
+            </a>
+            <a @click="analytics.cookieConsent.openPreferences(false)"
+                class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                Manage Cookie Preferences
             </a>
         </footer>
 

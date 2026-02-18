@@ -102,7 +102,7 @@
                     if (result.data.success) {
                         console.info('API Success', result.data)
                         submitState.value = 'success'
-                    } else throw { display_error: 'API Request - Failed - ' + result.data.error }
+                    } else throw { display_error: 'API Request - Failed - ' + `Error - ${result.status}` }
                 }
             } catch (err: any) {
                 // Submission - Error:
@@ -116,11 +116,7 @@
                     content: display_error
                         ? `We failed to update your server's preferences! <br> <span class="text-xs opacity-55"> Reason: ${display_error} </span>`
                         : `We failed to update your server's preferences! <br> <span class="text-xs opacity-55"> Reason: UNKNOWN </span>`,
-                    actions: [
-                        {
-                            button: { title: 'Get Support', href: externalUrls.discordServer.supportInvite }
-                        }
-                    ]
+
                 })
             } finally {
                 // Reset Submit State:

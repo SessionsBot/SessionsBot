@@ -430,15 +430,15 @@ const primePT: PrimeVuePTOptions = {
     select: {
         root: 'border-2! font-bold',
         overlay: 'border-2!',
-        optionGroup: 'bg-bg-1/25! rounded-md text-text-1!'
+        optionGroup: 'bg-text-1/17! rounded-md text-text-1!'
     },
     multiselect: {
         root: `font-bold border-2!`,
         overlay: `border-2!`
     },
     autocomplete: {
-        root: 'group/ac group-hover/ac:border-indigo-300! active:border-indigo-400! group-focus-within/ac:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
-        dropdown: 'border-2! border-l-0! invalid:invalid-1! group-hover/ac:border-indigo-300! group-focus-within/ac:border-indigo-400! group-[.p-invalid]/ac:border-invalid-1!',
+        root: 'group/ac hover:border-indigo-300! active:border-indigo-400! focus-within:border-indigo-400! focus:border-indigo-400! selected:border-indigo-400!',
+        dropdown: 'border-2! border-l-0! group-hover/ac:border-indigo-300! group-focus-within/ac:border-indigo-400!  invalid:text-invalid-1! group-[.p-invalid]/ac:border-invalid-1!',
         overlay: 'overflow-x-auto!',
         option: 'text-text-1! bg-none! hover:bg-text-1/15! focus:bg-brand-1/15! rounded-md!',
         emptyMessage: 'text-text-1!',

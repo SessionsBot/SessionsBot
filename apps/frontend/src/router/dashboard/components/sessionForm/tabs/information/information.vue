@@ -2,11 +2,12 @@
     import { BaselineIcon, Clock8Icon, ClockIcon, Globe2Icon, LinkIcon, TextInitialIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import z from 'zod'
-    import type { NewSessions_FieldNames } from '../sesForm.vue';
+    import type { NewSessions_FieldNames } from '../../sesForm.vue';
     import { getTimeZones, } from '@vvo/tzdb'
     import type { AutoCompleteCompleteEvent, AutoCompleteOptionSelectEvent } from 'primevue';
-    import InputTitle from '../labels/inputTitle.vue';
-    import InputErrors from '../labels/inputErrors.vue';
+    import InputTitle from '../../labels/inputTitle.vue';
+    import InputErrors from '../../labels/inputErrors.vue';
+    import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -76,11 +77,9 @@
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('description') }">
             <InputTitle fieldTitle="Description" :icon="TextInitialIcon" />
-            <inputText name="description" fluid v-model="description" @focusout="validateField('description')"
-                :invalid="invalidFields.has('description')" />
+            <DiscordEditor v-model:text-input-value="description" @focus-out="validateField('description')" />
             <InputErrors fieldName="description" :invalidFields />
         </div>
-
 
         <!-- INPUT: url -->
         <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': invalidFields.has('url') }">
@@ -118,9 +117,16 @@
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('timeZone') }">
             <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '/' }" />
-            <AutoComplete class="w-full" v-model="timeZone" @option-select="selectTimeZone"
+            <AutoComplete class="w-full relative!" v-model="timeZone" @option-select="selectTimeZone"
                 :invalid="invalidFields.has('timeZone')" :suggestions="timeZoneSuggestions" @complete="timeZoneSearch"
-                forceSelection option-label="name" dropdown show-clear fluid auto-option-focus />
+                forceSelection option-label="name" dropdown show-clear fluid auto-option-focus>
+
+                <Button class="relative left-2 z-15 bg-red-500 h-11 aspect-square">
+                    <Iconify icon="lsicon:location-filled" />
+                </Button>
+
+
+            </AutoComplete>
             <InputErrors fieldName="timeZone" :invalidFields />
         </div>
 

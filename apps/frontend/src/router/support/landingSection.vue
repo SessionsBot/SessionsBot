@@ -36,7 +36,7 @@
 </template>
 
 
-<style>
+<style scoped>
     @reference '@/styles/main.css';
 
     .landing-section {

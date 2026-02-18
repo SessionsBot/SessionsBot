@@ -17,7 +17,6 @@
         disableTransition: false,
     })
     watch(colorMode, (mode) => {
-        console.info('Color Mode Changed!', mode)
         const html = document.documentElement
 
         if (mode === 'dark') {

@@ -1,10 +1,13 @@
-@import url("./color-theme.css");
+
+
+
 @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@100..800&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 @import "tailwindcss";
-
+@import "./color-theme.css";
+@import "./discord-previews.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 

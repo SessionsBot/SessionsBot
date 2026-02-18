@@ -37,7 +37,7 @@
                         },
                         onClick(e, ctx) {
                             ctx.close()
-                            analytics.cookieConsent.showManagePreferences = true;
+                            analytics.cookieConsent.openPreferences(true)
                         },
                     }
                 ],
@@ -45,19 +45,9 @@
         }
     })
 
-    // Watch for Managing Preferences - Auto Select:
-    watch(() => analytics.cookieConsent.showManagePreferences, (visible) => {
-        if (visible) {
-            analytics.cookiePreferences.analytics = true;
-            analytics.cookiePreferences.preferences = true;
-            analytics.cookiePreferences.marketing = true;
-        }
-    })
-
 
     // Confirm Choices - Close Dialog:
     async function confirmChoices() {
-        analytics.cookieConsent.showManagePreferences = false
         await analytics.cookieConsent.savePreferences()
         await analytics.cookieConsent.applyConsent()
     }

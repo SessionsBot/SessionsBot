@@ -175,14 +175,23 @@ const useDashboardStore = defineStore('dashboard', () => {
     const useSessionForm = () => {
         /** Session (Template) Form - Visibility Boolean */
         const visible = ref(false)
+
         /** Current session (template) payload/data for editing. */
         const editPayload = ref<API_SessionTemplateBodyInterface | null>(null)
         /** Fn - Starts a new session (template) form edit with provided `payload`. */
         function startEdit(payload: API_SessionTemplateBodyInterface) {
             editPayload.value = payload
         }
+
+        /** Data to pass to the session form on new session creation. */
+        const creationPayload = ref<creationPayload>(null);
+        type creationPayload = {
+            /** The user local zoned start date of the session to begin creation for. */
+            startDate?: DateTime
+        } | null;
+
         /** Fn - Attempts to open/create a new session schedule, if subscription allows does so - or else alerts. */
-        function createNew() {
+        function createNew(opts?: creationPayload) {
             const subscription = guildSubscription.state.value;
             const maxSchedulesAllowed = subscription?.limits.MAX_SCHEDULES ?? SubscriptionLimits.FREE.MAX_SCHEDULES
             const activeSchedulesCount = guildSessionTemplates.state.value?.length ?? 0
@@ -200,13 +209,17 @@ const useDashboardStore = defineStore('dashboard', () => {
                 return false
 
             } else {
+                // Apply Creation Payload (if any):
+                if (opts) {
+                    creationPayload.value = opts;
+                }
                 // Limit NOT Reached - Open Session Form:
                 sessionForm.visible.value = true;
                 return true
             }
         }
 
-        return { visible, editPayload, startEdit, createNew }
+        return { visible, creationPayload, editPayload, startEdit, createNew }
     }
     const sessionForm = useSessionForm()
 

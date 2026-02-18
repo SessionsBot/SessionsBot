@@ -11,24 +11,34 @@ export const SubscriptionSKUs = {
 
 /** According plan limits/restrictions by bot subscription level. */
 export const SubscriptionLimits: Record<SubscriptionPlanName, {
+
     /** Maximum number of repeating session templates allowed for guild. */
     MAX_SCHEDULES: number;
+
     /** Maximum number of rsvp slots within session templates allowed for guild. */
     MAX_RSVP_SLOTS: number;
+
     /** Maximum capacity of rsvp slots allowed for guild. */
     MAX_RSVP_CAPACITY: number;
+
     /** Weather to allow RSVP restrictions by assigned guild roles. */
     ALLOW_RSVP_ROLE_RESTRICTION: boolean;
+
     /** Weather to allow guild role mentions inside the session's post. */
     ALLOW_MENTION_ROLES: boolean;
+
     /** Weather to allow session notifications based on subscription level. */
     ALLOW_NOTIFICATIONS: boolean;
+
     /** Weather to allow custom message accent colors based on subscription level. */
     CUSTOM_ACCENT_COLOR: boolean
+
     /** Weather to allow a custom "thread start" message based on subscription level. */
     CUSTOM_THREAD_START_MESSAGE: boolean
+
     /** Weather to display a "Powered by Sessions Bot" text within Discord interactions/messages. */
     SHOW_WATERMARK: boolean
+
 }> = {
     FREE: {
         MAX_SCHEDULES: 7,

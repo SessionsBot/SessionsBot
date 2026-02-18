@@ -92,7 +92,7 @@
                     <span class="flex flex-row items-center justify-center flex-wrap gap-0.5">
                         <!-- Schedule New -->
                         <Button v-if="!pastDay" title="New Session for Day" unstyled
-                            @click="dashboard.sessionForm.createNew()" class="header-button">
+                            @click="dashboard.sessionForm.createNew({ startDate: selectedDay })" class="header-button">
                             <Iconify :size="20" icon="tabler:calendar-plus" />
                         </Button>
                         <!-- Close -->
@@ -174,7 +174,8 @@
                             </p>
                             <br>
                             <Button v-if="!pastDay" unstyled title="Create Schedule"
-                                @click="dashboard.sessionForm.createNew()" class="action-button p-1! px-2!">
+                                @click="dashboard.sessionForm.createNew({ startDate: selectedDay })"
+                                class="action-button p-1! px-2!">
                                 Create One
                             </Button>
                         </div>

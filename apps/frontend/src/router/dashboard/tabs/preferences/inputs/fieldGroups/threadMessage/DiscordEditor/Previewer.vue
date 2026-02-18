@@ -161,7 +161,7 @@
 </template>
 
 
-<style>
+<style scoped>
 
     @reference "@/styles/main.css";
 

@@ -22,7 +22,6 @@
     }
     const getRandomActions = () => {
         let count = Math.floor(Math.random() * 1) // random 0-2
-
         let r = []
         for (let i = 0; i < count; i++) {
             r.push(
@@ -40,7 +39,6 @@
         }
         return r
     }
-
     const baseText = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, autem tempore! Itaque quos architecto provident recusandae sapiente consequatur quo excepturi fugit corporis maxime nam id voluptatem, accusantium quia commodi veniam facere eos sunt consequuntur, ut reiciendis inventore similique at! Alias."
     const randomText = (min = 5, max?: number) => {
         const fullLength = baseText.length;
@@ -48,16 +46,12 @@
         const randomEnd = Math.max(Math.min(Math.floor((Math.random() * fullLength) + randomStart), fullLength), (randomStart + 10))
         return baseText.slice(randomStart, randomEnd)
     }
-
-
     // on mount - tests
     let intervalId = ref<NodeJS.Timeout>()
     onMounted(() => {
         // Send Cookie Prompt:
-        // if (!sendTests) return
         if (!sendTests) return
         else intervalId.value = setInterval(() => {
-
             // send random test notification:
             notifier.send({
                 header: 'Notification!',
@@ -69,7 +63,6 @@
         }, 3_000)
     })
     onUnmounted(() => clearInterval(intervalId.value))
-
 
 </script>
 
@@ -133,10 +126,9 @@
 
 
                 <!-- Actions Row -->
-                <span class="notification-action-row" v-if="data.actions?.length || data.level == 'upgrade'">
+                <span class="notification-action-row" v-if="data.actions?.length">
 
                     <!-- Defined Action Buttons: -->
-
                     <Button v-for="{ button, onClick } in data.actions" @click="(e) => {
                         let ctx = { close: () => notifier.hide(msgId) };
                         if (onClick) onClick(e, ctx)
@@ -156,20 +148,6 @@
 
 
                     </Button>
-
-
-                    <!-- Default - Upgrade Level Buttons -->
-                    <span v-if="(!data.actions || !data.actions?.length) && data.level == 'upgrade'"
-                        class="flex flex-row items-center justify-center gap-2.25 w-fit!">
-                        <a :href="externalUrls.discordStore" target="_blank">
-                            <Button unstyled class="bg-brand-1/90! hover:bg-brand-1/80! text-text-1/90! action-button">
-                                <Iconify icon="grommet-icons:upgrade" :size="17" />
-                                <p>
-                                    Upgrade Now!
-                                </p>
-                            </Button>
-                        </a>
-                    </span>
 
                 </span>
 
@@ -270,7 +248,7 @@
         @apply w-full flex flex-row items-start justify-center gap-2.25 pt-1.75 pb-0.75 flex-wrap;
 
         .action-button {
-            @apply flex bg-bg-3 relative hover:bg-bg-3/80 drop-shadow-sm drop-shadow-black/15 dark:drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
+            @apply flex bg-bg-4 relative hover:bg-bg-4/70 drop-shadow-sm drop-shadow-black/15 dark:drop-shadow-black/25 items-center justify-center gap-1 p-0.75 px-1.5 rounded-md active:scale-95 transition-all cursor-pointer truncate;
 
             p {
                 @apply text-sm font-bold;

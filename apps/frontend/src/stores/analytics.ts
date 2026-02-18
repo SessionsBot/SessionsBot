@@ -39,6 +39,15 @@ const useAnalyticsStore = defineStore('analytics', () => {
         const showCookieAlert = ref(false);
         const showManagePreferences = ref(false);
 
+        function openPreferences(autoToggle: boolean) {
+            if (autoToggle) {
+                cookiePreferences.preferences = true;
+                cookiePreferences.analytics = true;
+                cookiePreferences.marketing = true;
+            }
+            showManagePreferences.value = true
+        }
+
         /** Used to **CHECK** if user has saved cookie preferences or not.
          * @no_preferences shows cookie consent/preferences alert
          * @preferences_saved applies google analytics const mode options. */
@@ -61,7 +70,7 @@ const useAnalyticsStore = defineStore('analytics', () => {
             }
         }
 
-        /** Updates/saves currently selected cookies to allow to local storage. */
+        /** Updates/saves currently selected cookies to allow to local storage. (closes preferences panel) */
         async function savePreferences() {
             return await new Promise((r) => {
                 // Get Current Options:
@@ -69,13 +78,15 @@ const useAnalyticsStore = defineStore('analytics', () => {
                 // Save/Update Selected Opts to LocalStorage:
                 if (allowed?.length) localStorage.setItem(save_key, JSON.stringify(allowed))
                 else localStorage.setItem(save_key, '[]')
+                // Close Preferences Panel:
+                showManagePreferences.value = false;
                 // Resolve:
                 return r({ result: 'Cookie Preferences Updated to Local Storage!', preferences: cookiePreferences })
             })
 
         }
 
-        /** Marks **ALL** cookies as allowed. */
+        /** Marks **ALL** cookies as GRANTED on call. */
         async function acceptAll() {
             for (const key of Object.keys(cookiePreferences)) {
                 // @ts-expect-error
@@ -109,11 +120,12 @@ const useAnalyticsStore = defineStore('analytics', () => {
         // Return States & Methods:
         return {
             init,
+            openPreferences,
             savePreferences,
             acceptAll,
             applyConsent,
-            showManagePreferences,
-            showCookieAlert
+            showCookieAlert,
+            showManagePreferences
         }
     }
     const cookieConsent = useCookieConsent();

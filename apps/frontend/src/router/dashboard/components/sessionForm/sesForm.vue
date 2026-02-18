@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import z, { safeParse, treeifyError } from 'zod'
     import { AlertCircleIcon, ArrowLeft, ArrowRight, CalendarCogIcon, CalendarPlusIcon, CheckIcon, InfoIcon, Layers2Icon, MapPinCheckInsideIcon, Trash2Icon, TriangleAlertIcon, XIcon } from 'lucide-vue-next';
-    import InformationTab from './tabs/information.vue';
+    import InformationTab from './tabs/information/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
     import DiscordTab from './tabs/discord.vue';
@@ -23,6 +23,8 @@
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
     const notifier = useNotifier();
+
+    const subscription = computed(() => dashboard.guildData.subscription.state)
 
     // Form Visibility:
     const sessionsFormVisible = computed({
@@ -65,6 +67,16 @@
         }
     });
 
+    // EVENT: Watch for Creating Session Payload:
+    watch(() => dashboard.sessionForm.creationPayload, (payload) => {
+        if (payload) {
+            console.log('A creation payload was passed/changed', payload)
+            if (payload.startDate) {
+                formValues.value.startDate = payload.startDate?.toJSDate()
+            }
+        }
+    });
+
     /** Form Value Defaults - Factory Fn */
     function createFormDefaults() {
         return {
@@ -96,7 +108,17 @@
     /** Form Resolver Schema */
     const formSchema = z.object({
         title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
-        description: z.string('Please enter a valid description.').trim().max(125, 'Description cannot exceed 125 characters.').normalize().optional().nullish(),
+        description: z.string('Please enter a valid description.').trim().max(225, 'Description cannot exceed 225 characters.').normalize().refine(s => {
+            if (subscription.value?.limits?.ALLOW_MENTION_ROLES != true) {
+                // Check for any native discord mentions in string:
+                const attemptedMentions = s.match(/<@?&?#?(\/\S*:)?\d{10,}>|@everyone|@here/g)
+                if (attemptedMentions?.length)
+                    return false
+                else return true
+            } else {
+                return true
+            }
+        }, `You're current subscription plan doesn't allow for native Discord mentions!`).optional().nullish(),
         url: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().nullish().or(z.literal("")),
         startDate: z.date('Please enter a valid date.').refine((v) => {
             if (formAction.value == 'edit') return true;
@@ -240,8 +262,9 @@
 
         // Reset Selected Tab:
         tabSelected.value = 'information';
-        // Reset Edit Data:
+        // Reset Edit/Payload Data:
         dashboard.sessionForm.editPayload = null;
+        dashboard.sessionForm.creationPayload = null;
         editingId.value = undefined;
         formAction.value = 'new';
 
@@ -663,7 +686,7 @@
 <template>
     <!-- Form Background -->
     <Dialog append-to="body" v-bind:visible="sessionsFormVisible" modal block-scroll
-        class="max-w-[90%]! max-h-[90%]! border-0!">
+        class="max-w-[87%]! max-h-[90%]! border-0!">
         <template #container="{ closeCallback, initDragCallback }">
             <!-- Form Card -->
             <div

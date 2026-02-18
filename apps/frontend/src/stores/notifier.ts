@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Component } from "vue";
+import { externalUrls } from "./nav";
 
 // Notification Types:
 type NotificationLevel = "default" | "info" | "upgrade" | "success" | "warn" | "error"
@@ -184,6 +185,26 @@ const useNotifier = defineStore('notifier', () => {
             ) {
                 console.warn("Prevented duplicate notification");
                 return;
+            }
+        }
+
+        // Add Default Actions if NONE are provided:
+        if (!notificationOpts.actions || notificationOpts.actions?.length == 0) {
+            if (notificationOpts.level == 'error') {
+                // Add Default - Error Actions
+                notificationOpts.actions = [
+                    {
+                        button: { icon: 'basil:chat-solid', title: 'Get Support', href: '+' + externalUrls.discordServer.supportInvite }
+                    }
+                ]
+            }
+            if (notificationOpts.level == 'upgrade') {
+                // Add Default - Error Actions
+                notificationOpts.actions = [
+                    {
+                        button: { icon: 'grommet-icons:upgrade', title: 'Upgrade Bot', href: '+' + externalUrls.discordStore, class: `bg-brand-1/90! hover:bg-brand-1/80! text-text-1/90!` }
+                    }
+                ]
             }
         }
 
