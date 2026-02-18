@@ -5,6 +5,7 @@ import { useLogger } from '../../../../../utils/logs/logtail';
 import { API_GuildPreferencesInterface, API_GuildPreferencesSchema, APIResponse as reply } from '@sessionsbot/shared';
 import z from 'zod';
 import { HttpStatusCode } from 'axios';
+import { supabase } from '../../../../../utils/database/supabase';
 
 const preferencesRouter = express.Router({ mergeParams: true })
 
@@ -26,9 +27,15 @@ preferencesRouter.patch('/', verifyToken, verifyGuildAdmin, async (req: authoriz
             const input_errors = z.treeifyError(validation.error);
             return new reply(res).failure('Invalid Inputs - Please confirm and try again..', HttpStatusCode.BadRequest, { input_errors, data })
         } else {
-            // Valid Data:
-            const data = validation.data
-            // ! Update Guild in Database - FINISH ME!
+            // Valid Data - Update Guild Preferences:
+            const prefData = validation.data;
+            const { data: guildData, error } = await supabase.from('guilds').update(prefData)
+                .eq('id', String(guildId))
+                .select()
+                .single()
+            // On Database Error:
+            if (error) throw error
+            else return new reply(res).success({ message: 'Guild preferences updated!' })
         }
 
     } catch (err) {

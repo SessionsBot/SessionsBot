@@ -90,27 +90,36 @@ export type Database = {
       guilds: {
         Row: {
           accent_color: string
+          calendar_button: boolean
           id: string
           joined_at: string
-          member_count: number
           name: string
           owner_id: string
+          public_sessions: boolean
+          thread_message_description: string
+          thread_message_title: string
         }
         Insert: {
           accent_color?: string
+          calendar_button?: boolean
           id: string
           joined_at?: string
-          member_count: number
           name: string
           owner_id: string
+          public_sessions?: boolean
+          thread_message_description?: string
+          thread_message_title?: string
         }
         Update: {
           accent_color?: string
+          calendar_button?: boolean
           id?: string
           joined_at?: string
-          member_count?: number
           name?: string
           owner_id?: string
+          public_sessions?: boolean
+          thread_message_description?: string
+          thread_message_title?: string
         }
         Relationships: []
       }

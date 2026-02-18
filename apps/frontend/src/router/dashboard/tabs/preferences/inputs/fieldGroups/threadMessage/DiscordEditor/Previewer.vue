@@ -3,7 +3,7 @@
     import DefaultDiscordIcon from '/discord-grey.png'
     import { toHTML } from '@odiffey/discord-markdown'
     import { DateTime } from 'luxon';
-    import { BotIcon, Check } from 'lucide-vue-next';
+    import { Check } from 'lucide-vue-next';
     import useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Services:
@@ -120,7 +120,7 @@
             <div class="flex flex-col font-bold text-sm w-full gap-1 mt-1.5 rounded-md discord-preview">
 
                 <span class="flex flexc-row gap-1.75 items-center ">
-                    <p class="opacity-65"> {{ processText(props.threadTitle || '?')?.replace(/#/g, '') }} </p>
+                    <p class="opacity-65"> {{ processText(props.threadTitle || '?') }} </p>
 
                     <p class="text-sky-600 underline  text-sm"> 1 Message › </p>
                 </span>

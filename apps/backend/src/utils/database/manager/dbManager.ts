@@ -33,7 +33,6 @@ export default {
                 id: guild.id,
                 name: guild?.name,
                 owner_id: guild?.ownerId,
-                member_count: guild?.memberCount,
                 joined_at: guild.joinedAt?.toISOString() ?? null,
             }, { onConflict: 'id' }).select().single();
 

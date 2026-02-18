@@ -11,7 +11,6 @@
     import { API } from '@/utils/api';
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
-    import { externalUrls } from '@/stores/nav';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -26,7 +25,7 @@
             accent_color: z.string("Invalid Accent Color!").regex(RegExp_HexColorCode, 'Invalid Hex Color Code!'),
             public_sessions: z.boolean("Invalid Choice!"),
             calendar_button: z.boolean("Invalid Choice!"),
-            thread_message_title: z.string('Invalid Title!').transform((v: string) => v.replace('### ', '')).pipe(z.string().regex(/^[a-zA-Z0-9%_ !&?,.\p{Extended_Pictographic}]+$/gu, 'Title cannot include special characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!').normalize()),
+            thread_message_title: z.string('Invalid Title!').regex(/^[a-zA-Z0-9- %_!&?,.[\](){}@$^\p{Extended_Pictographic}]+$/gu, 'Title includes invalid characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!').normalize(),
             thread_message_description: z.string('Invalid Description!').max(225, 'Description cannot exceed 225 characters!').normalize()
         })
 
@@ -81,8 +80,6 @@
                     // Prepare API Req Data - Default Thread Start Msg(s):
                     if (fields.thread_message_title == API_GuildPreferencesDefaults.thread_message_title)
                         fields.thread_message_title = "DEFAULT";
-                    else
-                        fields.thread_message_title = '### ' + fields.thread_message_title
                     if (fields.thread_message_description == API_GuildPreferencesDefaults.thread_message_description)
                         fields.thread_message_description = "DEFAULT";
                     // Send API Update/Patch Request:
@@ -234,7 +231,7 @@
                 </span>
 
                 <!-- Debug View -->
-                <span hidden class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
+                <span class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
 
                     <span
                         v-html="JSON.stringify(preferenceForm.values, null, '<br>').replace(/}$/, '') + '<br>}' || {}" />

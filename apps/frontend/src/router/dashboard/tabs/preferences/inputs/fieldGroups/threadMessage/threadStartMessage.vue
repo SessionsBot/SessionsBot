@@ -65,7 +65,7 @@
     const previewTextValue = computed(() => {
         const titleText = String(displayTitle.value)
         const descText = String(displayDescription.value)
-        return (titleText + '\n' + descText)
+        return ('### ' + titleText + '\n' + descText)
     })
 
 
@@ -201,8 +201,8 @@
                             <!-- Input - Title -->
                             <span class="input-wrap">
                                 <InputLabel title="Thread Title" icon-name="fe:text-size" />
-                                <InputText :default-value="displayTitle?.replace('### ', '')"
-                                    @value-change="(v: string | undefined) => { displayTitle = '### ' + v; $emit('validate') }"
+                                <InputText :default-value="displayTitle"
+                                    @value-change="(v: string | undefined) => { displayTitle = v; $emit('validate') }"
                                     class="heading-input max-w-120! shadow-sm! shadow-black/30!"
                                     :invalid="inputErrors?.size >= 1" fluid />
                                 <!-- Errors -->
