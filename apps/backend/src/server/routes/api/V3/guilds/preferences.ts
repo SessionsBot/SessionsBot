@@ -2,14 +2,16 @@ import express from 'express';
 import { verifyGuildAdmin } from '../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../middleware/verifyToken';
 import { useLogger } from '../../../../../utils/logs/logtail';
-import { API_GuildPreferencesInterface, API_GuildPreferencesSchema, APIResponse as reply } from '@sessionsbot/shared';
+import { API_GuildPreferencesInterface, API_GuildPreferencesSchema, AuditEvent, APIResponse as reply } from '@sessionsbot/shared';
 import z from 'zod';
 import { HttpStatusCode } from 'axios';
 import { supabase } from '../../../../../utils/database/supabase';
+import { createAuditLog } from '../../../../../utils/database/auditLog';
 
 const preferencesRouter = express.Router({ mergeParams: true })
 
 const createLog = useLogger();
+
 
 // PATCH - Update Guild Preferences Endpoint:
 // URL: https://api-host.fyi/guilds/:guild_id/preferences
@@ -35,7 +37,19 @@ preferencesRouter.patch('/', verifyToken, verifyGuildAdmin, async (req: authoriz
                 .single()
             // On Database Error:
             if (error) throw error
-            else return new reply(res).success({ message: 'Guild preferences updated!' })
+            else {
+                // Success - Create Audit Log Event:
+                createAuditLog({
+                    event: AuditEvent.PreferencesUpdated,
+                    guild: String(guildId),
+                    user: req.auth?.profile?.discord_id,
+                    meta: {
+                        username: req?.auth?.profile?.username
+                    }
+                })
+                // Return Success:
+                return new reply(res).success({ message: 'Guild preferences updated!' })
+            }
         }
 
     } catch (err) {

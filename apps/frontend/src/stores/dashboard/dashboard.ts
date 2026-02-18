@@ -1,6 +1,6 @@
 import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
-import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildRoles, fetchGuildSessions, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
+import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles, fetchGuildSessions, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
@@ -50,6 +50,14 @@ const useDashboardStore = defineStore('dashboard', () => {
         immediate: false,
         onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
     })
+    /** Guild Data - Preferences/Data */
+    const guildDbData = useAsyncState(() => fetchGuildData(guildId.value), undefined, {
+        immediate: false,
+        onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
+    })
+
+    /** Guild Data - From Auth User */
+    const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
 
 
     const guildFetchReady = computed(() => {
@@ -70,6 +78,7 @@ const useDashboardStore = defineStore('dashboard', () => {
 
     /** Selected Guild Data - **NESTED** */
     const guildData = {
+        guild: guildDbData,
         channels: guildChannels,
         roles: guildRoles,
         subscription: guildSubscription,
@@ -78,7 +87,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         auditLog: guildAuditLogs
     }
 
-    const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
+
     /** Saved Selection - Choice Class */
     const saveGuildChoice = {
         saveKey: 'SGC_Dashboard',

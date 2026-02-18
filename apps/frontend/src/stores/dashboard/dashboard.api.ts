@@ -60,6 +60,24 @@ export async function fetchGuildSubscription(guildId: string | null, accessToken
 }
 
 
+// Guild Preferences/Data:
+export async function fetchGuildData(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Data / Preferences - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('guilds')
+        .select('*')
+        .eq('id', guildId)
+        .single()
+    // Return Result:
+    if (!error) {
+        return data
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Data / Preferences - DB ERROR`, error })
+    }
+}
+
+
 // Guild Templates:
 export async function fetchGuildTemplates(guildId: string | null) {
     // Confirm Inputs:

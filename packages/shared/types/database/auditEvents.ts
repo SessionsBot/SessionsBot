@@ -14,8 +14,8 @@ export enum AuditEvent {
     RsvpCreated = "RSVP Created",
     /** User has been removed as an RSVP from a session slot. */
     RsvpDeleted = "RSVP Deleted",
-    /** A preference has been updated. */
-    PreferenceUpdated = "Preference Updated",
+    /** Guild wide preferences has been updated. */
+    PreferencesUpdated = "Preferences Updated",
 }
 
 /** Individualized Meta Data for Audit Event's by Event Type */
@@ -46,9 +46,8 @@ const EventMetaData = {
         session_id: '' as string,
         rsvp_id: '' as string
     },
-    [AuditEvent.PreferenceUpdated]: {
-        username: '' as string,
-        preference_name: '' as string
+    [AuditEvent.PreferencesUpdated]: {
+        username: '' as string
     },
 } as const
 

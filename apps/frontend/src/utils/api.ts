@@ -1,6 +1,4 @@
-import { useAuthStore } from "@/stores/auth";
-import type { APIResponseValue } from "@sessionsbot/shared";
-import axios, { Axios, type AxiosInstance } from "axios";
+import axios from "axios";
 
 /** When enabled, routes all API traffic to local dev url at `http://localhost:3000/api` */
 const local_dev_api = false;

@@ -23,7 +23,7 @@
     </div>
 
     <!-- Preference Updated -->
-    <div v-else-if="event == AuditEvent.PreferenceUpdated" class="flex gap-1 flex-row items-center w-full">
+    <div v-else-if="event == AuditEvent.PreferencesUpdated" class="flex gap-1 flex-row items-center w-full">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 640 640"
             class="min-w-fit! aspect-square!">
             <path fill="currentColor"

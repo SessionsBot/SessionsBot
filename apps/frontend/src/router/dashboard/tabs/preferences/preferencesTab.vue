@@ -39,6 +39,9 @@
         })
         type FieldName = keyof typeof values
 
+        /** `Boolean` represent weather the form values have been modified since mount. */
+        const touched = ref(false)
+
         /** Current Form Input Errors - Map */
         const errors = ref<Map<FieldName, string[]>>(new Map());
 
@@ -127,6 +130,7 @@
             schema,
             values,
             errors,
+            touched,
             validateFields,
             submitState,
             submit,
@@ -139,12 +143,20 @@
 
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
-        console.info('Preferences Tab Mounted')
-        preferenceForm.values.accent_color = '#9e54e8'
-        preferenceForm.values.public_sessions = true
-        preferenceForm.values.calendar_button = true
-        preferenceForm.values.thread_message_title = 'DEFAULT'
-        preferenceForm.values.thread_message_description = 'DEFAULT'
+        console.info('Preferences Tab Mounted - Loading Form')
+        const guildPrefData = computed(() => dashboard.guildData.guild.state)
+        preferenceForm.values.accent_color = guildPrefData.value?.accent_color ?? API_GuildPreferencesDefaults.accent_color
+        preferenceForm.values.public_sessions = guildPrefData.value?.public_sessions ?? API_GuildPreferencesDefaults.public_sessions
+        preferenceForm.values.calendar_button = guildPrefData.value?.calendar_button ?? API_GuildPreferencesDefaults.calendar_button
+        preferenceForm.values.thread_message_title = guildPrefData.value?.thread_message_title ?? API_GuildPreferencesDefaults.thread_message_title
+        preferenceForm.values.thread_message_description = guildPrefData.value?.thread_message_description ?? API_GuildPreferencesDefaults.thread_message_description
+
+        // Watch form 'Dirty' state:
+        preferenceForm.touched.value = false;
+        watchOnce(preferenceForm.values, (v) => {
+            console.info('Form NOW dirty oooo')
+            preferenceForm.touched.value = true;
+        })
     })
 
 </script>
@@ -215,14 +227,13 @@
                 <span class="form-actions-footer">
 
                     <!-- Submit/Save -->
-                    <Button unstyled type="submit" :disabled="preferenceForm.submitState.value != 'idle'"
-                        class="bg-bg-4 hover:bg-bg-4/80 flex items-center justify-center gap-0.75 p-1 rounded-md cursor-pointer active:scale-95 transition-all drop-shadow-sm drop-shadow-black/25"
+                    <Button unstyled class="button-base flex-row! pl-1 pr-1.5! flex-nowrap! bg-bg-4 hover:bg-bg-4/80"
                         :class="{
                             'scale-95! opacity-50!': preferenceForm.submitState.value == 'failed',
                             'bg-invalid-soft!': preferenceForm.submitState.value == 'failed',
                             'bg-emerald-500/50!': preferenceForm.submitState.value == 'success',
-                        }" @click="preferenceForm.submit">
-                        <!-- <Iconify /> -->
+                        }" @click="preferenceForm.submit"
+                        :disabled="preferenceForm.submitState.value != 'idle' || preferenceForm.touched.value == false">
                         <CheckIcon :size="20" />
                         <p class="flex sm:hidden!"> Save </p>
                         <p class="hidden sm:flex!"> Save Changes </p>
@@ -231,11 +242,12 @@
                 </span>
 
                 <!-- Debug View -->
-                <span class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
+                <span hidden class="p-3 w-full block items-center justify-center bg-white/7 border-2 border-white/20">
 
                     <span
                         v-html="JSON.stringify(preferenceForm.values, null, '<br>').replace(/}$/, '') + '<br>}' || {}" />
 
+                    Touched: {{ preferenceForm.touched }}
                 </span>
 
             </div>
