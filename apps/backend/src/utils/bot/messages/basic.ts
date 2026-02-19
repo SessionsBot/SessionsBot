@@ -26,12 +26,14 @@ export const genericErrorMsg = ({
                 components: <any>[
                     new ButtonBuilder({
                         style: ButtonStyle.Link,
-                        label: `💬 Get Support`,
+                        emoji: { name: 'chat', id: core.emojis.ids.chat },
+                        label: `Get Support`,
                         url: URLS.support_chat
                     }),
                     new ButtonBuilder({
                         style: ButtonStyle.Link,
-                        label: `📚 More Resources`,
+                        emoji: { name: 'list', id: core.emojis.ids.list },
+                        label: `More Resources`,
                         url: URLS.site_links.support
                     })
                 ]
@@ -59,5 +61,5 @@ export const defaultFooterText = (opts:
         lightFont: false
     }
 ) => {
-    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings?.logo} Powered by [Sessions Bot](${URLS.website}) ${opts.showHelpLink ? ` |  [Need Help?](${URLS.site_links.support})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
+    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojis.string('logo')} Powered by [Sessions Bot](${URLS.website}) ${opts.showHelpLink ? ` |  [Need Help?](${URLS.site_links.support})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
 }

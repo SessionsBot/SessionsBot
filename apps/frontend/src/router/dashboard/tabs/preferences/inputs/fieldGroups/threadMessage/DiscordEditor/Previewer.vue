@@ -18,7 +18,6 @@
 
     // Pre - Process - Variable Text(s):
     const variableMap = {
-        '%server_name%': dashboard.userGuildData?.name || 'Server Name?',
         '%day_sm%': DateTime.now().month + '/' + DateTime.now().day,
         '%day_md%': DateTime.now().toFormat('M/d/yy'),
         '%day_lg%': DateTime.now().toFormat('DD'),

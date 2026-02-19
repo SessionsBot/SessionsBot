@@ -24,7 +24,7 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('warning'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 🤔 Need Help with Sessions Bot?\ \n-# Don't worry theres plenty of support resources to get your sessions running smoothly!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('help')} Need Help with Sessions Bot?\ \n-# Don't worry theres plenty of support resources to get your sessions running smoothly!` }),
                     new SeparatorBuilder(),
                     new SectionBuilder({
                         components: <any>[
@@ -32,7 +32,7 @@ export default {
                         ],
                         accessory: {
                             label: 'Support Chat',
-                            emoji: { name: '💬' },
+                            emoji: { name: 'chat', id: core.emojis.ids.chat },
                             style: ButtonStyle.Link,
                             url: URLS.support_chat,
                             type: ComponentType.Button
@@ -44,7 +44,7 @@ export default {
                         ],
                         accessory: {
                             label: 'Read Docs',
-                            emoji: { name: '📃' },
+                            emoji: { name: 'list', id: core.emojis.ids.list },
                             style: ButtonStyle.Link,
                             url: URLS.documentation,
                             type: ComponentType.Button
@@ -56,7 +56,7 @@ export default {
                         ],
                         accessory: {
                             label: 'More Resources',
-                            emoji: { name: '🗂️' },
+                            emoji: { name: 'star', id: core.emojis.ids.star },
                             style: ButtonStyle.Link,
                             url: URLS.site_links.support,
                             type: ComponentType.Button

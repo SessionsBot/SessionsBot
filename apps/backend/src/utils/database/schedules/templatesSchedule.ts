@@ -1,9 +1,9 @@
-import { calculateNextPostUTC, mapRsvps, AuditEvent } from "@sessionsbot/shared";
+import { calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
 import core from "../../core/core";
-import { sendFailedToPostSessionAlert } from "../../bot/permissions/failedToSendMsg";
+import { sessionPostFailedFromPerms } from "../../bot/permissions/failedToSendMsg";
 import { buildSessionSignupMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionSignup";
 import { ChannelType, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
@@ -12,6 +12,7 @@ import sendWithFallback from "../../bot/messages/sendWithFallback";
 import { createAuditLog } from "../auditLog";
 import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 import { URLS } from "../../core/urls";
+import { processVariableText } from "../../bot/messages/variableText";
 
 const createLog = useLogger();
 const debugSchedule = true;
@@ -32,11 +33,12 @@ async function executeTemplateCreationSchedule() {
             .from('session_templates')
             .select('*')
             .lte('next_post_utc', fromUTC.toISO())
-        // Catch Fetch Errors:
+        // No Results Returned:
         if (!data || !data?.length) {
             if (debugSchedule) console.info(`[⏰] Template Fetch - Returned 0 results due for next post!`)
             return null;
         }
+        // Catch Fetch Errors:
         if (error) {
             createLog.for('Database').error('Failed to load templates! - Creation Scheduler - CRITICAL', { details: error });
             return null;
@@ -44,9 +46,8 @@ async function executeTemplateCreationSchedule() {
         // Return Templates:
         return data;
     }
-    const fromUTC = DateTime.now().toUTC();
-    const templateFetch = await getTemplates(fromUTC);
-    if (!templateFetch) return;
+    const templateFetch = await getTemplates(DateTime.now().toUTC());
+    if (!templateFetch || !templateFetch.length) return;
 
     // Map Overdue Templates into "Post" Queue:
     let postQueue: { [guildId: string]: { [channelId: string]: typeof templateFetch } } = {};
@@ -59,10 +60,19 @@ async function executeTemplateCreationSchedule() {
     // POST/CREATE - For Each Guild/Template In Post Queue:
     for (const [guildId, channels] of Object.entries(postQueue)) {
         // Fetch Guild & Subscription:
-        const [guild, guildSubscription] = await Promise.all([
+        const [guild, guildSubscription, guildDbData] = await Promise.all([
             core.botClient.guilds.fetch(guildId),
-            getGuildSubscriptionFromId(guildId)
+            getGuildSubscriptionFromId(guildId),
+            supabase.from('guilds').select('*').eq('id', guildId).select().single()
         ])
+
+        if (!guild || guildDbData.error || !guildDbData.data) {
+            createLog.for('Database').error(`FAILED TO SAVE/CREATE - New Session - Couldn't fetch guild!`, { guildId, post_queue: channels, err: guildDbData.error });
+            // Send Failure Message:
+            const errMsg = genericErrorMsg({ reasonDesc: `We failed to post one of your sessions due to a database error!, This shouldn't be happening, check our [status page](${URLS.status_page}) or get in touch with our [Bot Support](${URLS.support_chat}) team! \n**Support Details:** \`\`\`Guild Id: ${guildId} \nCause: Guild data fetch failure \`\`\`` })
+            sendWithFallback(guildId, errMsg);
+            continue;
+        }
 
         // For each post channel in guild:
         for (const [channelId, templates] of Object.entries(channels)) {
@@ -72,7 +82,7 @@ async function executeTemplateCreationSchedule() {
 
             if (!channel.isSendable()) {
                 // If channel isn't sendable:
-                await sendFailedToPostSessionAlert(guildId, channelId, templates.map(t => t.id))
+                await sessionPostFailedFromPerms(guildId, channelId, templates.map(t => t.id))
                 continue
             }
 
@@ -141,8 +151,16 @@ async function executeTemplateCreationSchedule() {
                 let destinationChannel: TextThreadChannel | TextChannel = null;
                 if (t.post_in_thread) {
                     // Post inside Thread:
+                    const rawThreadTitle = () => {
+                        const rawTitleSave = guildDbData.data.thread_message_title
+                        if (!rawTitleSave || rawTitleSave == 'DEFAULT') {
+                            // Apply default
+                            return API_GuildPreferencesDefaults.thread_message_title
+                        } else return rawTitleSave
+                    }
                     const dayInZone = sessionStart.setZone(t.time_zone).startOf('day')
-                    const threadTitle = `📅 Sessions - ${dayInZone.month}/${dayInZone.day}`
+                    const threadTitle = processVariableText(rawThreadTitle(), { displayDate: dayInZone })
+
                     // Search for existing thread:
                     const existingThread = channel.threads.cache.find(t => t.name == threadTitle)
                     if (existingThread) {
@@ -151,9 +169,17 @@ async function executeTemplateCreationSchedule() {
                     }
                     else {
                         // CREATING THREAD - Send "Thread Start" Message:
+                        const rawThreadDesc = () => {
+                            const rawDescSave = guildDbData.data.thread_message_description
+                            if (!rawDescSave || rawDescSave == 'DEFAULT') {
+                                // Apply default
+                                return API_GuildPreferencesDefaults.thread_message_description
+                            } else return rawDescSave
+                        }
+                        const threadDescription = processVariableText(rawThreadDesc(), { displayDate: dayInZone })
                         const threadStartMsg = await channel.send({
                             components: [
-                                buildSessionThreadStartMsg(dayInZone, guildSubscription.limits.SHOW_WATERMARK)
+                                buildSessionThreadStartMsg(dayInZone, guildSubscription.limits.SHOW_WATERMARK, threadTitle, threadDescription, guildDbData.data.accent_color)
                             ],
                             flags: MessageFlags.IsComponentsV2
                         })
@@ -173,7 +199,7 @@ async function executeTemplateCreationSchedule() {
                 }
 
                 // Post to Discord:
-                const signupMsgContent = await buildSessionSignupMsg(session, guildSubscription.limits.SHOW_WATERMARK)
+                const signupMsgContent = await buildSessionSignupMsg(session, guildSubscription.limits.SHOW_WATERMARK, guildDbData.data.accent_color, guildDbData.data?.calendar_button)
                 const signupMsg = await destinationChannel.send({
                     components: [signupMsgContent],
                     flags: MessageFlags.IsComponentsV2

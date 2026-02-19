@@ -25,20 +25,22 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 💻 Visit your Bot Dashboard \n-# This is where you can create and configure your servers sessions/events and more!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')} Visit your Bot Dashboard \n This is where you can create and **configure your servers sessions/events and more**!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
-                                url: `${URLS.site_links.dashboard}`,
-                                label: '⚙️ Visit Dashboard'
+                                url: `${URLS.documentation}`,
+                                emoji: { name: 'list', id: core.emojis.ids.list },
+                                label: 'Documentation'
                             }),
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
-                                url: `${URLS.documentation}`,
-                                label: '📖 Visit Documentation'
-                            })
+                                url: `${URLS.site_links.dashboard}`,
+                                emoji: { name: 'dashboard', id: core.emojis.ids.dashboard },
+                                label: 'Visit Dashboard'
+                            }),
                         ]
                     }),
 

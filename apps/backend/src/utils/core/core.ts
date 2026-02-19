@@ -4,7 +4,6 @@ import { SKU } from 'discord.js';
 import { BotEmojiName } from '../bot/fetchEmojis';
 import { ENVIRONMENT_TYPE } from '../environment';
 
-
 const core = {
     /** Current running Sessions Bot version. */
     botVersion: pkg.version,
@@ -33,7 +32,12 @@ const core = {
 
     /** Custom emoji strings formatted for use within Discord. 
      * * (loaded by `ready` event) */
-    emojiStrings: <Partial<Record<BotEmojiName | undefined, string | undefined>>>{},
+    // emojiStrings: <Partial<Record<BotEmojiName | undefined, string | undefined>>>{},
+
+    emojis: {
+        ids: <Partial<Record<BotEmojiName, string>>>{},
+        string: (name: BotEmojiName) => `<:${name}:${core.emojis.ids[name]}>`
+    },
 
     /** Holds application/bot command related data. */
     commands: {

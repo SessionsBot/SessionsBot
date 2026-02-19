@@ -64,7 +64,7 @@ export default {
                     accent_color: core.colors.getOxColor('success'),
                     components: <any>[
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `## ✅ Bot Added to Server` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('success')} Bot Added to Server` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `### Name: \n> ${addedGuild?.name}` }),
                         new TextDisplayBuilder({ content: `### Created at: \n> <t:${createdAt}:F>` }),
@@ -110,7 +110,7 @@ export default {
                     accent_color: core.colors.getOxColor('warning'),
                     components: <any>[
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `## ❌ Bot Removed from Server` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('fail')} Bot Removed from Server` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `### Name: \n> ${guildRemoved?.name}` }),
                         new TextDisplayBuilder({ content: `### Joined at: \n> <t:${joinedAt}:F>` }),
@@ -159,7 +159,7 @@ export default {
                     accent_color: getOxColor('success'),
                     components: <any>[
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `## 🛍️ Entitlement Created` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('premium')} Entitlement Created` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `### Product Name: \n> ${skuInfo?.name}` }),
                         new TextDisplayBuilder({ content: `### Guild Name: \n> ${owner?.name}` }),
@@ -210,7 +210,7 @@ export default {
                     accent_color: getOxColor(entitlement.isActive() ? 'purple' : 'error'),
                     components: <any>[
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `## 🛍️ Entitlement Updated` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('info')} Entitlement Updated` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `### Product Name: \n> ${skuInfo?.name}` }),
                         new TextDisplayBuilder({ content: `### Status: \n> \`${status}\`` }),

@@ -15,8 +15,7 @@ export default {
         // Vars:
         const {
             colors: { getOxColor },
-            commands: { getLinkString: getCmdLink },
-            urls
+            commands: { getLinkString: getCmdLink }
         } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
 
@@ -26,22 +25,29 @@ export default {
         // Get Guild Subscription:
         const subscription = getSubscriptionFromInteraction(i)
 
-        // Fetch Session:
-        const { data: session, error: sessionERR } = await supabase.from('sessions')
-            .select('*')
-            .eq('id', sessionId)
-            .select()
-            .single()
-        if (sessionERR) throw { message: `Failed to fetch session for UN-RSVP button interaction!`, details: { sessionId, err: sessionERR } };
+        // Fetch Session/Guild Data:
+        const [guildDbFetch, sessionDbFetch, rsvpAssignmentFetch] = await Promise.all([
+            supabase.from('guilds').select('*').eq('id', i.guildId).single(),
+            supabase.from('sessions')
+                .select('*')
+                .eq('id', sessionId)
+                .select()
+                .single(),
+            supabase.from('session_rsvps')
+                .delete()
+                .eq('session_id', sessionId)
+                .eq('rsvp_slot_id', 'rsvp_' + rsvpId)
+                .eq('user_id', i.user.id)
+                .select()
+                .maybeSingle()
+        ])
+        const { data: session, error: sessionERR } = sessionDbFetch;
+        const { data: guild, error: guildERR } = guildDbFetch;
+        const { data: rsvpAssignment, error: rsvpAssignmentERR } = rsvpAssignmentFetch;
 
-        // Fetch RSVP Entry:
-        const { data: rsvpAssignment, error: rsvpAssignmentERR } = await supabase.from('session_rsvps')
-            .delete()
-            .eq('session_id', sessionId)
-            .eq('rsvp_slot_id', 'rsvp_' + rsvpId)
-            .eq('user_id', i.user.id)
-            .select()
-            .maybeSingle()
+        // Fetch Errors:
+        if (!guild || guildERR) throw { message: 'Failed to fetch guild data for rsvp interaction!', details: { session, err: guildDbFetch.error } }
+        if (!session || sessionERR) throw { message: `Failed to fetch session data for RSVP button interaction!`, details: { session, err: sessionERR } };
         if (rsvpAssignmentERR) throw { message: `Failed to fetch session RSVP assignment for UN-RSVP button interaction!`, details: { sessionId, err: rsvpAssignmentERR } };
 
         // RSVP - Not Found - Alert & Return:
@@ -49,7 +55,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('warning'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### 🤔 Hm! We cant find your RSVP Slot` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('warning')} Hm! We cant find your RSVP Slot` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you're already **not assigned** this RSVP slot within this session.` }),
                     new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-rsvps')} command to confirm your current RSVP assignments within this Discord Server.` })
@@ -77,7 +83,7 @@ export default {
         if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
 
         // Update Signup - New Content:
-        const newSignupContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
+        const newSignupContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
         await signupMsg.edit({
             components: [newSignupContent]
         })
@@ -86,7 +92,7 @@ export default {
         const successMsg = new ContainerBuilder({
             accent_color: getOxColor('warning'),
             components: <any>[
-                new TextDisplayBuilder({ content: `### 🗑️ RSVP Removed!` }),
+                new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} RSVP Removed!` }),
                 // new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# View details below:` }),
                 new SeparatorBuilder(),

@@ -19,7 +19,7 @@ export default {
         const rsp = new ContainerBuilder({
             accent_color: core.colors.getOxColor('success'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## 🆕 New Session` }),
+                new TextDisplayBuilder({ content: `## ${core.emojis.string('star')} New Session` }),
                 new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# Click on the link button attached to this message to begin create a new session/event for this Discord Server through Sessions Bot!` }),
                 new ActionRowBuilder({
@@ -27,6 +27,10 @@ export default {
                         new ButtonBuilder({
                             style: ButtonStyle.Link,
                             url: URLS.site_links.dashboard + `?guild=${i.guildId}&action=new+session`,
+                            emoji: {
+                                id: core.emojis.ids.dashboard,
+                                name: 'dashboard'
+                            },
                             label: `Create Session`
                         })
                     ]

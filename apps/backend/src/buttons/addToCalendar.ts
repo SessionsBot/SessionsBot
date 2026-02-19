@@ -4,11 +4,10 @@ import core from "../utils/core/core";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import { defaultFooterText } from "../utils/bot/messages/basic";
 import { DateTime } from "luxon";
+import { URLS } from "../utils/core/urls";
 
 const {
     colors: { getOxColor },
-    commands,
-    urls
 } = core
 
 export default {
@@ -37,7 +36,7 @@ export default {
         const optionMsg = new ContainerBuilder({
             accent_color: getOxColor('blue'),
             components: <any>[
-                new TextDisplayBuilder({ content: `### 📅 Add Session to Calendar \n-# Please select from an available calendar format to continue.` }),
+                new TextDisplayBuilder({ content: `### ${core.emojis.string('calendar')} Add Session to Calendar \n-# Please select from an available calendar format to continue.` }),
                 new SeparatorBuilder(),
                 new ActionRowBuilder({
                     components: [
@@ -173,7 +172,7 @@ export default {
                     new ContainerBuilder({
                         accent_color: getOxColor('success'),
                         components: <any>[
-                            new TextDisplayBuilder({ content: `### ✅ - Selection Received \n-# You're selected calendar format is provided below.` }),
+                            new TextDisplayBuilder({ content: `### ${core.emojis.string('success')} - Selection Received \n-# You're selected calendar format is provided below.` }),
                             new SeparatorBuilder(),
                             new TextDisplayBuilder({ content: `${responseData()}` }),
                         ]
@@ -197,7 +196,7 @@ export default {
                             components: <any>[
                                 new TextDisplayBuilder({ content: `### ⌛ - Timed Out! \n-# Unfortunately you ran out of time to respond to this interaction. \n-# You'll have to start over and try again.` }),
                                 new SeparatorBuilder(),
-                                new TextDisplayBuilder({ content: `-# [Need Help?](${urls.support.onlineResources})` }),
+                                new TextDisplayBuilder({ content: `-# [Support Resources](${URLS.site_links.support})` }),
                             ]
                         })
                     ]

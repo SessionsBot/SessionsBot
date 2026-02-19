@@ -6,11 +6,12 @@ import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
 import { supabase } from "../../database/supabase";
 import { useLogger } from "../../logs/logtail";
+import { processVariableText } from "./variableText";
 
 const createLog = useLogger();
-const { botClient: bot, colors } = core
+const { colors } = core
 
-export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean) {
+export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean, accent_color: string, addToCalendarButton: boolean) {
     try {
         // Get Template/Session Data:
         const s = session;
@@ -38,6 +39,28 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                 createLog.for('Database').error('FAILED TO GET RSVP ASSIGNEES - For Signup Msg - See Details', { rsvpAssigneesErr, session: s })
             }
             sessionAssignees = curRsvpAssignees;
+        }
+
+
+        // Util: Get Star Date Section:
+        const getStartDateSection = () => {
+            const datesText = new TextDisplayBuilder({ content: `**⏰ Starts at:** \n> <t:${startsAt.toSeconds()}:d> | <t:${startsAt.toSeconds()}:t> ${endsAt ? `\n**⏰ Ends at:** \n> <t:${endsAt.toSeconds()}:d> | <t:${endsAt.toSeconds()}:t>` : ''} ` })
+            if (addToCalendarButton) {
+                // Start Date Section w/ Calendar Buttons:
+                return [
+                    new SectionBuilder({
+                        components: <any>[datesText],
+                        accessory: {
+                            type: ComponentType.Button,
+                            style: ButtonStyle.Secondary,
+                            custom_id: `ADD_TO_CAL:${s.id}`,
+                            label: '📅'
+                        }
+                    })
+                ]
+            } else
+                // Return Just Start & End Dates
+                return [datesText]
         }
 
 
@@ -130,21 +153,11 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
 
         // Build Root Msg Container:
         const msg = new ContainerBuilder({
-            accent_color: colors.getOxColor('purple'),
+            accent_color: Number(accent_color.replace('#', '0x')) || colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n-# ${s.description}` : ''}` }),
+                new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n${processVariableText(s.description)}` : ''}` }),
                 new SeparatorBuilder(),
-                new SectionBuilder({
-                    components: <any>[
-                        new TextDisplayBuilder({ content: `**⏰ Starts at:** \n> <t:${startsAt.toSeconds()}:d> | <t:${startsAt.toSeconds()}:t> ${endsAt ? `\n**⏰ Ends at:** \n> <t:${endsAt.toSeconds()}:d> | <t:${endsAt.toSeconds()}:t>` : ''} ` }),
-                    ],
-                    accessory: {
-                        type: ComponentType.Button,
-                        style: ButtonStyle.Secondary,
-                        custom_id: `ADD_TO_CAL:${s.id}`,
-                        label: '📅'
-                    }
-                }),
+                ...getStartDateSection(),
                 new SeparatorBuilder(),
                 ...getRSVPsSections(),
                 ...getActionButtons(),
@@ -163,13 +176,13 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
 }
 
 
-export function buildSessionThreadStartMsg(date: DateTime, watermark: boolean, accent_color?: number) {
+export function buildSessionThreadStartMsg(date: DateTime, watermark: boolean, title: string, description: string, accent_color: string) {
     let r = new ContainerBuilder({
-        accent_color: accent_color || colors.getOxColor('purple'),
+        accent_color: Number(accent_color?.replace('#', '0x')) || colors.getOxColor('purple'),
         components: <any>[
-            new TextDisplayBuilder({ content: `### 📅 Sessions for ${date.month}/${date.day}` }),
+            new TextDisplayBuilder({ content: `### ${title}` }),
             new SeparatorBuilder(),
-            new TextDisplayBuilder({ content: `-# You can view todays scheduled events/sessions by opening the attached thread below. 😊` })
+            new TextDisplayBuilder({ content: description })
         ]
     })
     if (watermark) r.components.push(

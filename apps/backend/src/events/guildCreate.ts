@@ -37,7 +37,7 @@ export default {
         const welcomeMsg = new ContainerBuilder({
             accent_color: core.colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${core.emojiStrings?.logo} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
+                new TextDisplayBuilder({ content: `## ${core.emojis.string('logo')} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
                 new SeparatorBuilder(),
                 new SectionBuilder({
                     components: <any>[
@@ -47,7 +47,8 @@ export default {
                         type: ComponentType.Button,
                         url: URLS.documentation,
                         style: ButtonStyle.Link,
-                        label: '📃 Documentation'
+                        emoji: { name: 'list', id: core.emojis.ids.list },
+                        label: 'Documentation'
                     }
                 }),
                 new SectionBuilder({
@@ -58,7 +59,8 @@ export default {
                         type: ComponentType.Button,
                         url: `https://discord.com/application-directory/${core.botClient.application.id}/store`,
                         style: ButtonStyle.Link,
-                        label: '🛍️ Shop',
+                        emoji: { name: 'premium', id: core.emojis.ids.premium },
+                        label: 'Shop',
 
                     }
                 }),
@@ -70,15 +72,17 @@ export default {
                         type: ComponentType.Button,
                         url: URLS.support_chat,
                         style: ButtonStyle.Link,
-                        label: '💬 Support Chat'
+                        emoji: { name: 'chat', id: core.emojis.ids.chat },
+                        label: 'Support Chat'
                     }
                 }),
                 new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `### ✅ Ready to Get Started? \n **View your [Bot Dashboard](https://sessionsbot.fyi/dashboard) via our web app** to get started creating your first sessions. 😊` }),
+                new TextDisplayBuilder({ content: `### ${core.emojis.string('star')} Ready to Get Started? \n **View your [Bot Dashboard](https://sessionsbot.fyi/dashboard) via our web app** to get started creating your first sessions. 😊` }),
                 new ActionRowBuilder({
                     components: [
                         new ButtonBuilder({
-                            label: `💻 View Dashboard`,
+                            emoji: { name: 'dashboard', id: core.emojis.ids.dashboard },
+                            label: `View Dashboard`,
                             url: 'https://sessionsbot.fyi/dashboard',
                             style: ButtonStyle.Link
                         })

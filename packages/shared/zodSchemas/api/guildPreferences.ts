@@ -1,7 +1,9 @@
 import * as z from "zod";
 
-export const API_GuildPreferencesDefaults = <Record<API_GuildPreferencesFields, any>>{
+export const API_GuildPreferencesDefaults = {
     accent_color: '#e7e77f',
+    public_sessions: true,
+    calendar_button: true,
     thread_message_title: "📅 Sessions - %day_sm%",
     thread_message_description: "-# You can view today's scheduled events/sessions by opening the __attached thread below__. 😊"
 }

@@ -70,6 +70,7 @@ for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
 		client.once('clientReady', async (c) => {
 			await ready.execute(c as any);
+			// Initialize Template Creations - in API_ONLY Environments:
 			await initTemplateCreationScheduler()
 		})
 		break;

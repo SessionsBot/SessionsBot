@@ -6,6 +6,7 @@ import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic"
 import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
 import { createAuditLog } from "../utils/database/auditLog";
+import { URLS } from "../utils/core/urls";
 
 
 export default {
@@ -17,20 +18,27 @@ export default {
         const {
             // botClient: bot,
             colors: { getOxColor },
-            commands: { getLinkString: getCmdLink },
-            urls
+            commands: { getLinkString: getCmdLink }
         } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
 
         // Defer Reply:
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
-        // Fetch Session Data:
-        const { data: session, error: sessionERR } = await supabase.from('sessions')
-            .select('*')
-            .eq('id', sessionId)
-            .select()
-            .single()
+        // Fetch Session/Guild Data:
+        const [guildDbFetch, sessionDbFetch] = await Promise.all([
+            supabase.from('guilds').select('*').eq('id', i.guildId).single(),
+            supabase.from('sessions')
+                .select('*')
+                .eq('id', sessionId)
+                .select()
+                .single()
+        ])
+        const { data: session, error: sessionERR } = sessionDbFetch;
+        const { data: guild, error: guildERR } = guildDbFetch;
+
+        // Fetch Errors:
+        if (!guild || guildERR) throw { message: 'Failed to fetch guild data for rsvp interaction!', details: { session, err: guildDbFetch.error } }
         if (!session || sessionERR) throw { message: `Failed to fetch session data for RSVP button interaction!`, details: { session, err: sessionERR } };
 
         // Get Guild Subscription:
@@ -70,7 +78,7 @@ export default {
                 flags: MessageFlags.IsComponentsV2
             })
             // Update Outdated Signup Panel:
-            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
+            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
             await signupMsg.edit({
                 components: [signupMsgContent]
             })
@@ -186,7 +194,7 @@ export default {
         if (dbError) {
             return await i.editReply({
                 components: [
-                    genericErrorMsg({ reasonDesc: `A database error has occurred and we were unable to assign you to that RSVP slot. If this issue persists please get in contact with [Bot Support](${urls.support.serverInvite})! \n**Support Details:** \`\`\`GUILD_ID: ${i.guildId} \nRSVP_ID: ${requestedSlot.id}, \nSESSION_ID: ${sessionId}\`\`\` ` })
+                    genericErrorMsg({ reasonDesc: `A database error has occurred and we were unable to assign you to that RSVP slot. If this issue persists please get in contact with [Bot Support](${URLS.support_chat})! \n**Support Details:** \`\`\`GUILD_ID: ${i.guildId} \nRSVP_ID: ${requestedSlot.id}, \nSESSION_ID: ${sessionId}\`\`\` ` })
                 ],
                 flags: MessageFlags.IsComponentsV2
             })
@@ -194,7 +202,7 @@ export default {
 
         // Update - Sessions Signup Panel:
         new Promise(async (res) => {
-            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK);
+            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
             await signupMsg.edit({
                 components: [signupMsgContent]
             })
@@ -205,7 +213,7 @@ export default {
         const successMsg = new ContainerBuilder({
             accent_color: getOxColor('success'),
             components: <any>[
-                new TextDisplayBuilder({ content: `### ✅ RSVP Success!` }),
+                new TextDisplayBuilder({ content: `### ${core.emojis.string('user_success')} RSVP Success!` }),
                 // new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# View details below:` }),
                 new SeparatorBuilder(),

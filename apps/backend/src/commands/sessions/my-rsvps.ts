@@ -96,7 +96,10 @@ export default {
                             accessory: {
                                 type: ComponentType.Button,
                                 style: ButtonStyle.Secondary,
-                                label: '❌',
+                                emoji: {
+                                    id: core.emojis.ids.user_fail,
+                                    name: 'user_fail'
+                                },
                                 custom_id: `unRsvp:${slotData.id.split('rsvp_')[1]}:${slotData.session_id}`
                             }
                         }),
@@ -110,7 +113,7 @@ export default {
             const msgBuild = new ContainerBuilder({
                 accent_color: getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `## 📥  My RSVPs \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('user_success')} My RSVPs \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
                     new SeparatorBuilder(),
                     ...rsvpSections()
                 ]

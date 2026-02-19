@@ -73,7 +73,7 @@ export const sendPermissionAlert = async (guildId: string) => {
             const msg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('warning'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `# ❗ I'm Missing Required Permissions!` }),
+                    new TextDisplayBuilder({ content: `# ${core.emojis.string('warning')} I'm Missing Required Permissions!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `## All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPermsStrings.join(', ')}\` ` }),
                     new SeparatorBuilder(),

@@ -13,7 +13,7 @@ export default async () => {
     let nameType = '';
     // Map Emojis:
     for (const [id, data] of fetch) {
-        botEmojis[data.name] = `<:${data.name}:${id}>`;
+        botEmojis[data.name] = id;
         // If Generating Emoji Names Type:
         if (generateEmojiNamesType) { nameType += `"${data.name}" | ` }
     }
@@ -23,5 +23,5 @@ export default async () => {
     }
 
     // Assign to core:
-    return core.emojiStrings = botEmojis as any;
+    return core.emojis.ids = botEmojis as any;
 }

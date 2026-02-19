@@ -7,7 +7,7 @@ class BackendURLs {
     public site_links = {
         dashboard: this.website + '/dashboard',
         pricing: this.website + '/pricing',
-        support: this.website = '/support',
+        support: this.website + '/support',
         session: (sessionId: string) => `${this.website}/session/${sessionId}`
     }
     public status_page = 'https://status.sessionsbot.fyi'
