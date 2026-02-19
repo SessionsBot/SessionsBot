@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import { APIResponse } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
-import core from "../../utils/core.js";
+import core from "../../utils/core/core.js";
 import { useLogger } from "../../utils/logs/logtail";
 import { authorizedRequest } from "./verifyToken.js";
 

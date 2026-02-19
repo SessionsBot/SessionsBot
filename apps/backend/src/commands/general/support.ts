@@ -1,9 +1,10 @@
 import { ButtonStyle, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
 import { useLogger } from "../../utils/logs/logtail.js";
-import core from "../../utils/core.js";
+import core from "../../utils/core/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 import { getSubscriptionFromInteraction, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
 import { defaultFooterText } from "../../utils/bot/messages/basic.js";
+import { URLS } from "../../utils/core/urls.js";
 
 const createLog = useLogger()
 
@@ -33,7 +34,7 @@ export default {
                             label: 'Support Chat',
                             emoji: { name: '💬' },
                             style: ButtonStyle.Link,
-                            url: core.urls.support.serverInvite,
+                            url: URLS.support_chat,
                             type: ComponentType.Button
                         }
                     }),
@@ -45,7 +46,7 @@ export default {
                             label: 'Read Docs',
                             emoji: { name: '📃' },
                             style: ButtonStyle.Link,
-                            url: core.urls.docs.root,
+                            url: URLS.documentation,
                             type: ComponentType.Button
                         }
                     }),
@@ -57,7 +58,7 @@ export default {
                             label: 'More Resources',
                             emoji: { name: '🗂️' },
                             style: ButtonStyle.Link,
-                            url: core.urls.support.onlineResources,
+                            url: URLS.site_links.support,
                             type: ComponentType.Button
                         }
                     }),

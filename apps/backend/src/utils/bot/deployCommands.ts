@@ -6,7 +6,7 @@ import { REST, Routes } from "discord.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
-import { ENVIRONMENT_TYPE } from "./environment";
+import { ENVIRONMENT_TYPE } from "../environment";
 
 const deployToDevTester = (ENVIRONMENT_TYPE != 'production')
 

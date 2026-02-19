@@ -1,5 +1,5 @@
 import axios from 'axios';
-import core from "../../../../../utils/core.js";
+import core from "../../../../../utils/core/core.js";
 import { supabase } from '../../../../../utils/database/supabase.js';
 import { AuthError } from './authErrTypes.js';
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";

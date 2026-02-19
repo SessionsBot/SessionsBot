@@ -1,7 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ContainerBuilder, InteractionContextType, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
-import core from "../../utils/core";
+import core from "../../utils/core/core";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import { defaultFooterText } from "../../utils/bot/messages/basic";
+import { URLS } from "../../utils/core/urls";
 
 export default {
     // Command Definition
@@ -25,7 +26,7 @@ export default {
                     components: [
                         new ButtonBuilder({
                             style: ButtonStyle.Link,
-                            url: core.urls.dashboard + `?guild=${i.guildId}&action=new+session`,
+                            url: URLS.site_links.dashboard + `?guild=${i.guildId}&action=new+session`,
                             label: `Create Session`
                         })
                     ]

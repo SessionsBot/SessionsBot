@@ -1,8 +1,8 @@
-import pkg from '../../package.json' with { type: 'json' };
-import { ExtendedClient } from './types/extendedClient.js';
+import pkg from '../../../package.json' with { type: 'json' };
+import { ExtendedClient } from '../types/extendedClient.js';
 import { SKU } from 'discord.js';
-import { BotEmojiName } from './bot/fetchEmojis';
-import { ENVIRONMENT_TYPE } from './environment';
+import { BotEmojiName } from '../bot/fetchEmojis';
+import { ENVIRONMENT_TYPE } from '../environment';
 
 
 const core = {
@@ -54,35 +54,5 @@ const core = {
      * * loaded by `ready` event
      * @NOTE Possibly obsolete, see {@link SubscriptionSKUs} */
     storeSKUs: <Record<string, SKU>>{},
-
-    /** Internal / frequent url locations. */
-    urls: {
-        mainSite: `https://sessionsbot.fyi`,
-        dashboard: `https://sessionsbot.fyi/dashboard`,
-        pricing: `https://sessionsbot.fyi/pricing`,
-        statusPage: `https://status.sessionsbot.fyi`,
-        docs: {
-            root: `https://docs.sessionsbot.fyi`,
-            requiredBotPermissions: `https://docs.sessionsbot.fyi/getting-started#required-bot-permissions`,
-            signupChannelsInfo: 'https://docs.sessionsbot.fyi/server-config#signup-channel'
-        },
-        inviteBot: `https://invite.sessionsbot.fyi`,
-        discordServer: 'https://discord.gg/dKp5HZPjCg',
-        support: {
-            serverInvite: `https://discord.gg/49gNbwA8t6`,
-            onlineResources: `https://sessionsbot.fyi/support`
-        }
-    },
-
-
 }
-
-// OVERRIDE URLS IN DEV ENVIRONMENTS:
-if (ENVIRONMENT_TYPE != 'production') {
-    console.info('(i) overriding urls in non-production environment!')
-    core.urls.mainSite = `http://localhost:5173`
-    core.urls.dashboard = `http://localhost:5173/dashboard`
-    core.urls.support.onlineResources = `http://localhost:5173/support`
-}
-
 export default core;

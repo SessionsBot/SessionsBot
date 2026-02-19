@@ -1,5 +1,5 @@
 import { RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
-import core from "../core";
+import core from "../core/core";
 import { useLogger } from "../logs/logtail";
 import { SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
 

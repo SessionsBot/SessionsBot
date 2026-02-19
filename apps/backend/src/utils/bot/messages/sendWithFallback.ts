@@ -1,7 +1,7 @@
 import { ChannelType, ContainerBuilder, MessageFlags } from "discord.js";
 
 import { Result } from "@sessionsbot/shared";
-import core from "../../core";
+import core from "../../core/core";
 import { useLogger } from "../../logs/logtail";
 const createLog = useLogger();
 

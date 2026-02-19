@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ContainerBuilder, SeparatorBuilder, TextDisplayBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from "discord.js"
-import core from "../../core.js"
+import core from "../../core/core.js"
+import { URLS } from "../../core/urls.js"
 
 /** Returns a basic/generic error ContainerBuilder() from provided inputs. */
 export const genericErrorMsg = ({
@@ -26,12 +27,12 @@ export const genericErrorMsg = ({
                     new ButtonBuilder({
                         style: ButtonStyle.Link,
                         label: `💬 Get Support`,
-                        url: core.urls.support.serverInvite
+                        url: URLS.support_chat
                     }),
                     new ButtonBuilder({
                         style: ButtonStyle.Link,
                         label: `📚 More Resources`,
-                        url: core.urls.support.onlineResources
+                        url: URLS.site_links.support
                     })
                 ]
             }),
@@ -58,5 +59,5 @@ export const defaultFooterText = (opts:
         lightFont: false
     }
 ) => {
-    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings?.logo} Powered by [Sessions Bot](${core.urls.mainSite}) ${opts.showHelpLink ? ` |  [Need Help?](${core.urls.support.serverInvite})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
+    return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojiStrings?.logo} Powered by [Sessions Bot](${URLS.website}) ${opts.showHelpLink ? ` |  [Need Help?](${URLS.site_links.support})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
 }

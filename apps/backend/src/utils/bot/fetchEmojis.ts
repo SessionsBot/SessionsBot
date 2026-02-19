@@ -1,4 +1,4 @@
-import core from '../core.js'
+import core from '../core/core.js'
 
 export type BotEmojiName = "logo" | "logo_text" | "bell" | "calendar" | "chat" | "dashboard" | "down" | "eye"
     | "fail" | "globe" | "help" | "info" | "left" | "link" | "list" | "lock" | "premium" | "redo" | "right" | "star"

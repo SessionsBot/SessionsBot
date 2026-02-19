@@ -1,12 +1,13 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, Events, Guild, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { useLogger } from "../utils/logs/logtail";
-import core from "../utils/core";
+import core from "../utils/core/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
 import discordLog from "../utils/logs/discord";
 import dbManager from "../utils/database/manager";
 import { createAuditLog } from "../utils/database/auditLog";
 import { defaultFooterText } from "../utils/bot/messages/basic";
 import { AuditEvent } from "@sessionsbot/shared";
+import { URLS } from "../utils/core/urls";
 
 const createLog = useLogger();
 
@@ -44,7 +45,7 @@ export default {
                     ],
                     accessory: {
                         type: ComponentType.Button,
-                        url: core.urls.docs.root,
+                        url: URLS.documentation,
                         style: ButtonStyle.Link,
                         label: '📃 Documentation'
                     }
@@ -63,11 +64,11 @@ export default {
                 }),
                 new SectionBuilder({
                     components: <any>[
-                        new TextDisplayBuilder({ content: `**Need Help? Get Support!** \n-# View our [support center](${core.urls.support.onlineResources}) via our website or click the interaction button for an invite to our Discord Support Chat.` })
+                        new TextDisplayBuilder({ content: `**Need Help? Get Support!** \n-# View our [support center](${URLS.site_links.support}) via our website or click the interaction button for an invite to our Discord Support Chat.` })
                     ],
                     accessory: {
                         type: ComponentType.Button,
-                        url: core.urls.support.serverInvite,
+                        url: URLS.support_chat,
                         style: ButtonStyle.Link,
                         label: '💬 Support Chat'
                     }

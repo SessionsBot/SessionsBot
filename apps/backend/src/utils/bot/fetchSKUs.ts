@@ -1,5 +1,5 @@
 import { SKUType } from 'discord.js'
-import core from '../core.js'
+import core from '../core/core.js'
 
 export default async () => {
     // Fetch App SKUs:

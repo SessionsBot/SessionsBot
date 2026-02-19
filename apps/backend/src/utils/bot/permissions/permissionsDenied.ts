@@ -1,10 +1,11 @@
 import { ButtonStyle, ComponentType, ContainerBuilder, PermissionFlagsBits, PermissionsString, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
-import core from "../../core.js"
+import core from "../../core/core.js"
 // import guildManager from "../database/guildManager.js";
 import { useLogger } from "../../logs/logtail.js";
 import sendWithFallback from "../messages/sendWithFallback.js";
 import { Result } from "@sessionsbot/shared";
 import { requiredBotPermsStrings } from './required';
+import { URLS } from "../../core/urls.js";
 
 const createLog = useLogger();
 
@@ -58,7 +59,7 @@ export const sendPermissionAlert = async (guildId: string) => {
                         accessory: {
                             type: ComponentType.Button,
                             style: ButtonStyle.Link,
-                            url: core.urls.inviteBot,
+                            url: URLS.invite_bot.direct,
                             label: `🔃 Re-Invite Bot`
                         }
                     }))
@@ -77,7 +78,7 @@ export const sendPermissionAlert = async (guildId: string) => {
                     new TextDisplayBuilder({ content: `## All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPermsStrings.join(', ')}\` ` }),
                     new SeparatorBuilder(),
                     ...permErrorSources(),
-                    new TextDisplayBuilder({ content: `-# [Read Documentation](${core.urls.docs.requiredBotPermissions}) | [Get Support](${core.urls.support.serverInvite}) | [Support Resources](${core.urls.support.onlineResources})` })
+                    new TextDisplayBuilder({ content: `-# [Read Documentation](${URLS.doc_links.bot_permissions}) | [Support Chat](${URLS.support_chat}) | [Support Resources](${URLS.site_links.support})` })
                 ]
             })
 

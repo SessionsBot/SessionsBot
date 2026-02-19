@@ -2,7 +2,7 @@ import { HttpStatusCode } from 'axios';
 import express from 'express';
 import { API_DiscordUserIdentity, discordSnowflakeSchema, APIResponse as Reply } from '@sessionsbot/shared'
 import { useLogger } from '../../../../../utils/logs/logtail';
-import core from '../../../../../utils/core';
+import core from '../../../../../utils/core/core';
 import z from 'zod';
 
 const createLog = useLogger();

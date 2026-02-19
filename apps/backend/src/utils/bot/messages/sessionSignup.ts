@@ -1,7 +1,7 @@
 import { Database } from "@sessionsbot/shared";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { DateTime } from "luxon";
-import core from "../../core";
+import core from "../../core/core";
 import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
 import { supabase } from "../../database/supabase";

@@ -8,7 +8,7 @@
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "test": "node dist/index.js",
-    "deploy-cmds": "tsx src/utils/deployCommands.js",
+    "deploy-cmds": "tsx src/utils/bot/deployCommands.js",
     "release": "npx release-it"
   },
   "dependencies": {

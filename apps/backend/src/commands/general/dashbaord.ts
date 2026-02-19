@@ -1,9 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
 import { useLogger } from "../../utils/logs/logtail.js";
-import core from "../../utils/core.js";
+import core from "../../utils/core/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
 import { defaultFooterText } from "../../utils/bot/messages/basic.js";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
+import { URLS } from "../../utils/core/urls.js";
 
 const createLog = useLogger();
 
@@ -30,12 +31,12 @@ export default {
                         components: [
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
-                                url: `${core.urls.mainSite}/dashboard`,
+                                url: `${URLS.site_links.dashboard}`,
                                 label: '⚙️ Visit Dashboard'
                             }),
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
-                                url: `${core.urls.docs.root}`,
+                                url: `${URLS.documentation}`,
                                 label: '📖 Visit Documentation'
                             })
                         ]

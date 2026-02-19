@@ -3,7 +3,8 @@ import { useLogger } from "../utils/logs/logtail.js"
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import { isBotPermissionError, sendPermissionAlert } from "../utils/bot/permissions/permissionsDenied.js";
 import { genericErrorMsg } from "../utils/bot/messages/basic.js";
-import core from "../utils/core.js";
+import core from "../utils/core/core.js";
+import { URLS } from "../utils/core/urls.js";
 
 const createLog = useLogger();
 
@@ -95,7 +96,7 @@ export default {
 				});
 				// Respond with Alert:
 				let reason = [
-					`This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${core.urls.statusPage}) or contact Bot Support!`,
+					`This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${URLS.status_page}) or contact Bot Support!`,
 					`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nButton Id: ${i.customId}\`\`\``,
 					`-# Please provide the above text to a Support Agent if assistance is required.`
 				].join(`\n`);

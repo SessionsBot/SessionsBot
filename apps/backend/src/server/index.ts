@@ -1,5 +1,5 @@
 import express, { json } from "express";
-import core from "../utils/core.js";
+import core from "../utils/core/core.js";
 import corsMiddleware from "./middleware/cors.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
@@ -34,5 +34,5 @@ app.use((req, res) => {
         api_version: 3,
         git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7)
     }, 404);
-    // return res.redirect(core.urls.mainSite + '/api-not-found')
+    // return res.redirect(URLS.website + '/api-not-found')
 });

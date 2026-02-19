@@ -1,4 +1,4 @@
-import core from "./core.js";
+import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import discordLog from "./logs/discord.js";

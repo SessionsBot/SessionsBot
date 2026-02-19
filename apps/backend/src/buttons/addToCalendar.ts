@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonInteraction, ComponentType, ContainerBuilder, MessageFlags, SeparatorBuilder, StringSelectMenuBuilder, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../utils/database/supabase";
-import core from "../utils/core";
+import core from "../utils/core/core";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import { defaultFooterText } from "../utils/bot/messages/basic";
 import { DateTime } from "luxon";

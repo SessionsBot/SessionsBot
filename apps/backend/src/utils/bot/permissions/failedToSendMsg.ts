@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
-import core from "../../core";
+import core from "../../core/core";
 import { supabase } from "../../database/supabase";
 import { useLogger } from "../../logs/logtail";
 import { requiredBotPermsStrings } from "./required";

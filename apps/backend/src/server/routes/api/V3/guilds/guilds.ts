@@ -3,7 +3,7 @@ import { useLogger } from "../../../../../utils/logs/logtail.js";
 import { APIResponse as reply, SubscriptionSKUs } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildAdmin, verifyGuildMember } from "../../../../middleware/guildMembership.js";
-import core from "../../../../../utils/core.js";
+import core from "../../../../../utils/core/core.js";
 import { ChannelType } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
 import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/required.js";

@@ -1,6 +1,6 @@
 // API V3 Sessions Bot - Internal Backend API Endpoints
 import express from "express";
-import core from "../../../../utils/core";
+import core from "../../../../utils/core/core";
 
 import authRouter from './auth/auth.js'
 import guildsRouter from "./guilds/guilds";

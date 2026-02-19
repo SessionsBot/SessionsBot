@@ -2,7 +2,7 @@ import { ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, Containe
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import { Database, Result, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
-import core from "../../utils/core";
+import core from "../../utils/core/core";
 import { defaultFooterText } from "../../utils/bot/messages/basic";
 
 

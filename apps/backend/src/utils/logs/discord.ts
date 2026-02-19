@@ -1,5 +1,5 @@
 import { ContainerBuilder, Entitlement, Guild, MediaGalleryBuilder, MessageFlags, SeparatorBuilder, SKU, TextChannel, TextDisplayBuilder } from 'discord.js';
-import core from '../core.js'
+import core from '../core/core.js'
 import { useLogger } from './logtail.js'
 import { DateTime } from 'luxon';
 import { ENVIRONMENT_TYPE } from '../environment.js';
