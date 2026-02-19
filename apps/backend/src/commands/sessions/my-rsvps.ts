@@ -80,7 +80,7 @@ export default {
                 let li = []
                 // If no RSVPs:
                 if (!userRsvps?.length) return [
-                    new TextDisplayBuilder({ content: `😢 You're currently not assigned to any **upcoming sessions** as an RSVP!` }),
+                    new TextDisplayBuilder({ content: `😢 You're currently not assigned to any **__upcoming sessions__** as an RSVP!` }),
                     new SeparatorBuilder()
                 ]
                 // Else - Map RSVPs:

@@ -54,7 +54,7 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                             type: ComponentType.Button,
                             style: ButtonStyle.Secondary,
                             custom_id: `ADD_TO_CAL:${s.id}`,
-                            label: '📅'
+                            emoji: { name: 'calendar', id: core.emojis.ids.calendar }
                         }
                     })
                 ]
@@ -82,9 +82,9 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                         }
                     }
                     const emojiLabel = () => {
-                        if (atCapacity) return '⛔';
-                        if (pastStart) return '⌛';
-                        else return '☑️';
+                        if (atCapacity) return { name: '⛔' };
+                        if (pastStart) return { name: '⌛' };
+                        else return { name: 'user_success', id: core.emojis.ids.user_success };
                     }
                     // Add RSVP Section to Msg:
                     r.push(
@@ -95,7 +95,7 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                             accessory: {
                                 type: ComponentType.Button,
                                 custom_id: rsvp.id.replace('_', ':') + `:${s.id}`,
-                                label: emojiLabel(),
+                                emoji: emojiLabel(),
                                 style: ButtonStyle.Secondary,
                                 disabled: (pastStart || atCapacity) ? true : false
                             }
@@ -116,12 +116,14 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                 r.push(new ButtonBuilder({
                     style: ButtonStyle.Link,
                     url: s.url,
-                    label: '📍 Location',
+                    emoji: { name: 'link', id: core.emojis.ids.link },
+                    label: 'Location',
                 }))
             }
             // View Online Button
             r.push(new ButtonBuilder({
-                label: '👁️ View Online',
+                emoji: { name: 'eye', id: core.emojis.ids.eye },
+                label: 'View Online',
                 style: ButtonStyle.Link,
                 url: `https://sessionsbot.fyi/sessions/${s.id}`
             }))

@@ -37,7 +37,7 @@ export default {
         const welcomeMsg = new ContainerBuilder({
             accent_color: core.colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${core.emojis.string('logo')} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
+                new TextDisplayBuilder({ content: `# ${core.emojis.string('logo')} Welcome to Sessions Bot! \n-# Thank you for installing our application, we hope you enjoy it!` }),
                 new SeparatorBuilder(),
                 new SectionBuilder({
                     components: <any>[
@@ -77,16 +77,17 @@ export default {
                     }
                 }),
                 new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `### ${core.emojis.string('star')} Ready to Get Started? \n **View your [Bot Dashboard](https://sessionsbot.fyi/dashboard) via our web app** to get started creating your first sessions. 😊` }),
-                new ActionRowBuilder({
-                    components: [
-                        new ButtonBuilder({
-                            emoji: { name: 'dashboard', id: core.emojis.ids.dashboard },
-                            label: `View Dashboard`,
-                            url: 'https://sessionsbot.fyi/dashboard',
-                            style: ButtonStyle.Link
-                        })
-                    ]
+                new SectionBuilder({
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `### ${core.emojis.string('star')} Ready to Get Started? \n> **View your [Bot Dashboard](https://sessionsbot.fyi/dashboard) via our web app** to get started creating your first sessions. 😊` }),
+                    ],
+                    accessory: {
+                        type: ComponentType.Button,
+                        url: URLS.site_links.dashboard,
+                        style: ButtonStyle.Link,
+                        emoji: { name: 'dashboard', id: core.emojis.ids.dashboard },
+                        label: 'View Dashboard'
+                    }
                 }),
                 new SeparatorBuilder(),
                 defaultFooterText({ appendText: `| @here` })
