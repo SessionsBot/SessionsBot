@@ -7,6 +7,7 @@ import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
 import { createAuditLog } from "../utils/database/auditLog";
 import { URLS } from "../utils/core/urls";
+import { increaseGuildStat } from "../utils/database/manager/statsManager";
 
 
 export default {
@@ -48,7 +49,7 @@ export default {
         const getSignupMsg = async () => {
             if (i.message.id == session.signup_id) return i.message;
             else {
-                const channel = await i.guild.channels.fetch(session.channel_id) as TextChannel;
+                const channel = await i.guild.channels.fetch(session?.thread_id || session?.channel_id) as TextChannel;
                 return await channel?.messages?.fetch(session.signup_id)
             }
         }
@@ -119,7 +120,7 @@ export default {
                 const alertMsg = new ContainerBuilder({
                     accent_color: getOxColor('error'),
                     components: <any>[
-                        new TextDisplayBuilder({ content: `### 🔒 You're missing a required role!` }),
+                        new TextDisplayBuilder({ content: `### ${core.emojis.string('lock')} You're missing a required role!` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `This RSVP slot is protected by one or more required role(s). \n-# You are not assigned at least one of the following roles:` }),
                         new SeparatorBuilder(),
@@ -145,7 +146,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ⛔ Already RSVPed to this Session!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} Already RSVPed to this Session!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you have **already assigned** yourself to an RSVP slot within this session.` }),
                     new SeparatorBuilder(),
@@ -170,7 +171,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ⛔ RSVP Slot at Capacity!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} RSVP Slot at Capacity!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `Unfortunately this RSVP slot has already reached its max user capacity. \n-# Feel free to sign up for another RSVP slot*(if available)* or check back later.` }),
                 ]
@@ -223,11 +224,13 @@ export default {
                     components: [
                         new ButtonBuilder({
                             style: ButtonStyle.Secondary,
-                            label: '↩ Undo',
+                            emoji: { name: 'undo', id: core.emojis.ids.undo },
+                            label: 'Undo',
                             custom_id: `unRsvp:${rsvpId}:${sessionId}`
                         }),
                         new ButtonBuilder({
                             style: ButtonStyle.Link,
+                            emoji: { name: 'eye', id: core.emojis.ids.eye },
                             label: 'View Session',
                             url: i.message.url
                         })
@@ -259,6 +262,9 @@ export default {
                 rsvp_id: 'rsvp_' + rsvpId
             }
         })
+
+        // Increase Guild Stat Counter:
+        increaseGuildStat(i.guildId, "rsvps_assigned", 1)
 
     }
 }

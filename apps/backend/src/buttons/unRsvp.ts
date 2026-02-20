@@ -73,10 +73,10 @@ export default {
 
         // Get Signup Message:
         const getSignupMsg = async () => {
-            if (i.message.id == session.signup_id) return i.message;
+            if (i.message.id === session.signup_id) return await i.message.fetch();
             else {
-                const channel = await i.guild.channels.fetch(session.channel_id) as TextChannel;
-                return await channel.messages.fetch(session.signup_id)
+                const channel = await i.guild.channels?.fetch(session?.thread_id || session?.channel_id) as TextChannel;
+                return await channel?.messages?.fetch(session?.signup_id)
             }
         }
         const signupMsg = await getSignupMsg();
@@ -102,6 +102,7 @@ export default {
                     components: [
                         new ButtonBuilder({
                             style: ButtonStyle.Link,
+                            emoji: { name: 'eye', id: core.emojis.ids.eye },
                             label: 'View Session',
                             url: signupMsg.url
                         })

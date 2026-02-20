@@ -13,6 +13,7 @@ import { createAuditLog } from "../auditLog";
 import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 import { URLS } from "../../core/urls";
 import { processVariableText } from "../../bot/messages/variableText";
+import { increaseGuildStat } from "../manager/statsManager";
 
 const createLog = useLogger();
 const debugSchedule = true;
@@ -59,6 +60,9 @@ async function executeTemplateCreationSchedule() {
 
     // POST/CREATE - For Each Guild/Template In Post Queue:
     for (const [guildId, channels] of Object.entries(postQueue)) {
+        // Stats Count:
+        let totalSessionsCreated = 0;
+
         // Fetch Guild & Subscription:
         const [guild, guildSubscription, guildDbData] = await Promise.all([
             core.botClient.guilds.fetch(guildId),
@@ -283,7 +287,14 @@ async function executeTemplateCreationSchedule() {
                     user: core.botClient?.user?.id || null,
                     meta: { session_id: session.id }
                 })
+                // Increase Stat Counter:
+                totalSessionsCreated++;
             }
+        }
+
+        // Increase Sessions Created Counter for Guild/App:
+        if (totalSessionsCreated > 0) {
+            await increaseGuildStat(guildId, 'sessions_created', totalSessionsCreated)
         }
     }
 

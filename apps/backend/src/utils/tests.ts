@@ -7,6 +7,7 @@ import sendWithFallback from "./bot/messages/sendWithFallback.js";
 import { defaultFooterText } from "./bot/messages/basic.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
 import { URLS } from "./core/urls.js";
+import { increaseGuildStat } from "./database/manager/statsManager.js";
 
 
 const createLog = useLogger();
@@ -23,7 +24,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // initTemplateCreationScheduler({runOnExecution: true})
+                // const r = await increaseGuildStat(guildId, "sessions_created", 7)
+                // console.info('Increase Result', r)
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

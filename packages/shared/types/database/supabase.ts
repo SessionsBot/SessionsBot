@@ -87,6 +87,32 @@ export type Database = {
           },
         ]
       }
+      guild_stats: {
+        Row: {
+          guild_id: string
+          rsvps_assigned: number
+          sessions_created: number
+        }
+        Insert: {
+          guild_id: string
+          rsvps_assigned?: number
+          sessions_created?: number
+        }
+        Update: {
+          guild_id?: string
+          rsvps_assigned?: number
+          sessions_created?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_stats_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: true
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guilds: {
         Row: {
           accent_color: string
@@ -411,7 +437,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increase_guild_stat: {
+        Args: { p_guild_id: string; p_increase: number; p_stat: string }
+        Returns: undefined
+      }
     }
     Enums: {
       "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
