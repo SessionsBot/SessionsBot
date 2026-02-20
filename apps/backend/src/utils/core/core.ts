@@ -45,7 +45,7 @@ const core = {
         ids: <{ [cmdName: string]: string }>{},
         /** Returns a command "link" string for a provided command name or else just the name itself if undefined. */
         getLinkString: (
-            /** The * ***exact*** * command name to retrieve a string for. */
+            /** The * ***exact*** * command name to retrieve a string for. (e.g "dashboard")*/
             cmdName: string
         ) => {
             const cmdId = core.commands.ids[cmdName] || null;

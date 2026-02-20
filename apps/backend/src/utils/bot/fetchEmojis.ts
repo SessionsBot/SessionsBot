@@ -5,7 +5,7 @@ export type BotEmojiName = "logo" | "logo_text" | "bell" | "calendar" | "chat" |
     | "success" | "undo" | "unlocked" | "up" | "user_fail" | "user_success" | "warning" | "briefcase" | "clock" | "no_entry"
     | "pin" | "timeout";
 
-const generateEmojiNamesType = true // generates above ^
+const generateEmojiNamesType = false // generates above ^
 
 export default async () => {
     // Fetch App Emojis:

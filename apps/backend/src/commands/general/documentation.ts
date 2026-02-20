@@ -11,8 +11,8 @@ const createLog = useLogger();
 export default {
     // Command Definition:
     data: new SlashCommandBuilder()
-        .setName('dashboard')
-        .setDescription('Visit your bot dashboard to use and configure Sessions Bot.')
+        .setName('documentation')
+        .setDescription('Learn all about Sessions Bot from this detailed application guide/user manual.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     ,
     // Command Execution:
@@ -25,15 +25,15 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')} Visit your Bot Dashboard \nThis is where you can create and **configure your server's sessions/events** and more! \n-# Use ${core.commands.getLinkString('support')} for help!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')} Read the Bot Documentation \nThis is a great resource to **learn about Sessions Bot** and how to use it's core features! \n-# **Still Stuck?** Use ${core.commands.getLinkString('support')} for help!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
                             new ButtonBuilder({
                                 style: ButtonStyle.Link,
-                                url: `${URLS.site_links.dashboard}`,
-                                emoji: { name: 'dashboard', id: core.emojis.ids.dashboard },
-                                label: 'Visit Dashboard'
+                                url: `${URLS.documentation}`,
+                                emoji: { name: 'list', id: core.emojis.ids.list },
+                                label: 'View Documentation'
                             }),
                         ]
                     }),
@@ -59,7 +59,7 @@ export default {
             // Check for Bot Permission Error:
             if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
             // Log failure
-            createLog.for('Bot').warn(`The /dashboard command failed during an interaction... see details`, {
+            createLog.for('Bot').warn(`The /documentation command failed during an interaction... see details`, {
                 interaction: {
                     user: i.user.id,
                     interactionId: i.id,

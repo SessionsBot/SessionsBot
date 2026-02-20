@@ -15,7 +15,6 @@ export default {
         // Vars:
         const {
             colors: { getOxColor },
-            commands: { getLinkString: getCmdLink }
         } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
 
@@ -58,7 +57,7 @@ export default {
                     new TextDisplayBuilder({ content: `### ${core.emojis.string('warning')} Hm! We cant find your RSVP Slot` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you're already **not assigned** this RSVP slot within this session.` }),
-                    new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-rsvps')} command to confirm your current RSVP assignments within this Discord Server.` })
+                    new TextDisplayBuilder({ content: `-# Use the ${core.commands.getLinkString('my-rsvps')} command to confirm your current RSVP assignments within this Discord Server.` })
                 ]
             })
             if (subscription.limits.SHOW_WATERMARK) {

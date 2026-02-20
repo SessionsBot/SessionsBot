@@ -19,7 +19,7 @@ export default {
         const {
             // botClient: bot,
             colors: { getOxColor },
-            commands: { getLinkString: getCmdLink }
+
         } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
 
@@ -152,7 +152,7 @@ export default {
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `**Current RSVP Slot:** \n> \`${currentSlot.title}\`` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `-# Use the ${getCmdLink('my-rsvps')} command to modify your current RSVP assignment(s) if you wish to do so.` })
+                    new TextDisplayBuilder({ content: `-# Use the ${core.commands.getLinkString('my-rsvps')} command to modify your current RSVP assignment(s) if you wish to do so.` })
                 ]
             })
             if (subscription.limits.SHOW_WATERMARK) {
