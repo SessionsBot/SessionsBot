@@ -2,9 +2,10 @@ import core from '../core/core.js'
 
 export type BotEmojiName = "logo" | "logo_text" | "bell" | "calendar" | "chat" | "dashboard" | "down" | "eye"
     | "fail" | "globe" | "help" | "info" | "left" | "link" | "list" | "lock" | "premium" | "redo" | "right" | "star"
-    | "success" | "undo" | "unlocked" | "up" | "user_fail" | "user_success" | "warning";
+    | "success" | "undo" | "unlocked" | "up" | "user_fail" | "user_success" | "warning" | "briefcase" | "clock" | "no_entry"
+    | "pin" | "timeout";
 
-const generateEmojiNamesType = false // generates above ^
+const generateEmojiNamesType = true // generates above ^
 
 export default async () => {
     // Fetch App Emojis:

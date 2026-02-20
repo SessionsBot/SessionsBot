@@ -44,7 +44,7 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
 
         // Util: Get Star Date Section:
         const getStartDateSection = () => {
-            const datesText = new TextDisplayBuilder({ content: `**⏰ Starts at:** \n> <t:${startsAt.toSeconds()}:d> | <t:${startsAt.toSeconds()}:t> ${endsAt ? `\n**⏰ Ends at:** \n> <t:${endsAt.toSeconds()}:d> | <t:${endsAt.toSeconds()}:t>` : ''} ` })
+            const datesText = new TextDisplayBuilder({ content: `**${core.emojis.string('clock')} Starts at:** \n> <t:${startsAt.toSeconds()}:d> | <t:${startsAt.toSeconds()}:t> ${endsAt ? `\n**${core.emojis.string('clock')} Ends at:** \n> <t:${endsAt.toSeconds()}:d> | <t:${endsAt.toSeconds()}:t>` : ''} ` })
             if (addToCalendarButton) {
                 // Start Date Section w/ Calendar Buttons:
                 return [
@@ -82,8 +82,8 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
                         }
                     }
                     const emojiLabel = () => {
-                        if (atCapacity) return { name: '⛔' };
-                        if (pastStart) return { name: '⌛' };
+                        if (atCapacity) return { name: 'no_entry', id: core.emojis.ids.no_entry };
+                        if (pastStart) return { name: 'timeout', id: core.emojis.ids.timeout };
                         else return { name: 'user_success', id: core.emojis.ids.user_success };
                     }
                     // Add RSVP Section to Msg:
@@ -146,7 +146,7 @@ export async function buildSessionSignupMsg(session: Database['public']['Tables'
             }
             if (s?.mention_roles?.length) {
                 r.push(
-                    new TextDisplayBuilder({ content: `-# 🔔: <@&${s.mention_roles.join(`> <@&`)}> ` })
+                    new TextDisplayBuilder({ content: `-# ${core.emojis.string('bell')}: <@&${s.mention_roles.join(`> <@&`)}> ` })
                 )
             }
             return r

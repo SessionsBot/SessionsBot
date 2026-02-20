@@ -194,7 +194,7 @@ export default {
                         new ContainerBuilder({
                             accent_color: getOxColor('warning'),
                             components: <any>[
-                                new TextDisplayBuilder({ content: `### ⌛ - Timed Out! \n-# Unfortunately you ran out of time to respond to this interaction. \n-# You'll have to start over and try again.` }),
+                                new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')} - Timed Out! \n-# Unfortunately you ran out of time to respond to this interaction. \n-# You'll have to start over and try again.` }),
                                 new SeparatorBuilder(),
                                 new TextDisplayBuilder({ content: `-# [Support Resources](${URLS.site_links.support})` }),
                             ]

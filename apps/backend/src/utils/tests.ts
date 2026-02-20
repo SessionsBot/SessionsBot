@@ -25,6 +25,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
+                initTemplateCreationScheduler({ runOnExecution: true })
+
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');
             }

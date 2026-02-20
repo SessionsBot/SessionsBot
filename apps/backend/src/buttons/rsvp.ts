@@ -63,7 +63,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ⌛ This session has already occurred!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')} This session has already occurred!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records this session has **already started**! \n-# It's possible this signup panel was simply outdated.` }),
                     new SeparatorBuilder(),
