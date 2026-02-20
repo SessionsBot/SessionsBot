@@ -37,7 +37,14 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     CUSTOM_THREAD_START_MESSAGE: boolean
 
     /** Weather to display a "Powered by Sessions Bot" text within Discord interactions/messages. */
-    SHOW_WATERMARK: boolean
+    SHOW_WATERMARK: boolean,
+
+    /** The max data retention ages (in days) before data is deleted for a guild. */
+    MAX_DATA_RETENTION_AGE: {
+        /** Past Session Rows (also cascades with RSVP Slots & Assignments) */
+        SESSIONS: number,
+        AUDIT_LOG: number,
+    }
 
 }> = {
     FREE: {
@@ -50,6 +57,10 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         CUSTOM_ACCENT_COLOR: false,
         CUSTOM_THREAD_START_MESSAGE: false,
         SHOW_WATERMARK: true,
+        MAX_DATA_RETENTION_AGE: {
+            SESSIONS: 7,
+            AUDIT_LOG: 7
+        }
     },
     PREMIUM: {
         MAX_SCHEDULES: 15,
@@ -61,6 +72,10 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         CUSTOM_ACCENT_COLOR: true,
         CUSTOM_THREAD_START_MESSAGE: false,
         SHOW_WATERMARK: false,
+        MAX_DATA_RETENTION_AGE: {
+            SESSIONS: 30,
+            AUDIT_LOG: 30
+        }
     },
     ENTERPRISE: {
         MAX_SCHEDULES: Infinity,
@@ -72,6 +87,10 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
         CUSTOM_ACCENT_COLOR: true,
         CUSTOM_THREAD_START_MESSAGE: true,
         SHOW_WATERMARK: false,
+        MAX_DATA_RETENTION_AGE: {
+            SESSIONS: 180,
+            AUDIT_LOG: 180,
+        }
     },
 } as const;
 

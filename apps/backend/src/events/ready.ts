@@ -7,6 +7,7 @@ import tests from "../utils/tests.js";
 import fetchEmojis from "../utils/bot/fetchEmojis.js";
 import fetchSKUs from "../utils/bot/fetchSKUs.js";
 import fetchCommands from "../utils/bot/fetchCommands.js";
+import { initializeDataDeletionSchedule } from "../utils/database/schedules/automaticDeletions.js";
 
 const createLog = useLogger();
 
@@ -30,10 +31,12 @@ export default {
 		// Set Bot User's Activity:
 		client.user.setActivity('🔗 sessionsbot.fyi', { type: ActivityType.Custom });
 
-		// After Startup - Initialize Schedule System::
+		// After Startup - Initialize Schedule System(s):
 		setTimeout(async () => {
+			// Run Dev Tests (if dev env):
 			await tests.init();
-			// await scheduleManager.onBotStartup();
+			// Initialize Auto-Deletion Schedule:
+			initializeDataDeletionSchedule()
 		}, 1_500);
 
 	},
