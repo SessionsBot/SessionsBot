@@ -4,6 +4,9 @@ layout: home
 
 hero:
     name: "Sessions Bot"
+    image:
+      src: /logo.png
+      alt: Logo
     text: Documentation
     tagline: An informational guide all things Sessions Bot!
     actions:
