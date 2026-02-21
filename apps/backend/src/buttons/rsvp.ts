@@ -63,7 +63,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')} This session has already occurred!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')}  This session has already occurred!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records this session has **already started**! \n-# It's possible this signup panel was simply outdated.` }),
                     new SeparatorBuilder(),
@@ -120,7 +120,7 @@ export default {
                 const alertMsg = new ContainerBuilder({
                     accent_color: getOxColor('error'),
                     components: <any>[
-                        new TextDisplayBuilder({ content: `### ${core.emojis.string('lock')} You're missing a required role!` }),
+                        new TextDisplayBuilder({ content: `### ${core.emojis.string('lock')}  You're missing a required role!` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `This RSVP slot is protected by one or more required role(s). \n-# You are not assigned at least one of the following roles:` }),
                         new SeparatorBuilder(),
@@ -146,7 +146,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} Already RSVPed to this Session!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')}  Already RSVPed to this Session!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you have **already assigned** yourself to an RSVP slot within this session.` }),
                     new SeparatorBuilder(),
@@ -171,7 +171,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('error'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} RSVP Slot at Capacity!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')}  RSVP Slot at Capacity!` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `Unfortunately this RSVP slot has already reached its max user capacity. \n-# Feel free to sign up for another RSVP slot*(if available)* or check back later.` }),
                 ]

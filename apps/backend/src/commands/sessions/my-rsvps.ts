@@ -91,7 +91,7 @@ export default {
                     li.push(
                         new SectionBuilder({
                             components: <any>[
-                                new TextDisplayBuilder({ content: `### ${sessionData?.title} \n⏰: <t:${DateTime.fromISO(sessionData.starts_at_utc).toUnixInteger()}:f> \n💼: \`${rsvpTitle}\`` })
+                                new TextDisplayBuilder({ content: `### ${sessionData?.title} \n${core.emojis.string('clock')}: <t:${DateTime.fromISO(sessionData.starts_at_utc).toUnixInteger()}:f> \n${core.emojis.string('briefcase')}: \`${rsvpTitle}\`` })
                             ],
                             accessory: {
                                 type: ComponentType.Button,
@@ -113,7 +113,7 @@ export default {
             const msgBuild = new ContainerBuilder({
                 accent_color: getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `## ${core.emojis.string('user_success')} My RSVPs \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('user_success')}  My RSVPs \n-# Below are your current RSVP assignments for upcoming sessions in this server.` }),
                     new SeparatorBuilder(),
                     ...rsvpSections()
                 ]

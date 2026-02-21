@@ -54,7 +54,7 @@ export default {
             const alertMsg = new ContainerBuilder({
                 accent_color: getOxColor('warning'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('warning')} Hm! We cant find your RSVP Slot` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('warning')}  Hm! We cant find your RSVP Slot` }),
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `According to our records you're already **not assigned** this RSVP slot within this session.` }),
                     new TextDisplayBuilder({ content: `-# Use the ${core.commands.getLinkString('my-rsvps')} command to confirm your current RSVP assignments within this Discord Server.` })
@@ -91,7 +91,7 @@ export default {
         const successMsg = new ContainerBuilder({
             accent_color: getOxColor('warning'),
             components: <any>[
-                new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')} RSVP Removed!` }),
+                new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')}  RSVP Removed!` }),
                 // new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `-# View details below:` }),
                 new SeparatorBuilder(),

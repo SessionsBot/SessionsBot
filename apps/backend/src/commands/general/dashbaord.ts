@@ -25,7 +25,7 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')} Visit your Bot Dashboard \nThis is where you can create and **configure your server's sessions/events** and more! \n-# Use ${core.commands.getLinkString('support')} for help!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')}  Visit your Bot Dashboard \n> This is where you can create and **configure your server's sessions/events** and more! \n> -# Use ${core.commands.getLinkString('support')} for help!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
