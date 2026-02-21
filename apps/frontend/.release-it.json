@@ -48,13 +48,13 @@
     "changelog": "git log --pretty=format:\"* %s (%h)\" ${from}...${to}",
     "requireCleanWorkingDir": true,
     "requireBranch": "main",
-    "tagName": "backend@v${version}",
-    "tagAnnotation": "Release - backend@v${version}",
-    "commitMessage": "Release - backend@v${version}"
+    "tagName": "frontend@v${version}",
+    "tagAnnotation": "Release - frontend@v${version}",
+    "commitMessage": "Release - frontend@v${version}"
   },
   "github": {
     "release": true,
-    "releaseName": "backend@v${version}",
+    "releaseName": "frontend@v${version}",
     "preRelease": true,
     "makeLatest": true,
     "comments": {

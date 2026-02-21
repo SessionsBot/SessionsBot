@@ -8,5 +8,5 @@
     "editor.indentSize": "tabSize",
     "editor.tabSize": 4,
 
-    "vue.server.includeLanguages": ["vue", "markdown"]
+    "vue.server.includeLanguages": ["vue", "markdown"],
 }
