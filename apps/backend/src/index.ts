@@ -7,7 +7,7 @@ import { ENVIRONMENT_TYPE } from './utils/environment.js';
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Collection } from "discord.js";
 import { ExtendedClient } from './utils/types/extendedClient.js';
-import { initTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
+import { initializeTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
 import ready from './events/ready.js';
 
 const client = new ExtendedClient({
@@ -71,7 +71,7 @@ for (const filePath of eventFiles) {
 		client.once('clientReady', async (c) => {
 			await ready.execute(c as any);
 			// Initialize Template Creations - in API_ONLY Environments:
-			await initTemplateCreationScheduler()
+			await initializeTemplateCreationScheduler()
 		})
 		break;
 	};

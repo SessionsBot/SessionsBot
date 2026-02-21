@@ -2,13 +2,14 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import discordLog from "./logs/discord.js";
-import { initTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
+import { initializeTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
 import sendWithFallback from "./bot/messages/sendWithFallback.js";
-import { defaultFooterText } from "./bot/messages/basic.js";
+import { defaultFooterText, genericErrorMsg } from "./bot/messages/basic.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
 import { URLS } from "./core/urls.js";
 import { increaseGuildStat } from "./database/manager/statsManager.js";
 import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
+import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendMsg.js";
 
 
 const createLog = useLogger();
@@ -25,7 +26,6 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // initTemplateCreationScheduler({ runOnExecution: true })
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

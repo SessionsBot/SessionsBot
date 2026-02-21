@@ -282,9 +282,12 @@ export type Database = {
           created_at: string
           description: string | null
           duration_ms: number | null
+          enabled: boolean
           expires_at_utc: string | null
+          failure_count: number
           guild_id: string
           id: string
+          last_fail_at: string | null
           last_post_utc: string | null
           mention_roles: string[] | null
           native_events: boolean
@@ -305,9 +308,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_ms?: number | null
+          enabled?: boolean
           expires_at_utc?: string | null
+          failure_count?: number
           guild_id: string
           id?: string
+          last_fail_at?: string | null
           last_post_utc?: string | null
           mention_roles?: string[] | null
           native_events?: boolean
@@ -328,9 +334,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_ms?: number | null
+          enabled?: boolean
           expires_at_utc?: string | null
+          failure_count?: number
           guild_id?: string
           id?: string
+          last_fail_at?: string | null
           last_post_utc?: string | null
           mention_roles?: string[] | null
           native_events?: boolean
@@ -439,6 +448,10 @@ export type Database = {
     Functions: {
       increase_guild_stat: {
         Args: { p_guild_id: string; p_increase: number; p_stat: string }
+        Returns: undefined
+      }
+      increment_template_failures: {
+        Args: { template_ids: string[] }
         Returns: undefined
       }
     }

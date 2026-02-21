@@ -86,6 +86,7 @@ export async function fetchGuildTemplates(guildId: string | null) {
     const { data, error } = await supabase.from('session_templates')
         .select('*')
         .eq('guild_id', guildId)
+        // .eq('enabled', true)
         .or(
             `expires_at_utc.gte.${DateTime.now().toISO()},expires_at_utc.is.null`
         )

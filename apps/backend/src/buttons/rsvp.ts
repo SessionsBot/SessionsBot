@@ -3,7 +3,7 @@ import { supabase } from "../utils/database/supabase";
 import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
-import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
+import { buildSessionPanelMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
 import { createAuditLog } from "../utils/database/auditLog";
 import { URLS } from "../utils/core/urls";
@@ -79,7 +79,7 @@ export default {
                 flags: MessageFlags.IsComponentsV2
             })
             // Update Outdated Signup Panel:
-            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
+            const signupMsgContent = await buildSessionPanelMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
             await signupMsg.edit({
                 components: [signupMsgContent]
             })
@@ -203,7 +203,7 @@ export default {
 
         // Update - Sessions Signup Panel:
         new Promise(async (res) => {
-            const signupMsgContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
+            const signupMsgContent = await buildSessionPanelMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
             await signupMsg.edit({
                 components: [signupMsgContent]
             })

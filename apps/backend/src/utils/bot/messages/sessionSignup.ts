@@ -11,7 +11,7 @@ import { processVariableText } from "./variableText";
 const createLog = useLogger();
 const { colors } = core
 
-export async function buildSessionSignupMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean, accent_color: string, addToCalendarButton: boolean) {
+export async function buildSessionPanelMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean, accent_color: string, addToCalendarButton: boolean) {
     try {
         // Get Template/Session Data:
         const s = session;

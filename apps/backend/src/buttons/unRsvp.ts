@@ -3,7 +3,7 @@ import { supabase } from "../utils/database/supabase";
 import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText } from "../utils/bot/messages/basic";
-import { buildSessionSignupMsg } from "../utils/bot/messages/sessionSignup";
+import { buildSessionPanelMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
 import { createAuditLog } from "../utils/database/auditLog";
 
@@ -82,7 +82,7 @@ export default {
         if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
 
         // Update Signup - New Content:
-        const newSignupContent = await buildSessionSignupMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
+        const newSignupContent = await buildSessionPanelMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
         await signupMsg.edit({
             components: [newSignupContent]
         })
