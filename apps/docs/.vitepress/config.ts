@@ -10,7 +10,7 @@ export default defineConfig({
     description: "An informational guide for all things Sessions Bot!",
 
     // For GitHub Pages URL Base:
-    base: '/SessionsBot/',
+    // base: '/SessionsBot/',
 
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
