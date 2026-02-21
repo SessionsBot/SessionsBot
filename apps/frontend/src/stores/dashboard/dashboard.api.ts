@@ -78,6 +78,24 @@ export async function fetchGuildData(guildId: string | null) {
 }
 
 
+// Guild Stats Data:
+export async function fetchGuildStats(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Stats - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('guild_stats')
+        .select('*')
+        .eq('guild_id', guildId)
+        .single()
+    // Return Result:
+    if (!error) {
+        return data
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Stats - DB ERROR`, error })
+    }
+}
+
+
 // Guild Templates:
 export async function fetchGuildTemplates(guildId: string | null) {
     // Confirm Inputs:

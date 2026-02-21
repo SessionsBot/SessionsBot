@@ -12,8 +12,8 @@
     const guildTemplates = computed(() =>
         dashboard.guildData.sessionTemplates.state?.filter(t => {
             if (!t.next_post_utc) return false
-            const nextPost = DateTime.fromISO(t.next_post_utc, { zone: 'utc' })
-            return nextPost >= DateTime.utc()
+            if (!t.enabled) return false
+            else return true
         }).sort((a, b) => {
             const nextStartA = DateTime.fromISO(String(a.next_post_utc), { zone: 'utc' })
                 .plus({ milliseconds: a.post_before_ms })

@@ -120,18 +120,20 @@
         <!-- Posts/ed at / Action Buttons -->
         <div class="action-area">
             <span class="post-time" :title="postDate?.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
-                <span v-if="props.kind == 'session'">Posted @:</span>
-                <span v-else>Posts @:</span> {{ postDate?.toFormat('t') }}
+                <span v-if="props.kind == 'session'">Posted:</span>
+                <span v-else>Posts:</span> {{ postDate?.toFormat('t') }}
                 <span class="session-zone text-[10px]!" :title="sessionZone?.name">
                     {{ sessionZone?.abbreviation }}
                 </span>
-                <!-- Posts Soon - Badge -->
-                <div v-if="props.kind == 'template' && DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
-                    class="px-1.25 py-0.5 border-2 bg-text-1/10 border-ring-soft rounded-full flex items-center justify-center">
-                    <p class="text-amber-400 text-[10px] relative italic font-black">
-                        Soon
-                    </p>
-                </div>
+                <span class="w-full flex items-center justify-center">
+                    <!-- Posts Soon - Badge -->
+                    <div v-if="props.kind == 'template' && DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
+                        class="px-1.25 py-0.5 border-2 bg-text-1/10 border-ring-soft rounded-full flex w-fit items-center justify-center">
+                        <p class="text-amber-400 text-[10px] relative italic font-black">
+                            Soon
+                        </p>
+                    </div>
+                </span>
             </span>
             <!-- Edit Button -->
             <Button @click="editSchedule" unstyled class="action-button">

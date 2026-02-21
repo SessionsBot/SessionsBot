@@ -7,7 +7,7 @@
   let countDownId: ReturnType<typeof setInterval>;
 
   onMounted(() => {
-    redirectTimeRemaining.value = 1005;
+    redirectTimeRemaining.value = 15;
     countDownId = setInterval(() => {
       if (redirectTimeRemaining.value <= 0) {
         router.push("/");
