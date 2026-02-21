@@ -55,6 +55,12 @@
   "github": {
     "release": true,
     "releaseName": "frontend@v${version}",
+    "releaseNotes": {
+      "commit": "* ${commit.subject} (${sha}){ - thanks @${author.login}!}",
+      "excludeMatches": [
+        "br4dyb"
+      ]
+    },
     "preRelease": true,
     "makeLatest": true,
     "comments": {
