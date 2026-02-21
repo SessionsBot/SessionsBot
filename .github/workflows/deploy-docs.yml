@@ -19,9 +19,6 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-        permissions:
-            pages: write
-            id-token: write
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -47,13 +44,14 @@ jobs:
                   path: apps/docs/.vitepress/dist/
                   name: github-pages
 
-    # Deployment job
     deploy:
         needs: build
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
-
+        permissions:
+            pages: write
+            id-token: write
         runs-on: ubuntu-latest
         steps:
             - name: Deploy to GitHub Pages
