@@ -62,7 +62,7 @@
     // Session Signup URL:
     const signupMsgUrl = computed(() => {
         if (props.kind == 'session') {
-            return `https://discord.com/channels/${props.session?.guild_id}/${props.session?.thread_id ? props.session?.thread_id : props.session?.channel_id}/${props.session?.signup_id}`
+            return `https://discord.com/channels/${props.session?.guild_id}/${props.session?.thread_id ? props.session?.thread_id : props.session?.channel_id}/${props.session?.panel_id}`
         } else return ''
     })
 

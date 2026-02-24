@@ -5,7 +5,7 @@ import { useLogger } from "../../logs/logtail";
 import { requiredBotPermsStrings } from "./required";
 import sendWithFallback from "../messages/sendWithFallback";
 import { URLS } from "../../core/urls";
-import { SessionPostFailureReason } from "../../database/schedules/templatesSchedule";
+import { SessionPostFailureReason } from "../../database/schedules/templateCreations";
 import { DateTime } from "luxon";
 
 const createLog = useLogger();

@@ -1,13 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, GuildMember, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
-import { supabase } from "../utils/database/supabase";
-import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
-import { buildSessionPanelMsg } from "../utils/bot/messages/sessionSignup";
 import { DateTime } from "luxon";
-import { createAuditLog } from "../utils/database/auditLog";
 import { URLS } from "../utils/core/urls";
-import { increaseGuildStat } from "../utils/database/manager/statsManager";
+import dbManager from "../utils/database/manager";
 
 
 export default {
@@ -16,255 +13,190 @@ export default {
     },
     execute: async (i: ButtonInteraction) => {
         // Vars:
-        const {
-            // botClient: bot,
-            colors: { getOxColor },
-
-        } = core;
         const [_, rsvpId, sessionId] = i.customId.split(':');
 
         // Defer Reply:
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
-        // Fetch Session/Guild Data:
-        const [guildDbFetch, sessionDbFetch] = await Promise.all([
-            supabase.from('guilds').select('*').eq('id', i.guildId).single(),
-            supabase.from('sessions')
-                .select('*')
-                .eq('id', sessionId)
-                .select()
-                .single()
-        ])
-        const { data: session, error: sessionERR } = sessionDbFetch;
-        const { data: guild, error: guildERR } = guildDbFetch;
-
-        // Fetch Errors:
-        if (!guild || guildERR) throw { message: 'Failed to fetch guild data for rsvp interaction!', details: { session, err: guildDbFetch.error } }
-        if (!session || sessionERR) throw { message: `Failed to fetch session data for RSVP button interaction!`, details: { session, err: sessionERR } };
+        // Attempt to Assign User to RSVP:
+        const rsvpResult = await dbManager.rsvps.add(i.guildId, sessionId, rsvpId, i.user.id)
 
         // Get Guild Subscription:
-        const subscription = getSubscriptionFromInteraction(i)
+        const guildSubscription = getSubscriptionFromInteraction(i);
 
-        // Get Signup Message:
-        const getSignupMsg = async () => {
-            if (i.message.id == session.signup_id) return i.message;
-            else {
-                const channel = await i.guild.channels.fetch(session?.thread_id || session?.channel_id) as TextChannel;
-                return await channel?.messages?.fetch(session.signup_id)
-            }
-        }
-        const signupMsg = await getSignupMsg();
-        if (!signupMsg) throw { message: 'Failed to fetch Signup Message Panel for RSVP interaction.', details: { session } }
+        // Get Rsvp Result Data:
+        let responseContent: ContainerBuilder = undefined;
+        let sessionData = rsvpResult?.sessionData
+        const requestedSlot = sessionData?.session_rsvp_slots?.find(s => s.id == rsvpId)
+        const panelUrl = `https://discord.com/channels/${i.guildId}/${sessionData?.thread_id ?? sessionData?.channel_id}/${sessionData?.panel_id}`
 
-        // IF PAST SESSION - Alert - Update Signup - Return:
-        const sessionStart = DateTime.fromISO(session.starts_at_utc);
-        if (sessionStart <= DateTime.now()) {
-            // Session has already started - RSVP not allowed:
-            const alertMsg = new ContainerBuilder({
-                accent_color: getOxColor('error'),
-                components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')}  This session has already occurred!` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `According to our records this session has **already started**! \n-# It's possible this signup panel was simply outdated.` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `**Requested Session:** \n> \`${session.title}\` \n**Started At:** \n> <t:${sessionStart.toSeconds()}:f> \n> <t:${sessionStart.toSeconds()}:R> \n-# Feel free to RSVP to another session that's available and hasn't occurred yet!` })
-                ]
-            })
-            if (subscription.limits.SHOW_WATERMARK) {
-                alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true, showHelpLink: true }))
-            }
-            // Reply to Interaction:
-            await i.editReply({
-                components: [alertMsg],
-                flags: MessageFlags.IsComponentsV2
-            })
-            // Update Outdated Signup Panel:
-            const signupMsgContent = await buildSessionPanelMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
-            await signupMsg.edit({
-                components: [signupMsgContent]
-            })
-            return;
-        }
+        // Send Result Response:
+        if (!rsvpResult.success) {
+            // Failed RSVP:
+            let errorType = rsvpResult.error.type
 
-        // FETCH RSVP Slots & Assignees for Session:
-        const [
-            { data: rsvpSlots, error: rsvpSlotERR }, // Slots
-            { data: rsvpAssignees, error: rsvpAssigneesErr } // Assignees
-        ] = await Promise.all([
-            await supabase.from('session_rsvp_slots')
-                .select('*')
-                .eq('session_id', sessionId)
-                .select(),
-            await supabase.from('session_rsvps')
-                .select('*')
-                .eq('session_id', sessionId)
-        ])
-        if (rsvpSlotERR) throw rsvpSlotERR
-        if (!rsvpSlots.length) throw { message: `Failed to fetch rsvp slots for session (${sessionId}) for RSVP button interaction!` }
-        if (rsvpAssigneesErr) throw rsvpAssigneesErr;
-        // Requested Slot:
-        const requestedSlot = rsvpSlots.find(s => s.id === `rsvp_${rsvpId}`);
-        if (!requestedSlot) throw { message: `Failed to fetch requested rsvp slots from session for RSVP button interaction!`, details: { sessionId, rsvpId: "rsvp_" + rsvpId } }
-
-
-        // If required role(s) - Perform Checks:
-        if (subscription.limits.ALLOW_RSVP_ROLE_RESTRICTION && requestedSlot.roles_required?.length) {
-            // Vars:
-            const requiredRoles = requestedSlot.roles_required;
-            const member = i.member as GuildMember;
-            const userRoles = member.roles.cache.map(r => r.id);
-            const userAllowed = requiredRoles.every(r => userRoles.includes(r));
-
-            // If NOT ALLOWED - Send Alert - Return:
-            if (!userAllowed) {
-                const alertMsg = new ContainerBuilder({
-                    accent_color: getOxColor('error'),
+            // RSVP - Errored - Send Alert:
+            if (errorType == 'Already RSVPed') {
+                // RSVP - Already Assigned - Send Alert:
+                const currentSlot = sessionData.session_rsvp_slots.find(s => s.session_rsvps.some(r => r.user_id == i.user.id))
+                responseContent = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('warning'),
                     components: <any>[
-                        new TextDisplayBuilder({ content: `### ${core.emojis.string('lock')}  You're missing a required role!` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to RSVP` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `This RSVP slot is protected by one or more required role(s). \n-# You are not assigned at least one of the following roles:` }),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records you are **already RSVPed** within this session! \n**Session Title**: \n> \`${sessionData?.title}\` \n**RSVP Title**: \n> \`${currentSlot?.title}\` \n-# If you wish to modify your current upcoming RSVP assignments use the ${core.commands.getLinkString('my-rsvps')} command.` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `\n> <@&${requiredRoles.join('> \n> <@&') + '>'} \n-# Therefore, you cannot be assigned this RSVP!` }),
-                    ]
-                })
-                if (subscription.limits.SHOW_WATERMARK) {
-                    alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
-                }
-                await i.editReply({
-                    components: [alertMsg],
-                    flags: MessageFlags.IsComponentsV2
-                })
-                return;
-            }
-        }
-
-        // If Already RSVPed to Session - Send Alert - Return:
-        const alreadyRSVPedToSession = rsvpAssignees.some(a => a.user_id == i.user.id);
-        if (alreadyRSVPedToSession) {
-            const currentSlotId = rsvpAssignees.find(a => a.user_id == i.user.id).rsvp_slot_id;
-            const currentSlot = rsvpSlots.find(s => s.id == currentSlotId);
-            const alertMsg = new ContainerBuilder({
-                accent_color: getOxColor('error'),
-                components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')}  Already RSVPed to this Session!` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `According to our records you have **already assigned** yourself to an RSVP slot within this session.` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `**Current RSVP Slot:** \n> \`${currentSlot.title}\`` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `-# Use the ${core.commands.getLinkString('my-rsvps')} command to modify your current RSVP assignment(s) if you wish to do so.` })
-                ]
-            })
-            if (subscription.limits.SHOW_WATERMARK) {
-                alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
-            }
-            await i.editReply({
-                components: [alertMsg],
-                flags: MessageFlags.IsComponentsV2
-            })
-            return;
-        }
-
-        // If Requested Slot at Capacity - Send Alert - Return:
-        const currentSlotCapacity = rsvpAssignees.filter(a => a.rsvp_slot_id == requestedSlot.id)?.length ?? 0;
-        if (currentSlotCapacity >= requestedSlot.capacity) {
-            const alertMsg = new ContainerBuilder({
-                accent_color: getOxColor('error'),
-                components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('user_fail')}  RSVP Slot at Capacity!` }),
-                    new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `Unfortunately this RSVP slot has already reached its max user capacity. \n-# Feel free to sign up for another RSVP slot*(if available)* or check back later.` }),
-                ]
-            })
-            if (subscription.limits.SHOW_WATERMARK) {
-                alertMsg.components.push(new SeparatorBuilder(), defaultFooterText({ lightFont: true }))
-            }
-            await i.editReply({
-                components: [alertMsg],
-                flags: MessageFlags.IsComponentsV2
-            })
-            return;
-        }
-
-        // Checks CLEARED - Assign User to RSVP:
-        const { error: dbError } = await supabase.from('session_rsvps').insert({
-            rsvp_slot_id: requestedSlot.id,
-            session_id: requestedSlot.session_id,
-            user_id: i.user.id,
-        })
-        if (dbError) {
-            return await i.editReply({
-                components: [
-                    genericErrorMsg({ reasonDesc: `A database error has occurred and we were unable to assign you to that RSVP slot. If this issue persists please get in contact with [Bot Support](${URLS.support_chat})! \n**Support Details:** \`\`\`GUILD_ID: ${i.guildId} \nRSVP_ID: ${requestedSlot.id}, \nSESSION_ID: ${sessionId}\`\`\` ` })
-                ],
-                flags: MessageFlags.IsComponentsV2
-            })
-        }
-
-        // Update - Sessions Signup Panel:
-        new Promise(async (res) => {
-            const signupMsgContent = await buildSessionPanelMsg(session, subscription.limits.SHOW_WATERMARK, guild.accent_color, guild.calendar_button);
-            await signupMsg.edit({
-                components: [signupMsgContent]
-            })
-        })
-
-
-        // Success - Build & Send - RSVPed Response:
-        const successMsg = new ContainerBuilder({
-            accent_color: getOxColor('success'),
-            components: <any>[
-                new TextDisplayBuilder({ content: `### ${core.emojis.string('user_success')} RSVP Success!` }),
-                // new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `-# View details below:` }),
-                new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `**RSVP Title:** \n> \`${requestedSlot?.title}\` \n**Starts At:** \n> <t:${DateTime.fromISO(session.starts_at_utc)?.toUnixInteger()}:f>` }),
-                new SeparatorBuilder(),
-                new ActionRowBuilder({
-                    components: [
-                        new ButtonBuilder({
-                            style: ButtonStyle.Secondary,
-                            emoji: { name: 'undo', id: core.emojis.ids.undo },
-                            label: 'Undo',
-                            custom_id: `unRsvp:${rsvpId}:${sessionId}`
-                        }),
-                        new ButtonBuilder({
-                            style: ButtonStyle.Link,
-                            emoji: { name: 'eye', id: core.emojis.ids.eye },
-                            label: 'View Session',
-                            url: i.message.url
+                        new ActionRowBuilder({
+                            components: [
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    url: panelUrl,
+                                    emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                    label: 'View Session'
+                                })
+                            ]
                         })
                     ]
+
                 })
-            ]
-        })
-        // FREE PLAN - Add Watermark
-        if (subscription.limits.SHOW_WATERMARK) {
-            successMsg.components.push(
-                new SeparatorBuilder(),
-                defaultFooterText({ lightFont: true })
-            )
-        }
-        // Send Final Response:
-        await i.editReply({
-            components: [successMsg],
-            flags: MessageFlags.IsComponentsV2
-        })
+            } else if (errorType == 'At Capacity') {
+                // RSVP - At Capacity - Send Alert:
+                responseContent = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('warning'),
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to RSVP - At Capacity` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records this RSVP slot **is at capacity** and not allowing anymore users! \n**RSVP Title**: \n> \`${requestedSlot?.title}\` \n**Capacity**: \n> \`${requestedSlot?.session_rsvps?.length ?? 0}/${requestedSlot?.capacity}\`` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: [
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    url: panelUrl,
+                                    emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                    label: 'View Session'
+                                })
+                            ]
+                        })
+                    ]
 
-        // Create Audit Event:
-        createAuditLog({
-            event: AuditEvent.RsvpCreated,
-            guild: i.guildId,
-            user: i.user.id,
-            meta: {
-                username: i.user.username,
-                session_id: session.id,
-                rsvp_id: 'rsvp_' + rsvpId
+                })
+            } else if (errorType == 'Past Session') {
+                // RSVP - Past Session - Send Alert:
+                const startUtc = DateTime.fromISO(sessionData.starts_at_utc, { zone: 'utc' });
+                responseContent = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('warning'),
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('clock')}  Failed to RSVP - Past Session` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records this session **has already started** and is not allowing anymore RSVPs! \n**Session Title**: \n> \`${sessionData?.title}\` \n**Start Date**: \n> <t:${startUtc.toUnixInteger()}:F> \n> <t:${startUtc.toUnixInteger()}:R> \n-# This signup panel was likely outdated, search for available sessions __in the future__ throughout this server to RSVP!` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: [
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    url: panelUrl,
+                                    emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                    label: 'View Session'
+                                })
+                            ]
+                        })
+                    ]
+
+                })
+            } else if (errorType == 'Required Roles') {
+                // RSVP - Past Session - Send Alert:
+                const requiredRoleIds = requestedSlot.roles_required
+                responseContent = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('warning'),
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('lock')}  Failed to RSVP - Required Roles` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> Unfortunately, you're missing one *(or more)* of the **required roles to assign yourself** to this RSVP slot. \n**RSVP Title**: \n> \`${requestedSlot?.title}\` \n**Required Role(s)**: \n> - <@&${requiredRoleIds.join(`> - \n<@&`)}>` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: [
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    url: panelUrl,
+                                    emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                    label: 'View Session'
+                                })
+                            ]
+                        })
+                    ]
+
+                })
+            } else if (errorType == 'Session Canceled') {
+                // RSVP - Session Canceled - Send Alert:
+                const startUtc = DateTime.fromISO(sessionData.starts_at_utc, { zone: 'utc' });
+                responseContent = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('warning'),
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('clock')}  Failed to RSVP - Past Session` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records this session **has been canceled** and is no longer allowing RSVPs! \n**Session Title**: \n> \`${sessionData?.title}\` \n**Start Date**: \n> <t:${startUtc.toUnixInteger()}:F> \n> <t:${startUtc.toUnixInteger()}:R>` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: [
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    url: panelUrl,
+                                    emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                    label: 'View Session'
+                                })
+                            ]
+                        })
+                    ]
+
+                })
+            } else if (errorType == 'Internal' || errorType == 'Unknown' || errorType) {
+                responseContent = genericErrorMsg({
+                    title: `${core.emojis.string('warning')}  Failed to RSVP`,
+                    reasonDesc: `Unfortunately we hit an internal error when trying to save this RSVP assignment. If this issue persists, please contact [Bot Support](${URLS.support_chat})!`
+                })
             }
-        })
 
-        // Increase Guild Stat Counter:
-        increaseGuildStat(i.guildId, "rsvps_assigned", 1)
+
+
+        } else {
+            // RSVP - Succeeded - Send Alert:
+            responseContent = new ContainerBuilder({
+                accent_color: core.colors.getOxColor('success'),
+                components: <any>[
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('user_success')} RSVP Success!` }),
+                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `**RSVP Title:** \n> \`${requestedSlot?.title}\` \n**Starts At:** \n> <t:${DateTime.fromISO(sessionData.starts_at_utc)?.toUnixInteger()}:f>` }),
+                    new SeparatorBuilder(),
+                    new ActionRowBuilder({
+                        components: [
+                            new ButtonBuilder({
+                                style: ButtonStyle.Secondary,
+                                emoji: { name: 'undo', id: core.emojis.ids.undo },
+                                label: 'Undo',
+                                custom_id: `unRsvp:${rsvpId}:${sessionId}`
+                            }),
+                            new ButtonBuilder({
+                                style: ButtonStyle.Link,
+                                emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                label: 'View Session',
+                                url: panelUrl
+                            })
+                        ]
+                    })
+                ]
+            })
+        }
+
+        // If SHOW WATERMARK - Add to Response:
+        if (guildSubscription.limits.SHOW_WATERMARK) {
+            responseContent.components.push(defaultFooterText({ showHelpLink: true }))
+        }
+
+        return await i.editReply({
+            components: [responseContent],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+        })
 
     }
 }

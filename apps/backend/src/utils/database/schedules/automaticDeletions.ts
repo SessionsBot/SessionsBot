@@ -98,6 +98,21 @@ export function initializeDataDeletionSchedule() {
             const deletedSessions = await deleteExpiredSessions()
 
 
+            // Delete Expired Session Templates:
+            const deleteExpiredSessionTemplates = async () => {
+
+                // Delete Expired Session Templates:
+                const { count, error } = await supabase.from('session_templates').delete({ count: 'exact' })
+                    .lte('expires_at_utc', DateTime.utc().toISO())
+
+                // If failure:
+                createLog.for('Schedule').error('Failed to auto delete - Session Templates - See details...', { error })
+
+                return { total_deleted: count }
+            }
+            const deletedSessionTemplates = await deleteExpiredSessionTemplates()
+
+
             // Delete Expired Audit Events:
             const deleteExpiredAuditEvents = async () => {
                 // Get Expired Session "Cutoff" Dates:
@@ -137,7 +152,8 @@ export function initializeDataDeletionSchedule() {
                 createLog.for('Schedule').info(`✅ Automatic Deletion Schedule Succeeded - At: ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')} - See Details...`, {
                     deletion_counts: {
                         sessions: deletedSessions,
-                        audit_events: deletedAuditEvents
+                        audit_events: deletedAuditEvents,
+                        deletedSessionTemplates
                     }
                 })
             }

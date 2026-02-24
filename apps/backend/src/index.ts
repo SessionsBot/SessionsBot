@@ -7,7 +7,7 @@ import { ENVIRONMENT_TYPE } from './utils/environment.js';
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Collection } from "discord.js";
 import { ExtendedClient } from './utils/types/extendedClient.js';
-import { initializeTemplateCreationScheduler } from './utils/database/schedules/templatesSchedule.js';
+import { initializeTemplateCreationScheduler } from './utils/database/schedules/templateCreations.js';
 import ready from './events/ready.js';
 
 const client = new ExtendedClient({

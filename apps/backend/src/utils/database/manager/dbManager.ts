@@ -1,9 +1,14 @@
 import { Guild } from "discord.js";
 import { supabase } from "../supabase";
 import { Database } from "@sessionsbot/shared";
+import { useLogger } from "../../logs/logtail";
+import rsvpManager from "./rsvpManager";
+
+// Logger Util:
+const createLog = useLogger();
 
 // Response class & types:
-class dbResult {
+export class dbResult {
     /** Returns a successful response */
     static success<d>(data: d) {
         return {
@@ -79,11 +84,8 @@ export default {
     },
 
 
-    rsvps: {
-        async add(session_id: string, rsvp_id: string) {
+    rsvps: rsvpManager
 
-        }
-    }
 }
 
 

@@ -2,7 +2,7 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import discordLog from "./logs/discord.js";
-import { initializeTemplateCreationScheduler } from "./database/schedules/templatesSchedule.js";
+import { initializeTemplateCreationScheduler } from "./database/schedules/templateCreations.js";
 import sendWithFallback from "./bot/messages/sendWithFallback.js";
 import { defaultFooterText, genericErrorMsg } from "./bot/messages/basic.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
@@ -10,6 +10,7 @@ import { URLS } from "./core/urls.js";
 import { increaseGuildStat } from "./database/manager/statsManager.js";
 import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
 import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendMsg.js";
+import dbManager from "./database/manager/dbManager.js";
 
 
 const createLog = useLogger();
@@ -26,6 +27,10 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
+                initializeTemplateCreationScheduler()
+
+
+                console.info('you should make a general perms alert?')
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

@@ -10,6 +10,8 @@ export enum AuditEvent {
     SessionDeleted = "Session Deleted",
     /** Session has been posted (from template/schedule). */
     SessionPosted = "Session Posted",
+    /** An (active) session has been marked as canceled. */
+    SessionCanceled = "Session Canceled",
     /** User has been added as an RSVP to a session slot. */
     RsvpCreated = "RSVP Created",
     /** User has been removed as an RSVP from a session slot. */
@@ -36,13 +38,15 @@ const EventMetaData = {
     [AuditEvent.SessionPosted]: {
         session_id: '' as string
     },
+    [AuditEvent.SessionCanceled]: {
+        session_id: '' as string,
+        reason: '' as string | undefined
+    },
     [AuditEvent.RsvpCreated]: {
-        username: '' as string,
         session_id: '' as string,
         rsvp_id: '' as string
     },
     [AuditEvent.RsvpDeleted]: {
-        username: '' as string,
         session_id: '' as string,
         rsvp_id: '' as string
     },

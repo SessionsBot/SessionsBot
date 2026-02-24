@@ -1,47 +1,24 @@
-import { Database } from "@sessionsbot/shared";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { Database, FullSessionData } from "@sessionsbot/shared";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { DateTime } from "luxon";
 import core from "../../core/core";
 import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
-import { supabase } from "../../database/supabase";
 import { useLogger } from "../../logs/logtail";
 import { processVariableText } from "./variableText";
+import { isBotPermissionError, sendPermissionAlert } from "../permissions/permissionsDenied";
 
 const createLog = useLogger();
-const { colors } = core
 
 
-/** @deprecated Slowly replacing - See `sessionPanels.ts` */
-export async function buildSessionPanelMsg(session: Database['public']['Tables']['sessions']['Row'], showWatermark: boolean, accent_color: string, addToCalendarButton: boolean) {
+export async function buildSessionPanelMsg(session: FullSessionData, showWatermark: boolean, accent_color: string, addToCalendarButton: boolean) {
     try {
         // Get Template/Session Data:
         const s = session;
         const startsAt = DateTime.fromISO(s.starts_at_utc);
         const endsAt = s.duration_ms ? startsAt.plus({ millisecond: s.duration_ms }) : null;
         const pastStart = DateTime.now() >= startsAt;
-
-        // Fetch Session RSVP Slots:
-        const { data: rsvpSlots, error: rsvpSlotsErr } = await supabase.from('session_rsvp_slots')
-            .select('*')
-            .eq('session_id', s.id)
-            .select()
-        if (rsvpSlotsErr) {
-            createLog.for('Database').error('FAILED TO GET RSVP SLOTS - For Signup Msg - See Details', { rsvpSlotsErr, session: s })
-        }
-
-        // Fetch Session RSVP Assignees:
-        let sessionAssignees: Database['public']['Tables']['session_rsvps']['Row'][] = [];
-        if (rsvpSlots?.length) {
-            const { data: curRsvpAssignees, error: rsvpAssigneesErr } = await supabase.from('session_rsvps')
-                .select('*')
-                .eq('session_id', s.id)
-                .select()
-            if (rsvpAssigneesErr) {
-                createLog.for('Database').error('FAILED TO GET RSVP ASSIGNEES - For Signup Msg - See Details', { rsvpAssigneesErr, session: s })
-            }
-            sessionAssignees = curRsvpAssignees;
-        }
+        const rsvpSlots = s.session_rsvp_slots
 
 
         // Util: Get Star Date Section:
@@ -73,7 +50,7 @@ export async function buildSessionPanelMsg(session: Database['public']['Tables']
                 for (const rsvp of rsvpSlots) {
                     // RSVP Slot Vars:
                     const rsvpTitle = rsvp.emoji ? `${rsvp.emoji} ${rsvp.title}` : rsvp.title
-                    const slotAssignees = sessionAssignees.filter(a => a.rsvp_slot_id == rsvp.id)
+                    const slotAssignees = rsvp.session_rsvps
                     const atCapacity = (slotAssignees?.length ?? 0) >= rsvp.capacity;
                     const capacityString = `\`${slotAssignees?.length ?? 0}/${rsvp.capacity}\``
                     const mappedAssignees = () => {
@@ -157,7 +134,7 @@ export async function buildSessionPanelMsg(session: Database['public']['Tables']
 
         // Build Root Msg Container:
         const msg = new ContainerBuilder({
-            accent_color: Number(accent_color.replace('#', '0x')) || colors.getOxColor('purple'),
+            accent_color: Number(accent_color.replace('#', '0x')) || core.colors.getOxColor('purple'),
             components: <any>[
                 new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n${processVariableText(s.description)}` : ''}` }),
                 new SeparatorBuilder(),
@@ -180,9 +157,39 @@ export async function buildSessionPanelMsg(session: Database['public']['Tables']
 }
 
 
+export async function updateExistingSessionPanel(session: FullSessionData, watermark: boolean, accent_color: string, calendar_button: boolean) {
+    try {
+        const destChannel = session?.thread_id ? session.thread_id : session?.channel_id;
+        // Get Panel Contents & Fetch Destination Msg:
+        const [panelContent, panelChannel] = await Promise.all([
+            buildSessionPanelMsg(session, watermark, accent_color, calendar_button),
+            core.botClient.channels.fetch(destChannel) as Promise<TextChannel>
+        ])
+
+        const panel = await panelChannel?.messages?.fetch(session.panel_id)
+        await panel.edit({
+            components: [panelContent]
+        })
+        return { success: true, message: 'Session Panel Updated!' }
+
+    } catch (error) {
+        // Check for permission errors:
+        if (isBotPermissionError(error)) {
+            await sendPermissionAlert(session?.guild_id)
+            // Log & Return Error:
+            createLog.for('Bot').info('Perms - Failed to build/send a session panel update - See details...', { error })
+            return { success: false, message: 'Failed to update a session panel for an update!' }
+        }
+        // Log & Return Error:
+        createLog.for('Bot').error('Failed to build/send a session panel update - See details...', { error })
+        return { success: false, message: 'Failed to update a session panel for an update!' }
+    }
+}
+
+
 export function buildSessionThreadStartMsg(title: string, description: string, accent_color: string, watermark: boolean,) {
     let r = new ContainerBuilder({
-        accent_color: Number(accent_color?.replace('#', '0x')) || colors.getOxColor('purple'),
+        accent_color: Number(accent_color?.replace('#', '0x')) || core.colors.getOxColor('purple'),
         components: <any>[
             new TextDisplayBuilder({ content: `### ${title}` }),
             new SeparatorBuilder(),

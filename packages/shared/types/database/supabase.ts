@@ -374,8 +374,9 @@ export type Database = {
           event_id: string | null
           guild_id: string
           id: string
+          is_canceled: boolean
           mention_roles: string[] | null
-          signup_id: string
+          panel_id: string
           starts_at_utc: string
           template_id: string | null
           thread_id: string | null
@@ -391,8 +392,9 @@ export type Database = {
           event_id?: string | null
           guild_id: string
           id?: string
+          is_canceled?: boolean
           mention_roles?: string[] | null
-          signup_id: string
+          panel_id: string
           starts_at_utc: string
           template_id?: string | null
           thread_id?: string | null
@@ -408,8 +410,9 @@ export type Database = {
           event_id?: string | null
           guild_id?: string
           id?: string
+          is_canceled?: boolean
           mention_roles?: string[] | null
-          signup_id?: string
+          panel_id?: string
           starts_at_utc?: string
           template_id?: string | null
           thread_id?: string | null
@@ -418,13 +421,6 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "sessions_guild_fkey"
-            columns: ["guild_id"]
-            isOneToOne: false
-            referencedRelation: "guilds"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "sessions_guild_id_fkey"
             columns: ["guild_id"]
@@ -457,6 +453,12 @@ export type Database = {
     }
     Enums: {
       "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
+      "Session Status":
+        | "SCHEDULED"
+        | "ONGOING"
+        | "DELAYED"
+        | "CONCLUDED"
+        | "CANCELED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -585,6 +587,13 @@ export const Constants = {
   public: {
     Enums: {
       "Entitlement Status": ["ACTIVE", "EXPIRED", "CANCELED"],
+      "Session Status": [
+        "SCHEDULED",
+        "ONGOING",
+        "DELAYED",
+        "CONCLUDED",
+        "CANCELED",
+      ],
     },
   },
 } as const

@@ -21,7 +21,6 @@ export const genericErrorMsg = ({
             new SeparatorBuilder(),
             new TextDisplayBuilder({ content: `**Reason:**\n> ${reasonDesc}` }),
             new SeparatorBuilder(),
-            // new TextDisplayBuilder({ content: `-# Need Help? Join our support server for bot assistance:` }),
             new ActionRowBuilder({
                 components: <any>[
                     new ButtonBuilder({
@@ -38,7 +37,6 @@ export const genericErrorMsg = ({
                     })
                 ]
             }),
-            // new SeparatorBuilder(),
         ]
     })
 }
