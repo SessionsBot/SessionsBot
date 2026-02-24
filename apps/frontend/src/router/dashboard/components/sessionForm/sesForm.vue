@@ -91,6 +91,7 @@
             channelId: '',
             postTime: null,
             postDay: null,
+            mention_roles: null,
             postInThread: true,
             nativeEvents: false,
         }
@@ -166,6 +167,7 @@
             `Post Time must occur before or at event Start Time if posting "Day of".`
         ),
         postDay: z.literal(['Day before', 'Day of'], 'Please select an option.'),
+        mention_roles: z.nullish(z.array(z.string('Please select valid Discord roles.').min(17, 'Invalid Discord role id selected.'))),
         postInThread: z.boolean(),
         nativeEvents: z.boolean(),
 
@@ -317,6 +319,7 @@
             channelId: data.channel_id,
             postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, -data.post_before_ms),
             postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
+            mention_roles: data?.mention_roles,
             postInThread: data.post_in_thread,
             nativeEvents: data.native_events
         }
@@ -772,6 +775,7 @@
                                 <DiscordTab v-else-if="tabSelected == 'discord'" :invalidFields :validateField
                                     :validateFields v-model:channel-id="formValues.channelId"
                                     v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
+                                    v-model:mention_roles="formValues.mention_roles"
                                     v-model:native-events="formValues.nativeEvents"
                                     v-model:post-in-thread="formValues.postInThread" />
                             </KeepAlive>

@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-    import { BaselineIcon, ClockArrowUpIcon, CalendarArrowUpIcon } from 'lucide-vue-next';
+    import { BaselineIcon, ClockArrowUpIcon, CalendarArrowUpIcon, BellIcon, ArrowUpCircleIcon } from 'lucide-vue-next';
     import type { NewSessions_FieldNames } from '../sesForm.vue';
     import InputTitle from '../labels/inputTitle.vue';
     import InputErrors from '../labels/inputErrors.vue';
     import type { AppUserGuilds } from '@sessionsbot/shared';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-
+    import useNotifier from '@/stores/notifier';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -15,14 +15,19 @@
     }>()
     const { invalidFields, validateField, validateFields } = props;
 
-    // Guild Channels - Model:
+    // Services:
+    const notifier = useNotifier();
     const dashboard = useDashboardStore();
+    // Guild Data:
     const guildChannels = computed(() => dashboard.guildData.channels);
+    const guildRoles = computed(() => dashboard.guildData.roles.state);
+    const mentionRolesAllowed = computed(() => dashboard.guildData.subscription?.state?.limits?.ALLOW_MENTION_ROLES || false)
 
     // Form Values:
     const channelId = defineModel<string>('channelId');
     const postTime = defineModel<string | any>('postTime');
     const postDay = defineModel<string | any>('postDay');
+    const mentionRoles = defineModel<string | any>('mention_roles'); // stopped here - adding mention roles input - fixing verify guild member api (middleware)
     const nativeEvents = defineModel<string | any>('nativeEvents');
     const postInThread = defineModel<string | any>('postInThread');
     // Select Post Channel Options:
@@ -39,6 +44,19 @@
         })
         return channelCategories;
     });
+    // Mention Roles Options:
+    const mentionRolesOpts = computed(() => {
+        if (!guildRoles.value || typeof guildRoles.value != typeof []) return [];
+        return guildRoles.value?.map(r => {
+            if (r?.name === '@everyone') {
+                return { name: 'Everyone', value: r?.id }
+            }
+            else return { name: r?.name, value: r?.id }
+        })
+    });
+
+    // Watch Mention Roles:
+    watch(mentionRoles, (v) => console.info('Mention Roles - Changed', v))
 
 
     // Set/Toggle Post Day - Fn:
@@ -82,7 +100,7 @@
         </div>
 
         <!-- INPUT: Post Time -->
-        <div class="flex relative bottom-1 flex-col gap-1 w-full items-start"
+        <div class="flex  flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('postTime') }">
             <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" />
             <DatePicker input-id="postTime" time-only fluid class="w-full!" :step-minute="5" hour-format="12"
@@ -90,8 +108,35 @@
             <InputErrors fieldName="postTime" :invalidFields />
         </div>
 
+
+        <!-- INPUT: Mention Roles -->
+        <div class="flex relative flex-col gap-1 w-full items-start"
+            :class="{ 'text-invalid-1!': invalidFields.has('mention_roles') }">
+            <InputTitle fieldTitle="Mention Roles" :icon="BellIcon" premium-type="PREMIUM" :show-help="{ path: '/' }" />
+            <!-- Input Area - Wrap -->
+            <span class="w-full relative flex">
+                <MultiSelect :disabled="!mentionRolesAllowed" v-model="mentionRoles"
+                    @value-change="(val) => validateField('mention_roles')" fluid :options="mentionRolesOpts"
+                    :option-label="(opt) => opt?.name" :option-value="(opt) => opt?.value" filter />
+                <!-- Premium Feature - Alerter -->
+                <span v-if="!mentionRolesAllowed" @click="notifier.send({
+                    level: 'upgrade', header: 'Premium Feature!', content: `Your current subscription plan doesn't include this feature. <br><span class='
+                    text-xs opacity-50'>Consider upgrading today! </span>` })" class="absolute cursor-pointer font-bold gap-0.5 rounded-md -inset-px w-[calc(100%+2px)]
+                h-[calc(100%+2px)] bg-brand-1/7 flex items-center p-2 text-text-soft">
+                    <ArrowUpCircleIcon class="p-0.25" />
+                    Upgrade Bot
+                </span>
+            </span>
+
+            <InputErrors fieldName="mention_roles" :invalidFields />
+
+
+
+        </div>
+
+
         <!-- INPUT: Post in Thread -->
-        <div class="flex flex-row gap-1 w-full items-start">
+        <div class="mt-2 flex flex-row gap-1 w-full items-start">
             <ToggleSwitch input-id="postInThread" v-model="postInThread" class="scale-85"
                 @value-change="(val) => validateField('postInThread')" />
             <label for="postInThread" class="gap-0.25 flex-row items-center">

@@ -24,6 +24,7 @@
             */
             path: string
         },
+        premiumType?: "PREMIUM" | "ENTERPRISE"
     }>();
 
 
@@ -36,7 +37,19 @@
             <component :is="icon" :size="17" />
             <p> {{ fieldTitle }} </p>
         </span>
-        <InfoHelpButton v-if="showHelp" :docPath="showHelp.path" />
+
+        <!-- End Align - Wrapper -->
+        <span class="flex flex-row gap-0.5 items-center">
+            <InfoHelpButton v-if="showHelp" :docPath="showHelp.path" />
+            <!-- Premium Feature Badge -->
+            <span v-if="props.premiumType"
+                class="mx-0.5 flex flex-row gap-px p-0.25 pr-1 bg-text-1/8 text-text-1/80 opacity-80 border-indigo-400/70 border rounded-lg">
+                <DiamondIcon class="size-4! fill-transparent!" />
+                <p v-if="props.premiumType == 'PREMIUM'" class="font-bold text-xs"> Premium </p>
+                <p v-if="props.premiumType == 'ENTERPRISE'" class="font-semibold text-xs"> Enterprise </p>
+            </span>
+        </span>
+
     </label>
 </template>
 

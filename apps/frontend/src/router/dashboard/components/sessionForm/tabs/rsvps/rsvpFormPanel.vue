@@ -11,10 +11,12 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { IconifyIconComponent } from 'iconify-icon';
     import { SubscriptionLevel } from '@sessionsbot/shared';
+    import useNotifier from '@/stores/notifier';
 
     // Services:
     const confirm = useConfirm();
     const dashboard = useDashboardStore()
+    const notifier = useNotifier();
 
 
     // Main Panel Visibility & Mode
@@ -179,7 +181,7 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-bg-3! ring-0! border-2! border-ring-4! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
+        class="bg-bg-2! ring-0! border-2! border-ring-4! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
 
         <!-- Header -->
         <template #header class="w-full! grow!">
@@ -194,7 +196,7 @@
 
         <!-- Body / Form -->
 
-        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2! w-70 bg-bg-1/35 pb-4 pt-3 rounded-md "
+        <Form v-slot="$form" ref="rsvpFormRef" class="flex flex-col gap-2 p-2! w-70 bg-bg-1 pb-4 pt-3 rounded-md "
             :resolver="zodResolver(RsvpFormSchema)" @submit="submitRsvpForm" :initial-values="RsvpFormValues">
 
             <!-- INPUT: Title -->
@@ -263,11 +265,13 @@
                         option-value="value" :show-toggle-all="false" filter
                         class="disabled:border-2! disabled:border-ring-soft/50!" />
                     <!-- Premium Only - Wrapper -->
-                    <a v-if="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" href="./pricing" target="_blank"
-                        class="absolute flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all bg-sky-400/0 text-text-1/50 hover:text-emerald-500/50 rounded-md">
+                    <div v-if="!guildSubscription.limits.ALLOW_RSVP_ROLE_RESTRICTION" @click="notifier.send({
+                        level: 'upgrade', header: 'Premium Feature!', content: `Your current subscription plan doesn't include this feature. <br><span class='
+                        text-xs opacity-50'>Consider upgrading today! </span>` })"
+                        class="absolute bg-brand-1/7 cursor-pointer flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all text-text-1/50 rounded-md">
                         <iconify-icon icon="tabler:diamond" class="scale-120" />
                         <p class=" font-black"> Premium Feature </p>
-                    </a>
+                    </div>
 
                 </div>
 
