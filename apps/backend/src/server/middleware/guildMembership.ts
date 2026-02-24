@@ -17,7 +17,7 @@ const verifyGuildMember = async (req: authorizedRequest, res: Response, next: Ne
         if (!userId) return new APIResponse(res).failure(`Internal Error - Couldn't access authed user from req data.`);
 
         // Check if user is member:
-        const guild = await core.botClient.guilds.fetch(guildId);
+        const guild = await core.botClient?.guilds.fetch(guildId);
         if (!guild) return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${guildId}`);
         const member = await guild.members.fetch(userId);
         if (!member) return new APIResponse(res).failure(`Invalid Permissions - You're not a member of this guild(${guildId}).`, HttpStatusCode.Unauthorized);
@@ -45,13 +45,13 @@ const verifyGuildMember = async (req: authorizedRequest, res: Response, next: Ne
 const verifyGuildAdmin = async (req: authorizedRequest, res: Response, next: NextFunction) => {
     try {
         // Get user & guild from request:
-        const guildId = req.params?.guildId.toString();
-        const userId = req?.auth?.user.user_metadata.id // Discord ID
+        const guildId = req.params?.guildId?.toString();
+        const userId = req?.auth?.user?.user_metadata?.id // Discord ID
         if (!guildId) return new APIResponse(res).failure(`Bad Request - Couldn't verify guild membership, a guild id was unprovided.`, 400);
         if (!userId) return new APIResponse(res).failure(`Internal Error - Couldn't access authed user from req data.`);
 
         // Check if user is member:
-        const guild = await core.botClient.guilds.fetch(guildId);
+        const guild = await core.botClient?.guilds.fetch(guildId);
         if (!guild) return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${guildId}`);
         const member = await guild.members.fetch(userId);
         if (!member) return new APIResponse(res).failure(`Invalid Permissions - You're not a member of this guild(${guildId})!`, HttpStatusCode.Unauthorized);

@@ -68,10 +68,13 @@ for (const filePath of buttonFiles) {
 const eventFiles = getAllFiles(path.join(__dirname, 'events'));
 for (const filePath of eventFiles) {
 	if (ENVIRONMENT_TYPE == 'api_only') {
-		client.once('clientReady', async (c) => {
-			await ready.execute(c as any);
+		client.on('clientReady', async (c) => {
+			await ready?.execute(c as any);
 			// Initialize Template Creations - in API_ONLY Environments:
 			await initializeTemplateCreationScheduler()
+			setTimeout(() => {
+				console.log('client - IN API ONLY MODE!! -', core.botClient.user.tag)
+			}, 2_000);
 		})
 		break;
 	};
@@ -104,5 +107,6 @@ if (ENVIRONMENT_TYPE == 'production') {
 
 // ------- [ Web Server (api): ] -------
 import './server/index.js';
+import core from './utils/core/core.js';
 
 
