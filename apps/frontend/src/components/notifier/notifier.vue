@@ -111,7 +111,7 @@
                     <!-- Close Button -->
                     <Button v-if="data?.close_button !== false" unstyled @click="notifier.hide(msgId)"
                         class="close-button group/cb">
-                        <XIcon class="close-icon group-hover/cb:text-white/70!" />
+                        <XIcon class="close-icon group-hover/cb:text-text-1/70!" />
                     </Button>
 
                 </span>

@@ -43,6 +43,7 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
     MAX_DATA_RETENTION_AGE: {
         /** Past Session Rows (also cascades with RSVP Slots & Assignments) */
         SESSIONS: number,
+        /** Past Audit Log Events */
         AUDIT_LOG: number,
     }
 

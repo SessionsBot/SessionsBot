@@ -284,11 +284,11 @@
     }
 
     .tab-content-wrap {
-        @apply flex flex-col gap-1 p-7 items-center justify-center w-full h-fit grow;
+        @apply flex flex-col gap-1 p-7 items-center justify-center max-w-full h-fit;
     }
 
     .preferences-form {
-        @apply bg-bg-2 gap-2.5 p-3 mb-4 w-full max-w-135 border-2 border-ring-soft rounded-md flex justify-start items-center flex-col flex-wrap drop-shadow-md drop-shadow-black/35;
+        @apply bg-bg-2 gap-2.5 p-3 mb-4 w-full max-w-125 border-2 border-ring-soft rounded-md flex justify-start items-center flex-col flex-wrap drop-shadow-sm drop-shadow-black/25;
     }
 
     :deep(.input-group) {

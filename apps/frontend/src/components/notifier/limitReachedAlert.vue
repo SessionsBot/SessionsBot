@@ -13,7 +13,7 @@
             You've reached you're maximum amount of <b class='text-indigo-400 font-extrabold'>{{ props.limitName }}</b>
             allowed!
         </p>
-        <div class="text-xs/4.5 py-1 w-full text-white/65 font-semibold">
+        <div class="text-xs/4.5 py-1 w-full text-text-1/65 font-semibold">
             Consider upgrading your bot's subscription plan..
         </div>
     </span>
