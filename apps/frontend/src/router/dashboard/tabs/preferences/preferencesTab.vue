@@ -32,11 +32,11 @@
 
         /** Form Current Values (v-modeled)*/
         const values = reactive({
-            accent_color: '#777777',
-            public_sessions: true,
-            calendar_button: true,
-            thread_message_title: 'DEFAULT',
-            thread_message_description: 'DEFAULT'
+            accent_color: API_GuildPreferencesDefaults.accent_color,
+            public_sessions: API_GuildPreferencesDefaults.public_sessions,
+            calendar_button: API_GuildPreferencesDefaults.calendar_button,
+            thread_message_title: API_GuildPreferencesDefaults.thread_message_title,
+            thread_message_description: API_GuildPreferencesDefaults.thread_message_description
         })
         type FieldName = keyof typeof values
 
@@ -143,11 +143,18 @@
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
         const guildPrefData = computed(() => dashboard.guildData.guild.state)
-        preferenceForm.values.accent_color = guildPrefData.value?.accent_color ?? API_GuildPreferencesDefaults.accent_color
+        // Apply Guild Preferences to Form:
+        preferenceForm.values.accent_color = subscription?.value?.limits?.CUSTOM_ACCENT_COLOR
+            ? guildPrefData.value?.accent_color ?? API_GuildPreferencesDefaults.accent_color
+            : API_GuildPreferencesDefaults.accent_color;
         preferenceForm.values.public_sessions = guildPrefData.value?.public_sessions ?? API_GuildPreferencesDefaults.public_sessions
         preferenceForm.values.calendar_button = guildPrefData.value?.calendar_button ?? API_GuildPreferencesDefaults.calendar_button
-        preferenceForm.values.thread_message_title = guildPrefData.value?.thread_message_title ?? API_GuildPreferencesDefaults.thread_message_title
-        preferenceForm.values.thread_message_description = guildPrefData.value?.thread_message_description ?? API_GuildPreferencesDefaults.thread_message_description
+        preferenceForm.values.thread_message_title = subscription?.value?.limits?.CUSTOM_THREAD_START_MESSAGE
+            ? guildPrefData.value?.thread_message_title ?? API_GuildPreferencesDefaults.thread_message_title
+            : API_GuildPreferencesDefaults.thread_message_title;
+        preferenceForm.values.thread_message_description = subscription?.value?.limits?.CUSTOM_THREAD_START_MESSAGE
+            ? guildPrefData.value?.thread_message_description ?? API_GuildPreferencesDefaults.thread_message_description
+            : API_GuildPreferencesDefaults.thread_message_description;
 
         // Watch form 'Dirty' state:
         preferenceForm.touched.value = false;
@@ -220,7 +227,11 @@
                 <SubscriptionPlan />
 
                 <!-- Change Plan - Dev Buttons -->
-                <span class="w-full flex items-center gap-2">
+                <span
+                    class="w-fit m-2 p-2 rounded-md bg-bg-2 border border-text-soft flex flex-wrap items-center gap-2">
+                    <p class="text-xs font-bold w-full opacity-50">
+                        DEV ONLY - Control Subscription Level:
+                    </p>
                     <Button unstyled @click="dashboard.guildData.subscription.state = SubscriptionLevel.FREE"
                         class="button-base p-1 px-2 bg-brand-1/70 hover:bg-brand-1/50 active:bg-brand-1/60 active:scale-95">
                         Free

@@ -319,7 +319,7 @@
             channelId: data.channel_id,
             postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, -data.post_before_ms),
             postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
-            mention_roles: data?.mention_roles,
+            mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? data?.mention_roles : null,
             postInThread: data.post_in_thread,
             nativeEvents: data.native_events
         }
@@ -629,7 +629,7 @@
                     rrule: rrule ? rrule.toString() : null,
                     channel_id: data.channelId,
                     post_before_ms: getPostOffsetMs(),
-                    mention_roles: data?.mention_roles ?? null,
+                    mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? data?.mention_roles : null,
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
                     next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
