@@ -31,7 +31,9 @@ systemRouter.all('/status', async (req, res) => {
             }
         };
         for (const m of monitors) {
-            if (m?.attributes?.status != 'operational')
+            const status = m?.attributes?.status
+            if (status == "not_monitored") continue
+            if (status != 'operational')
                 down.push(mapMonitor(m));
             else
                 up.push(mapMonitor(m));

@@ -16,6 +16,7 @@
     const showStatusAlert = ref(false)
     watch(() => nav.systemStatus.state, (v) => {
         if (v?.data.data?.showStatusAlert) {
+            console.warn('It appears some of our internal systems may be experiencing some connectivity issues. View more at https://status.sessionsbot.fyi', nav.systemStatus.state)
             showStatusAlert.value = true
         } else {
             showStatusAlert.value = false
