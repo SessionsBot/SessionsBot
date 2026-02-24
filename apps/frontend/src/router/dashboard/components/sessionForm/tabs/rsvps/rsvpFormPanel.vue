@@ -181,7 +181,7 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal :draggable="false"
-        class="bg-bg-2! ring-0! border-2! border-ring-4! m-7! p-2 overflow-y-auto! overflow-x-clip! sf-colors">
+        class="bg-bg-2! ring-0! border-2! border-ring-4! m-7! p-2 overflow-y-auto! overflow-x-clip!">
 
         <!-- Header -->
         <template #header class="w-full! grow!">

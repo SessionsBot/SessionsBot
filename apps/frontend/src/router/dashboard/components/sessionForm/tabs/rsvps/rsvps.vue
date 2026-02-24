@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-    import { BaselineIcon, Clock10Icon, Clock8Icon, ClockIcon, Edit3Icon, FileQuestionMarkIcon, LinkIcon, PlusIcon, TextInitialIcon, Users2Icon } from 'lucide-vue-next';
+    import { BaselineIcon, Clock10Icon, Clock8Icon, ClockIcon, Edit3Icon, FileQuestionMarkIcon, LinkIcon, LockIcon, PlusIcon, TextInitialIcon, Users2Icon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../../sesForm.vue';
     import RsvpPanel from './rsvpFormPanel.vue';
+    import RsvpTemplatesPanel from './rsvpTemplatesPanel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { useToast } from 'vue-toastification';
     import { SubscriptionLevel } from '@sessionsbot/shared';
@@ -25,6 +26,16 @@
     const guildSubscription = computed(() => dashboard.guildData.subscription?.state || SubscriptionLevel.FREE)
     const maxRsvpSlots = computed(() => guildSubscription.value.limits.MAX_RSVP_SLOTS);
 
+    function applySubscriptionLimitsToRsvps(rs: typeof rsvps.value) {
+        const maxSlotCapacity = guildSubscription?.value?.limits?.MAX_RSVP_CAPACITY ?? 10;
+        const maxSlotCount = guildSubscription?.value?.limits?.MAX_RSVP_SLOTS ?? 3;
+
+        return rs.slice(0, maxSlotCount)
+            .map(r => ({
+                ...r,
+                capacity: Math.min(r?.capacity, maxSlotCapacity)
+            }))
+    }
 
     // RSVP Panel Ref:
     const rsvpPanelRef = ref();
@@ -37,6 +48,8 @@
     type RsvpSlotFormData = { name: string, emoji: string, capacity: number, required_roles?: string[] }
     function addNewRsvp(data: { name: string, capacity: number, emoji: string }) {
         rsvps.value.push(data)
+        // apply subscription limits:
+        rsvps.value = applySubscriptionLimitsToRsvps(rsvps.value)
     }
     // Edit Existing - RSVP:
     function editExistingRsvp(index: number, data: { name: string, capacity: number, emoji: string }) {
@@ -44,17 +57,28 @@
         if (rsvps.value) {
             rsvps.value[index] = data;
         }
+        // apply subscription limits:
+        rsvps.value = applySubscriptionLimitsToRsvps(rsvps.value)
     }
     // Delete Existing - RSVP:
     function deleteExistingRsvp(index: number) {
-        // return localRsvps.value?.delete(rsvpId);
         if (rsvps.value) {
             rsvps.value.splice(index, 1);
+            rsvps.value = applySubscriptionLimitsToRsvps(rsvps.value)
         }
+    }
+
+    // Add Template Rsvps:
+    function addTemplateRsvps(templates: any) {
+        rsvps.value = applySubscriptionLimitsToRsvps([...rsvps.value, ...templates])
     }
 
     // Rsvp Dialog Panel:
     const rsvpDialogVisible = ref(false);
+
+    // Rsvp template Dialog Panel:
+    const rsvpTemplatesDialogVisible = ref(false);
+
 
 </script>
 
@@ -99,6 +123,7 @@
                                 <span class="flex flex-row gap-1 items-center justify-center">
                                     <Users2Icon :size="15" />
                                     <p class="text-sm"> {{ capacity }} </p>
+                                    <LockIcon :size="14" class="opacity-50" v-if="required_roles?.length" />
                                 </span>
 
                             </div>
@@ -118,36 +143,48 @@
 
                 </div>
 
-                <!-- Add Rsvp Btn -->
-                <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
-                    @click="rsvpDialogVisible = !rsvpDialogVisible"
-                    class="bg-bg-3  py-0.75 px-2.25 pl-1.25 my-3 mx-3 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
-                    <PlusIcon class="size-5 p-0.5" />
-                    <p class="text-sm"> Add </p>
-                </Button>
-
-                <!-- Upgrade Btn -->
-                <span v-if="rsvps.length >= maxRsvpSlots" class="text-text-1/40 mb-0 italic text-xs mx-5 text-center">
-                    Maximum allowed RSVP slots reached for your current subscription plan. Upgrade your bot
-                    today to increase your limits!
-                </span>
-                <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
-                    <Button v-if="rsvps.length >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                <!-- Footer Area -->
+                <div class="flex items-center justify-center w-full gap-2 p-3 flex-wrap">
+                    <!-- Add Custom Rsvp Btn -->
+                    <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                         @click="rsvpDialogVisible = !rsvpDialogVisible"
-                        class="bg-emerald-400/40 py-0.75 px-2.25 pl-1.25 my-3 mt-2 mx-3 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-emerald-400/30 flex items-center flex-row">
-                        <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
-                        <p class="text-sm"> Upgrade Bot </p>
+                        class="bg-bg-3  py-0.75 px-2.25 pl-1.25 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
+                        <PlusIcon class="size-5 p-0.5" />
+                        <p class="text-sm"> Add </p>
                     </Button>
-                </a>
 
+                    <!-- Add Rsvp from Template Btn -->
+                    <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                        @click="rsvpTemplatesDialogVisible = !rsvpTemplatesDialogVisible"
+                        class="bg-bg-3 py-0.75 px-2.25 gap-0.5 pl-1.25 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
+                        <Iconify icon="akar-icons:paper" class="opacity-70" size="16" />
+                        <p class="text-sm"> Templates </p>
+                    </Button>
+
+                    <!-- Upgrade Btn -->
+                    <span v-if="rsvps.length >= maxRsvpSlots"
+                        class="text-text-1/40 mb-0 italic text-xs mx-5 text-center">
+                        Maximum allowed RSVP slots reached for your current subscription plan. Upgrade your bot
+                        to increase your limits!
+                    </span>
+                    <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
+                        <Button v-if="rsvps.length >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                            class="bg-brand-1/50 py-0.75 px-2.25 pl-1.25 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-brand-1/60 flex items-center flex-row">
+                            <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
+                            <p class="text-sm"> Upgrade Bot </p>
+                        </Button>
+                    </a>
+                </div>
 
 
             </section>
         </Transition>
 
-        <!-- IDIV - Rsvp Dialog Panel: -->
+        <!-- Custom Rsvp Dialog Panel: -->
         <RsvpPanel ref="rsvpPanelRef" v-model:is-visible="rsvpDialogVisible" @add-rsvp="addNewRsvp"
             @edit-rsvp="editExistingRsvp" @delete-rsvp="deleteExistingRsvp" />
+        <!-- Template Rsvp Dialog Panel: -->
+        <RsvpTemplatesPanel v-model:is-visible="rsvpTemplatesDialogVisible" @add-rsvps="addTemplateRsvps" />
 
 
     </main>
