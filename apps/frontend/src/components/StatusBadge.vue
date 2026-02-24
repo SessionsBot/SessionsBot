@@ -47,15 +47,15 @@
     <!-- Status Indicator -->
     <a :href="externalUrls.statusPage" target="_blank">
         <div
-            class="bg-surface active:scale-95 transition-all border-2 select-none cursor-pointer border-ring rounded-lg p-2 gap-2 flex flex-row items-center justify-start flex-nowrap overflow-auto">
+            class="bg-bg-3 active:scale-95 transition-all border-2 select-none cursor-pointer border-ring-soft rounded-lg p-2 gap-2 flex flex-row items-center justify-start flex-nowrap overflow-auto">
 
             <!-- Status - Color -->
-            <span :class="statusLevel?.color || 'bg-ring'"
-                class="h-3.5 p-0.5 transition-all aspect-square rounded-full border-2 border-ring animate-pulse">
+            <span :class="statusLevel?.color || 'border-ring-soft'"
+                class="h-3.5 p-0.5 transition-all aspect-square rounded-full border-2 border-ring-soft animate-pulse">
             </span>
 
             <!-- Text -->
-            <p class="font-extrabold text-sm text-white/85">
+            <p class="font-extrabold text-sm text-text-1/95">
                 {{ statusLevel?.text || 'Loading...' }}
             </p>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
     import { externalUrls } from '@/stores/nav';
+    import StatusBadge from '../../components/StatusBadge.vue';
 
 
 </script>
@@ -32,6 +33,7 @@
                 </Button>
             </a>
         </div>
+
     </div>
 </template>
 

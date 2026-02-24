@@ -125,7 +125,7 @@
         @apply w-full h-fit flex flex-wrap gap-5 px-7 py-0 items-center justify-center;
 
         .subscription-plan-card {
-            @apply bg-bg-2 border-2 gap-2 min-w-65 max-w-60 grow flex-1 border-ring-soft hover:border-ring-2 transition-all rounded-md flex flex-col items-center justify-center;
+            @apply bg-bg-soft border-2 gap-2 min-w-65 max-w-60 grow flex-1 border-ring-soft hover:border-ring-2 transition-all rounded-md flex flex-col items-center justify-center;
         }
     }
 

@@ -52,6 +52,8 @@ export const useNavStore = defineStore('nav', () => {
 /** Frequently used external url map */
 export const externalUrls = {
     inviteBot: "https://discord.com/oauth2/authorize?client_id=1137768181604302848",
+    /** FIX **STORE FRONT** URL BEFORE PRODUCTION! */
+    storeFront: "https://discord.com/discovery/applications/1137768181604302848/store",
     statusPage: "https://status.sessionsbot.fyi",
     documentation: "https://docs.sessionsbot.fyi",
     gitHub: "https://github.com/SessionsBot",

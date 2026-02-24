@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import DiscordEditor2 from './DiscordEditor/DiscordEditor.vue';
-    import StatusBadge from './StatusBadge.vue';
+    import StatusBadge from '../../components/StatusBadge.vue';
 </script>
 
 

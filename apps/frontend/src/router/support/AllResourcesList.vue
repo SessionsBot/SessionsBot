@@ -36,6 +36,34 @@
                 classes: { icon: 'ml-1 mr-0.5' },
                 hrefLink: externalUrls.discordServer.supportInvite
             },
+            {
+                name: 'Status Page',
+                icon: 'heroicons-outline:status-online',
+                tags: ['status, page, connection, network'],
+                classes: { icon: 'mr-0! pr-1!' },
+                hrefLink: externalUrls.statusPage
+            },
+            {
+                name: 'Contact Email',
+                icon: 'material-symbols:mail',
+                tags: ['support, email, agent, message', 'contact'],
+                classes: { icon: 'mr-0! pr-1!' },
+                hrefLink: 'mailto:support@sessionsbot.fyi'
+            },
+            {
+                name: 'Store Front',
+                icon: 'tdesign:store-filled',
+                tags: ['store, shop, front, buy', 'refund'],
+                classes: { icon: 'mr-0! pr-1!' },
+                hrefLink: externalUrls.storeFront
+            },
+            {
+                name: 'GitHub',
+                icon: 'mdi:github',
+                tags: ['git', 'hub', 'code', 'security', 'open', 'source'],
+                classes: { icon: 'mr-0! pr-1!' },
+                hrefLink: externalUrls.gitHub
+            }
         ]
 
     // Search & AutoComplete:
@@ -48,6 +76,7 @@
         const filteredResources = computed(() => {
             const q = searchValue.value
             return resources.filter(r => r.tags.some(t => t.includes(q)) || r.name.includes(q))
+                .splice(0, 5)
         })
 
         function showAutoComplete() {
@@ -99,7 +128,7 @@
                 class="bg-bg-3 relative w-45 h-7 p-1.5 rounded-md ring-ring-soft ring-2 hover:ring-ring-3 focus-within:ring-ring-4! flex flex-row gap-1 transition-all">
                 <input v-model="searchValue" type="search" @focusin="autoCompleteVisible = true"
                     @focusout="hideAutoComplete" class="w-full! h-full! text-sm focus:outline-none! transition-all"
-                    :class="{ 'pr-4.75': searchValue?.trim()?.length }" placeholder="Search for a resource...">
+                    :class="{ 'pr-4.75': searchValue?.trim()?.length }" placeholder="Search for more...">
 
                 <!-- Clear Button -->
                 <button @click="searchValue = ''" v-if="searchValue?.trim()?.length"
@@ -140,13 +169,13 @@
                 <component v-else :is="r.icon" :class="r?.classes?.icon" />
                 <!-- Title -->
                 <div class="flex grow items-center justify-center pl-0 p-1 pr-2 flex-col">
-                    <p class="font-semibold font-rubik uppercase font-white/70 text-lg truncate">
+                    <p class="font-semibold font-rubik uppercase font-white/70 truncate">
                         {{ r.name }}
                     </p>
                 </div>
 
                 <!-- Links -->
-                <a v-if="r.hrefLink" :href="r.hrefLink" class="absolute inset-0 w-full h-full" />
+                <a v-if="r.hrefLink" :href="r.hrefLink" target="_blank" class="absolute inset-0 w-full h-full" />
                 <RouterLink v-if="r.routerLink" :to="r.routerLink" class="absolute inset-0 w-full h-full" />
             </Button>
 
