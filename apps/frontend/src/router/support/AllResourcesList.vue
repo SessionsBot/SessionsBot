@@ -55,7 +55,7 @@
                 icon: 'tdesign:store-filled',
                 tags: ['store, shop, front, buy', 'refund'],
                 classes: { icon: 'mr-0! pr-1!' },
-                hrefLink: externalUrls.storeFront
+                hrefLink: externalUrls.discordStore
             },
             {
                 name: 'GitHub',
