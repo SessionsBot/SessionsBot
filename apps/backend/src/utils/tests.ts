@@ -27,7 +27,7 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                initializeTemplateCreationScheduler()
+                // initializeTemplateCreationScheduler()
 
 
                 console.info('you should make a general perms alert?')

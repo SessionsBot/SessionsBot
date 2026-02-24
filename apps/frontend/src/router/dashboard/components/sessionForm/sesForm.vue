@@ -629,6 +629,7 @@
                     rrule: rrule ? rrule.toString() : null,
                     channel_id: data.channelId,
                     post_before_ms: getPostOffsetMs(),
+                    mention_roles: data?.mention_roles ?? null,
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
                     next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
