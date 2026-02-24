@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { z } from 'zod'
     import { CheckIcon } from 'lucide-vue-next';
-    import { API_GuildPreferencesDefaults, RegExp_HexColorCode, type APIResponseValue, type SubscriptionLevelType } from '@sessionsbot/shared';
+    import { API_GuildPreferencesDefaults, RegExp_HexColorCode, SubscriptionLevel, type APIResponseValue, type SubscriptionLevelType } from '@sessionsbot/shared';
     import PublicSessions from './inputs/fieldGroups/publicSessions.vue';
     import AccentColor from './inputs/fieldGroups/accentColor.vue';
     import AddToCalendar from './inputs/fieldGroups/addToCalendar.vue';
@@ -26,7 +26,7 @@
             accent_color: z.string("Invalid Accent Color!").regex(RegExp_HexColorCode, 'Invalid Hex Color Code!'),
             public_sessions: z.boolean("Invalid Choice!"),
             calendar_button: z.boolean("Invalid Choice!"),
-            thread_message_title: z.string('Invalid Title!').regex(/^[a-zA-Z0-9- %_!&?,.[\](){}@$^\p{Extended_Pictographic}]+$/gu, 'Title includes invalid characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!').normalize(),
+            thread_message_title: z.string('Invalid Title!').regex(/^[a-zA-Z0-9- %_!&?,.'"`[\](){}@$^\p{Extended_Pictographic}]+$/gu, 'Title includes invalid characters!').min(1, 'Title cannot be empty!').max(45, 'Title cannot exceed 45 characters!').normalize(),
             thread_message_description: z.string('Invalid Description!').max(225, 'Description cannot exceed 225 characters!').normalize()
         })
 
@@ -142,7 +142,6 @@
 
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
-        console.info('Preferences Tab Mounted - Loading Form')
         const guildPrefData = computed(() => dashboard.guildData.guild.state)
         preferenceForm.values.accent_color = guildPrefData.value?.accent_color ?? API_GuildPreferencesDefaults.accent_color
         preferenceForm.values.public_sessions = guildPrefData.value?.public_sessions ?? API_GuildPreferencesDefaults.public_sessions
@@ -219,6 +218,22 @@
 
                 <!-- Input / Details - Subscription Plan -->
                 <SubscriptionPlan />
+
+                <!-- Change Plan - Dev Buttons -->
+                <span class="w-full flex items-center gap-2">
+                    <Button unstyled @click="dashboard.guildData.subscription.state = SubscriptionLevel.FREE"
+                        class="button-base p-1 px-2 bg-brand-1/70 hover:bg-brand-1/50 active:bg-brand-1/60 active:scale-95">
+                        Free
+                    </Button>
+                    <Button unstyled @click="dashboard.guildData.subscription.state = SubscriptionLevel.PREMIUM"
+                        class="button-base p-1 px-2 bg-brand-1/70 hover:bg-brand-1/50 active:bg-brand-1/60 active:scale-95">
+                        Premium
+                    </Button>
+                    <Button unstyled @click="dashboard.guildData.subscription.state = SubscriptionLevel.ENTERPRISE"
+                        class="button-base p-1 px-2 bg-brand-1/70 hover:bg-brand-1/50 active:bg-brand-1/60 active:scale-95">
+                        Enterprise
+                    </Button>
+                </span>
 
 
                 <!-- Action(s) Row -->

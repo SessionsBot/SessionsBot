@@ -88,15 +88,45 @@
             }
         }
 
-        function submit() {
-            console.log('submitted')
+        function attemptClose() {
+            if (fieldErrors?.value?.length > 0) {
+                // Input Errors - Not Allowed Alert:
+                return notifier.send({
+                    level: 'error',
+                    header: 'Fix Invalid Fields',
+                    content: 'Before saving this preference please fix your input errors!',
+                    actions: [
+                        {
+                            button: {
+                                title: 'Reset to Default',
+                                icon: 'ci:undo',
+                            },
+                            onClick(e, ctx) {
+                                ctx.close();
+                                reset()
+                            },
+                        }
+                    ]
+                })
+            } else {
+                // No Errors - Allowed - Close
+                isVisible.value = false;
+            }
+        }
+
+        function reset() {
+            console.log('resetting')
+            fieldTitle.value = API_GuildPreferencesDefaults.thread_message_title
+            fieldDescription.value = API_GuildPreferencesDefaults.thread_message_description
+            emits('validate')
         }
 
         // Return States & Methods:
         return {
             isVisible,
             attemptEdit,
-            submit
+            attemptClose,
+            reset
         }
     }
     const editDialog = useEditDialog();
@@ -143,8 +173,6 @@
             </div>
 
         </div>
-
-
         <!-- Errors -->
         <div class="errors" v-if="fieldErrors?.length">
             <p v-for="err of fieldErrors" :key="err.slice(0, 15)">
@@ -175,8 +203,8 @@
 
 
                             <!-- Close Button -->
-                            <Button unstyled @click="editDialog.isVisible.value = false"
-                                :disabled="fieldErrors?.length >= 1" :class="{ 'opacity-50': fieldErrors?.length >= 1 }"
+                            <Button unstyled @click="editDialog.attemptClose()"
+                                :class="{ 'opacity-50 text-invalid-1': fieldErrors?.length >= 1 }"
                                 class="aspect-square min-w-fit size-7 p-1 flex items-center justify-center hover:bg-white/10 rounded-md cursor-pointer active:scale-95 transition-all">
                                 <XIcon />
                             </Button>
@@ -229,6 +257,9 @@
 
                             <!-- Replacable Text Key -->
                             <ReplaceableTextKey />
+
+                            <p class="underline w-fit self-center text-text-soft text-xs hover:text-text-2 text-center select-none cursor-pointer"
+                                @click="editDialog.reset()"> Reset to Default </p>
 
                         </span>
 
