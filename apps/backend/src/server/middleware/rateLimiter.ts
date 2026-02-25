@@ -6,7 +6,7 @@ import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 export default rateLimit({
     legacyHeaders: false,
     standardHeaders: 'draft-6',
-    windowMs: (1000 * 60 * 4), // 1 min time frame FOR TESTING
+    windowMs: (1000 * 60 * 1.5), // 1 min time frame FOR TESTING
     limit: 10, //77, // 77 requests allowed FOR TESTING
     keyGenerator: (req) => ipKeyGenerator(req?.ip),
     handler: (req, res) => {
