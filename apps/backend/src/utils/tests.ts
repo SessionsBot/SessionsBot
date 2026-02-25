@@ -9,7 +9,7 @@ import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowB
 import { URLS } from "./core/urls.js";
 import { increaseGuildStat } from "./database/manager/statsManager.js";
 import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
-import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendMsg.js";
+import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendSessionPanel.js";
 import dbManager from "./database/manager/dbManager.js";
 
 

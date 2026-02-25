@@ -3,7 +3,7 @@ import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
 import core from "../../core/core";
-import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "../../bot/permissions/failedToSendMsg";
+import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "../../bot/permissions/failedToSendSessionPanel";
 import { buildSessionPanelMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionPanels";
 import { ChannelType, Guild, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, Message, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
