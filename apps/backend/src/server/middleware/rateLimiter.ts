@@ -1,24 +1,34 @@
-import rateLimit from "express-rate-limit";
+import { APIResponseValue } from "@sessionsbot/shared";
+import { HttpStatusCode } from "axios";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 /** GLOBAL Backend Web Server/API Rate Limiter */
 export default rateLimit({
+    legacyHeaders: false,
     standardHeaders: 'draft-6',
-    windowMs: (1000 * 60 * 2), // 2 min time frame
-    limit: 77, // 77 requests allowed
-    keyGenerator: (req) => {
-        const cfIp = req.headers['cf-connecting-ip'];
-        if (typeof cfIp === 'string' && cfIp?.length > 0) {
-            return cfIp;
-        }
-        return req.ip;
-    },
+    windowMs: (1000 * 60 * 4), // 1 min time frame FOR TESTING
+    limit: 10, //77, // 77 requests allowed FOR TESTING
+    keyGenerator: (req) => ipKeyGenerator(req?.ip),
     handler: (req, res) => {
-        res.status(429).json({
+        const resetTime = req?.['rateLimit']?.resetTime?.getTime() ?? null;
+        const retryAfterSeconds = resetTime ? Math.max(
+            Math.ceil((resetTime - Date.now()) / 1000),
+            0
+        ) : null;
+
+        res.status(429).json(<APIResponseValue>{
             success: false,
-            error: "TOO_MANY_REQUESTS",
-            message: "Too many requests! Please slow down and try again later.",
-            timestamp: new Date().toISOString(),
-            path: req.originalUrl,
+            data: null,
+            error: {
+                message: 'Too many requests! Please slow down and try again later.',
+                path: req.originalUrl,
+                retry_after: retryAfterSeconds
+            },
+            status: {
+                code: HttpStatusCode.TooManyRequests,
+                message: 'Too many requests! Please slow down and try again later.'
+            }
         });
-    }
+    },
+    skip: (req) => req.method == 'OPTIONS',
 })

@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyGuildAdmin } from '../../../../../middleware/guildMembership';
+import { verifyGuildMember } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
 import { API_SessionTemplateBodySchema, AuditEvent, APIResponse as reply } from '@sessionsbot/shared';
 import { useLogger } from '../../../../../../utils/logs/logtail';
@@ -16,7 +16,7 @@ const sessionTemplatesRouter = express.Router({ mergeParams: true });
 
 
 // POST - Create New Template:
-sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse/Read/Validate Request:
         const { data: bodyData } = req?.body;
@@ -59,7 +59,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildAdmin, async (req: auth
 
 
 // PATCH - Edit Existing Template:
-sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse/Read/Validate Request:
         const { data: bodyData } = req.body;
@@ -106,7 +106,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildAdmin, async (req: aut
 
 
 // DELETE - Delete Existing Template:
-sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse/Read/Validate Request:
         const { templateId } = req.params;

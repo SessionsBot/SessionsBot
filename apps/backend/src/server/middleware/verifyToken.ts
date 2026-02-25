@@ -18,13 +18,27 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Get token from auth headers:
         const authToken = req.headers?.authorization?.split(' ')?.[1];
+        if (!authToken) return new reply(res).failure('Authorization token was not provided!', HttpStatusCode.Unauthorized)
         // Fetch auth user from token:
         const { data: { user: authUser }, error: fetchUserErr } = await supabase.auth.getUser(authToken);
-        if (fetchUserErr) return new reply(res).failure({ message: 'Invalid Auth Token!', error: fetchUserErr }, HttpStatusCode.Unauthorized);
+        // If Auth Errored:
+        if (fetchUserErr) {
+            if (fetchUserErr.code == "bad_jwt") return new reply(res).failure('Invalid Auth Token!', HttpStatusCode.Unauthorized);
+            else {
+                // Log & Return Failure:
+                createLog.for('Api').warn('🔑 - Auth Token Verification Failure - See Details..', { err: fetchUserErr });
+                return new reply(res).failure('An error occurred while verifying/fetching user auth token.', 500)
+            }
+        }
         if (!authUser) return new reply(res).failure('Failed to fetch user!', HttpStatusCode.InternalServerError);
         // Found User via Token - Get Profile:
-        const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle()
-        if (fetchProfileErr || !userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
+        const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser?.id).maybeSingle()
+        if (fetchProfileErr) {
+            // Log & Return Error:
+            createLog.for('Api').warn('🔑 - Token Verification - Profile Fetch Error - See Details..', { err: fetchProfileErr });
+            return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
+        }
+        if (!userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
         // Attach authorized user to req:
         req['auth'] = {
             user: authUser,
@@ -32,7 +46,6 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         };
         // Allow request:
         return next()
-
 
     } catch (err) {
         // Log and return error:

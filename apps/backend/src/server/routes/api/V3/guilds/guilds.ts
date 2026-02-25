@@ -2,7 +2,7 @@ import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
 import { APIResponse as reply, SubscriptionSKUs } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
-import { verifyGuildAdmin, verifyGuildMember } from "../../../../middleware/guildMembership.js";
+import { verifyGuildMember } from "../../../../middleware/guildMembership.js";
 import core from "../../../../../utils/core/core.js";
 import { ChannelType } from "discord.js";
 import sessionTemplatesRouter from "./sessions/sessionTemplates.js";
@@ -14,7 +14,7 @@ const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();
 
 // GET/FETCH - Guild Channels:
-guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse req:
         const guildId = req.params['guildId'];
@@ -41,7 +41,7 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildAdmin, async (req
 
 
 // GET/FETCH - Guild Roles:
-guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: authorizedRequest, res) => {
+guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse req:
         const guildId = req.params['guildId'];
@@ -59,7 +59,7 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildAdmin, async (req: a
 
 
 // GET/FETCH - Guild Subscription:
-guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember, async (req: authorizedRequest, res) => {
+guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
     try {
         // Parse req:
         const guildId = req.params['guildId'];
