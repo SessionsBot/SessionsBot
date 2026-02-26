@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, PermissionsString, PermissionFlags, PermissionsBitField } from "discord.js"
+import { PermissionFlagsBits, PermissionsString } from "discord.js"
 
 /** Full array of every Permission Flag Bit/BigInt that must be granted to SessionsBot within guilds/channels. */
 export const requiredBotPermsInts = [

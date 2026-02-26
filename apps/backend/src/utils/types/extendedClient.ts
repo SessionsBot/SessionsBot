@@ -1,5 +1,5 @@
 // src/structures/ExtendedClient.ts
-import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { Client, Collection } from "discord.js";
 import type { SlashCommandBuilder } from "discord.js";
 
 interface Command {

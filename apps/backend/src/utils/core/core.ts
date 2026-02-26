@@ -2,7 +2,6 @@ import pkg from '../../../package.json' with { type: 'json' };
 import { ExtendedClient } from '../types/extendedClient.js';
 import { SKU } from 'discord.js';
 import { BotEmojiName } from '../bot/fetchEmojis';
-import { ENVIRONMENT_TYPE } from '../environment';
 
 const core = {
     /** Current running Sessions Bot version. */

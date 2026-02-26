@@ -1,4 +1,4 @@
-import { BaseInteraction, Events, Interaction, MessageFlags } from "discord.js";
+import { BaseInteraction, Events, MessageFlags } from "discord.js";
 import { useLogger } from "../utils/logs/logtail.js"
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import { isBotPermissionError, sendPermissionAlert } from "../utils/bot/permissions/permissionsDenied.js";

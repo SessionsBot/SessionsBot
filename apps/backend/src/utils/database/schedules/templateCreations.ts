@@ -1,4 +1,4 @@
-import { calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, FullSessionData, Database } from "@sessionsbot/shared";
+import { calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";

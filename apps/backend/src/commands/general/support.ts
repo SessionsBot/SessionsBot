@@ -2,7 +2,7 @@ import { ButtonStyle, CommandInteraction, ComponentType, ContainerBuilder, Messa
 import { useLogger } from "../../utils/logs/logtail.js";
 import core from "../../utils/core/core.js";
 import { isBotPermissionError, sendPermissionAlert } from "../../utils/bot/permissions/permissionsDenied.js";
-import { getSubscriptionFromInteraction, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import { defaultFooterText } from "../../utils/bot/messages/basic.js";
 import { URLS } from "../../utils/core/urls.js";
 

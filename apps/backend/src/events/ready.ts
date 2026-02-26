@@ -2,7 +2,6 @@ import { Events, ActivityType } from "discord.js";
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import core from "../utils/core/core.js";
 import { useLogger } from "../utils/logs/logtail.js";
-import { DateTime } from "luxon";
 import tests from "../utils/tests.js";
 import fetchEmojis from "../utils/bot/fetchEmojis.js";
 import fetchSKUs from "../utils/bot/fetchSKUs.js";

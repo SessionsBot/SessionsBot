@@ -1,6 +1,5 @@
 import { Logtail } from "@logtail/node";
 import LogCategories from './categories'
-import { keyof } from "zod";
 import { ENVIRONMENT_TYPE } from "../environment";
 
 // Env Variables:

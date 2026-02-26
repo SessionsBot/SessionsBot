@@ -1,10 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
-import { supabase } from "../utils/database/supabase";
 import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
 import { DateTime } from "luxon";
-import { createAuditLog } from "../utils/database/auditLog";
 import dbManager from "../utils/database/manager";
 import { URLS } from "../utils/core/urls";
 

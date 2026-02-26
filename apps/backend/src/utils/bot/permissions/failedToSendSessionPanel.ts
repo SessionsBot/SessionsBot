@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, PermissionsString, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, PermissionsString, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import core from "../../core/core";
 import { supabase } from "../../database/supabase";
 import { useLogger } from "../../logs/logtail";
