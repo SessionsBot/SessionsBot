@@ -2,7 +2,7 @@ import express from 'express';
 import { verifyGuildMember } from '../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../middleware/verifyToken';
 import { useLogger } from '../../../../../utils/logs/logtail';
-import { APIResponse as reply } from '../responseClass';
+import { APIResponse as reply } from '../utils/responseClass';
 import { API_GuildPreferencesInterface, API_GuildPreferencesSchema, AuditEvent } from '@sessionsbot/shared';
 import z from 'zod';
 import { HttpStatusCode } from 'axios';

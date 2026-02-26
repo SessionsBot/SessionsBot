@@ -1,7 +1,7 @@
 import { HttpStatusCode } from 'axios';
 import express from 'express';
 import { API_DiscordUserIdentity, discordSnowflakeSchema } from '@sessionsbot/shared'
-import { APIResponse as Reply } from '../responseClass';
+import { APIResponse as Reply } from '../utils/responseClass';
 import { useLogger } from '../../../../../utils/logs/logtail';
 import core from '../../../../../utils/core/core';
 import z from 'zod';

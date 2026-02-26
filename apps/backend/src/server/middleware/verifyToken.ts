@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { supabase } from "../../utils/database/supabase.js";
-import { APIResponse as reply } from "../routes/api/V3/responseClass.js";
+import { APIResponse as reply } from "../routes/api/V3/utils/responseClass.js";
 import { AppUser, Database } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import { useLogger } from "../../utils/logs/logtail.js";

@@ -1,6 +1,6 @@
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
-import { APIResponse as reply } from "../responseClass.js";
+import { APIResponse as reply } from "../utils/responseClass.js";
 import { SubscriptionSKUs } from "@sessionsbot/shared";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { verifyGuildMember } from "../../../../middleware/guildMembership.js";

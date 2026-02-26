@@ -7,7 +7,7 @@ export default rateLimit({
     legacyHeaders: false,
     standardHeaders: 'draft-6',
     windowMs: (1000 * 60), // 1 min time frame
-    limit: 50, // 60 requests allowed
+    limit: 50, // 50 requests allowed
     keyGenerator: (req) => ipKeyGenerator(req?.ip),
     handler: (req, res) => {
         const resetTime = req?.['rateLimit']?.resetTime?.getTime() ?? null;

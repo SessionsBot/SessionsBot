@@ -1,7 +1,7 @@
 import express from 'express';
 import { verifyGuildMember } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
-import { APIResponse as reply } from '../../responseClass';
+import { APIResponse as reply } from '../../utils/responseClass';
 import { API_SessionTemplateBodySchema, AuditEvent } from '@sessionsbot/shared';
 import { useLogger } from '../../../../../../utils/logs/logtail';
 import * as z from 'zod';

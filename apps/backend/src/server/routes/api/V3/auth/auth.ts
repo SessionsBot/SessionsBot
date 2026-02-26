@@ -2,7 +2,7 @@ import axios from "axios";
 import { supabase } from "../../../../../utils/database/supabase.js";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
-import { APIResponse as reply } from "../responseClass.js";
+import { APIResponse as reply } from "../utils/responseClass.js";
 import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
 import { AuthError } from "./authErrTypes.js";
