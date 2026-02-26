@@ -11,6 +11,7 @@ import { increaseGuildStat } from "./database/manager/statsManager.js";
 import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
 import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendSessionPanel.js";
 import dbManager from "./database/manager/dbManager.js";
+import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
 
 
 const createLog = useLogger();
@@ -27,10 +28,7 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // initializeTemplateCreationScheduler()
 
-
-                console.info('you should make a general perms alert?')
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');
