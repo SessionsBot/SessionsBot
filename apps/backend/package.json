@@ -1,7 +1,7 @@
 {
   "name": "@sessionsbot/bot",
-  "version": "0.0.0",
-  "private": "true",
+  "version": "2.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -11,8 +11,8 @@
     "release": "npx release-it"
   },
   "dependencies": {
+    "@sessionsbot/shared": "*",
     "@logtail/node": "^0.5.6",
-    "@sessionsbot/shared": "file:../../packages/shared",
     "@supabase/supabase-js": "^2.78.0",
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.12.2",

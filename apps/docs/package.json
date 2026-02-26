@@ -1,6 +1,6 @@
 {
   "name": "@sessionsbot/docs",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "devDependencies": {
@@ -12,6 +12,7 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
+    "@sessionsbot/shared": "*",
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/core": "^14.2.1",
     "pinia": "^3.0.4",

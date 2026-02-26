@@ -3,7 +3,7 @@ import core from "../utils/core/core.js";
 import corsMiddleware from "./middleware/cors.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import apiRouter from "./routes/api/V3/index.js";
-import { APIResponse } from "@sessionsbot/shared";
+import { APIResponse } from "./routes/api/V3/responseClass.js";
 import { ENVIRONMENT_TYPE } from "../utils/environment.js";
 
 /** Main backend web server instance for Sessions Bot. */

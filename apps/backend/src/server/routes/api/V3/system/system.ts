@@ -1,6 +1,6 @@
 import axios from 'axios';
 import express from 'express';
-import { APIResponse as Reply } from '@sessionsbot/shared'
+import { APIResponse as Reply } from '../responseClass';
 import { useLogger } from '../../../../../utils/logs/logtail';
 
 const createLog = useLogger();

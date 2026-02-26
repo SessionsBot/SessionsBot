@@ -1,6 +1,6 @@
 {
   "name": "@sessionsbot/web-app",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -14,11 +14,11 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@sessionsbot/shared": "*",
     "@odiffey/discord-markdown": "^3.3.0",
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^1.2.5",
     "@primevue/forms": "^4.4.1",
-    "@sessionsbot/shared": "file:../../packages/shared",
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/vite": "^4.1.15",
     "@vueuse/core": "^14.0.0",
@@ -27,6 +27,7 @@
     "iconify-icon": "^3.0.2",
     "lucide-vue-next": "^0.548.0",
     "luxon": "^3.7.2",
+    "zod": "^4.3.6",
     "motion-v": "^1.7.4",
     "pinia": "^3.0.3",
     "primeicons": "^7.0.0",

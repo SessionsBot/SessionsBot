@@ -1,7 +1,8 @@
 import express from 'express';
 import { verifyGuildMember } from '../../../../../middleware/guildMembership';
 import verifyToken, { authorizedRequest } from '../../../../../middleware/verifyToken';
-import { API_SessionTemplateBodySchema, AuditEvent, APIResponse as reply } from '@sessionsbot/shared';
+import { APIResponse as reply } from '../../responseClass';
+import { API_SessionTemplateBodySchema, AuditEvent } from '@sessionsbot/shared';
 import { useLogger } from '../../../../../../utils/logs/logtail';
 import * as z from 'zod';
 import { HttpStatusCode } from 'axios';
