@@ -74,7 +74,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
             const sessionData = result.data;
 
             const { data: ExtSession, error: saveError } = await supabase.from('session_templates')
-                .update(sessionData)
+                .update({ ...sessionData, failure_count: 0, enabled: true }) // reset fails on update
                 .eq("id", sessionData.id)
                 .select().limit(1).single()
 

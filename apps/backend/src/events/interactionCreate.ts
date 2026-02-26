@@ -3,7 +3,6 @@ import { useLogger } from "../utils/logs/logtail.js"
 import { ExtendedClient } from "../utils/types/extendedClient.js";
 import { isBotPermissionError, sendPermissionAlert } from "../utils/bot/permissions/permissionsDenied.js";
 import { genericErrorMsg } from "../utils/bot/messages/basic.js";
-import core from "../utils/core/core.js";
 import { URLS } from "../utils/core/urls.js";
 
 const createLog = useLogger();
