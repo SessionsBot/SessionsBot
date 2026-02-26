@@ -1,4 +1,4 @@
-import { Database, FullSessionData } from "@sessionsbot/shared";
+import { FullSessionData } from "@sessionsbot/shared";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { DateTime } from "luxon";
 import core from "../../core/core";

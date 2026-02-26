@@ -128,7 +128,7 @@ export default {
                 components: <any>[
                     new TextDisplayBuilder({ content: `## ${core.emojis.string('success')}  Update Success!` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `**Details**: \n> You're session panel has been updated, click the button below to view any changes.` }),
+                    new TextDisplayBuilder({ content: `**Details**: \n> You're session panel has been updated, click the button below to view any changes. \n-# Trying to modify a session schedule? Visit your [Bot Dashboard](${URLS.site_links.dashboard}).` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [

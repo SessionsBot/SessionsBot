@@ -9,8 +9,8 @@ import { genericErrorMsg } from "../../utils/bot/messages/basic";
 export default {
     // Command Definition:
     data: new SlashCommandBuilder()
-        .setName('cancel')
-        .setDescription('Cancel an active session that is currently ongoing / already posted')
+        .setName('delay')
+        .setDescription(`Delay a session that hasn't started but has already been already posted`)
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addStringOption(
             new SlashCommandStringOption()
@@ -21,8 +21,15 @@ export default {
         )
         .addStringOption(
             new SlashCommandStringOption()
+                .setName('delay-time')
+                .setDescription('The amount of time to delay session start by. (e.g. "in 2 hours","5 mins","12 pm")')
+                .setRequired(true)
+                .setMaxLength(100)
+        )
+        .addStringOption(
+            new SlashCommandStringOption()
                 .setName('reason')
-                .setDescription('The reason why this session is being canceled.')
+                .setDescription('The reason why this session is being delayed.')
                 .setRequired(false)
                 .setMaxLength(100)
         )
@@ -42,7 +49,7 @@ export default {
         // Filter - Cancelable:
         const cancelableSessions = data.filter(s => {
             const startBase = DateTime.fromISO(s.starts_at_utc)
-            // If past start - Cannot Cancel:
+            // If past start - Cannot Delay:
             if (startBase < DateTime.utc()) return false
             else return true
         }).map(s => {
@@ -91,6 +98,20 @@ export default {
             })
         }
 
+        // Parse Delay:
+        const startTimeInZone = DateTime.fromISO(sessionData?.starts_at_utc, { zone: sessionData?.time_zone })
+        const startRef = startTimeInZone?.toJSDate()
+        const parsed = parseDate(delayTime, startRef, { forwardDate: true })
+        if (!parsed) return i.editReply({
+            components: [genericErrorMsg({
+                title: `${core.emojis.string('warning')}  Invalid Delay Time!`,
+                reasonDesc: `**It seems you've entered an invalid time amount to delay this sessions start time by.** \n> Examples: \`30 mins\`, \`2 hours\`, \`5:30 pm\`, etc.`
+            })],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+        })
+
+        const parsedDT = DateTime.fromJSDate(parsed)
+
 
         // Reply to Command Interaction:
         await i.editReply({
@@ -101,8 +122,12 @@ export default {
                         new TextDisplayBuilder({ content: `${core.emojis.string('info')}  Command Interaction Received!` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({
-                            content: `${core.emojis.string('star')}  **Option Selected:** \n> ${selectedSessionId} \n**Reason:** \n> ${cancelReasoning || 'Not Provided'} `
-                        })
+                            content: `${core.emojis.string('star')}  **Option Selected:** \n> ${selectedSessionId} \n**Delay Time:** \n> ${delayTime || 'Not Provided'} \n**Reason:** \n> ${cancelReasoning || 'Not Provided'} `
+                        }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({
+                            content: `${core.emojis.string('info')}  **New Start:** \n <t:${parsedDT.toUnixInteger()}:F> `
+                        }),
                     ]
                 })
             ],
