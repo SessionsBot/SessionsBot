@@ -191,6 +191,9 @@ const useDashboardStore = defineStore('dashboard', () => {
         /** Session (Template) Form - Visibility Boolean */
         const visible = ref(false)
 
+        /** The current 'action' the session form will perform */
+        const actionMode = ref<'new' | 'edit' | 're-enable'>('new');
+
         /** Current session (template) payload/data for editing. */
         const editPayload = ref<API_SessionTemplateBodyInterface | null>(null)
         /** Fn - Starts a new session (template) form edit with provided `payload`. */
@@ -234,7 +237,7 @@ const useDashboardStore = defineStore('dashboard', () => {
             }
         }
 
-        return { visible, creationPayload, editPayload, startEdit, createNew }
+        return { visible, actionMode, creationPayload, editPayload, startEdit, createNew }
     }
     const sessionForm = useSessionForm()
 

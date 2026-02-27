@@ -14,7 +14,7 @@
         invalidFields: Map<NewSessions_FieldNames, string[]>,
         validateField: (name: NewSessions_FieldNames) => void,
         validateFields: (fields: NewSessions_FieldNames[]) => void
-        formAction: 'edit' | 'new'
+        formAction: 'edit' | 'new' | 're-enable'
     }>();
     const { invalidFields, validateField, validateFields } = props;
 

@@ -4,6 +4,7 @@
     import CurrentSessions from './cards/CurrentSessions.vue';
     import ActiveTemplates from './cards/ActiveTemplates.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import DisabledTemplateAlert from './cards/DisabledTemplateAlert.vue';
 
     // services:
     const dashboard = useDashboardStore();
@@ -43,7 +44,10 @@
             View your Discord Server's recently posted sessions and any active session schedules you have configured.
         </p>
 
-        <div class="w-full h-fit flex items-start justify-center p-4 pt-0 flex-wrap">
+        <div class="w-full h-fit flex items-start justify-center p-4 pb-2 flex-wrap">
+
+            <!-- Disbanded Schedule(s) - Alert -->
+            <DisabledTemplateAlert v-if="guildTemplates?.some(t => !t.enabled)" />
 
             <!-- Guild Stats - Bar Section -->
             <span hidden class="w-full flex gap-5 flex-wrap items-center justify-center">

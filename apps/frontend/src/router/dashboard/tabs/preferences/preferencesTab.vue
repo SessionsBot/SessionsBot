@@ -12,6 +12,7 @@
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
     import { fetchGuildData } from '@/stores/dashboard/dashboard.api';
+    import { fa } from 'zod/v4/locales';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -100,6 +101,7 @@
                     if (result.data.success) {
                         console.info('API Success', result.data)
                         submitState.value = 'success'
+                        touched.value = false;
                         dashboard.guildData.guild.state = await fetchGuildData(dashboard.guildId)
                     } else throw { display_error: 'API Request - Failed - ' + `Error - ${result.status}` }
                 }

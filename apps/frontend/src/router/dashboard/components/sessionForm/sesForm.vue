@@ -57,7 +57,10 @@
     }
 
     /** ACTION: Form Mode ("new" or "edit") */
-    const formAction = ref<'new' | 'edit'>('new');
+    const formAction = computed({
+        get: () => dashboard.sessionForm.actionMode,
+        set: (v) => dashboard.sessionForm.actionMode = v
+    }) // ref<'new' | 'edit' | 're-enable'>('new');
     const editingId = ref<string>();
 
     // EVENT: Watch for Editing Session Payload:
@@ -122,7 +125,7 @@
         }, `You're current subscription plan doesn't allow for native Discord mentions!`).optional().nullish(),
         url: z.url({ error: 'Please enter a valid URL.', protocol: /^https?$/, hostname: z.regexes.domain }).startsWith('https://', 'Url must start with: "https://".').trim().normalize().nullish().or(z.literal("")),
         startDate: z.date('Please enter a valid date.').refine((v) => {
-            if (formAction.value == 'edit') return true;
+            if (formAction.value != 'new') return true;
             else return v?.getTime() >= new Date().getTime()
         },
             'Date has already occurred.'
@@ -131,7 +134,7 @@
             (v) => {
                 const startDate = (formValues?.value?.startDate) as Date
                 const now = new Date();
-                return ((v >= now || formAction.value == 'edit') && v >= startDate)
+                return ((v >= now || formAction.value != 'edit') && v >= startDate)
             },
             'End Date must occur after Start Date.'
         ).optional().nullable(),
@@ -306,6 +309,11 @@
                 : 'Day of'
         }
 
+        // Get Updated - Currently Accessible Roles & Channel Data:
+        const accessible_channelId: string | null = dashboard.guildData.channels.state?.sendable?.find(c => c?.id == data?.channel_id)?.id
+        const accessible_mentionRoles: string[] | undefined | null = dashboard.guildData.roles.state?.filter(r => data?.mention_roles?.includes(r?.id))?.flatMap(r => r?.id)
+
+
         // Set Form Data:
         formValues.value = {
             title: data.title,
@@ -314,12 +322,22 @@
             startDate: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone),
             endDate: data.duration_ms ? dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
             timeZone: getZoneSelected(data.time_zone),
-            rsvps: data?.rsvps ? mapRsvps(data.rsvps) : [],
+            rsvps: data?.rsvps ? mapRsvps(data.rsvps)?.map(r => {
+                return {
+                    name: r?.name,
+                    emoji: r?.emoji,
+                    capacity: r?.capacity,
+                    required_roles: subscription.value?.limits.ALLOW_RSVP_ROLE_RESTRICTION
+                        ? dashboard.guildData.roles.state?.filter(role => r?.required_roles?.includes(role?.id))?.flatMap(r => r?.id) ?? undefined
+                        : undefined
+                }
+
+            }) : [],
             recurrence: data.rrule,
-            channelId: data.channel_id,
+            channelId: accessible_channelId,
             postTime: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, -data.post_before_ms),
             postDay: determinePostDay(data.starts_at_utc, data.post_before_ms, data.time_zone),
-            mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? data?.mention_roles : null,
+            mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? accessible_mentionRoles : null,
             postInThread: data.post_in_thread,
             nativeEvents: data.native_events
         }
@@ -433,6 +451,7 @@
                 };
                 // Mark Submit Un-Busy:
                 submitState.value = 'failed';
+                setTimeout(() => submitState.value = 'idle', 1000)
                 // Return Invalid Submission:
                 return console.warn('Invalid Submission!', { result, values: formValues.value });
             }
@@ -510,7 +529,7 @@
                         // Get First & Only Post Time:
                         const post = startUtc.minus({ millisecond: getPostOffsetMs() })
                         // IF EDITING - Ensure this post date is past its last post date:
-                        if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                        if (dashboard.sessionForm?.editPayload?.last_post_utc) {
                             const lastPostUtc = DateTime.fromISO(dashboard.sessionForm.editPayload.last_post_utc)
                             if (post <= lastPostUtc) {
                                 return null
@@ -526,7 +545,7 @@
                             .set({ hour: startHour, minute: startMinute }); // maintain intended time
                         const nextPostInZone = nextStartInZone.minus({ millisecond: getPostOffsetMs() });
                         // IF EDITING - Ensure this post date is past its last post date:
-                        if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                        if (dashboard.sessionForm.editPayload?.last_post_utc) {
                             const lastPostInZone = dbIsoUtcToDateTime(dashboard.sessionForm.editPayload.last_post_utc, data.timeZone)
                             if (nextPostInZone <= lastPostInZone) {
                                 // This post was too early / already elapsed -> finding next
@@ -611,9 +630,7 @@
                 return submitState.value = 'idle';
             }
 
-
-
-            // Create Request Body:
+            // Else - Create Request Body:
             const bodyData = {
                 data: <API_SessionTemplateBodyInterface>{
                     guild_id: guildId.value,
@@ -638,7 +655,7 @@
 
             };
 
-
+            // Send API Request for Create/Edit Schedule:
             if (formAction.value == 'new') {
                 // Create New Session - Send Request
                 const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
@@ -648,8 +665,8 @@
                     // Close Form
                     sessionsFormVisible.value = false;
 
-                } else { console.warn('Request Failed!', r) }
-            } else if (formAction.value == 'edit') {
+                } else throw r;
+            } else if (formAction.value == 'edit' || formAction.value == 're-enable') {
                 // Edit Existing Session - Send Request
                 bodyData.data.id = editingId.value;
                 const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
@@ -659,7 +676,7 @@
                     // Close Form
                     sessionsFormVisible.value = false;
 
-                } else { console.warn('Request Failed!', r) }
+                } else throw r;
             }
 
 
@@ -669,8 +686,11 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            dashboard.guildData.channels?.execute()
+            dashboard.guildData.sessionTemplates?.execute()
 
+        } catch (err) {
+            // Failed Session Form Submission
+            console.error('Session Form - SUBMIT ERROR', err)
         } finally {
             setTimeout(() => {
                 submitState.value = 'idle'
@@ -709,6 +729,12 @@
                         <span v-if="formAction == 'edit'" class="flex flex-row gap-1.25 items-center content-center">
                             <CalendarCogIcon />
                             <p class="font-bold text-lg"> Edit Schedule </p>
+                        </span>
+                        <!-- Re Enable Schedule - Title -->
+                        <span v-if="formAction == 're-enable'"
+                            class="flex flex-row gap-1.25 items-center content-center">
+                            <Iconify icon="mynaui:tool" />
+                            <p class="font-bold text-lg"> Re-Enable Schedule </p>
                         </span>
 
                         <!-- Abort/Delete Session - Button -->
@@ -808,8 +834,9 @@
                                 <p class="text-xs font-bold"> Started Duplicate! </p>
                             </span>
 
-                            <span v-else-if="formAction == 'edit'" class="gap-2 flex flex-row">
-                                <Button unstyled title="Duplicate" @click="startNewDuplicate"
+                            <span v-else-if="formAction != 'new'" class="gap-2 flex flex-row">
+                                <Button v-if="formAction == 'edit'" unstyled title="Duplicate"
+                                    @click="startNewDuplicate"
                                     class="aspect-square p-1 bg-[color-mix(in_oklab,var(--c-bg-3),black_10%)] hover:bg-emerald-500/50 cursor-pointer rounded-md active:bg-emerald-500/50 active:scale-95 transition-all">
                                     <Layers2Icon :size="20" />
                                 </Button>
