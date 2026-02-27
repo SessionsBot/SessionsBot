@@ -206,6 +206,8 @@ const useDashboardStore = defineStore('dashboard', () => {
         type creationPayload = {
             /** The user local zoned start date of the session to begin creation for. */
             startDate?: DateTime
+            /** If to only check if this guild can create a new session - returns `boolean` - does NOT open form. */
+            check_only?: true
         } | null;
 
         /** Fn - Attempts to open/create a new session schedule, if subscription allows does so - or else alerts. */
@@ -232,6 +234,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                     creationPayload.value = opts;
                 }
                 // Limit NOT Reached - Open Session Form:
+                if (opts?.check_only) return true
                 sessionForm.visible.value = true;
                 return true
             }

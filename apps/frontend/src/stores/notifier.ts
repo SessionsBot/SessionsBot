@@ -9,7 +9,7 @@ type NotificationOpts = {
     /** Header text to display within this notification. */
     header: string
     /** Display text to display within this notification. */
-    content: string | Component | null
+    content?: string | Component | null
     /** `Iconify` icon name to display or else `false` to disable. 
      * @default- "tabler:info-square-filled" */
     icon?: false | string

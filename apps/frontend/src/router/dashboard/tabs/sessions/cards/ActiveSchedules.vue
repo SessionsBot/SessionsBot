@@ -2,7 +2,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { CalendarClockIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import TemplateCard from './SessionCard.vue';
+    import TemplateCard from './ScheduleCard.vue';
 
 
     // Services:
@@ -63,13 +63,13 @@
                 </svg>
 
                 <p>
-                    All Schedules:
+                    Active Schedules:
                 </p>
             </div>
             <!-- All Schedules - List -->
             <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap">
                 <TemplateCard v-for="t in guildTemplates?.slice(tPageIndexStart ?? 0, ((tPageIndexStart ?? 0) + 5))"
-                    kind="template" :template="t" :key="t.id" />
+                    :template="t" :key="t.id" />
 
                 <!-- No Schedules - Card -->
                 <div v-if="!guildTemplates?.length">

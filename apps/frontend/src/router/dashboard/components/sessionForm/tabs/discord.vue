@@ -27,7 +27,7 @@
     const channelId = defineModel<string>('channelId');
     const postTime = defineModel<string | any>('postTime');
     const postDay = defineModel<string | any>('postDay');
-    const mentionRoles = defineModel<string | any>('mention_roles'); // stopped here - adding mention roles input - fixing verify guild member api (middleware)
+    const mentionRoles = defineModel<string | any>('mention_roles');
     const nativeEvents = defineModel<string | any>('nativeEvents');
     const postInThread = defineModel<string | any>('postInThread');
     // Select Post Channel Options:
@@ -54,9 +54,6 @@
             else return { name: r?.name, value: r?.id }
         })
     });
-
-    // Watch Mention Roles:
-    watch(mentionRoles, (v) => console.info('Mention Roles - Changed', v))
 
 
     // Set/Toggle Post Day - Fn:

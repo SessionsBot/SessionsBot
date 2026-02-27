@@ -61,7 +61,6 @@
   --color-invalid-soft: color-mix(in oklab, var(--color-invalid-1), var(--color-bg-1) 50%);
 
 
-
 }
 
 /* Tailwind Utility Additions */
@@ -76,6 +75,11 @@
 }
 @utility button-primary {
   @apply button-base bg-brand-1 hover:bg-brand-1/80;
+}
+
+@utility button-secondary {
+  @apply bg-bg-3 hover:bg-bg-3/60 active:bg-bg-3/80;
+  @apply dark:bg-neutral-600 dark:hover:bg-neutral-600/60 dark:active:bg-neutral-600/80;
 }
 
 

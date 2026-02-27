@@ -2,7 +2,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowBigDown } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import TemplateCard from './ScheduleCard.vue';
+    import TemplateCard from './SessionCard.vue';
 
     // Services:
     const dashboard = useDashboardStore();

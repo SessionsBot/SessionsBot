@@ -2,7 +2,7 @@
 
     import StatCard from './cards/StatCard.vue';
     import CurrentSessions from './cards/CurrentSessions.vue';
-    import ActiveTemplates from './cards/ActiveTemplates.vue';
+    import ActiveTemplates from './cards/ActiveSchedules.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import DisabledTemplateAlert from './cards/DisabledTemplateAlert.vue';
 

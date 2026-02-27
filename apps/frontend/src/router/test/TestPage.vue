@@ -2,7 +2,7 @@
     import StatusBadge from '../../components/StatusBadge.vue';
     import { arrow, autoPlacement, autoUpdate, computePosition, flip, offset, shift, useFloating } from '@floating-ui/vue'
     import ColorModeShades from './ColorModeShades.vue'
-    import MultiButton from './MultiButton.vue';
+    import MultiButton from '../../components/MultiButton.vue';
 
     // Floating ToolTip:
     const showToolTip = ref(false)
@@ -113,13 +113,67 @@
                 </Transition>
 
 
-                <MultiButton />
+                <MultiButton :main-action="{ label: 'Action', icon: 'mdi:paper', fn() { console.log('clicked main') } }"
+                    :actions="[
+                        {
+                            label: 'Modify',
+                            icon: 'mdi:pencil',
+                            fn() {
+                                return console.info('Clicked Edit')
+                            },
+                        },
+                        {
+                            label: 'Duplicate',
+                            icon: 'mdi:layers',
+                            fn() {
+                                return console.info('Clicked duplicate')
+                            },
+                        },
+                        {
+                            label: 'Delete',
+                            icon: 'mdi:trash',
+                            classes: { root: 'text-invalid-1/80' },
+                            fn() {
+                                return console.info('Clicked delete')
+                            },
+                        }
+                    ]" />
 
             </div>
 
             <ColorModeShades hidden />
 
         </div>
+
+
+        <span class="p-5">
+            <MultiButton :main-action="{ label: 'Action', icon: 'mdi:paper', fn() { console.log('clicked main') } }"
+                :actions="[
+                    {
+                        label: 'Modify',
+                        icon: 'mdi:pencil',
+                        fn() {
+                            return console.info('Clicked Edit')
+                        },
+                    },
+                    {
+                        label: 'Duplicate',
+                        icon: 'mdi:layers',
+                        fn() {
+                            return console.info('Clicked duplicate')
+                        },
+                    },
+                    {
+                        label: 'Delete',
+                        icon: 'mdi:trash',
+                        classes: { root: 'text-invalid-1/80' },
+                        fn() {
+                            return console.info('Clicked delete')
+                        },
+                    }
+                ]" />
+        </span>
+
     </div>
 </template>
 

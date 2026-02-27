@@ -1,88 +1,137 @@
 <script lang="ts" setup>
-    import type { Database } from '@sessionsbot/shared';
+    import type { APIResponseValue, Database } from '@sessionsbot/shared';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb'
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { PencilIcon } from 'lucide-vue-next';
+    import { PencilIcon, Trash2Icon } from 'lucide-vue-next';
+    import { useConfirm } from 'primevue';
+    import type { MultiButtonAction } from '@/components/MultiButton.vue';
+    import useNotifier from '@/stores/notifier';
+    import { API } from '@/utils/api';
+    import { useAuthStore } from '@/stores/auth';
+    import { externalUrls } from '@/stores/nav';
 
     // Incoming Props:
-    type IncomingProps = | {
-        kind: 'template'
+    const props = defineProps<{
         template?: Database['public']['Tables']['session_templates']['Row']
-    } | {
-        kind: 'session',
-        session?: Database['public']['Tables']['sessions']['Row']
-    }
-    const props = defineProps<IncomingProps>()
+    }>()
+    const t = computed(() => props.template)
 
     // Services:
     const dashboard = useDashboardStore();
+    const auth = useAuthStore();
+    const notifier = useNotifier();
+    const confirm = useConfirm();
 
-
-    // Session Template Data:
-    const templateData = computed(() => {
-        if (props.kind == 'template') return props.template;
-        else return dashboard.guildData.sessionTemplates.state?.find(t => (t.id == props.session?.template_id))
-    })
 
     // Session/Template Next or Last Post Date:
-    const postDate = computed(() => {
-        if (props.kind == 'session') {
-            // Session - Last Post Date
-            return DateTime.fromISO(String(props.session?.starts_at_utc))
-                .setZone(props.session?.time_zone)
-                .minus({ milliseconds: templateData.value?.post_before_ms ?? 0 })
-        } else {
-            // Template - Next Post Date
-            return DateTime.fromISO(String(templateData.value?.next_post_utc))
-                .setZone(templateData.value?.time_zone)
-        }
-    })
+    const postDate = computed(() => DateTime.fromISO(String(props.template?.next_post_utc))
+        .setZone(props?.template?.time_zone)
+    )
 
-    // Session/Template Next or Last Start Date:
-    const startDate = computed(() => {
-        if (props.kind == 'session') {
-            // Session - Last Start Date
-            return DateTime.fromISO(String(props.session?.starts_at_utc))
-                .setZone(props.session?.time_zone)
-        } else {
-            // Template - Next Start Date
-            return postDate.value?.plus({ milliseconds: templateData.value?.post_before_ms })
-        }
-    })
+    // Template - Next Start Date
+    const startDate = computed(() => postDate.value?.plus({ milliseconds: props.template?.post_before_ms ?? 0 }))
 
 
     // Session Time Zone Data:
     const sessionZone = computed(() => {
-        const zoneName = templateData.value?.time_zone
+        const zoneName = props.template?.time_zone
         if (!zoneName) return null
         else return getTimeZones().find(tz => tz.name == zoneName)
     })
 
-    // Session Signup URL:
-    const signupMsgUrl = computed(() => {
-        if (props.kind == 'session') {
-            return `https://discord.com/channels/${props.session?.guild_id}/${props.session?.thread_id ? props.session?.thread_id : props.session?.channel_id}/${props.session?.panel_id}`
-        } else return ''
-    })
+    // Split Button - Edit - Extra Actions:
+    const buttonExtraActions: MultiButtonAction[] = [
+        {
+            label: 'View Last Occurrence',
+            icon: 'mdi:history',
+            disabled: true,
+            fn: async () => {
+                console.warn('awaiting logic')
+            },
+        },
+        {
+            label: 'Duplicate',
+            icon: 'mdi:layers',
+            fn: async () => {
+                // Attempt a new "edit"
+                const allowed = dashboard.sessionForm.createNew({ check_only: true })
+                if (allowed) {
+                    dashboard.sessionForm.startEdit(t.value as any)
+                    await nextTick()
+                    // Set as "new" action mode:
+                    dashboard.sessionForm.actionMode = 'new'
+                }
+            },
+        },
+        {
+            label: 'Delete',
+            icon: 'mdi:trash',
+            classes: { root: 'text-invalid-1' },
+            fn: () => {
+                const r = confirm.require({
+                    header: 'Are you sure?',
+                    message: `
+                        <p>
+                            You're about to <strong>permanently delete</strong> this <b>schedule</b>
+                            & any previous session(s) that stems from it.
+                        </p><br>
+                        <p class="w-full text-center font-bold underline text-invalid-1">
+                            This cannot be undone!
+                        </p>
+                    `,
+                    icon: 'lucide:trash-2',
+                    accept: async () => {
+                        const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${dashboard.guildId}/sessions/templates/${t?.value?.id}`, {
+                            headers: { Authorization: `Bearer ${auth.session?.access_token}` }
+                        })
+                        if (!success || error || status >= 300) {
+                            console.error('Failed to Delete Session:', status, error)
+                            // Send Errored Alert:
+                            notifier.send({
+                                header: ' Failed!',
+                                content: `We couldn't delete that session.. if this issue persists please <b class="extrabold">get in contact with Bot Support!</b>`,
+                                level: 'error',
+                                actions: [
+                                    {
+                                        button: {
+                                            title: 'Chat with Support',
+                                            icon: 'basil:chat-solid',
+                                            href: "+" + externalUrls.discordServer.supportInvite
+                                        },
+                                        onClick(e, ctx) { return },
+                                    }
+                                ]
+                            })
+                        } else {
+                            // Refresh Templates:
+                            dashboard.guildData.sessionTemplates?.execute()
+                            // Send Success Alert:
+                            notifier.send({
+                                header: 'Session Deleted',
+                                content: null,
+                                icon: 'iconamoon:trash-duotone',
+                                classes: { header: 'self-center text-[15px]' }
+                            })
+                        }
 
-    // Edit Schedule Fn: 
-    function editSchedule() {
-        dashboard.sessionForm.startEdit(templateData.value as any)
-    }
+                    }
+                })
+            },
+        }
+    ]
+
 
 </script>
 
 
 <template>
-    <div class="session-card" :class="{
-        'border-dotted! border-3! rounded-lg!': props.kind == 'template'
-    }">
+    <div class="session-card border-dotted! border-3! rounded-lg!">
 
         <!-- Name / Start Time / Zone -->
         <div class="name-and-time">
             <p class="session-title">
-                {{ templateData?.title }}
+                {{ t?.title }}
             </p>
             <div class="time-and-zone">
                 <p class="session-date">
@@ -97,20 +146,20 @@
         <!-- Option Flag/Badge(s) -->
         <div class="option-flags">
             <p class="option-flag" :class="{
-                'enabled': templateData?.rrule,
-                'disabled': !templateData?.rrule
+                'enabled': t?.rrule,
+                'disabled': !t?.rrule
             }">
                 Repeats
             </p>
             <p class="option-flag" :class="{
-                'enabled': templateData?.rsvps,
-                'disabled': !templateData?.rsvps
+                'enabled': t?.rsvps,
+                'disabled': !t?.rsvps
             }">
                 RSVPS
             </p>
             <p class="option-flag" :class="{
-                'enabled': templateData?.native_events,
-                'disabled': !templateData?.native_events
+                'enabled': t?.native_events,
+                'disabled': !t?.native_events
             }">
                 Events
             </p>
@@ -120,43 +169,37 @@
         <!-- Posts/ed at / Action Buttons -->
         <div class="action-area">
             <span class="post-time" :title="postDate?.toFormat(`f '- ${sessionZone?.abbreviation}'`)">
-                <span v-if="props.kind == 'session'">Posted:</span>
-                <span v-else>Posts:</span> {{ postDate?.toFormat('t') }}
+                <span>Posts:</span> {{ postDate?.toFormat('t') }}
                 <span class="session-zone text-[10px]!" :title="sessionZone?.name">
                     {{ sessionZone?.abbreviation }}
                 </span>
-                <span class="w-full flex items-center justify-center">
+                <span class="w-fit flex items-center justify-center">
                     <!-- Posts Soon - Badge -->
-                    <div v-if="props.kind == 'template' && DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
-                        class="px-1.25 py-0.5 border-2 bg-text-1/10 border-ring-soft rounded-full flex w-fit items-center justify-center">
-                        <p class="text-amber-400 text-[10px] relative italic font-black">
+                    <div v-if="DateTime.fromISO(String(props.template?.next_post_utc), { zone: 'utc' }).diffNow('hours').hours < 1"
+                        class="px-1 py-px border-2 bg-text-1/10 border-ring-soft rounded flex w-fit items-center justify-center">
+                        <p class="text-amber-800 dark:text-amber-500 text-[10px] relative italic font-black">
                             Soon
                         </p>
                     </div>
                 </span>
             </span>
             <!-- Edit Button -->
-            <Button @click="editSchedule" unstyled class="action-button">
-                <PencilIcon hidden :size="22" class="p-0.5! mr-0.5! icon text-amber-400/50!" />
-                <div class="icon mr-0.5">
-                    <Iconify icon="mdi:pencil" class="text-text-3" />
-                </div>
-                <p class="inline-flex gap-1 h-full items-center pt-0.5">
-                    Edit <span hidden class="hidden sm:inline"> Schedule</span>
-                </p>
-            </Button>
+            <div class="w-full flex flex-center">
+                <MultiButton :main-action="{
+                    label: 'Edit',
+                    icon: 'mdi:pencil',
+                    fn() {
+                        dashboard.sessionForm.startEdit(t as any)
+                    },
+                    classes: {
+                        root: 'button-primary! rounded-r-none!',
+                        dropdown: 'button-primary! rounded-l-none!'
+                    }
+                }" :actions="buttonExtraActions" />
+            </div>
 
-            <a v-if="props.kind == 'session'" :href="signupMsgUrl" target="_blank">
-                <Button unstyled class="action-button flex-row!">
-                    <div class="icon mr-0.5">
-                        <Iconify icon="mdi:eye" class="text-text-3" />
-                    </div>
 
-                    <p class="inline-flex gap-1 h-full items-center pt-0.5">
-                        View <span hidden class="hidden sm:inline"> on Discord</span>
-                    </p>
-                </Button>
-            </a>
+
         </div>
 
     </div>

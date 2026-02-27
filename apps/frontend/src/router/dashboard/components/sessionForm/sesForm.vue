@@ -73,7 +73,7 @@
     // EVENT: Watch for Creating Session Payload:
     watch(() => dashboard.sessionForm.creationPayload, (payload) => {
         if (payload) {
-            console.log('A creation payload was passed/changed', payload)
+            if (payload?.check_only) return
             if (payload.startDate) {
                 formValues.value.startDate = payload.startDate?.toJSDate()
             }
