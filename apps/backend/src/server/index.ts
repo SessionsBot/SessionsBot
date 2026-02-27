@@ -17,13 +17,15 @@ app.set('trust proxy', true); // see rate limiter
 app.use(corsMiddleware); // use cors middleware
 app.use(rateLimiter); // use rate limiter guard
 
-// Domain Root:
-app.use('/', (req, res) => {
-    return res.status(200).send(rootDomainHtml);
-})
+
 
 // Api Root
 app.use('/api', apiRouter)
+
+// Domain Root:
+app.all('/', (req, res) => {
+    return res.status(200).send(rootDomainHtml);
+})
 
 
 // 404 - Not Found / Unknown Routes:

@@ -10,17 +10,16 @@ import { rootDomainHtml } from "./utils/staticHtml";
 // Create Router
 const apiRouter = express.Router();
 
-// Fallback route:
-apiRouter.all('/', (req, res) => {
-    res.send(rootDomainHtml);
-})
-
 // Nested Routes:
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/guilds', guildsRouter);
 apiRouter.use('/system', systemRouter);
 apiRouter.use('/discord', discordRouter);
 
+// Fallback route:
+apiRouter.all('/', (req, res) => {
+    res.send(rootDomainHtml);
+})
 
 // - Export Router:
 /** V3 - SessionsBot API Root Routes */
