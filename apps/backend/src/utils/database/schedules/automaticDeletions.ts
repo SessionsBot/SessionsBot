@@ -106,7 +106,8 @@ export function initializeDataDeletionSchedule() {
                     .lte('expires_at_utc', DateTime.utc().toISO())
 
                 // If failure:
-                createLog.for('Schedule').error('Failed to auto delete - Session Templates - See details...', { error })
+                if (error)
+                    createLog.for('Schedule').error('Failed to auto delete - Session Templates - See details...', { error })
 
                 return { total_deleted: count }
             }
