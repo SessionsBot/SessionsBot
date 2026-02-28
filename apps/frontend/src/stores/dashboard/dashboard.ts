@@ -17,7 +17,7 @@ const useDashboardStore = defineStore('dashboard', () => {
     const authKey = computed(() => auth.session?.access_token)
 
 
-    /** Current - Selected `Guild Id`. */
+    /** Currently Selected `Guild Id`. */
     const guildId = ref<string | null>(null)
 
     /** Guild Data - Channels */
@@ -122,6 +122,8 @@ const useDashboardStore = defineStore('dashboard', () => {
         currentTab: <DashboardTabName>"Sessions",
         /** Whether or not the Dashboard Nav element is "expanded" or not. */
         expanded: false,
+        /** The session id to bring into focus and highlight. */
+        highlightedSessionId: <string | undefined>undefined
     })
 
 

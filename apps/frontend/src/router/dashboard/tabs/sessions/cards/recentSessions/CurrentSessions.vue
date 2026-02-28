@@ -2,37 +2,39 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ArrowBigDown } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import TemplateCard from './SessionCard.vue';
+    import SessionCard from './SessionCard.vue';
 
     // Services:
     const dashboard = useDashboardStore();
 
     // Active Guild Sessions - From Start of Today in Sessions Selected Zone
     const guildSessions = computed(() => dashboard.guildData.sessions.state?.filter(s => {
+        // Filter out sessions that started in a previous day:
         const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
         return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
     }).sort((a, b) => {
         return DateTime.fromISO(a.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(b.starts_at_utc)?.toUnixInteger()
     }));
 
-    // Next Posting Templates - Sorted by Time next START time - Max of 3
-    const guildTemplates = computed(() =>
-        dashboard.guildData.sessionTemplates.state?.filter(t => {
-            if (!t.next_post_utc) return false
-            const nextPost = DateTime.fromISO(t.next_post_utc, { zone: 'utc' })
-            return nextPost >= DateTime.utc()
-        }).sort((a, b) => {
-            const nextStartA = DateTime.fromISO(String(a.next_post_utc), { zone: 'utc' })
-                .plus({ milliseconds: a.post_before_ms })
-            const nextStartB = DateTime.fromISO(String(b.next_post_utc), { zone: 'utc' })
-                .plus({ milliseconds: b.post_before_ms })
-            return (nextStartA.toUnixInteger() - nextStartB.toUnixInteger())
-        }).slice(0, 3)
-    );
-
 
     // Sessions Paginator:
     const sPageIndexStart = ref<number>();
+
+    // Watch - Highlighted Session Id:
+    watch(() => dashboard.nav.highlightedSessionId, (id) => {
+        if (id) {
+
+            const session = dashboard.guildData.sessions.state?.find(s => s.id == id)
+            if (!session) return console.warn('Failed to find session by id to highlight!')
+            const s_index = guildSessions.value?.findIndex(s => s.id == id);
+            if (s_index === -1 || !s_index) return console.warn('Failed to find session by id to highlight!')
+            const pageStart = Math.floor(s_index / 5) * 5
+
+            // Switch paginator page
+            sPageIndexStart.value = pageStart
+
+        } else return
+    })
 
 
 </script>
@@ -80,11 +82,11 @@
             </div>
 
             <!-- Active/Posted Sessions - List -->
-            <div v-if="guildSessions?.length"
-                class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
+            <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
-                <TemplateCard v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))"
-                    kind="session" :session="s" :key="s.id" />
+                <SessionCard v-if="guildSessions?.length"
+                    v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))" kind="session"
+                    :session="s" :key="s.id" :data-id="s.id" />
 
                 <!-- No Schedules - Card -->
                 <div v-if="!guildSessions?.length">
@@ -95,8 +97,8 @@
                         Start utilizing Sessions Bot and configure your first schedule.. once you've done so wait for
                         your sessions to be posted!
                     </p>
-                    <Button unstyled
-                        class="button-base mt-1.5 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
+                    <Button unstyled @click="dashboard.sessionForm.createNew()"
+                        class="button-base mt-2.25 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
                         <Iconify icon="mdi:plus" size="21" />
                         <p class="text-sm"> Create Schedule </p>
                     </Button>

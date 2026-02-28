@@ -77,10 +77,11 @@
                         No Schedules!
                     </p>
                     <p class="text-text-3 px-1 text-sm">
-                        Start utilizing Sessions Bot and configure your first schedule..
+                        Start utilizing Sessions Bot and configure your first session schedule..
+                        <br>
                     </p>
-                    <Button unstyled
-                        class="button-base mt-1.5 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
+                    <Button unstyled @click="dashboard.sessionForm.createNew()"
+                        class="button-base mt-2.25 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
                         <Iconify icon="mdi:plus" size="21" />
                         <p class="text-sm"> Create Schedule </p>
                     </Button>

@@ -40,14 +40,23 @@
         else return getTimeZones().find(tz => tz.name == zoneName)
     })
 
+
+    // Computed - Last Session Occurrence Id:
+    const lastSessionOccurrence = computed(() => dashboard.guildData.sessions.state
+        ?.sort((a, b) => DateTime.fromISO(b?.starts_at_utc, { zone: 'utc' }).toUnixInteger() - DateTime.fromISO(a?.starts_at_utc, { zone: 'utc' }).toUnixInteger())
+        ?.find(s => s.template_id == props.template?.id)
+    )
+
     // Split Button - Edit - Extra Actions:
     const buttonExtraActions: MultiButtonAction[] = [
         {
             label: 'View Last Occurrence',
             icon: 'mdi:history',
-            disabled: true,
+            disabled: !!lastSessionOccurrence.value,
             fn: async () => {
-                console.warn('awaiting logic')
+                // Get last known session from template:
+                if (lastSessionOccurrence.value)
+                    dashboard.nav.highlightedSessionId = lastSessionOccurrence.value?.id
             },
         },
         {
@@ -108,7 +117,7 @@
                             dashboard.guildData.sessionTemplates?.execute()
                             // Send Success Alert:
                             notifier.send({
-                                header: 'Session Deleted',
+                                header: 'Schedule Deleted',
                                 content: null,
                                 icon: 'iconamoon:trash-duotone',
                                 classes: { header: 'self-center text-[15px]' }
@@ -195,7 +204,13 @@
                         root: 'button-primary! rounded-r-none!',
                         dropdown: 'button-primary! rounded-l-none!'
                     }
-                }" :actions="buttonExtraActions" />
+                }" :actions="buttonExtraActions.map(a => {
+                    if (a?.label == 'View Last Occurrence') {
+                        if (t?.last_post_utc) a.disabled = false
+                        else a.disabled = true
+                    }
+                    return a;
+                })" />
             </div>
 
 

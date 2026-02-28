@@ -20,6 +20,9 @@
     const notifier = useNotifier();
     const confirm = useConfirm();
 
+    // Session Card Ref:
+    const sessionCardRef = ref<HTMLElement>()
+
 
     // Session Template Data:
     const templateData = computed(() => dashboard.guildData.sessionTemplates.state?.find(t => (t.id == props.session?.template_id)))
@@ -85,11 +88,33 @@
         }
     ]
 
+    // Watch - Session "Highlighted":
+    const highlightSession = computed(
+        () => dashboard.nav.highlightedSessionId === props.session?.id
+    )
+    watch(highlightSession, async (isHighlighted) => {
+        if (!isHighlighted) return
+        // Scroll Session into View:
+        await nextTick()
+        requestAnimationFrame(() => {
+            sessionCardRef.value?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            })
+        })
+        // Unhighlight THIS Session after timeout:
+        setTimeout(() => {
+            if (dashboard.nav.highlightedSessionId == props.session?.id)
+                dashboard.nav.highlightedSessionId = undefined
+        }, 5_000);
+    }, { flush: 'post', immediate: true })
+
+
 </script>
 
 
 <template>
-    <div class="session-card">
+    <div class="session-card" :class="{ 'border-brand-1!': highlightSession }" ref="sessionCardRef">
 
         <!-- Name / Start Time / Zone -->
         <div class="name-and-time">
