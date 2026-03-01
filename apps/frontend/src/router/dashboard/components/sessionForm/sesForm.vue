@@ -638,8 +638,6 @@
                     description: data.description,
                     url: data.url,
                     starts_at_utc: startUtc.toISO(),
-                    start_hour: startHour,
-                    start_minute: startMinute,
                     duration_ms: getDurationMs(),
                     time_zone: data.timeZone,
                     rsvps: data?.rsvps?.length ? JSON.stringify(data.rsvps) : null,

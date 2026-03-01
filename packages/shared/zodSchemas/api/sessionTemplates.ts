@@ -10,8 +10,6 @@ export const API_SessionTemplateBodySchema = z.object({
     description: z.nullish(z.string()),
     url: z.nullish(z.url()),
     starts_at_utc: z.string(),
-    start_hour: z.number(),
-    start_minute: z.number(),
     duration_ms: z.nullish(z.number()),
     time_zone: z.string(),
     rsvps: z.nullish(z.json()),

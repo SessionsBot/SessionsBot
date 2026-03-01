@@ -296,8 +296,6 @@ export type Database = {
           post_in_thread: boolean
           rrule: string | null
           rsvps: Json | null
-          start_hour: number | null
-          start_minute: number | null
           starts_at_utc: string
           time_zone: string
           title: string
@@ -322,8 +320,6 @@ export type Database = {
           post_in_thread?: boolean
           rrule?: string | null
           rsvps?: Json | null
-          start_hour?: number | null
-          start_minute?: number | null
           starts_at_utc: string
           time_zone: string
           title: string
@@ -348,8 +344,6 @@ export type Database = {
           post_in_thread?: boolean
           rrule?: string | null
           rsvps?: Json | null
-          start_hour?: number | null
-          start_minute?: number | null
           starts_at_utc?: string
           time_zone?: string
           title?: string
@@ -374,10 +368,10 @@ export type Database = {
           event_id: string | null
           guild_id: string
           id: string
-          is_canceled: boolean
           mention_roles: string[] | null
           panel_id: string
           starts_at_utc: string
+          status: Database["public"]["Enums"]["Session Status"]
           template_id: string | null
           thread_id: string | null
           time_zone: string
@@ -392,10 +386,10 @@ export type Database = {
           event_id?: string | null
           guild_id: string
           id?: string
-          is_canceled?: boolean
           mention_roles?: string[] | null
           panel_id: string
           starts_at_utc: string
+          status?: Database["public"]["Enums"]["Session Status"]
           template_id?: string | null
           thread_id?: string | null
           time_zone: string
@@ -410,10 +404,10 @@ export type Database = {
           event_id?: string | null
           guild_id?: string
           id?: string
-          is_canceled?: boolean
           mention_roles?: string[] | null
           panel_id?: string
           starts_at_utc?: string
+          status?: Database["public"]["Enums"]["Session Status"]
           template_id?: string | null
           thread_id?: string | null
           time_zone?: string
@@ -453,12 +447,7 @@ export type Database = {
     }
     Enums: {
       "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
-      "Session Status":
-        | "SCHEDULED"
-        | "ONGOING"
-        | "DELAYED"
-        | "CONCLUDED"
-        | "CANCELED"
+      "Session Status": "scheduled" | "delayed" | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -587,13 +576,7 @@ export const Constants = {
   public: {
     Enums: {
       "Entitlement Status": ["ACTIVE", "EXPIRED", "CANCELED"],
-      "Session Status": [
-        "SCHEDULED",
-        "ONGOING",
-        "DELAYED",
-        "CONCLUDED",
-        "CANCELED",
-      ],
+      "Session Status": ["scheduled", "delayed", "canceled"],
     },
   },
 } as const

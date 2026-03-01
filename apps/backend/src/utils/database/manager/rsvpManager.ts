@@ -86,7 +86,7 @@ export default {
 
             // Check if session is CANCELED or PAST START DATE:
             const sessionStartUtc = DateTime.fromISO(sessionData.starts_at_utc)
-            const isCanceled = sessionData.is_canceled
+            const isCanceled = sessionData.status == 'canceled'
             if (sessionStartUtc <= DateTime.utc()) {
                 // Session in Past - Not Allowed:
                 return rsvpAddResult.fail("Past Session", sessionData)
