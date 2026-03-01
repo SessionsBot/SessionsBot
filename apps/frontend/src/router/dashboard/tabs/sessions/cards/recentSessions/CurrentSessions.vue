@@ -85,8 +85,8 @@
             <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
                 <SessionCard v-if="guildSessions?.length"
-                    v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))" kind="session"
-                    :session="s" :key="s.id" :data-id="s.id" />
+                    v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))" :session="s"
+                    :key="s.id" />
 
                 <!-- No Schedules - Card -->
                 <div v-if="!guildSessions?.length">

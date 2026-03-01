@@ -3,11 +3,13 @@
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb'
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { PencilIcon } from 'lucide-vue-next';
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
     import { useConfirm } from 'primevue';
     import type { MultiButtonAction } from '@/components/MultiButton.vue';
+    import { CheckIcon, XIcon } from 'lucide-vue-next';
+    import InputLabel from '../../../preferences/inputs/inputLabel.vue';
+    import ActionDialog from './actionDialog.vue';
 
     // Incoming Props:
     const props = defineProps<{
@@ -67,12 +69,10 @@
         {
             label: 'Delay Start',
             icon: 'tabler:clock-up',
-            classes: { root: 'text-amber-500' },
+            classes: { root: 'dark:text-amber-500 text-amber-700' },
             fn: () => {
-                notifier.send({
-                    header: 'Awaiting Logic!',
-                    level: 'warn'
-                })
+                dialogAction.value = 'delay'
+                showSessionDialog.value = true
             }
         },
         {
@@ -80,13 +80,16 @@
             icon: 'basil:cancel-outline',
             classes: { icon: 'scale-110', root: 'text-invalid-1' },
             fn: () => {
-                notifier.send({
-                    header: 'Awaiting Logic!',
-                    level: 'warn'
-                })
+                dialogAction.value = 'cancel'
+                showSessionDialog.value = true
             }
         }
     ]
+
+    // Action Dialog:
+    const showSessionDialog = ref(false)
+    const dialogAction = ref<'delay' | 'cancel'>('delay')
+
 
     // Watch - Session "Highlighted":
     const highlightSession = computed(
@@ -114,6 +117,7 @@
 
 
 <template>
+    <!-- Session Card -->
     <div class="session-card" :class="{ 'border-brand-1!': highlightSession }" ref="sessionCardRef">
 
         <!-- Name / Start Time / Zone -->
@@ -176,6 +180,10 @@
         </div>
 
     </div>
+
+    <!-- Action Dialog -->
+    <ActionDialog :session v-model:show-session-dialog="showSessionDialog" v-model:dialog-action="dialogAction" />
+
 </template>
 
 
