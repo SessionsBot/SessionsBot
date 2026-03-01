@@ -38,11 +38,10 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
             } else {
                 // Succeeded - Return Success:
                 createAuditLog({
-                    event: AuditEvent.SessionCreated,
+                    event: AuditEvent.ScheduleCreated,
                     guild: newSession.guild_id,
                     user: req?.auth?.user?.user_metadata?.id,
                     meta: {
-                        username: req?.auth?.profile?.username,
                         template_id: newSession.id
                     }
                 })
@@ -85,11 +84,10 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
             } else {
                 // Succeeded - Return Success:
                 createAuditLog({
-                    event: AuditEvent.SessionEdited,
+                    event: AuditEvent.ScheduleEdited,
                     guild: ExtSession.guild_id,
                     user: req?.auth?.user?.user_metadata?.id,
                     meta: {
-                        username: req?.auth?.profile?.username,
                         template_id: ExtSession.id
                     }
                 })
@@ -125,11 +123,10 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(tru
 
         // Return Success:
         createAuditLog({
-            event: AuditEvent.SessionDeleted,
+            event: AuditEvent.ScheduleDeleted,
             guild: data.guild_id,
             user: req?.auth?.user?.user_metadata?.id,
             meta: {
-                username: req?.auth?.profile?.username,
                 template_id: data.id
             }
         })

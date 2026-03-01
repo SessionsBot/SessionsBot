@@ -133,7 +133,7 @@ export default {
                 responseContent = new ContainerBuilder({
                     accent_color: core.colors.getOxColor('warning'),
                     components: <any>[
-                        new TextDisplayBuilder({ content: `## ${core.emojis.string('clock')}  Failed to RSVP - Past Session` }),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('no_entry')}  Failed to RSVP - Session Canceled` }),
                         new SeparatorBuilder(),
                         new TextDisplayBuilder({ content: `**Reason**: \n> According to our records this session **has been canceled** and is no longer allowing RSVPs! \n**Session Title**: \n> \`${sessionData?.title}\` \n**Start Date**: \n> <t:${startUtc.toUnixInteger()}:F> \n> <t:${startUtc.toUnixInteger()}:R>` }),
                         new SeparatorBuilder(),

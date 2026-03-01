@@ -25,6 +25,7 @@ export default {
                 .eq('guild_id', i.guild.id)
                 .gt('starts_at_utc', now)
                 .eq('session_rsvp_slots.session_rsvps.user_id', i.user.id)
+                .neq('status', 'canceled')
 
             if (sessionsERR) throw Result.err(sessionsERR, { message: `Failed to fetch "Active Sessions" for guild for /my-rsvps cmd`, guildId: i.guildId, userId: i.user.id })
 

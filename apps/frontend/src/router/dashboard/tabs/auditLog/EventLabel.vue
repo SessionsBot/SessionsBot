@@ -53,23 +53,23 @@
     </div>
 
     <!-- Session Created -->
-    <div v-else-if="event == AuditEvent.SessionCreated" class="flex gap-1 flex-row items-center w-full">
+    <div v-else-if="event == AuditEvent.ScheduleCreated" class="flex gap-1 flex-row items-center w-full">
         <svg class="min-w-fit! aspect-square!" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
             viewBox="0 0 16 16">
             <path fill="currentColor"
                 d="M11.5 2A2.5 2.5 0 0 1 14 4.5v2.1a5.5 5.5 0 0 0-1-.393V6H3v5.5A1.5 1.5 0 0 0 4.5 13h1.707q.149.524.393 1H4.5A2.5 2.5 0 0 1 2 11.5v-7A2.5 2.5 0 0 1 4.5 2zm0 1h-7A1.5 1.5 0 0 0 3 4.5V5h10v-.5A1.5 1.5 0 0 0 11.5 3m4.5 8.5a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m-4-2a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H11v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H12z" />
         </svg>
-        <p class=""> Session Created</p>
+        <p class=""> Schedule Created</p>
     </div>
 
     <!-- Session Edited -->
-    <div v-else-if="event == AuditEvent.SessionEdited" class="flex gap-1 flex-row items-center w-full">
+    <div v-else-if="event == AuditEvent.ScheduleEdited" class="flex gap-1 flex-row items-center w-full">
         <svg class="min-w-fit! aspect-square!" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
             viewBox="0 0 16 16">
             <path fill="currentColor"
                 d="M13.998 4.5a2.5 2.5 0 0 0-2.5-2.5H4.5A2.5 2.5 0 0 0 2 4.5v6.998a2.5 2.5 0 0 0 2.5 2.5h1.546l.25-1H4.5a1.5 1.5 0 0 1-1.5-1.5V6h10.336q.104-.005.207 0h.455zM4.5 3h6.998a1.5 1.5 0 0 1 1.5 1.5V5H3v-.5A1.5 1.5 0 0 1 4.5 3m9.02 3.999a1.6 1.6 0 0 0-.522.061c-.242.072-.47.203-.662.394L8.05 11.742a2.8 2.8 0 0 0-.722 1.256l-.009.033l-.303 1.211a.61.61 0 0 0 .74.74l1.21-.303a2.8 2.8 0 0 0 1.29-.73l4.288-4.288a1.56 1.56 0 0 0-1.023-2.662m-7.523 1.25a.748.748 0 1 1-1.497 0a.748.748 0 0 1 1.497 0m-.749 3.248a.748.748 0 1 0 0-1.497a.748.748 0 0 0 0 1.497m3.5-3.249a.748.748 0 1 1-1.496 0a.748.748 0 0 1 1.497 0" />
         </svg>
-        <p class=""> Session Edited</p>
+        <p class=""> Schedule Edited</p>
     </div>
 
     <!-- Session Posted -->
@@ -83,14 +83,14 @@
     </div>
 
     <!-- Session Deleted -->
-    <div v-else-if="event == AuditEvent.SessionDeleted" class="flex gap-1 flex-row items-center w-full">
+    <div v-else-if="event == AuditEvent.ScheduleDeleted" class="flex gap-1 flex-row items-center w-full">
         <svg class="min-w-fit! aspect-square!" width="24" height="24" viewBox="0 0 24 24" fill="none"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
                 d="M19.9016 4.09835C19.1984 3.39509 18.2446 3 17.25 3H6.75C5.75544 3 4.80161 3.39509 4.09835 4.09835C3.39509 4.80161 3 5.75544 3 6.75V17.25C3 18.2446 3.39509 19.1984 4.09835 19.9016C4.80161 20.6049 5.75544 21 6.75 21H9.9C9.656 20.524 9.4595 20.024 9.3105 19.5H6.75C6.15326 19.5 5.58097 19.2629 5.15901 18.841C4.73705 18.419 4.5 17.8467 4.5 17.25V9H19.5V9.3105C20.018 9.45757 20.5204 9.65501 21 9.9V6.75C21 5.75544 20.6049 4.80161 19.9016 4.09835ZM6.75 4.5H17.25C17.8467 4.5 18.419 4.73705 18.841 5.15901C19.2629 5.58097 19.5 6.15326 19.5 6.75V7.5H4.5V6.75C4.5 6.15326 4.73705 5.58097 5.15901 5.15901C5.58097 4.73705 6.15326 4.5 6.75 4.5ZM22.023 22.023C23.2888 20.7571 24 19.0402 24 17.25C24 15.4598 23.2888 13.7429 22.023 12.477C20.7571 11.2112 19.0402 10.5 17.25 10.5C15.4598 10.5 13.7429 11.2112 12.477 12.477C11.2112 13.7429 10.5 15.4598 10.5 17.25C10.5 19.0402 11.2112 20.7571 12.477 22.023C13.7429 23.2888 15.4598 24 17.25 24C19.0402 24 20.7571 23.2888 22.023 22.023ZM14.25 16.5C14.0511 16.5 13.8603 16.579 13.7197 16.7197C13.579 16.8603 13.5 17.0511 13.5 17.25C13.5 17.4489 13.579 17.6397 13.7197 17.7803C13.8603 17.921 14.0511 18 14.25 18H20.25C20.4489 18 20.6397 17.921 20.7803 17.7803C20.921 17.6397 21 17.4489 21 17.25C21 17.0511 20.921 16.8603 20.7803 16.7197C20.6397 16.579 20.4489 16.5 20.25 16.5H14.25Z"
                 fill="currentColor" />
         </svg>
-        <p class=""> Session Deleted</p>
+        <p class=""> Schedule Deleted</p>
     </div>
 
 </template>

@@ -16,6 +16,7 @@ import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
 
 const createLog = useLogger();
 const guildId = process.env["GUILD_ID_DEVELOPMENT"];
+const userId = '252949527143645185'
 const channelId = '1430465764619714590'
 
 
@@ -28,7 +29,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-
+                // const r = await dbManager.sessions.cancel(guildId, '76907ba3-55a0-4f4c-a308-9d28637e2046', userId)
+                // console.info('Result', r)
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

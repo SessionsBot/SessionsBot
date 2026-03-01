@@ -19,7 +19,18 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
         const endsAt = s.duration_ms ? startsAt.plus({ millisecond: s.duration_ms }) : null;
         const pastStart = DateTime.now() >= startsAt;
         const rsvpSlots = s.session_rsvp_slots
+        const isCanceled = s.status == 'canceled'
 
+
+        // Util: Canceled / Delayed Alert Texts:
+        const getStatusAlerts = () => {
+            let r = ''
+            if (s.status == 'delayed')
+                r += `\n> ${core.emojis.string('timeout')}  **DELAYED!**`
+            if (s.status == 'canceled')
+                r += `\n> ${core.emojis.string('no_entry')}  **CANCELED!**`
+            return r
+        }
 
         // Util: Get Star Date Section:
         const getStartDateSection = () => {
@@ -61,7 +72,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
                         }
                     }
                     const emojiLabel = () => {
-                        if (atCapacity) return { name: 'no_entry', id: core.emojis.ids.no_entry };
+                        if (atCapacity || isCanceled) return { name: 'no_entry', id: core.emojis.ids.no_entry };
                         if (pastStart) return { name: 'timeout', id: core.emojis.ids.timeout };
                         else return { name: 'user_success', id: core.emojis.ids.user_success };
                     }
@@ -76,7 +87,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
                                 custom_id: 'rsvp:' + rsvp.id + `:${s.id}`,
                                 emoji: emojiLabel(),
                                 style: ButtonStyle.Secondary,
-                                disabled: (pastStart || atCapacity) ? true : false
+                                disabled: (pastStart || atCapacity || isCanceled) ? true : false
                             }
                         }),
                         new SeparatorBuilder()
@@ -136,7 +147,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
         const msg = new ContainerBuilder({
             accent_color: Number(accent_color.replace('#', '0x')) || core.colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n${processVariableText(s.description)}` : ''}` }),
+                new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n${processVariableText(s.description)}` : ''} ${getStatusAlerts()}` }),
                 new SeparatorBuilder(),
                 ...getStartDateSection(),
                 new SeparatorBuilder(),

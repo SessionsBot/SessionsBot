@@ -1,16 +1,18 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
 import { getTimeZones } from '@vvo/tzdb'
-import { parse, parseDate } from "chrono-node";
-import { genericErrorMsg } from "../../utils/bot/messages/basic";
+import { defaultFooterText, genericErrorMsg } from "../../utils/bot/messages/basic";
+import dbManager from "../../utils/database/manager";
+import { URLS } from "../../utils/core/urls";
+import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 
 export default {
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('cancel')
-        .setDescription('Cancel an active session that is currently ongoing / already posted')
+        .setDescription('Cancel an active session that has already been posted.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addStringOption(
             new SlashCommandStringOption()
@@ -36,6 +38,7 @@ export default {
         const { data, error } = await supabase.from('sessions')
             .select('id, time_zone, title, duration_ms, starts_at_utc')
             .eq('guild_id', i.guildId)
+            .neq('status', 'canceled')
             .order('starts_at_utc', { ascending: false, nullsFirst: false })
             .limit(25)
         if (error || !data) return i.respond([]);
@@ -65,52 +68,104 @@ export default {
 
     // Command Execution:
     execute: async (i: ChatInputCommandInteraction) => {
-
+        // Defer Reply
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
+        // Parse options:
         const selectedSessionId = i.options.getString('session', true)
         const cancelReasoning = i.options.getString('reason', false)
-        const delayTime = i.options.getString('delay-time', false)
 
-        // Get "Full Session Data":
-        const { data: dbData, error: dbDataErr } = await supabase.from('guilds')
-            .select(`*, sessions!inner(*, session_rsvp_slots(*, session_rsvps(*)))`)
-            .eq('id', i.guildId)
-            .eq('sessions.id', selectedSessionId)
-            .maybeSingle()
-        const sessionData = dbData.sessions?.[0]
+        const subscription = getSubscriptionFromInteraction(i)
 
-        if (dbDataErr) throw dbDataErr; // Sends default failure msg
-        if (!dbData || !sessionData) {
-            return i.editReply({
-                components: [genericErrorMsg({
-                    title: 'Failed to find Session!',
-                    reasonDesc: `Unfortunately we couldn't find the session you're trying to delay... If this issue persist please get in contact with Bot Support!`
-                }),],
-                flags: MessageFlags.IsComponentsV2
+        // Attempt to cancel:
+        const result = await dbManager.sessions.cancel(i.guildId, selectedSessionId, i.user.id, cancelReasoning)
+
+        // Build Int/Cmd Response:
+        let response: ContainerBuilder
+        if (result.success) {
+            // Send success response:
+            const startUnix = DateTime.fromISO(result?.sessionData?.starts_at_utc, { zone: 'utc' })?.toUnixInteger()
+            const panelUrl = `https://discord.com/channels/${i.guildId}/${result?.sessionData?.thread_id ?? result?.sessionData?.channel_id}/${result.sessionData.panel_id}`
+            response = new ContainerBuilder({
+                components: <any>[
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('success')} Session Canceled \nYou have successfully canceled the following session:` }),
+                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `**Title:** \n> ${result?.sessionData?.title || '?'} \n**Start Date:** \n> ${startUnix ? `<t:${startUnix}:f>` : '?'}` }),
+                    new SeparatorBuilder(),
+                    new ActionRowBuilder({
+                        components: <any>[
+                            new ButtonBuilder({
+                                style: ButtonStyle.Link,
+                                label: 'View Session',
+                                emoji: { id: core.emojis.ids.eye },
+                                url: panelUrl
+                            })
+                        ]
+                    })
+                ],
+                accent_color: core.colors.getOxColor('success')
             })
+
+        } else {
+            // Send failure response:
+            if (result.error == 'AlreadyStarted') {
+                response = new ContainerBuilder({
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('fail')} Failed to Cancel Session!` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason:** \n> This session has already started! Therefore, we cannot cancel its occurrence.` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: <any>[
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    label: 'Support Chat',
+                                    emoji: { id: core.emojis.ids.chat },
+                                    url: URLS.support_chat
+                                })
+                            ]
+                        })
+                    ],
+                    accent_color: core.colors.getOxColor('error')
+                })
+            }
+            else {
+                // Unknown Error:
+                response = new ContainerBuilder({
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('fail')} Failed to Cancel Session!` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `**Reason:** \n> Unknown - If this issue persists feel free to contact Bot Support.` }),
+                        new SeparatorBuilder(),
+                        new ActionRowBuilder({
+                            components: <any>[
+                                new ButtonBuilder({
+                                    style: ButtonStyle.Link,
+                                    label: 'Support Chat',
+                                    emoji: { id: core.emojis.ids.chat },
+                                    url: URLS.support_chat
+                                })
+                            ]
+                        })
+                    ],
+                    accent_color: core.colors.getOxColor('error')
+                })
+
+            }
+
+
         }
 
+        // Add Watermark - If Required:
+        if (subscription.limits.SHOW_WATERMARK) {
+            response.components.push(defaultFooterText({ showHelpLink: true }))
+        }
 
         // Reply to Command Interaction:
         await i.editReply({
-            components: [
-                new ContainerBuilder({
-                    accent_color: core.colors.getOxColor('warning'),
-                    components: <any>[
-                        new TextDisplayBuilder({ content: `${core.emojis.string('info')}  Command Interaction Received!` }),
-                        new SeparatorBuilder(),
-                        new TextDisplayBuilder({
-                            content: `${core.emojis.string('star')}  **Option Selected:** \n> ${selectedSessionId} \n**Reason:** \n> ${cancelReasoning || 'Not Provided'} `
-                        })
-                    ]
-                })
-            ],
+            components: [response],
             flags: MessageFlags.IsComponentsV2
         })
-
-
-
 
     }
 

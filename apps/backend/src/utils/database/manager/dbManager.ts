@@ -3,6 +3,7 @@ import { supabase } from "../supabase";
 import { Database } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import rsvpManager from "./rsvpManager";
+import { sessionManager } from "./sessionManager";
 
 // Logger Util:
 const createLog = useLogger();
@@ -84,7 +85,10 @@ export default {
     },
 
 
-    rsvps: rsvpManager
+    rsvps: rsvpManager,
+
+
+    sessions: sessionManager
 
 }
 

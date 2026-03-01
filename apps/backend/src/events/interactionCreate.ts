@@ -12,10 +12,13 @@ export default {
 	async execute(i: BaseInteraction) {
 		const botClient = i.client as ExtendedClient;
 
+		// Disregard Already Handled Interactions:
+		if (i?.['replied'] || i?.['deferred']) return console.info('Skipping already handled interaction from global listener.');
+
 		// Command Interactions:
 		if (i.isChatInputCommand()) {
 			const command = botClient.commands.get(i.commandName);
-
+			if (i?.replied || i?.deferred) return
 			if (!command) return createLog.for('Bot').error(`No command matching ${i.commandName} was found.`)
 			try {
 				// Execute Command:
@@ -62,11 +65,11 @@ export default {
 
 		// Button Interactions:
 		if (i.isButton()) {
-
+			if (i?.replied || i?.deferred) return
 			// Confirm static button:
 			const [buttonId] = i.customId.split(':');
 			const button = botClient.buttons.get(buttonId);
-			if (!button) return createLog.for('Bot').error(`No button matching custom_id: ${i?.customId} was found.`)
+			if (!button) return // createLog.for('Bot').error(`No button matching custom_id: ${i?.customId} was found.`)
 
 			try {
 				// Execute button:
