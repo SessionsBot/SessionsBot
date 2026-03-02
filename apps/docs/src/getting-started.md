@@ -17,7 +17,7 @@ To get started with using Sessions Bot for the first time please instal the bot 
 
 ## Using your Dashboard
 
-To fine tune Sessions Bot to how you want to use it, access our [Online Bot Dashboard](https://sessionsbot.fyi/dashboard).
+To fine tune Sessions Bot to how you want to use it, access your [Online Bot Dashboard](https://sessionsbot.fyi/dashboard).
 
 Some things to know:
 - You'll have to sign in using your Discord account to access your dashboard data. 
