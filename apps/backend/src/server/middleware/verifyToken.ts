@@ -44,7 +44,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         req['auth'] = {
             user: authUser,
             profile: userProfile
-        };
+        } as any;
         // Allow request:
         return next()
 

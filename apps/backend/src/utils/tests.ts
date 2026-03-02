@@ -29,6 +29,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
+                console.log("NOW ISO", new Date().toISOString())
+
                 // const r = await dbManager.sessions.cancel(guildId, '76907ba3-55a0-4f4c-a308-9d28637e2046', userId)
                 // console.info('Result', r)
 

@@ -79,7 +79,7 @@ export const sessionManager = {
                 status: 'canceled' as const
             }
             const updatePanel = await updateExistingSessionPanel(updatedSession, subscription.limits.SHOW_WATERMARK, data?.accent_color, data?.calendar_button)
-            if (updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after canceling! - See Details...', { updatePanel, guildId, sessionId })
+            if (!updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after canceling! - See Details...', { updatePanel, guildId, sessionId })
 
             // Create Audit Log:
             createAuditLog({
@@ -135,11 +135,11 @@ export const sessionManager = {
 
             // Update Signup Panel:
             const updatePanel = await updateExistingSessionPanel(sessionData, subscription.limits.SHOW_WATERMARK, guildData?.accent_color, guildData?.calendar_button)
-            if (updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after canceling! - See Details...', { updatePanel, guildId, sessionId })
+            if (!updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after delaying! - See Details...', { updatePanel, guildId, sessionId })
 
             // Create Audit Log:
             createAuditLog({
-                event: AuditEvent.SessionCanceled,
+                event: AuditEvent.SessionDelayed,
                 guild: guildId,
                 user: actingId,
                 meta: {

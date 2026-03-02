@@ -3,7 +3,7 @@ import { supabase } from "../../../../../utils/database/supabase.js";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
 import { APIResponse as reply } from "../utils/responseClass.js";
-import verifyToken, { authorizedRequest } from "../../../../middleware/verifyToken.js";
+import verifyToken from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
 import { AuthError } from "./authErrTypes.js";
 import { fetchUserDiscordData, updateAuthUser } from "./authUtils.js";
@@ -97,7 +97,7 @@ authRouter.get("/discord-callback", async (req, res) => {
 
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
-authRouter.get("/discord-refresh", verifyToken, async (req: authorizedRequest, res) => {
+authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
     try {
         // 1. Get Data/User from Req:
         const { auth: { user: reqUser, profile: reqUserProfile } } = req;

@@ -1,9 +1,8 @@
-import { NextFunction, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import { APIResponse } from "../routes/api/V3/utils/responseClass.js";
 import { HttpStatusCode } from "axios";
 import core from "../../utils/core/core.js";
-import { useLogger } from "../../utils/logs/logtail";
-import { authorizedRequest } from "./verifyToken.js";
+import { useLogger } from "../../utils/logs/logtail";;
 
 // Log Util:
 const createLog = useLogger();
@@ -14,7 +13,7 @@ const createLog = useLogger();
  * @required `:guildId` param provided in route
  * @prerequisites `verifyToken()` --> `authorizedRequest` */
 export const verifyGuildMember = (requireAdmin: boolean) => {
-    return async (req: authorizedRequest, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
             // Get user & guild from request:
             const guildId = req.params?.guildId?.toString();

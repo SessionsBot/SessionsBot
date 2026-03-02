@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyGuildMember } from '../../../../middleware/guildMembership';
-import verifyToken, { authorizedRequest } from '../../../../middleware/verifyToken';
+import verifyToken from '../../../../middleware/verifyToken';
 import { useLogger } from '../../../../../utils/logs/logtail';
 import { APIResponse as reply } from '../utils/responseClass';
 import { API_GuildPreferencesInterface, API_GuildPreferencesSchema, AuditEvent } from '@sessionsbot/shared';
@@ -15,7 +15,7 @@ const createLog = useLogger();
 
 // GET - Read Guild Preferences:
 // URL - https://api.sessionsbot.fyi/guilds/:guildId/preferences
-preferencesRouter.get(`/`, verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
+preferencesRouter.get(`/`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse Req:
         const { guildId } = req.params;
@@ -44,7 +44,7 @@ preferencesRouter.get(`/`, verifyToken, verifyGuildMember(true), async (req: aut
 
 // PATCH - Update Guild Preferences Endpoint:
 // URL: https://api-host.fyi/guilds/:guildId/preferences
-preferencesRouter.patch('/', verifyToken, verifyGuildMember(true), async (req: authorizedRequest, res) => {
+preferencesRouter.patch('/', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse Req:
         const { data } = req.body as { data: API_GuildPreferencesInterface }
