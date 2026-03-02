@@ -89,10 +89,22 @@ export default {
             const isCanceled = sessionData.status == 'canceled'
             if (sessionStartUtc <= DateTime.utc()) {
                 // Session in Past - Not Allowed:
+                updateExistingSessionPanel(
+                    sessionData,
+                    guildSubscription.limits.SHOW_WATERMARK,
+                    guildData.data.accent_color,
+                    guildData.data.calendar_button
+                )
                 return rsvpAddResult.fail("Past Session", sessionData)
             }
             if (isCanceled) {
                 // Session CANCELED - Not Allowed:
+                updateExistingSessionPanel(
+                    sessionData,
+                    guildSubscription.limits.SHOW_WATERMARK,
+                    guildData.data.accent_color,
+                    guildData.data.calendar_button
+                )
                 return rsvpAddResult.fail("Session Canceled", sessionData)
             }
 
