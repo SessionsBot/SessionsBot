@@ -1,42 +1,39 @@
 import { ENVIRONMENT_TYPE } from "../environment"
 
+const WEBSITE =
+    ENVIRONMENT_TYPE === "production"
+        ? "https://sessionsbot.fyi"
+        : "http://localhost:5173"
 
-class BackendURLs {
-    // Website / App Links:
-    public website = 'https://sessionsbot.fyi'
-    public site_links = {
-        dashboard: this.website + '/dashboard',
-        pricing: this.website + '/pricing',
-        support: this.website + '/support',
-        session: (sessionId: string) => `${this.website}/session/${sessionId}`
-    }
-    public status_page = 'https://status.sessionsbot.fyi'
+const DOCUMENTATION = "https://docs.sessionsbot.fyi"
 
-    // Documentation Links:
-    public documentation = 'https://docs.sessionsbot.fyi'
-    public doc_links = {
-        bot_permissions: this.documentation,
+export const URLS = {
+    website: WEBSITE,
 
-    }
+    site_links: {
+        dashboard: `${WEBSITE}/dashboard`,
+        pricing: `${WEBSITE}/pricing`,
+        support: `${WEBSITE}/support`,
+        session: (sessionId: string) =>
+            `${WEBSITE}/session/${sessionId}` as const
+    },
 
-    // Discord Related URLs:
-    public invite_bot = {
-        pretty: 'https://invite.sessionsbot.fyi',
-        direct: ENVIRONMENT_TYPE == 'production'
-            ? `https://discord.com/oauth2/authorize?client_id=${process.env?.['DISCORD_CLIENT_ID']}` // production bot
-            : `https://discord.com/oauth2/authorize?client_id=${process.env?.['DEV_CLIENT_ID']}` // development bot
-    }
-    public community_server = 'https://discord.gg/dKp5HZPjCg'
-    public support_chat = 'https://discord.gg/49gNbwA8t6'
-}
+    status_page: "https://status.sessionsbot.fyi",
 
+    documentation: DOCUMENTATION,
 
+    doc_links: {
+        bot_permissions: DOCUMENTATION
+    },
 
+    invite_bot: {
+        pretty: "https://invite.sessionsbot.fyi",
+        direct:
+            ENVIRONMENT_TYPE === "production"
+                ? `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}`
+                : `https://discord.com/oauth2/authorize?client_id=${process.env.DEV_CLIENT_ID}`
+    },
 
-export const URLS = new BackendURLs()
-
-// OVERRIDE URLS IN DEVELOPMENT ENVIRONMENT(s):
-if (ENVIRONMENT_TYPE != 'production') {
-    // console.info('(i) overriding urls in non-production environment!')
-    URLS.website = 'http://localhost:5173/'
-}
+    community_server: "https://discord.gg/dKp5HZPjCg",
+    support_chat: "https://discord.gg/49gNbwA8t6"
+} as const

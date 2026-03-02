@@ -147,7 +147,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
         const msg = new ContainerBuilder({
             accent_color: Number(accent_color.replace('#', '0x')) || core.colors.getOxColor('purple'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${s.title} ${s?.description ? `\n${processVariableText(s.description)}` : ''} ${getStatusAlerts()}` }),
+                new TextDisplayBuilder({ content: `## ${s.title} ${getStatusAlerts()} ${s?.description ? `\n${processVariableText(s.description)}` : ''}` }),
                 new SeparatorBuilder(),
                 ...getStartDateSection(),
                 new SeparatorBuilder(),

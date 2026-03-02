@@ -7,6 +7,7 @@
     import { useAuthStore } from '@/stores/auth';
     import { TriangleAlertIcon } from 'lucide-vue-next';
     import useNotifier from '@/stores/notifier';
+    import { externalUrls } from '@/stores/nav';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -45,7 +46,38 @@
         // Get query / pre selected GUILD ID - allows pre defined actions:
         const { guild } = route.query
         if (guild) {
-            return dashboard.guildId = String(guild);
+            // Confirm auth data allows this guild:
+            const authGuild = auth.userData?.guilds.manageable.find(g => g.id == guild)
+            if (authGuild) {
+                if (authGuild.hasSessionsBot) {
+                    return dashboard.guildId = String(guild);
+                } else // Notify of "Un-Added" Pre Defined Guild:
+                    notifier.send({
+                        header: 'Bot not Added!',
+                        icon: 'foundation:plus',
+                        level: 'warn',
+                        content: `It seems like this server does not yet have Sessions Bot installed. <br><span class="opacity-65 text-xs">Not Right? Try refreshing your <a class="text-link!" href="/account">account data</a>.</span>`,
+                        duration: 30_000,
+                        actions: [{
+                            button: {
+                                title: 'Invite Bot',
+                                icon: 'mdi:plus',
+                                href: externalUrls.inviteBot
+                            }
+                        }]
+                    })
+
+            } else {
+                // Notify of "Un-Allowed" Pre Defined Guild:
+                notifier.send({
+                    header: 'Not Allowed!',
+                    icon: 'mdi:lock',
+                    level: 'error',
+                    duration: 30_000,
+                    content: `It seems like you don't have access to this server! Admin permissions are required to access a server's dashboard. <br><span class="opacity-65 text-xs">Not Right? Try refreshing your <a class="text-link!" href="/account">account data</a>.</span>`
+                })
+            }
+
         }
 
         // Load Saved "Guild Selection":

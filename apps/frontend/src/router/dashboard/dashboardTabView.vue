@@ -43,6 +43,10 @@
                         // Open New Session Form:
                         dashboard.sessionForm.createNew()
                         router.replace('/dashboard')
+                    } else if (action == 'view calendar') {
+                        // Open Calendar Tab:
+                        dashboard.nav.currentTab = 'Calendar';
+                        router.replace('/dashboard')
                     }
                 } catch (err) {
                     console.error('Failed to perform pre-defined dashboard action!', action, err)

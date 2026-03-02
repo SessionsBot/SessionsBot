@@ -19,9 +19,9 @@ export default {
         const rsp = new ContainerBuilder({
             accent_color: core.colors.getOxColor('success'),
             components: <any>[
-                new TextDisplayBuilder({ content: `## ${core.emojis.string('star')} New Session` }),
+                new TextDisplayBuilder({ content: `## ${core.emojis.string('star')}  New Session` }),
                 new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `-# Click on the link button attached to this message to begin create a new session/event for this Discord Server through Sessions Bot!` }),
+                new TextDisplayBuilder({ content: `**Instructions:** \n> Click on the link button attached to this message to create a new session/schedule for this Discord Server through your Sessions Bot dashboard!` }),
                 new ActionRowBuilder({
                     components: [
                         new ButtonBuilder({

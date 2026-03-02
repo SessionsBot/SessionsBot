@@ -1,20 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
 import { supabase } from "../../utils/database/supabase.js";
 import { APIResponse as reply } from "../routes/api/V3/utils/responseClass.js";
-import { AppUser, Database } from "@sessionsbot/shared";
 import { HttpStatusCode } from "axios";
 import { useLogger } from "../../utils/logs/logtail.js";
 
 const createLog = useLogger();
 
-export interface authorizedRequest extends Request {
-    auth: {
-        user: AppUser,
-        profile: Database['public']['Tables']['profiles']['Row']
-    }
-}
-
-
+/** **Used to authenticate a user while making a backend API request**
+ * @requires "Bearer (JWT)" Authorization Header w/ `Request`
+ */
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Get token from auth headers:
