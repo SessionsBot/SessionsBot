@@ -20,7 +20,7 @@
     // Sessions Paginator:
     const sPageIndexStart = ref<number>();
 
-    // Watch - Highlighted Session Id:
+    // Watch - Highlighted Session Id - Correct Page:
     watch(() => dashboard.nav.highlightedSessionId, (id) => {
         if (id) {
 

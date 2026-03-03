@@ -91,7 +91,7 @@
     const dialogAction = ref<'delay' | 'cancel'>('delay')
 
 
-    // Watch - Session "Highlighted":
+    // Watch - Session "Highlighted" - Scroll into frame:
     const highlightSession = computed(
         () => dashboard.nav.highlightedSessionId === props.session?.id
     )

@@ -8,7 +8,7 @@ import { z, type TypeOf } from 'zod'
 import router from "@/router/router";
 import useNotifier from "../notifier";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase";
 
 export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
@@ -18,11 +18,8 @@ const useDashboardStore = defineStore('dashboard', () => {
     const auth = useAuthStore()
     const authKey = computed(() => auth.session?.access_token)
 
-
     /** Currently Selected `Guild Id`. */
     const guildId = ref<string | null>(null)
-
-
 
     /** Selected Guild Data - **NESTED** */
     const guildData = {
@@ -134,7 +131,9 @@ const useDashboardStore = defineStore('dashboard', () => {
         /** Whether or not the Dashboard Nav element is "expanded" or not. */
         expanded: false,
         /** The session id to bring into focus and highlight. */
-        highlightedSessionId: <string | undefined>undefined
+        highlightedSessionId: <string | undefined>undefined,
+        /** The template id to bring into focus and highlight. */
+        highlightedTemplateId: <string | undefined>undefined
     })
 
 
@@ -267,9 +266,8 @@ const useDashboardStore = defineStore('dashboard', () => {
         async function subscribe() {
             try {
                 // Prepare
-                if (!guildId.value) return console.warn(`Failed to subscribe to realtime updates - No guild id!`)
+                if (!guildId.value) return console.warn(`[Realtime Updates]: FAILED to subscribe - NO GUILD ID!`)
                 if (updateChannel.value) { await supabase.removeChannel(updateChannel.value); updateChannel.value = undefined; }
-                if (debugRealtime) console.info('[Realtime Updates]: Subscribing to guild updates...')
 
                 // Set Realtime Auth:
                 const token = auth.session?.access_token
@@ -383,7 +381,15 @@ const useDashboardStore = defineStore('dashboard', () => {
                     // Subscribe
                     .subscribe((s, err) => {
                         // Debug
-                        if (debugRealtime) console.info('REALTIME GUILD UPDATES - STATUS', s, { error: err ?? null })
+                        if (debugRealtime) {
+                            if (s == REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+                                console.info('[Realtime Updates]: ✅ SUBSCRIBED!')
+                            } else if (s == REALTIME_SUBSCRIBE_STATES.CLOSED) {
+                                console.info('[Realtime Updates]: 🗑️ UNSUBSCRIBED!')
+                            } else {
+                                console.warn(`[Realtime Error]: ❌ FAILED to Subscribe! - ${s}`, { error: err })
+                            }
+                        }
                         // Timed Out? - Try Again:
                         if (s == 'TIMED_OUT' || s == 'CHANNEL_ERROR') {
                             console.warn('Attempting to re-subscribe after timeout/error!')

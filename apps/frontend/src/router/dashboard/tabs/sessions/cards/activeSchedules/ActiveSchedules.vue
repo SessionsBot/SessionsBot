@@ -27,6 +27,22 @@
     // All Templates/Schedules Paginator:
     const tPageIndexStart = ref<number>(0)
 
+    // Watch - Highlighted Template/Schedule Id - Correct Page:
+    watch(() => dashboard.nav.highlightedSessionId, (id) => {
+        if (id) {
+
+            const session = dashboard.guildData.sessions.state?.find(s => s.id == id)
+            if (!session) return console.warn('Failed to find session by id to highlight!')
+            const s_index = guildTemplates.value?.findIndex(s => s.id == id);
+            if (s_index === -1 || !s_index) return console.warn('Failed to find session by id to highlight!')
+            const pageStart = Math.floor(s_index / 5) * 5
+
+            // Switch paginator page
+            tPageIndexStart.value = pageStart
+
+        } else return
+    })
+
 
 </script>
 

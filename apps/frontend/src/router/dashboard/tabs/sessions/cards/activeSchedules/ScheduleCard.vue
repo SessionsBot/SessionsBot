@@ -131,11 +131,34 @@
     ]
 
 
+    // Watch - Session "Highlighted" - Scroll into frame:
+    const scheduleCardRef = ref<HTMLElement>()
+    const highlightSchedule = computed(
+        () => dashboard.nav.highlightedTemplateId === props.template?.id
+    )
+    watch(highlightSchedule, async (isHighlighted) => {
+        if (!isHighlighted) return
+        // Scroll Schedule into View:
+        await nextTick()
+        requestAnimationFrame(() => {
+            scheduleCardRef.value?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            })
+        })
+        // Unhighlight THIS Schedule after timeout:
+        setTimeout(() => {
+            if (dashboard.nav.highlightedTemplateId == props.template?.id)
+                dashboard.nav.highlightedTemplateId = undefined
+        }, 5_000);
+    }, { flush: 'post', immediate: true })
+
 </script>
 
 
 <template>
-    <div class="session-card border-dotted! border-3! rounded-lg!">
+    <div ref="scheduleCardRef" :class="{ 'border-brand-1!': highlightSchedule }"
+        class="session-card border-dotted! border-3! rounded-lg!">
 
         <!-- Name / Start Time / Zone -->
         <div class="name-and-time">

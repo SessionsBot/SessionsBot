@@ -5,6 +5,7 @@
     import EventLabel from './EventLabel.vue';
     import UserLabel from './UserLabel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import useNotifier from '@/stores/notifier';
 
     // Incoming Modals:
     const isVisible = defineModel<boolean>('isVisible');
@@ -15,32 +16,25 @@
 
     // Services:
     const dashboard = useDashboardStore()
-    const clipboard = useClipboard();
-    const copyStates = ref<Map<string, 'idle' | 'success' | 'fail'>>(new Map())
-    function copyText(n: string, v: string) {
-        try {
-            if (clipboard.isSupported) {
-                clipboard.copy(v)
-                copyStates.value?.set(n, 'success')
-                // window.alert('Text has been copied to the clipboard!')
-            } else {
-                copyStates.value?.set(n, 'fail')
-                // window.alert('Clipboard is NOT supported! Please manually copy the text value..')
-            }
-        } catch (err) {
-            console.error('Failed to copy text value!', err);
-            copyStates.value?.set(n, 'fail')
-        } finally {
-            setTimeout(() => {
-                copyStates.value?.set(n, 'idle')
-            }, 1_500);
-        }
-    }
+    const notifier = useNotifier()
 
-    // Event Data - Occurred Date:
-    const occurredDate = computed(() => {
-        return DateTime.fromISO(String(selectedEvent.value?.created_at))
-    })
+    // Util Fn - View Template by Id:
+    function viewTemplateById(id: string) {
+        if (!id) return
+        // Ensure this sch will be visible on sessions tab:
+        const sch = dashboard.guildData.sessionTemplates.state?.filter(t => !(t.next_post_utc == null || t.enabled == false)).find(t => t?.id == id)
+        if (!sch) {
+            return notifier.send({
+                level: 'warn',
+                header: 'Cannot Find',
+                content: `This schedule may have been deleted or outdated! <br><span class="text-xs opacity-50"> Id: ${id} </span>`
+            })
+        }
+
+        isVisible.value = false;
+        dashboard.nav.highlightedTemplateId = id
+        dashboard.nav.currentTab = 'Sessions'
+    }
 
     // Emit - Close:
     const emits = defineEmits<{
@@ -62,101 +56,6 @@
                 <p class="font-extrabold p-0.75 text-xl opacity-90 uppercase text-text-1!">
                     Event Details
                 </p>
-
-            </section>
-
-            <!-- Details -->
-            <section hidden class="flex items-center justify-start flex-col gap-0 p-0 overflow-auto!">
-
-                <div class="flex flex-col gap-2 p-3! items-center justify-center flex-wrap ">
-
-                    <!-- Event Type - Copy Text -->
-                    <span
-                        class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring-3 rounded relative! flex items-center justify-center">
-                        <!-- Value Title -->
-                        <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
-                            Event Type
-                        </p>
-                        <!-- Value Display -->
-                        <p class="w-full">
-                            {{ selectedEvent?.event_type }}
-                        </p>
-                        <input :value="selectedEvent?.event_type" readonly
-                            class="w-full h-full outline-none! text-text-1/50 font-semibold" />
-                        <!-- Copy Text Button -->
-                        <button @click="copyText('Event Type', String(selectedEvent?.event_type))" title="Copy Value"
-                            class="transition-all cursor-pointer" :class="{
-                                'copy-success': copyStates?.get('Event Type') == 'success',
-                                'copy-fail': copyStates?.get('Event Type') == 'fail'
-                            }">
-                            <Iconify icon="akar-icons:clipboard" :size="19" class="size-full! aspect-square px-0.5" />
-                        </button>
-
-                    </span>
-
-                    <!-- Event Date - Copy Text -->
-                    <span
-                        class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring-3 rounded relative! flex items-center justify-center">
-                        <!-- Value Title -->
-                        <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
-                            Date Occurred
-                        </p>
-                        <!-- Value Display -->
-                        <input :value="occurredDate.toFormat('f')" readonly
-                            class="w-full h-full outline-none! text-text-1/50 font-semibold" />
-                        <!-- Copy Text Button -->
-                        <button @click="copyText('Date Occurred', String(occurredDate.toFormat('f')))"
-                            title="Copy Value" class="transition-all cursor-pointer" :class="{
-                                'copy-success': copyStates?.get('Date Occurred') == 'success',
-                                'copy-fail': copyStates?.get('Date Occurred') == 'fail'
-                            }">
-                            <Iconify icon="akar-icons:clipboard" :size="19" class="size-full! aspect-square px-0.5" />
-                        </button>
-
-                    </span>
-
-                    <!-- Acting User - Copy Text -->
-                    <span
-                        class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring-3 rounded relative! flex items-center justify-center">
-                        <!-- Value Title -->
-                        <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
-                            {{ selectedEvent?.user_id == 'BOT' ? 'User' : 'User ID' }}
-                        </p>
-                        <!-- Value Display -->
-                        <input :value="selectedEvent?.user_id" readonly
-                            class="w-full h-full outline-none! text-text-1/50 font-semibold" />
-                        <!-- Copy Text Button -->
-                        <button @click="copyText('Acting User', String(selectedEvent?.user_id))" title="Copy Value"
-                            class="transition-all cursor-pointer" :class="{
-                                'copy-success': copyStates?.get('Acting User') == 'success',
-                                'copy-fail': copyStates?.get('Acting User') == 'fail'
-                            }">
-                            <Iconify icon="akar-icons:clipboard" :size="19" class="size-full! aspect-square px-0.5" />
-                        </button>
-
-                    </span>
-
-                    <!-- Meta Value(s) - Copy Text -->
-                    <span v-for="[title, value] in Object.entries(selectedEvent?.event_meta as any)"
-                        class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring-3 rounded relative! flex items-center justify-center">
-                        <!-- Value Title -->
-                        <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
-                            {{ title }}
-                        </p>
-                        <!-- Value Display -->
-                        <input :value readonly class="w-full h-full outline-none! text-text-1/50 font-semibold" />
-                        <!-- Copy Text Button -->
-                        <button @click="copyText(title, String(value))" title="Copy Value"
-                            class="transition-all cursor-pointer" :class="{
-                                'copy-success': copyStates?.get(title) == 'success',
-                                'copy-fail': copyStates?.get(title) == 'fail'
-                            }">
-                            <Iconify icon="akar-icons:clipboard" :size="19" class="size-full! aspect-square px-0.5" />
-                        </button>
-
-                    </span>
-
-                </div>
 
             </section>
 
@@ -247,13 +146,15 @@
                     <p class="field-heading">
                         Schedule:
                     </p>
-                    <span class="field-value">
+                    <span @click="viewTemplateById(eventMeta?.template_id)"
+                        class="field-value cursor-pointer flex flex-row gap-1 items-center">
 
                         <p class="font-semibold">
                             {{dashboard.guildData.sessionTemplates.state?.find(s => s?.id ==
                                 eventMeta?.template_id)?.title
                                 ?? eventMeta?.template_id}}
                         </p>
+                        <ExternalLink :size="12" class="opacity-50" />
 
 
                     </span>
