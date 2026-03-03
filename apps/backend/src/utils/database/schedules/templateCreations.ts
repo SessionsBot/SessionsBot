@@ -72,11 +72,11 @@ async function executeTemplateCreationSchedule() {
         // Confirm Data Fetched:
         if (overdueGuildsErr) {
             createLog.for('Database').error('Failed to Load Overdue Guilds! - Creation Scheduler - CRITICAL', { details: overdueGuildsErr })
-            return
+            return sendHeartbeat(false)
         }
         if (!overdueGuilds?.length) {
             if (debugSchedule) console.info(`[⏰] Template Fetch - Returned 0 results due for next post!`)
-            return
+            return sendHeartbeat(true)
         }
 
 
