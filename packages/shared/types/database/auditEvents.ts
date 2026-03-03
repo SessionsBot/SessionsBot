@@ -53,9 +53,7 @@ const EventMetaData = {
         session_id: '' as string,
         rsvp_id: '' as string
     },
-    [AuditEvent.PreferencesUpdated]: {
-        username: '' as string
-    },
+    [AuditEvent.PreferencesUpdated]: undefined
 } as const
 
 /** Returns the Meta Data *Type* for a specific **{@link AuditEvent}**. */

@@ -139,7 +139,7 @@
     @reference "@/styles/main.css";
 
     .auditLogTable {
-        @apply mt-5 mx-3 max-w-195 !max-h-fit block bg-bg-1 ring-ring-soft ring-2 rounded-md overflow-clip;
+        @apply mt-5 mx-3 max-w-195 min-w-80 sm:min-w-120 !max-h-fit block bg-bg-1 ring-ring-soft ring-2 rounded-md overflow-clip;
 
         *.heading-cell {
             @apply w-full text-center font-extrabold p-2 bg-text-1/15 ring-1 ring-ring-soft;

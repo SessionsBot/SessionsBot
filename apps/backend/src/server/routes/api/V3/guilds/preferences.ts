@@ -72,9 +72,7 @@ preferencesRouter.patch('/', verifyToken, verifyGuildMember(true), async (req, r
                     event: AuditEvent.PreferencesUpdated,
                     guild: String(guildId),
                     user: req.auth?.profile?.discord_id,
-                    meta: {
-                        username: req?.auth?.profile?.username
-                    }
+                    meta: undefined
                 })
                 // Return Success:
                 return new reply(res).success({ message: 'Guild preferences updated!' })

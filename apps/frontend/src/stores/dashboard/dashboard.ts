@@ -261,7 +261,7 @@ const useDashboardStore = defineStore('dashboard', () => {
     /** DB - Guild Updates - REALTIME */
     const useRealtimeUpdates = () => {
         const debugRealtime = true;
-        const retryAttempts = ref(0)
+        const retryRealtimeAttempts = ref(0)
         const updateChannel = ref<RealtimeChannel>()
 
         async function subscribe() {
@@ -385,10 +385,10 @@ const useDashboardStore = defineStore('dashboard', () => {
                         // Debug
                         if (debugRealtime) console.info('REALTIME GUILD UPDATES - STATUS', s, { error: err ?? null })
                         // Timed Out? - Try Again:
-                        if (s == 'TIMED_OUT') {
-                            console.warn('Attempting to re-subscribe after timeout!')
-                            retryAttempts.value += 1
-                            if (retryAttempts.value > 3) return
+                        if (s == 'TIMED_OUT' || s == 'CHANNEL_ERROR') {
+                            console.warn('Attempting to re-subscribe after timeout/error!')
+                            retryRealtimeAttempts.value += 1
+                            if (retryRealtimeAttempts.value > 3) return
                             else subscribe()
                         }
                     })
