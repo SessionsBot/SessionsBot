@@ -4,10 +4,12 @@ import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
-import { z } from 'zod'
+import { z, type TypeOf } from 'zod'
 import router from "@/router/router";
 import useNotifier from "../notifier";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { supabase } from "@/utils/supabase";
 
 export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
@@ -20,79 +22,87 @@ const useDashboardStore = defineStore('dashboard', () => {
     /** Currently Selected `Guild Id`. */
     const guildId = ref<string | null>(null)
 
-    /** Guild Data - Channels */
-    const guildChannels = useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
-    })
-    /** Guild Data - Roles */
-    const guildRoles = useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
-    })
-    /** Guild Data - Subscription */
-    const guildSubscription = useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
-    })
-    /** Guild Data - Session Templates */
-    const guildSessionTemplates = useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
-    })
-    /** Guild Data - Current Sessions */
-    const guildCurrentSessions = useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
-    })
-    /** Guild Data - Audit Logs */
-    const guildAuditLogs = useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
-    })
-    /** Guild Data - Preferences/Data */
-    const guildDbData = useAsyncState(() => fetchGuildData(guildId.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
-    })
-    /** Guild Data - Guild Stats */
-    const guildStats = useAsyncState(() => fetchGuildStats(guildId.value), undefined, {
-        immediate: false,
-        onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
-    })
 
-    /** Guild Data - From Auth User */
-    const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
-
-
-    const guildFetchReady = computed(() => {
-        if (guildId.value == null) return false
-        return Object.values(guildData).every(s => s?.isReady.value == true)
-    })
-    const guildFetchErrors = computed(() => {
-        if (guildId.value == null) return []
-        return Object.values(guildData).filter(s => s?.error.value != null)?.map(s => s?.error.value)
-    })
-    const guildLastFetchDate = ref<DateTime | null>(null)
-    /** Selected Guild Data Fetch State - **NESTED** */
-    const guildDataState = {
-        allReady: guildFetchReady,
-        errors: guildFetchErrors,
-        fetchedAt: guildLastFetchDate
-    }
 
     /** Selected Guild Data - **NESTED** */
     const guildData = {
-        guild: guildDbData,
-        guildStats,
-        channels: guildChannels,
-        roles: guildRoles,
-        subscription: guildSubscription,
-        sessionTemplates: guildSessionTemplates,
-        sessions: guildCurrentSessions,
-        auditLog: guildAuditLogs
+        /** Guild Data - Preferences / Guild Row */
+        guild: useAsyncState(() => fetchGuildData(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Guild Stats */
+        guildStats: useAsyncState(() => fetchGuildStats(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Channels */
+        channels: useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Channels */
+        roles: useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Subscription */
+        subscription: useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Session Templates */
+        sessionTemplates: useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Sessions */
+        sessions: useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Audit Logs */
+        auditLog: useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
+        })
     }
 
+    /** Guild Data - From Auth User - **`UNTRUSTED`** */
+    const userGuildData = computed(() => auth.user?.user_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
+
+    /** Selected Guild Data Fetch States - **NESTED** */
+    const guildDataState = {
+        allReady: computed(() => {
+            if (guildId.value == null) return false
+            return Object.values(guildData).every(s => s?.isReady.value == true)
+        }),
+        initialFetchOk: ref(false),
+        errors: computed(() => {
+            if (guildId.value == null) return []
+            return Object.values(guildData).filter(s => s?.error.value != null)?.map(s => s?.error.value)
+        }),
+        fetchedAt: ref<DateTime | null>(null)
+    }
+
+    async function refetchData(data: keyof typeof guildData) {
+        await guildData[data].execute();
+    }
 
     /** Saved Selection - Choice Class */
     const saveGuildChoice = {
@@ -115,6 +125,7 @@ const useDashboardStore = defineStore('dashboard', () => {
             return sessionStorage.removeItem(this.saveKey)
         }
     }
+
 
     /** Navigation - Nested States/Methods */
     const nav = reactive({
@@ -214,9 +225,9 @@ const useDashboardStore = defineStore('dashboard', () => {
 
         /** Fn - Attempts to open/create a new session schedule, if subscription allows does so - or else alerts. */
         function createNew(opts?: creationPayload) {
-            const subscription = guildSubscription.state.value;
+            const subscription = guildData.subscription.state.value;
             const maxSchedulesAllowed = subscription?.limits.MAX_SCHEDULES ?? SubscriptionLimits.FREE.MAX_SCHEDULES
-            const activeSchedulesCount = guildSessionTemplates.state.value?.length ?? 0
+            const activeSchedulesCount = guildData.sessionTemplates.state.value?.length ?? 0
 
             // Check for MAX Active Schedules already created:
             if (activeSchedulesCount >= maxSchedulesAllowed) {
@@ -247,6 +258,162 @@ const useDashboardStore = defineStore('dashboard', () => {
     const sessionForm = useSessionForm()
 
 
+    /** DB - Guild Updates - REALTIME */
+    const useRealtimeUpdates = () => {
+        const debugRealtime = true;
+        const updateChannel = ref<RealtimeChannel>()
+
+        async function subscribe() {
+            try {
+                // Prepare
+                if (!guildId.value) return console.warn(`Failed to subscribe to realtime updates - No guild id!`)
+                if (updateChannel.value) { await supabase.removeChannel(updateChannel.value); updateChannel.value = undefined; }
+                if (debugRealtime) console.info('[Realtime Updates]: Subscribing to guild updates...')
+
+                // Set Realtime Auth:
+                const token = auth.session?.access_token
+                if (!token) return console.warn('[Realtime Updates]: FAILED to subscribe - NO AUTH TOKEN!')
+                await supabase.realtime.setAuth(auth?.session?.access_token)
+
+                // Create / Subscribe to Channel:
+                updateChannel.value = supabase.channel(`guild-updates-${guildId.value}`)
+
+                    // Guild:
+                    .on('postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'guilds',
+                            filter: `id=eq.${guildId.value}`
+                        },
+                        (payload) => {
+                            if (debugRealtime) console.info('[Realtime Updates]: Guild Db Data', { payload })
+                            const { eventType, new: newRow, old: oldRow } = payload
+                            const guildDbData = guildData.guild.state;
+                            guildDbData.value = newRow as any;
+                        }
+                    )
+
+                    // Guild Stats:
+                    .on('postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'guild_stats',
+                            filter: `guild_id=eq.${guildId.value}`
+                        },
+                        (payload) => {
+                            if (debugRealtime) console.info('[Realtime Updates]: Guild Stats', { payload })
+                            const { eventType, new: newRow, old: oldRow } = payload
+                            const guildStats = guildData.guildStats.state;
+                            guildStats.value = newRow as any;
+                        }
+                    )
+
+                    // Session Templates:
+                    .on('postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'session_templates',
+                            filter: `guild_id=eq.${guildId.value}`
+                        },
+                        (payload) => {
+                            if (debugRealtime) console.info('[Realtime Updates]: Session Templates', { payload })
+                            const { eventType, new: newRow, old: oldRow } = payload
+                            const guildTemplates = guildData.sessionTemplates.state;
+                            if (eventType == 'INSERT') {
+                                if (guildTemplates.value?.some(t => t?.id == newRow?.id)) return;
+                                guildTemplates.value?.unshift(newRow as any)
+                            } else if (eventType == 'UPDATE') {
+                                const index = guildTemplates.value?.findIndex(t => t?.id == newRow?.id)
+                                if (index != undefined && index !== -1 && guildTemplates.value) {
+                                    guildTemplates.value[index] = newRow as any;
+                                } else console.warn('[Realtime]: Failed to update guild templates', { newRow, index })
+                            } else if (eventType == 'DELETE') {
+                                guildTemplates.value = guildTemplates.value?.filter(t => t?.id != oldRow?.id)
+                            }
+                        }
+                    )
+
+                    // Sessions:
+                    .on('postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'sessions',
+                            filter: `guild_id=eq.${guildId.value}`
+                        },
+                        (payload) => {
+                            if (debugRealtime) console.info('[Realtime Updates]: Sessions', { payload })
+                            const { eventType, new: newRow, old: oldRow } = payload
+                            const guildSessions = guildData.sessions.state;
+                            if (eventType == 'INSERT') {
+                                if (guildSessions.value?.some(s => s?.id == newRow?.id)) return;
+                                guildSessions.value?.unshift(newRow as any)
+                            } else if (eventType == 'UPDATE') {
+                                const index = guildSessions.value?.findIndex(t => t?.id == newRow?.id)
+                                if (index != undefined && index !== -1 && guildSessions.value) {
+                                    guildSessions.value[index] = newRow as any;
+                                } else console.warn('[Realtime]: Failed to update guild sessions', { newRow, index })
+                            } else if (eventType == 'DELETE') {
+                                guildSessions.value = guildSessions.value?.filter(t => t?.id != oldRow?.id)
+                            }
+                        }
+                    )
+
+                    // Audit Logs:
+                    .on('postgres_changes',
+                        {
+                            event: 'INSERT',
+                            schema: 'public',
+                            table: 'audit_logs',
+                            filter: `guild_id=eq.${guildId.value}`
+                        },
+                        (payload) => {
+                            if (debugRealtime) console.info('[Realtime Updates]: Audit Logs', { payload })
+                            const { eventType, new: newRow, old: oldRow } = payload
+                            const auditLogs = guildData.auditLog.state;
+                            if (auditLogs.value?.some(a => a?.id == newRow?.id)) return;
+                            auditLogs.value?.unshift(newRow as any)
+                        }
+                    )
+
+                    // Subscribe
+                    .subscribe((s, err) => {
+                        // Debug
+                        if (debugRealtime) console.info('REALTIME GUILD UPDATES - STATUS', s, { error: err ?? null })
+                        // Timed Out? - Try Again:
+                        if (s == 'TIMED_OUT') {
+                            console.warn('Attempting to re-subscribe after timeout!')
+                            subscribe()
+                        }
+                    })
+
+            } catch (err) {
+                // Log Failure:
+                console.error('REALTIME GUILD UPDATES - ERR:', err)
+            }
+        }
+
+        async function unsubscribe() {
+            try {
+                if (updateChannel.value) { await supabase.removeChannel(updateChannel.value); updateChannel.value = undefined; }
+                else console.warn('Tried to unsubscribe from a guild updates channel! - No channel found!')
+            } catch (err) {
+                // Log Failure:
+                console.error('REALTIME GUILD UPDATES - ERR:', err)
+            }
+        }
+
+        return {
+            subscribe,
+            unsubscribe
+        }
+    }
+    const guildRealtimeUpdates = useRealtimeUpdates();
+
+
     // + WATCH - Guild Id - Fetch & Reset Data on Selected Guild Id Change:
     watch(guildId, async (id) => {
         // Guild Unselected - RESET DATA:
@@ -254,7 +421,12 @@ const useDashboardStore = defineStore('dashboard', () => {
             // Reset Data
             for (const state of Object.values(guildData)) {
                 state.state.value = undefined
+                state.isReady.value = false
+                state.isLoading.value = false
+                state.error.value = undefined
             }
+            guildDataState.initialFetchOk.value = false;
+            await guildRealtimeUpdates.unsubscribe()
             // Session Form:
             sessionForm.visible.value = false;
             sessionForm.editPayload.value = null;
@@ -314,11 +486,18 @@ const useDashboardStore = defineStore('dashboard', () => {
         }
         // Await All States to Fetch:
         console.info('(i) Guild STARTED Fetching at:', DateTime.local().toFormat('M/d/yy tt'))
-        const allFetched = await Promise.allSettled(promises)
-        // Assign Guild's Last Fetch Date:
-        guildLastFetchDate.value = DateTime.now()
-        console.info('(i) Guild FINISHED Fetching at:', DateTime.local().toFormat('M/d/yy tt'))
+        await Promise.allSettled(promises)
 
+        // Check For Errors - Initial Fetch State:
+        const hasErrors = Object.values(guildData).some(s => s.error.value != null)
+        guildDataState.initialFetchOk.value = !hasErrors
+
+        // Subscribe to Changes:
+        await guildRealtimeUpdates.subscribe()
+
+        // Assign Guild's Last Fetch Date:
+        guildDataState.fetchedAt.value = DateTime.now()
+        console.info('(i) Guild FINISHED Fetching at:', DateTime.local().toFormat('M/d/yy tt'))
     })
 
 
@@ -331,6 +510,8 @@ const useDashboardStore = defineStore('dashboard', () => {
         userGuildData,
         guildDataState,
         saveGuildChoice,
+
+        refetchData,
 
         discordIdentities,
         sessionForm,

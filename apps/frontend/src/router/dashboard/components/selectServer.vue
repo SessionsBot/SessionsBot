@@ -7,36 +7,20 @@
 
     // Services:
     const auth = useAuthStore();
-    const nav = useNavStore();
-    const router = useRouter();
     const dashboard = useDashboardStore();
 
     // User Guilds
     const guildsWSession = computed(() => auth.userData?.guilds.manageable.filter(g => g.hasSessionsBot));
-    const guildsWOSession = computed(() => auth.userData?.guilds.manageable.filter(g => !g.hasSessionsBot).sort((a, b) => {
-        return (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0);
-    }));
-
 
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {
-        // root: {
-        //     background: `var(--color-zinc-700)`,
-        //     borderColor: `var(--color-zinc-700)`,
-        //     focusBorderColor: `var(--color-zinc-400)`,
-        //     hoverBorderColor: `var(--color-zinc-400)`,
-        //     checkedHoverBorderColor: `var(--color-indigo-400)`,
-        //     checkedBackground: `var(--color-indigo-400)`,
-        //     checkedBorderColor: `var(--color-indigo-400)`,
-        //     checkedHoverBackground: `var(--color-indigo-400)`,
-        // },
         icon: {
             checkedColor: 'black',
             checkedHoverColor: 'black',
             color: 'black',
         }
     }
-    const saveGuildChoiceEnabled = ref<boolean>();
+    const saveGuildChoiceEnabled = ref<boolean>(false);
 
     // Select Ready Server fn:
     function selectReadyServer(guildId: string) {
@@ -67,10 +51,10 @@
         }
     }
 
-    onMounted(() => {
+    onMounted(async () => {
         // If not Signed In - Start Auth Timer:
         if (!auth.signedIn) {
-            startAuthTimer()
+            await startAuthTimer()
         }
     })
 

@@ -9,8 +9,6 @@
 
     // Services:
     const dashboard = useDashboardStore();
-    const route = useRoute();
-    const router = useRouter();
     const currentTab = computed(() => dashboard.nav.currentTab)
 
     const activeTabComponent = computed(() => {
@@ -28,39 +26,6 @@
         }
     })
 
-    // Guild Data State:
-    const guildDataState = computed(() => dashboard.guildDataState)
-
-    // Watch Guild Data Ready - Refreshed - Perform Query Actions
-    watch(guildDataState, (v) => {
-        if (v.allReady && !v.errors.length) {
-            // Get Query - Pre Provided Actions:
-            const { action: actionRaw } = route.query
-            if (actionRaw) {
-                const action = String(actionRaw);
-                try {
-                    if (action == 'new session') {
-                        // Open New Session Form:
-                        dashboard.sessionForm.createNew()
-                        router.replace('/dashboard')
-                    } else if (action == 'view calendar') {
-                        // Open Calendar Tab:
-                        dashboard.nav.currentTab = 'Calendar';
-                        router.replace('/dashboard')
-                    }
-                } catch (err) {
-                    console.error('Failed to perform pre-defined dashboard action!', action, err)
-                }
-            }
-        } else {
-            const { action: actionRaw } = route.query
-            if (actionRaw) {
-                console.warn('Pre defined action has failed!, data was not ready or errored...', v)
-            }
-
-        }
-    }, { deep: true })
-
 </script>
 
 
@@ -69,7 +34,7 @@
 
         <Transition name="slide" :duration="0.5" mode="out-in">
             <!-- Loading Content - Modal -->
-            <div v-if="!guildDataState?.allReady"
+            <div v-if="!dashboard.guildDataState.initialFetchOk"
                 class="flex gap-2 items-center justify-center p-4 bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
                 <ProgressSpinner />
                 <div class="text-text-1/70 p-2 text-center">
@@ -77,19 +42,18 @@
                     <p class="text-xs italic"> Please Wait</p>
                 </div>
             </div>
+
+
+            <!-- Main Page Content -->
+            <div v-else
+                class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
+
+                <Transition name="dashboard-tab">
+                    <component :is="activeTabComponent" />
+                </Transition>
+
+            </div>
         </Transition>
-
-
-        <!-- Main Page Content -->
-        <div v-if="guildDataState?.allReady"
-            class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
-
-            <Transition name="dashboard-tab">
-                <component :is="activeTabComponent" />
-            </Transition>
-
-        </div>
-
 
         <!-- Dialogs/Forms -->
         <SessionForm />

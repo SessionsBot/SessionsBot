@@ -102,7 +102,8 @@
                         console.info('API Success', result.data)
                         submitState.value = 'success'
                         touched.value = false;
-                        dashboard.guildData.guild.state = await fetchGuildData(dashboard.guildId)
+                        // dashboard.guildData.guild.state = await fetchGuildData(dashboard.guildId)
+                        await dashboard.refetchData('guild')
                     } else throw { display_error: 'API Request - Failed - ' + `Error - ${result.status}` }
                 }
             } catch (err: any) {

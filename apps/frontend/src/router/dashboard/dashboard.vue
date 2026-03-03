@@ -13,9 +13,10 @@
     const dashboard = useDashboardStore();
     const auth = useAuthStore()
     const route = useRoute();
+    const router = useRouter();
     const notifier = useNotifier();
 
-    // Util: Await Auth Ready:
+    // Util: Await Auth Ready or Timeout:
     async function authIsReady() {
         if (auth.authReady) return true
         else return Promise.race([
@@ -31,7 +32,7 @@
         ])
     }
 
-    // BEFORE MOUNT - Auth Guard / Load Saved / Pre Selected Guild Choice:
+    // BEFORE MOUNT - Auth Guard / Load Saved / Pre Selected Guild Choice & Actions:
     onBeforeMount(async () => {
 
         // If auth NOT ready - await readiness:
@@ -44,14 +45,16 @@
         }
 
         // Get query / pre selected GUILD ID - allows pre defined actions:
-        const { guild } = route.query
+        const { guild, action: action_raw } = route.query
         if (guild) {
-            // Confirm auth data allows this guild:
+            // Guild selected from URL - Confirm guild allowed via auth:
             const authGuild = auth.userData?.guilds.manageable.find(g => g.id == guild)
             if (authGuild) {
                 if (authGuild.hasSessionsBot) {
-                    return dashboard.guildId = String(guild);
-                } else // Notify of "Un-Added" Pre Defined Guild:
+                    // Allowed - Select Guild:
+                    dashboard.guildId = String(guild);
+                } else
+                    // Not Allowed - Notify of "Un-Added" Pre Defined Guild:
                     notifier.send({
                         header: 'Bot not Added!',
                         icon: 'foundation:plus',
@@ -68,7 +71,7 @@
                     })
 
             } else {
-                // Notify of "Un-Allowed" Pre Defined Guild:
+                // Not Allowed - Notify of "Un-Allowed" Pre Defined Guild:
                 notifier.send({
                     header: 'Not Allowed!',
                     icon: 'mdi:lock',
@@ -78,19 +81,56 @@
                 })
             }
 
+        } else {
+            // Check for Previously Saved "Guild Selection":
+            const preSavedGuildChoice = dashboard.saveGuildChoice.get()
+            if (preSavedGuildChoice) {
+                dashboard.guildId = preSavedGuildChoice;
+                dashboard.nav.expanded = false;
+            }
         }
 
-        // Load Saved "Guild Selection":
-        const choice = dashboard.saveGuildChoice.get()
-        if (choice) {
-            dashboard.guildId = choice;
-            dashboard.nav.expanded = false;
+        // PRE DEFINED ACTION QUERY:
+        if (action_raw) {
+            const action = String(action_raw);
+            // Watch Guild Data Ready - Refreshed - Perform Query Actions
+            const watcher = watch(dashboard.guildDataState, (v) => {
+                if (v.allReady && !v.errors.length) {
+                    try {
+                        if (action == 'new session') {
+                            // Open New Session Form:
+                            dashboard.sessionForm.createNew()
+                            router.replace('/dashboard')
+                        } else if (action == 'view calendar') {
+                            // Open Calendar Tab:
+                            dashboard.nav.currentTab = 'Calendar';
+                            router.replace('/dashboard')
+                        } else if (action == 'view logs' || action == 'view audit logs') {
+                            // Open Calendar Tab:
+                            dashboard.nav.currentTab = 'AuditLog';
+                            router.replace('/dashboard')
+                        }
+                        watcher.stop()
+                    } catch (err) {
+                        console.error('Failed to perform pre-defined dashboard action!', action, err)
+                        watcher.stop()
+                    }
+
+                } else {
+                    console.warn('Pre defined dashboard action has failed!, data was not ready or errored...', v)
+                }
+            }, { deep: true })
         }
+
+
 
     });
 
-    // Guild Data State:
-    const guildDataState = computed(() => dashboard.guildDataState)
+
+    // ON UNMOUNT - Unselect Guild:
+    onUnmounted(() => {
+        dashboard.guildId = null
+    })
 
 </script>
 
@@ -110,7 +150,7 @@
 
 
             <!-- Data/Fetch Error(s) -->
-            <span v-else-if="guildDataState?.errors?.length"
+            <span v-else-if="dashboard.guildDataState.errors?.length"
                 class="w-full h-full flex grow items-center justify-center flex-wrap p-5">
                 <div
                     class="flex flex-col gap-2 items-center justify-center self-center p-7 m-5 max-w-135 bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
@@ -128,7 +168,7 @@
 
 
             <!-- Dashboard View - Page/Wrap -->
-            <div v-else-if="dashboard.guildId != null && !guildDataState.errors?.length"
+            <div v-else-if="dashboard.guildId != null && !dashboard.guildDataState.errors?.length"
                 class="absolute flex flex-row inset-0 w-full! h-full! max-w-full! max-h-full!">
 
                 <!-- Dashboard - Nav/Sidebar -->
