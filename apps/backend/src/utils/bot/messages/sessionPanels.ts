@@ -1,11 +1,10 @@
-import { FullSessionData } from "@sessionsbot/shared";
+import { processVariableText, FullSessionData } from "@sessionsbot/shared";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { DateTime } from "luxon";
 import core from "../../core/core";
 import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
 import { useLogger } from "../../logs/logtail";
-import { processVariableText } from "./variableText";
 import { isBotPermissionError, sendPermissionAlert } from "../permissions/permissionsDenied";
 
 const createLog = useLogger();

@@ -1,4 +1,4 @@
-import { Database } from "@sessionsbot/shared";
+import { processVariableText, Database } from "@sessionsbot/shared";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { DateTime } from "luxon";
 import core from "../../core/core";
@@ -6,7 +6,6 @@ import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
 import { supabase } from "../../database/supabase";
 import { useLogger } from "../../logs/logtail";
-import { processVariableText } from "./variableText";
 
 const createLog = useLogger();
 const { colors } = core

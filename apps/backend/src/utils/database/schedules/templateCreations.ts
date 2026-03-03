@@ -1,4 +1,4 @@
-import { calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database } from "@sessionsbot/shared";
+import { processVariableText, calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
@@ -10,7 +10,6 @@ import cron, { ScheduledTask } from 'node-cron'
 import { createAuditLog } from "../auditLog";
 import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 import { URLS } from "../../core/urls";
-import { processVariableText } from "../../bot/messages/variableText";
 import { increaseGuildStat } from "../manager/statsManager";
 import { isBotPermissionError } from "../../bot/permissions/permissionsDenied";
 import pLimit from "p-limit";
