@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import * as Sentry from '@sentry/vue'
+import type { App } from "vue";
 
 /** Util - Await Gtag is ready */
 function waitForGtag(timeout = 2000): Promise<boolean> {
@@ -16,7 +18,6 @@ function waitForGtag(timeout = 2000): Promise<boolean> {
         }, 50);
     });
 }
-
 
 // Analytics Store:
 const useAnalyticsStore = defineStore('analytics', () => {
@@ -137,6 +138,22 @@ const useAnalyticsStore = defineStore('analytics', () => {
         cookieConsent,
     }
 })
+
+// Initialize Sentry:
+export function initializeSentry(app: App) {
+    if (location.hostname == 'localhost') return
+    Sentry.init({
+        app,
+        dsn: 'https://rDTxV422fc9ZbJz1qYAsZMih@s1694266.eu-nbg-2.betterstackdata.com/1',
+        tracesSampleRate: 1.0,
+        integrations: [
+            Sentry.captureConsoleIntegration({
+                levels: ['warn', 'error']
+            })
+        ]
+    })
+    console.info('Sentry Client Initialized!')
+}
 
 // Export Store:
 export default useAnalyticsStore

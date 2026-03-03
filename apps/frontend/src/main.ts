@@ -18,6 +18,7 @@ import './styles/animations.css'
 import 'primeicons/primeicons.css'
 import "vue-toastification/dist/index.css";
 import 'iconify-icon'
+import { initializeSentry } from './stores/analytics';
 
 
 
@@ -31,5 +32,6 @@ app.use(Toast, toastOptions)
 app.use(PrimeVue, primeVueConfig)
 app.use(ConfirmationService)
 app.directive('tool-tip', Tooltip);
+initializeSentry(app)
 
 app.mount('#app')

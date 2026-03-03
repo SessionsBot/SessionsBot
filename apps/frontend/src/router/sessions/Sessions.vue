@@ -144,15 +144,14 @@
                     </div>
 
                     <!-- End Date -->
-                    <div v-if="s?.duration_ms" class="flex w-full flex-col gap-1">
+                    <div v-if="s?.duration_ms && Number(s?.duration_ms)" class="flex w-full flex-col gap-1">
                         <span class="flex items-center gap-px">
                             <Iconify icon="mdi:clock" class="opacity-80" size="20" />
                             <p> End Date </p>
                         </span>
                         <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
                             {{ DateTime.fromISO(String(s?.starts_at_utc)).plus({
-                                millisecond:
-                                    s?.duration_ms
+                                millisecond: Number(s?.duration_ms)
                             }).toFormat('f') ?? 'Unknown' }}
                         </span>
                     </div>
