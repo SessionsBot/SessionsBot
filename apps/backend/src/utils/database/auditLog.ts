@@ -20,7 +20,7 @@ export async function createAuditLog<E extends AuditEvent>(opts: {
 
     // Event Meta:
     const eventMetaString = opts?.['meta']
-        ? (JSON.stringify(opts?.['meta']) || null)
+        ? opts.meta
         : null
 
     // Save:
