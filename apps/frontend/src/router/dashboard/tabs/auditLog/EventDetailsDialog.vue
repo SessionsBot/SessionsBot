@@ -30,14 +30,6 @@
         }
     }
 
-    // Event Data - META:
-    const eventMetaData = computed<Record<string, any>>(() => {
-        const rawMeta = selectedEvent.value?.event_meta;
-        if (!rawMeta) return {}
-        const parsed = JSON.parse(String(rawMeta))
-        return parsed
-    })
-
     // Event Data - Occurred Date:
     const occurredDate = computed(() => {
         return DateTime.fromISO(String(selectedEvent.value?.created_at))
@@ -139,7 +131,7 @@
                     </span>
 
                     <!-- Meta Value(s) - Copy Text -->
-                    <span v-for="[title, value] in Object.entries(eventMetaData)"
+                    <span v-for="[title, value] in Object.entries(selectedEvent?.event_meta as any)"
                         class="bg-black/20 h-9 p-1 mt-3.25 border-2 border-ring-3 rounded relative! flex items-center justify-center">
                         <!-- Value Title -->
                         <p class="text-xs font-extrabold uppercase italic opacity-50 absolute -top-[1.5em] left-px">
@@ -148,8 +140,8 @@
                         <!-- Value Display -->
                         <input :value readonly class="w-full h-full outline-none! text-text-1/50 font-semibold" />
                         <!-- Copy Text Button -->
-                        <button @click="copyText(title, value)" title="Copy Value" class="transition-all cursor-pointer"
-                            :class="{
+                        <button @click="copyText(title, String(value))" title="Copy Value"
+                            class="transition-all cursor-pointer" :class="{
                                 'copy-success': copyStates?.get(title) == 'success',
                                 'copy-fail': copyStates?.get(title) == 'fail'
                             }">

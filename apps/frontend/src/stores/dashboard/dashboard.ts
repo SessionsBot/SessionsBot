@@ -261,6 +261,7 @@ const useDashboardStore = defineStore('dashboard', () => {
     /** DB - Guild Updates - REALTIME */
     const useRealtimeUpdates = () => {
         const debugRealtime = true;
+        const retryAttempts = ref(0)
         const updateChannel = ref<RealtimeChannel>()
 
         async function subscribe() {
@@ -371,7 +372,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                             filter: `guild_id=eq.${guildId.value}`
                         },
                         (payload) => {
-                            if (debugRealtime) console.info('[Realtime Updates]: Audit Logs', { payload })
+                            if (debugRealtime) console.info('[Realtime Updates]: Audit Logs', { payload, fullUpdate: guildData.auditLog.state.value })
                             const { eventType, new: newRow, old: oldRow } = payload
                             const auditLogs = guildData.auditLog.state;
                             if (auditLogs.value?.some(a => a?.id == newRow?.id)) return;
@@ -386,7 +387,9 @@ const useDashboardStore = defineStore('dashboard', () => {
                         // Timed Out? - Try Again:
                         if (s == 'TIMED_OUT') {
                             console.warn('Attempting to re-subscribe after timeout!')
-                            subscribe()
+                            retryAttempts.value += 1
+                            if (retryAttempts.value > 3) return
+                            else subscribe()
                         }
                     })
 

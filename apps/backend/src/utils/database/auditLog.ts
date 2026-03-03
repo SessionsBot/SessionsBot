@@ -19,7 +19,7 @@ export async function createAuditLog<E extends AuditEvent>(opts: {
 }) {
 
     // Event Meta:
-    const eventMetaString = opts?.['meta']
+    const eventMeta = opts?.['meta']
         ? opts.meta
         : null
 
@@ -28,7 +28,7 @@ export async function createAuditLog<E extends AuditEvent>(opts: {
         guild_id: opts.guild,
         user_id: opts.user,
         event_type: opts.event.toString(),
-        event_meta: eventMetaString
+        event_meta: eventMeta
     })
 
 

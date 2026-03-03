@@ -114,7 +114,7 @@
                             })
                         } else {
                             // Refresh Templates:
-                            dashboard.guildData.sessionTemplates?.execute()
+                            dashboard.refetchData('sessionTemplates')
                             // Send Success Alert:
                             notifier.send({
                                 header: 'Schedule Deleted',

@@ -408,7 +408,7 @@
                 } else {
                     sessionsFormVisible.value = false;
                     resetFrom()
-                    dashboard.guildData.sessionTemplates?.execute()
+                    dashboard.refetchData('sessionTemplates')
                     // Send Success Alert:
                     notifier.send({
                         header: 'Session Deleted',
@@ -684,7 +684,7 @@
             // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
-            dashboard.guildData.sessionTemplates?.execute()
+            dashboard.refetchData('sessionTemplates')
 
         } catch (err) {
             // Failed Session Form Submission
