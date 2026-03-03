@@ -4,7 +4,7 @@ import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
-import { z, type TypeOf } from 'zod'
+import { z } from 'zod'
 import router from "@/router/router";
 import useNotifier from "../notifier";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
