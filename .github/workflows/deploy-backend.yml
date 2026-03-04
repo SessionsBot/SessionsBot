@@ -51,8 +51,8 @@ jobs:
           --env KOYEB_GIT_SHA=$GITHUB_SHA \
           --env KOYEB_GIT_BRANCH=$GITHUB_REF_NAME \
           --env KOYEB_GIT_REPOSITORY=$GITHUB_REPOSITORY \
-          --env KOYEB_GIT_COMMIT_MESSAGE="${{ github.event.head_commit.message }}" \
-          --env KOYEB_GIT_COMMIT_AUTHOR="${{ github.event.head_commit.author.name }}" \
+          --env KOYEB_GIT_COMMIT_MESSAGE=${{ github.event.head_commit.message }} \
+          --env KOYEB_GIT_COMMIT_AUTHOR=${{ github.event.head_commit.author.name }} \
 
       - name: Update Deployment Status
         if: always()
@@ -72,6 +72,6 @@ jobs:
               deployment_id: deploymentId,
               state: status,
               environment: "Discord Bot - Backend",
-              environment_url: "https://regional-melloney-sessions-bot-630bded7.koyeb.app/",
+              environment_url: "https://api.sessionbot.fyi",
               log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
