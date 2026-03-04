@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+    import { safeGTag } from '@/stores/analytics'
+
+
+
 
     const colorMode = useColorMode({
         disableTransition: false,
@@ -6,8 +10,8 @@
     })
 
     function gTagColorMode(mode: string) {
-        if (typeof gtag == undefined) return console.warn('No gTag available for color mode change!');
-        else gtag('event', 'color_mode_change', {
+
+        safeGTag('event', 'color_mode_change', {
             theme: mode
         })
     }

@@ -6,6 +6,8 @@ import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
 import type { AppUser, AppUserMetadata } from "@sessionsbot/shared";
 import router from "@/router/router";
+import * as Sentry from '@sentry/vue'
+import { safeGTag } from "../analytics";
 
 /** Debug Auth - Boolean 🏁 */
 const debugAuth = false;
@@ -106,7 +108,9 @@ export const useAuthStore = defineStore('auth', {
                     // Return Success
                     return {
                         success: true,
-                        data: null
+                        data: {
+                            triggerType
+                        }
                     }
 
                 } else throw { reason: "REFRESH ERROR", message: 'Failed to re-sync Discord data - You\'ll have to sign back in, Sorry! Redirecting you now....' };
@@ -115,7 +119,7 @@ export const useAuthStore = defineStore('auth', {
 
                 // Failed Discord Refresh:
                 this.refreshStatus = 'failed';
-                console.warn('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
+                console.error('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
 
                 // Redirect new sign in after wait:
                 setTimeout(() => {
@@ -140,6 +144,7 @@ export const useAuthStore = defineStore('auth', {
 
 })
 
+
 /****Util:** Supabase Auth Went Listener 
  * - Handles auth events and keeps user in `useAuthStore()` up to date. */
 export const watchAuth = async () => {
@@ -163,12 +168,18 @@ export const watchAuth = async () => {
 
             // Update G-Tag "user_id" Config:
             if (debugAuth) { console.log('updating', gTagId, user?.id) }
-            gtag('config', gTagId, {
+            safeGTag('config', gTagId, {
                 'user_id': user?.id || null
             })
             // Send G-Tag "login" Event:
-            gtag('event', 'login', {
+            safeGTag('event', 'login', {
                 'method': 'Discord'
+            })
+
+            // Update Sentry User:
+            Sentry.setUser({
+                id: store.userData?.id,
+                username: store.userData?.username
             })
 
             // If redirect path (after auth) found:
@@ -181,9 +192,12 @@ export const watchAuth = async () => {
 
         // If Signing Out - Update G-Tag:
         if (event == 'SIGNED_OUT') {
-            gtag('config', gTagId, {
+            // Reset Sentry & GA Users
+            safeGTag('event', 'logout')
+            safeGTag('config', gTagId, {
                 'user_id': null
             })
+            Sentry.setUser(null)
         }
 
         // Debug:
@@ -200,9 +214,12 @@ export const watchAuth = async () => {
                 const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
                 if (expiredData && store.refreshStatus == 'idle') {
                     // last discord data sync >= 24 hours ago
-                    console.warn(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
+                    console.info(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
                     // auto refresh acc data:
-                    store.resyncDiscordData(session?.access_token, 'AUTOMATIC');
+                    const result = await store.resyncDiscordData(session?.access_token, 'AUTOMATIC');
+                    if (result.success) safeGTag('event', 'auth_refresh', {
+                        trigger_type: result.data?.triggerType
+                    })
                 }
             } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 

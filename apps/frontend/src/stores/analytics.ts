@@ -19,6 +19,13 @@ function waitForGtag(timeout = 2000): Promise<boolean> {
     });
 }
 
+/** Safe GTag Usage Utility */
+export function safeGTag(...args: any[]) {
+    if (typeof window.gtag == 'function') {
+        window.gtag(args)
+    } else console.warn('GTag not available...')
+}
+
 // Analytics Store:
 const useAnalyticsStore = defineStore('analytics', () => {
 
@@ -140,8 +147,9 @@ const useAnalyticsStore = defineStore('analytics', () => {
 })
 
 // Initialize Sentry:
-export function initializeSentry(app: App) {
-    if (location.hostname == 'localhost') return
+export async function initializeSentry(app: App) {
+    const envMode = import.meta.env.MODE;
+    // if (envMode == 'development') return console.warn('(i) Sentry NOT initialized in development environments...')
     Sentry.init({
         app,
         dsn: 'https://rDTxV422fc9ZbJz1qYAsZMih@s1694266.eu-nbg-2.betterstackdata.com/1',
@@ -150,9 +158,11 @@ export function initializeSentry(app: App) {
             Sentry.captureConsoleIntegration({
                 levels: ['warn', 'error']
             })
-        ]
+        ],
+        release: `web-app@v${__APP_VERSION}`,
+        environment: envMode,
+
     })
-    console.info('Sentry Client Initialized!')
 }
 
 // Export Store:

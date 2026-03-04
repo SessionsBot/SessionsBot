@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+import pkgFile from './package.json'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -36,6 +37,9 @@ export default defineConfig({
       dts: 'private/auto-component-imports.d.ts'
     })
   ],
+  define: {
+    __APP_VERSION: JSON.stringify(pkgFile.version)
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

@@ -9,4 +9,6 @@ declare global {
 
     // gtag - google analytics
     const gtag: (...args: any[]) => void;
+
+    const __APP_VERSION: string
 }
