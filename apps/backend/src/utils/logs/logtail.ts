@@ -45,7 +45,7 @@ logtail.use(async (log) => {
             ...log.context,
             from: getCaller(),
             environment: ENVIRONMENT_TYPE,
-            commit_sha: ENVIRONMENT_GIT_COMMIT_SHA,
+            commit_sha: ENVIRONMENT_GIT_COMMIT_SHA?.slice(0, 7),
             version: `@sessionsbot/bot-v${core.botVersion}`,
             service: "discord-bot",
             runtime: undefined,
