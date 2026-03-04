@@ -57,7 +57,7 @@ export default async (guildId: string, messageContent: ContainerBuilder) => {
 
     } catch (err) {
         // Log and return failure:
-        createLog.for('Bot').error(`Failed to desperately send a message to guild ${guildId}`, { err });
+        createLog.for('Bot').error(`Failed to desperately send a message to guild ${guildId}`, { err, guildId });
         return Result.err('Failed to desperately send message to  guild...', err);
     }
 }

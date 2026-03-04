@@ -79,7 +79,7 @@ export const sessionManager = {
                 status: 'canceled' as const
             }
             const updatePanel = await updateExistingSessionPanel(updatedSession, subscription.limits.SHOW_WATERMARK, data?.accent_color, data?.calendar_button)
-            if (!updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after canceling! - See Details...', { updatePanel, guildId, sessionId })
+            if (!updatePanel.success) createLog.for('Bot').warn(`Failed to update a session panel after canceling! - Panel outdated...`, { updatePanel, guildId, userId: actingId, sessionId })
 
             // Create Audit Log:
             createAuditLog({
@@ -97,7 +97,7 @@ export const sessionManager = {
 
         } catch (err) {
             // Log & Return Failure:
-            createLog.for('Database').error('Failed to Cancel Session - See Details...', { guildId, sessionId, reason, error: err })
+            createLog.for('Database').error(`Failed to Cancel Session - Guild: ${guildId}`, { guildId, userId: actingId, sessionId, reason, error: err })
             return new SessionError(
                 "Unknown",
                 { message: `Hm, it seems an error occurred behind the scenes while trying to perform this action. Keeps happening? Get in touch with Bot Support!` }
@@ -135,7 +135,7 @@ export const sessionManager = {
 
             // Update Signup Panel:
             const updatePanel = await updateExistingSessionPanel(sessionData, subscription.limits.SHOW_WATERMARK, guildData?.accent_color, guildData?.calendar_button)
-            if (!updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after delaying! - See Details...', { updatePanel, guildId, sessionId })
+            if (!updatePanel.success) createLog.for('Bot').warn('Failed to update a session panel after delaying! - Panel outdated...', { updatePanel, guildId, userId: actingId, sessionId })
 
             // Create Audit Log:
             createAuditLog({
@@ -152,7 +152,7 @@ export const sessionManager = {
             return new SessionSuccess(sessionData)
         } catch (err) {
             // Log & Return Failure:
-            createLog.for('Database').error('Failed to Delay Session - See Details...', { guildId, sessionId, newDateUTC: newDateUTC?.toISO(), reason, error: err })
+            createLog.for('Database').error('Failed to Delay Session - See Details...', { guildId, userId: actingId, sessionId, newDateUTC: newDateUTC?.toISO(), reason, error: err })
             return new SessionError(
                 "Unknown",
                 { message: `Hm, it seems an error occurred behind the scenes while trying to perform this action. Keeps happening? Get in touch with Bot Support!` }

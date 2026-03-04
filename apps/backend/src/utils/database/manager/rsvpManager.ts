@@ -248,7 +248,7 @@ export default {
             }
         } catch (err) {
             // Log & Return Failure:
-            createLog.for('Database').error('FAILED to add RSVP - See Details...', { guildId, sessionId, rsvpId, userId, error: err })
+            createLog.for('Database').error('FAILED to remove RSVP - See Details...', { guildId, sessionId, rsvpId, userId, error: err })
             return RsvpRemoveResult.fail("Unknown", undefined, { message: 'FAILED to add RSVP - See Details...', details: { guildId, sessionId, rsvpId, userId, error: err } })
         }
     }

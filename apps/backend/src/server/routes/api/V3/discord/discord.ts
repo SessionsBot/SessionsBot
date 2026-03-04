@@ -33,7 +33,7 @@ discordRouter.get(`/identity/:userId`, async (req, res) => {
         return new Reply(res).success(userIdentity)
     } catch (error) {
         // Return Failure:
-        createLog.for('Api').warn('Failed to fetch Discord Identity! See Details..', { error })
+        createLog.for('Api').warn(`Failed to fetch Discord Identity!`, { error })
         return new Reply(res).failure(`Error Occurred - Failed to fetch user's Discord identity!`);
     }
 })

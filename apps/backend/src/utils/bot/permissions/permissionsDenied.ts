@@ -42,12 +42,12 @@ export const sendPermissionAlert = async (guildId: string) => {
             createLog.for('Bot').warn('Failed to fetch guild instance for permission check/alert!')
             return
         }
-        if (guildDbError || !guildData) createLog.for('Database').error('Failed to fetch guild data for a permission check/alert!', { guildDbError, guildData, guildId })
+        if (guildDbError || !guildData) createLog.for('Database').error('Failed to fetch guild data for a permission check/alert!', { guildDbError, guildId })
 
         // Check Global Perms:
         const botRole = guild.roles.botRoleFor(core.botClient.user);
         if (!botRole) {
-            createLog.for('Bot').error('Bot role missing in guild!', { guildId });
+            createLog.for('Bot').error('Permission Alert Failed  - Bot role missing in guild!', { guildId });
             return Result.err('Bot role could not be found for permission check in guild.');
         }
         const globalPermsGranted = botRole.permissions.toArray() ?? [];
@@ -61,7 +61,7 @@ export const sendPermissionAlert = async (guildId: string) => {
             // Check permissions for channel:
             const channel = await core.botClient.channels.fetch(channelId) as TextChannel
             if (!channel) {
-                createLog.for('Database').warn('Failed to fetch a channel for a permission check! - Certainly missing permissions!! - See Details', { channelId, guildId, missingGlobalPerms })
+                createLog.for('Database').warn(`Failed to fetch/find a channel for a permission check! - Guild: ${guildId}`, { channelId, guildId, missingGlobalPerms })
                 continue
             }
             const channelPerms = channel.permissionsFor(me)?.toArray() ?? [];
@@ -153,7 +153,7 @@ export const sendPermissionAlert = async (guildId: string) => {
 
     } catch (err) {
         // Log Error:
-        createLog.for('Bot').warn('[!!] Failed to run PERMISSION CHECKS/SEND ALERT for guild! - See Details', { err, guildId });
+        createLog.for('Bot').error('FAILED to run PERMISSION CHECKS/SEND ALERT for guild! - See Details!', { err, guildId });
         return Result.err('Failed to run permission checks for guild!', err)
     }
 }

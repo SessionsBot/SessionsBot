@@ -92,7 +92,7 @@ export default {
                 if (!send.success) throw send;
 
             } catch (err) { // Error Occurred
-                createLog.for('Bot').warn(`Failed to post event "Guild Added" to internal Discord Log.`, { err })
+                createLog.for('Bot').warn(`Failed to post event "Guild Added" to internal Discord Log.`, { err, guildId: addedGuild?.id })
             }
         },
 
@@ -140,7 +140,7 @@ export default {
                 if (!send.success) throw send;
 
             } catch (err) { // Error Occurred
-                createLog.for('Bot').warn(`Failed to post event "Guild Removed" to internal Discord Log.`, { err })
+                createLog.for('Bot').warn(`Failed to post event "Guild Removed" to internal Discord Log.`, { err, guildId: guildRemoved?.id })
             }
         },
 
@@ -184,7 +184,7 @@ export default {
                 if (!send.success) throw send;
 
             } catch (err) { // Error Occurred
-                createLog.for('Bot').warn(`Failed to post event "Entitlement Created" to internal Discord Log.`, { err })
+                createLog.for('Bot').warn(`Failed to post event "Entitlement Created" to internal Discord Log.`, { err, guildId: entitlement?.guildId })
             }
         },
 
@@ -237,7 +237,7 @@ export default {
                 if (!send.success) throw send;
 
             } catch (err) { // Error Occurred
-                createLog.for('Bot').warn(`Failed to post event "Entitlement Updated" to internal Discord Log.`, { err })
+                createLog.for('Bot').warn(`Failed to post event "Entitlement Updated" to internal Discord Log.`, { err, guildId: entitlement?.guildId })
             }
         },
 

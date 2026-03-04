@@ -19,7 +19,7 @@ export default {
 		if (i.isChatInputCommand()) {
 			const command = botClient.commands.get(i.commandName);
 			if (i?.replied || i?.deferred) return
-			if (!command) return createLog.for('Bot').error(`No command matching ${i.commandName} was found.`)
+			if (!command) return createLog.for('Bot').error(`No command matching ${i?.commandName} was found.`, { userId: i?.user?.id, guildId: i?.guildId })
 			try {
 				// Execute Command:
 				await command.execute(i);
@@ -29,19 +29,12 @@ export default {
 				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
 				// Log:
 				createLog.for('Bot').warn('Command Interaction Error - See Details', {
-					error, interaction: {
-						command: {
-							cmdName: i?.commandName,
-							cmdId: i?.commandId,
-						},
-						guild: {
-							guildId: i?.guildId,
-							guildName: i?.guild?.name,
-						},
-						user: {
-							username: i.user.username,
-							userId: i.user.id
-						}
+					error,
+					userId: i?.user?.id,
+					guildId: i?.guildId,
+					command: {
+						cmdName: i?.commandName,
+						cmdId: i?.commandId,
 					}
 				});
 				// Respond with Alert:
@@ -69,7 +62,7 @@ export default {
 			// Confirm static button:
 			const [buttonId] = i.customId.split(':');
 			const button = botClient.buttons.get(buttonId);
-			if (!button) return // createLog.for('Bot').error(`No button matching custom_id: ${i?.customId} was found.`)
+			if (!button) return // createLog.for('Bot').error(`No button matching custom_id: ${i?.customId} was found.`, { userId: i?.user?.id, guildId: i?.guildId })
 
 			try {
 				// Execute button:
@@ -80,21 +73,10 @@ export default {
 				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
 				// Log:
 				createLog.for('Bot').warn('Button Interaction Error - See Details', {
-					error, interaction: {
-						buttonId: i?.customId,
-						guild: {
-							guildId: i?.guildId,
-							guildName: i?.guild?.name,
-						},
-						message: {
-							channelId: i?.channelId,
-							messageId: i?.message?.id
-						},
-						user: {
-							username: i.user.username,
-							userId: i.user.id
-						},
-					}
+					error,
+					buttonId: i?.customId,
+					guildId: i?.guildId,
+					userId: i?.user?.id
 				});
 				// Respond with Alert:
 				let reason = [

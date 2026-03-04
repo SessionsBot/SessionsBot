@@ -25,6 +25,7 @@ export default {
 
         // Log:
         createLog.for('Entitlements').info(`Entitlement UPDATED - Active: ${sku?.isActive()}`, {
+            guildId: sku?.guildId,
             entitlement: {
                 skuId: sku.skuId,
                 entitlementId: sku.id,
@@ -46,6 +47,7 @@ export default {
         })
         if (dbError) {
             createLog.for('Database').error('Failed to UPDATE an entitlement within database! - See Details', {
+                guildId: sku?.guildId,
                 err: dbError,
                 entitlement: {
                     skuId: sku.skuId,

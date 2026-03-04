@@ -47,7 +47,7 @@ systemRouter.all('/status', async (req, res) => {
     } catch (err) {
         // Return failure:
         createLog.for('Api').warn('Failed to fetch system statuses!', { err });
-        return new Reply(res).failure(`Failed to fetch system statuses`, 500);
+        return new Reply(res).failure(`Failed to fetch system statuses - Internal Error!`, 500);
     }
 })
 

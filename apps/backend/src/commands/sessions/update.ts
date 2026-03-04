@@ -88,7 +88,7 @@ export default {
         const sessionData = guildData.sessions?.[0]
         if (guildDataError) throw guildDataError; // Sends default failure msg
         if (!guildData || !sessionData) {
-            createLog.for('Database').error('Failed to fetch a session for updating panel! - See details...', { guildData, sessionData, guildDataError, guildId: i.guildId })
+            createLog.for('Database').error('Failed to fetch a session for updating a panel!', { guildData, sessionData, guildDataError, guildId: i.guildId })
             return await i.editReply({
                 components: <any>[
                     genericErrorMsg({

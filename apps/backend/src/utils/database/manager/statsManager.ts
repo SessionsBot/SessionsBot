@@ -19,7 +19,7 @@ export async function increaseGuildStat(guild_id: string, stat_type: StatName, i
     } catch (err) {
         // Log & Return Err:
         const createLog = useLogger()
-        createLog.for('Database').error('Failed to increase guild stat counter! - See Details', { stat_type, guild_id, error: err })
+        createLog.for('Database').error(`Failed to increase guild stat counter! - Guild: ${guild_id} `, { stat_type, increase_amount, guildId: guild_id, error: err })
         return { message: 'Failure!', error: err } as const;
     }
 }

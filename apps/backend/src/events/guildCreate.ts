@@ -18,7 +18,7 @@ export default {
     name: Events.GuildCreate,
     async execute(guild: Guild) {
         // Log new guild added:
-        createLog.for('Guilds').info(`➕ GUILD ADDED - ${guild.name} - ${guild.id}`);
+        createLog.for('Guilds').info(`➕ GUILD ADDED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
         discordLog.events.guildAdded(guild);
         createAuditLog({
             event: AuditEvent.BotAdded,
@@ -30,7 +30,7 @@ export default {
         // Add Guild to database:
         const result = await dbManager.guilds.add(guild);
         if (!result.success) {
-            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result })
+            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result, guildId: guild?.id })
         }
 
         // Build/Send Welcome Message:
@@ -95,7 +95,7 @@ export default {
         })
         const send = await sendWithFallback(guild.id, welcomeMsg);
         if (!send.success) {
-            createLog.for('Bot').warn(`Failed to send "Welcome Message" for new guild! - ${guild.id}`, { sendResult: send });
+            createLog.for('Bot').warn(`Failed to send "Welcome Message" for new guild! - ${guild.id}`, { sendResult: send, guildId: guild?.id });
         }
     }
 }

@@ -23,6 +23,7 @@ export default {
 
         // Log:
         createLog.for('Entitlements').info(`Entitlement Created - Active: ${sku?.isActive()}`, {
+            guildId: sku?.guildId,
             entitlement: {
                 skuId: sku.skuId,
                 entitlementId: sku.id,
@@ -45,6 +46,7 @@ export default {
         if (dbError) {
             createLog.for('Database').error('Failed to SAVE an entitlement within database! - See Details', {
                 err: dbError,
+                guildId: sku?.guildId,
                 entitlement: {
                     skuId: sku.skuId,
                     entitlementId: sku.id,

@@ -25,7 +25,7 @@ export default {
 		fetchCommands();
 
 		// Log Startup:
-		createLog.for('Bot').info('[✅] Startup', { clientTag: client?.user?.tag, botVersion: core.botVersion });
+		createLog.for('Bot').info('[✅] Startup', { clientTag: client?.user?.tag });
 
 		// Set Bot User's Activity:
 		client.user.setActivity('🔗 sessionsbot.fyi', { type: ActivityType.Custom });

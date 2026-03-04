@@ -84,11 +84,11 @@ export default {
             // Check for Bot Permission Error:
             if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
             // Log failure
-            createLog.for('Bot').warn(`The /support command failed during an interaction... see details`, {
+            createLog.for('Bot').warn(`The /support command failed during an interaction...`, {
                 interaction: {
-                    user: i.user.id,
-                    guild: i.guildId,
-                    interaction: i.id
+                    userId: i.user.id,
+                    guildId: i.guildId,
+                    interactionId: i.id
                 }, err
             });
         }

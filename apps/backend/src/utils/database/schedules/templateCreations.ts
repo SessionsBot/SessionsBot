@@ -50,7 +50,7 @@ async function sendHeartbeat(success: boolean) {
         const url = success ? heartbeatUrl : `${heartbeatUrl}/fail`;
         await fetch(url, { method: 'POST' });
     } catch (err) {
-        createLog.for('Schedule').warn('BetterStack heartbeat failed', { err });
+        createLog.for('Schedule').warn('Template/Schedule Creation(s) Heartbeat FAILED!', { err });
     }
 }
 
@@ -71,7 +71,7 @@ async function executeTemplateCreationSchedule() {
             })
         // Confirm Data Fetched:
         if (overdueGuildsErr) {
-            createLog.for('Database').error('Failed to Load Overdue Guilds! - Creation Scheduler - CRITICAL', { details: overdueGuildsErr })
+            createLog.for('Database').error('Failed to Load Overdue Guilds! - Schedule Creation Scheduler - CRITICAL', { details: overdueGuildsErr })
             return sendHeartbeat(false)
         }
         if (!overdueGuilds?.length) {
@@ -86,7 +86,7 @@ async function executeTemplateCreationSchedule() {
             const templateCreationSuccess = new Map<string, boolean>()
             let totalSessionsCreated = 0;
             const guildTemplates = g?.session_templates
-            if (!guildTemplates) return createLog.for('Schedule').warn('Tried to process guild templates w/ 0 overdue templates?', { guildData: g });
+            if (!guildTemplates) return createLog.for('Schedule').warn('Tried to process guild templates w/ 0 overdue templates?', { guildData: g, guildId: g?.id });
             for (const t of guildTemplates) { templateCreationSuccess.set(t?.id, false) }
             // Attempt creation(s):
             try {
@@ -101,7 +101,8 @@ async function executeTemplateCreationSchedule() {
                     const failedIds = g?.session_templates?.map(t => t?.id)
                     await escalateTemplateFailure(failedIds)
                     sendTemplateCreationAlert(g?.id, "Guild Fetch", failedIds)
-                    createLog.for('Schedule').error('Failed to fetch a guild (or subscription) for template creation schedule! - See details...', { details: { dbGuild: g, guildInst: guild, subscription } })
+                    createLog.for('Schedule').error('Failed to fetch a guild (or subscription) for template creation schedule! - See details...', { details: { dbGuild: g, guildInst: guild, subscription }, guildId: g?.id })
+                    return { success: false }
                 }
                 // Map Overdue Templates -> Post Channels:
                 const postChannels = new Map<string, typeof guildTemplates>()
@@ -128,13 +129,13 @@ async function executeTemplateCreationSchedule() {
                             const failedIds = g?.session_templates?.map(t => t?.id)
                             await escalateTemplateFailure(failedIds)
                             sendTemplateCreationAlert(g?.id, "Guild Channel", failedIds)
-                            createLog.for('Schedule').error(`Failed to fetch a guild's post channel for template creation schedule! - See details...`, { details: { channelId, channelTemplates, guildId: g?.id } })
+                            createLog.for('Schedule').error(`Failed to fetch a guild's post channel for template creation schedule!`, { channelId, channelTemplates, guildId: g?.id })
                             return { success: false }
                         }
                         // Confirm Channel is Sendable:
                         if (!channel.isSendable()) {
                             const failedIds = g?.session_templates?.map(t => t?.id)
-                            createLog.for('Bot').info(`Missing Perms - Couldn't use post channel! - Template Creation(s)`, { details: { channelId, channelTemplates, guildId: g?.id } });
+                            createLog.for('Bot').info(`Missing Perms - Couldn't use post channel! - Template Creation(s) Schedule`, { channelId, channelTemplates, guildId: g?.id });
                             await escalateTemplateFailure(failedIds)
                             sendTemplateCreationAlert(g?.id, 'Permissions', failedIds)
                             return { success: false }
@@ -173,7 +174,7 @@ async function executeTemplateCreationSchedule() {
                             }).select('*').single()
                             if (newSessionErr) {
                                 // Failed to save new session from template! - Escalate & Return Failure:
-                                createLog.for('Bot').error(`Failed to save New Session! - Template Creation(s) - See details...`, { details: { error: newSessionErr, template: t, channelId, guildId: g?.id } });
+                                createLog.for('Bot').error(`Failed to save New Session! - Template Creation(s) Schedule - See details...`, { error: newSessionErr, template: t, channelId, guildId: g?.id });
                                 await escalateTemplateFailure([t?.id])
                                 sendTemplateCreationAlert(g?.id, 'Session Save', [t?.id])
                                 continue // try next session
@@ -194,14 +195,14 @@ async function executeTemplateCreationSchedule() {
                                 ).select()
                                 if (newRsvpSlotsErr) {
                                     // Failed to save new session from template! - Escalate & Return Failure:
-                                    createLog.for('Bot').error(`Failed to save New Session's RSVP Slots! - Template Creation(s) - See details...`, { details: { error: newRsvpSlotsErr, template: t, channelId, guildId: g?.id } });
+                                    createLog.for('Bot').error(`Failed to save New Session's RSVP Slots! - Template Creation(s) - See details...`, { error: newRsvpSlotsErr, template: t, channelId, guildId: g?.id });
                                     await escalateTemplateFailure([t?.id])
                                     sendTemplateCreationAlert(g?.id, 'RSVP Save', [t?.id])
                                     // Clean up DB - Delete broken session:
                                     try {
                                         const { error } = await supabase.from('sessions').delete().eq('id', newSession?.id)
-                                        if (error) createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION - From rsvp slot creation error - Deletion issue', { newRsvpSlotsErr, sessionDeletionErr: error, guildId: t?.guild_id })
-                                    } catch (e) { }
+                                        if (error) throw error;
+                                    } catch (e) { createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION - From rsvp slot creation error - Deletion issue', { newRsvpSlotsErr, sessionDeletionErr: e, guildId: t?.guild_id }) }
                                     continue // try next template
                                 } else { rsvpSlots = newRsvpSlots }
                             }
@@ -250,22 +251,23 @@ async function executeTemplateCreationSchedule() {
                                     }
                                 } catch (err) {
                                     // Failed to get Panel Destination Channel (thread/channel) - Log & Escalate Failure:
-
                                     if (isBotPermissionError(err)) {
-                                        createLog.for('Schedule').info(`Perms - Failed to get a template's destination thread! - See details...`, { err, channelId, newSession, template: t, guildId: g?.id })
+                                        createLog.for('Schedule').info(`Perms - Failed to get/create a template's destination thread! - Skipping Template`, { err, channelId, newSession, template: t, guildId: g?.id })
                                         sendTemplateCreationAlert(g?.id, 'Permissions', [t.id])
                                     } else {
-                                        createLog.for('Schedule').error(`Failed to get a template's destination thread! - See details...`, { err, channelId, newSession, template: t, guildId: g?.id })
+                                        createLog.for('Schedule').error(`Failed to get/create a template's destination thread! - See Details...`, { err, channelId, newSession, template: t, guildId: g?.id })
                                         sendTemplateCreationAlert(g?.id, 'Destination Channel', [t.id])
                                     }
                                     await escalateTemplateFailure([t.id])
                                     // Clean up DB session + rsvps
-                                    await Promise.allSettled([
+                                    const cleanup = await Promise.all([
                                         supabase.from('session_rsvp_slots').delete().eq('session_id', newSession?.id),
                                         supabase.from('sessions').delete().eq('id', newSession?.id)
-                                    ]).catch(err => {
-                                        createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From destination thread creation error', { error: err, guildId: t?.guild_id })
-                                    })
+                                    ])
+                                    if (cleanup.some(s => s.error != null)) {
+                                        createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From destination thread get/creation error', { guildId: t?.guild_id, cleanupResults: cleanup })
+                                    }
+
                                     continue // try next template 
                                 }
 
@@ -307,10 +309,13 @@ async function executeTemplateCreationSchedule() {
                                 // Escalate Failure:
                                 await escalateTemplateFailure([t.id])
                                 // Clean up DB session + rsvps
-                                await Promise.allSettled([
+                                const cleanup = await Promise.all([
                                     supabase.from('session_rsvp_slots').delete().eq('session_id', newSession?.id),
                                     supabase.from('sessions').delete().eq('id', newSession?.id)
                                 ])
+                                if (cleanup.some(s => s.error != null)) {
+                                    createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From FAILED session panel post!', { guildId: t?.guild_id, cleanupResults: cleanup })
+                                }
                                 continue // try next template
                             }
 
@@ -359,7 +364,7 @@ async function executeTemplateCreationSchedule() {
                                     })
                                 } catch (err) {
                                     // Discord Event Creation Error:
-                                    createLog.for('Bot').error('Failed to create a NATIVE EVENT for a session! - See Details..', { guildId: g?.id, session: newSession, error: err })
+                                    createLog.for('Bot').error('Failed to create a NATIVE DISCORD EVENT for a session!', { guildId: g?.id, session: newSession, error: err })
                                 }
 
                             }
@@ -384,10 +389,13 @@ async function executeTemplateCreationSchedule() {
                                     sendTemplateCreationAlert(g?.id, 'Update Session', [t.id])
                                     await escalateTemplateFailure([t.id])
                                     // Clean up DB Session + RSVPs:
-                                    await Promise.allSettled([
+                                    const cleanup = await Promise.all([
                                         supabase.from('session_rsvp_slots').delete().eq('session_id', newSession?.id),
                                         supabase.from('sessions').delete().eq('id', newSession?.id)
                                     ])
+                                    if (cleanup.some(s => s.error != null)) {
+                                        createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From failed session update after post!', { guildId: t?.guild_id, cleanupResults: cleanup })
+                                    }
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -417,7 +425,7 @@ async function executeTemplateCreationSchedule() {
                                 })
                                 .eq('id', t.id)
                             if (updateTemplateErr) {
-                                createLog.for('Database').error('FAILED TO UPDATE - Template Next/Last Post UTC(s) - See Details..', { error: updateTemplateErr, template: t, session: newSession })
+                                createLog.for('Database').error('FAILED TO UPDATE - Template Next/Last Post UTC(s) - See Details..', { error: updateTemplateErr, guildId: g?.id, template: t, session: newSession })
                                 // Retry Updates:
                                 const retry = await supabase
                                     .from('session_templates')
@@ -432,15 +440,18 @@ async function executeTemplateCreationSchedule() {
                                 if (retry.error) {
                                     // Delete Broken Session Data:
                                     // FAILED - Updating Template - Delete Invalid Database Results - Alert:
-                                    createLog.for('Database').error('FAILED TO UPDATE - Template on session creation - Applying "true dates"', { updateTemplateErr, template: t, session: newSession })
+                                    createLog.for('Database').error('FAILED TO UPDATE - Template on session creation - Applying "true dates"', { updateTemplateErr, guildId: g?.id, template: t, session: newSession })
                                     // Alert & Escalate Failure:
                                     sendTemplateCreationAlert(g?.id, 'Update Template', [t.id])
                                     await escalateTemplateFailure([t.id])
                                     // Clean up DB Session + RSVPs:
-                                    await Promise.allSettled([
+                                    const cleanup = await Promise.all([
                                         supabase.from('session_rsvp_slots').delete().eq('session_id', newSession?.id),
                                         supabase.from('sessions').delete().eq('id', newSession?.id)
                                     ])
+                                    if (cleanup.some(s => s.error != null)) {
+                                        createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From failed template update after session update/post!', { guildId: t?.guild_id, cleanupResults: cleanup })
+                                    }
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -475,10 +486,10 @@ async function executeTemplateCreationSchedule() {
                         const failedIds = g?.session_templates?.map(t => t?.id).filter(i => !succeededChannelTemplates.includes(i))
                         if (isBotPermissionError(error)) {
                             sendTemplateCreationAlert(g?.id, "Permissions", failedIds)
-                            createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details...`, { details: { channelId, channelTemplates, guildId: g?.id } })
+                            createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, channelTemplates, guildId: g?.id })
                         } else {
                             sendTemplateCreationAlert(g?.id, "Guild Channel", failedIds)
-                            createLog.for('Schedule').error(`Failed to process guild's post channel for template creation schedule! - See details...`, { details: { channelId, channelTemplates, guildId: g?.id } })
+                            createLog.for('Schedule').error(`Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, channelTemplates, guildId: g?.id })
                         }
                         await escalateTemplateFailure(failedIds)
                         return { success: false }
@@ -502,7 +513,7 @@ async function executeTemplateCreationSchedule() {
 
             } catch (error) {
                 // Failed to process overdue guild's templates - Log & Return:
-                createLog.for('Schedule').error(`Failed to process a guild's overdue templates! - See details..`, { guildId: g?.id, guildData: g, error })
+                createLog.for('Schedule').error(`Failed to process a guild's overdue templates! - CRITICAL!`, { guildId: g?.id, guildData: g, error })
                 return { success: false }
             }
         }
@@ -540,7 +551,7 @@ export async function initializeTemplateCreationScheduler(opts?: { runOnExecutio
     // Catch - Execution Errors:
     sessionTemplateCreationCron.on("execution:failed", (ctx) => {
         const { execution } = ctx;
-        createLog.for('Schedule').error('EXECUTION FAILED! - CRITICAL - See Details..', { details: execution })
+        createLog.for('Schedule').error('EXECUTION FAILED! - CRITICAL - See Details!', { details: execution })
         sendHeartbeat(false)
     })
 

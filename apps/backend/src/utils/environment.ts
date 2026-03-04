@@ -1,4 +1,5 @@
 const env_environment = process.env?.['ENVIRONMENT'];
+const env_commit_sha = process.env?.['KOYEB_GIT_SHA']
 type ENVIRONMENT_TYPE = 'production' | 'development' | 'api_only';
 
 
@@ -16,4 +17,5 @@ switch (env_environment) {
 };
 
 export const ENVIRONMENT_TYPE = env;
+export const ENVIRONMENT_GIT_COMMIT_SHA = env_commit_sha
 

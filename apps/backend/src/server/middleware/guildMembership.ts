@@ -43,15 +43,15 @@ export const verifyGuildMember = (requireAdmin: boolean) => {
 
         } catch (err) {
             // Log & return error:
-            createLog.for('Api').warn(`[🔑] FAILED to verify guild membership for API request - See details...`, {
+            createLog.for('Api').error(`[🔑] FAILED to verify guild membership for API request - User: ${req?.auth?.profile?.username}`, {
                 err,
-                userId: req?.auth.user.id,
+                userId: req?.auth?.user?.id,
+                guildId: String(req?.params?.guildId),
                 username: req?.auth?.user?.user_metadata?.username,
-                userGuildsMeta: req?.auth.user.user_metadata.guilds.all,
-                guildId: req?.params?.guildId,
+                userGuildsMeta: req?.auth?.user?.user_metadata?.guilds?.all,
                 route: req.originalUrl
             });
-            return new APIResponse(res).failure(`Internal Error - Failed to fetch guild to confirm user is member. - ${req?.params?.guildId}`);
+            return new APIResponse(res).failure(`Internal Error - Failed to confirm guild membership/permissions for user! - Guild: ${req?.params?.guildId}`);
         }
     }
 }

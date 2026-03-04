@@ -36,7 +36,8 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), asy
 
     } catch (err) {
         // Log & Return Error:
-        createLog.for('Api').warn(`Failed to fetch guild channels!`, { err, actorId: req.auth.user.id });
+        const guildId = String(req?.params?.guildId)
+        createLog.for('Api').error(`Failed to fetch guild channels! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.id, guildId });
         return new reply(res).failure(err, 500)
     }
 });
@@ -54,7 +55,8 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async 
         return new reply(res).success(guildRoles)
     } catch (err) {
         // Log & Return Error:
-        createLog.for('Api').warn(`Failed to fetch guild roles!`, { err, actorId: req.auth.user.id });
+        const guildId = String(req?.params?.guildId)
+        createLog.for('Api').error(`Failed to fetch guild roles! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.id, guildId });
         return new reply(res).failure(err, 500)
     }
 });
@@ -82,7 +84,8 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true),
         return new reply(res).success({ plan: subscriptionLevel(), entitlements: entitlements?.entitlements })
     } catch (err) {
         // Log & Return Error:
-        createLog.for('Api').warn(`Failed to fetch guild subscription!`, { err, actorId: req.auth.user.id });
+        const guildId = String(req?.params?.guildId)
+        createLog.for('Api').error(`Failed to fetch guild subscription!`, { err, userId: req?.auth?.profile?.id, guildId });
         return new reply(res).failure(err, 500)
     }
 })

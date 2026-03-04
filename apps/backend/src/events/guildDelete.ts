@@ -10,12 +10,12 @@ export default {
     name: Events.GuildCreate,
     async execute(guild: Guild) {
         // Log removing guild - cloud:
-        createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`);
+        createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
 
         // Delete Guild from database:
         const result = await dbManager.guilds.delete(guild.id);
         if (!result.success) {
-            return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { result })
+            return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { guildId: guild?.id, result })
         } else {
             // Log removing guild - Discord:
             discordLog.events.guildRemoved(guild, (result.data.templateCount ?? null))

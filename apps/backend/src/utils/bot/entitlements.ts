@@ -23,7 +23,7 @@ export async function getGuildEntitlementsFromId(guildId: string) {
         else return { success: true, entitlements: res };
     } catch (error) {
         // Log & Return Failure
-        createLog.for('Bot').warn('Failed to fetch entitlements for a guild by id!', { error })
+        createLog.for('Bot').error(`Failed to fetch entitlements for a guild by id! - Guild: ${guildId}`, { error, guildId })
         return { success: false, error }
     }
 }
@@ -34,7 +34,8 @@ export async function getGuildEntitlementsFromId(guildId: string) {
 export async function getGuildSubscriptionFromId(guildId: string) {
     const { success, entitlements, error } = await getGuildEntitlementsFromId(guildId)
     if (!success) {
-        createLog.for('Bot').warn('Failed to fetch Guild Subscriptions - Entitlements API error!', { error })
+        // createLog.for('Bot').warn('Failed to fetch Guild Subscriptions - Entitlements API error!', { error })
+        // ^ logged from results call!
         return SubscriptionLevel.FREE;
     } else {
         const ownedSKUs = entitlements.map(e => e.sku_id)

@@ -48,7 +48,7 @@ export async function sendSessionPostFailedFromPerms(guildId: string, templateId
         for (const id of postChannels) {
             const channel = await guild.channels.fetch(id);
             if (!channel) {
-                createLog.for('Bot').error('Failed to fetch an "Active Post Channel" for Session Template - Post Failure Alert!.', { channel, id, guildId });
+                createLog.for('Bot').warn('Failed to fetch an "Active Post Channel" for Session Template - Post Failure/Perms Alert!.', { channelId: id, guildId });
                 continue
             }
             const channelPermissions = channel.permissionsFor(bot.user).serialize();
@@ -61,7 +61,7 @@ export async function sendSessionPostFailedFromPerms(guildId: string, templateId
 
         // If All Permissions Granted - Warn:
         if (!missingGlobalPerms?.length && !missingChannelPerms?.size) {
-            createLog.for('Unknown').warn('Permissions Missing Alert (checks) function called with no missing permissions!')
+            createLog.for('Unknown').warn('Permissions Missing Alert (checks) function called with no missing permissions!', { guildId, missingGlobalPerms, missingChannelPerms })
             return
         }
 
@@ -126,7 +126,7 @@ export async function sendSessionPostFailedFromPerms(guildId: string, templateId
 
     } catch (err) {
         // Failed to Send Alert - Log & Return:
-        createLog.for('Bot').error('FAILED TO SEND SESSION(s) POST FAILURE ALERT! - See details...', { err, guildId, templateIds })
+        createLog.for('Bot').error(`FAILED TO SEND SESSION(s) POST FAILURE ALERT! - Guild: ${guildId}`, { err, guildId, templateIds })
     }
 }
 
@@ -185,6 +185,6 @@ export async function sendSessionPostFailedFromErrorAlert(guildId: string, reaso
 
     } catch (err) {
         // Failed to Send Alert - Log & Return:
-        createLog.for('Bot').error('FAILED TO SEND SESSION(s) POST FAILURE ALERT! - See details...', { err, guildId, reason, templateIds })
+        createLog.for('Bot').error(`FAILED TO SEND SESSION(s) POST FAILURE ALERT! - Guild: ${guildId} `, { err, guildId, reason, templateIds })
     }
 }

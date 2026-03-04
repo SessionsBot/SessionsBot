@@ -21,7 +21,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
             if (fetchUserErr.code == "bad_jwt") return new reply(res).failure('Invalid Auth Token!', HttpStatusCode.Unauthorized);
             else {
                 // Log & Return Failure:
-                createLog.for('Api').warn('🔑 - Auth Token Verification Failure - See Details..', { err: fetchUserErr });
+                createLog.for('Api').error('🔑 - Auth Token Verification Failure!', { err: fetchUserErr });
                 return new reply(res).failure('An error occurred while verifying/fetching user auth token.', 500)
             }
         }
@@ -30,7 +30,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser?.id).maybeSingle()
         if (fetchProfileErr) {
             // Log & Return Error:
-            createLog.for('Api').warn('🔑 - Token Verification - Profile Fetch Error - See Details..', { err: fetchProfileErr });
+            createLog.for('Api').error('🔑 - Token Verification - Profile Fetch Error!', { err: fetchProfileErr, userId: authUser?.user_metadata?.id });
             return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
         }
         if (!userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
@@ -44,7 +44,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 
     } catch (err) {
         // Log and return error:
-        createLog.for('Api').warn('🔑 - Auth Token Verification Failure - See Details..', { err });
+        createLog.for('Api').error('🔑 - Auth Token Verification Failure - Caught Error!', { err });
         return new reply(res).failure('An error occurred while verifying user auth token.', 500)
     }
 }

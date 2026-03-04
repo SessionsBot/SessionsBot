@@ -89,7 +89,7 @@ export function initializeDataDeletionSchedule() {
                 // Parse Results
                 const [free, premium, enterprise] = results.map((r, i) => {
                     if (r.status === 'fulfilled') return r.value.count
-                    createLog.for('Database').error(`Session auto delete failed for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
+                    createLog.for('Database').error(`FAILED Auto Delete - Sessions - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
                     return 'ERROR'
                 })
 
@@ -107,9 +107,9 @@ export function initializeDataDeletionSchedule() {
 
                 // If failure:
                 if (error)
-                    createLog.for('Schedule').error('Failed to auto delete - Session Templates - See details...', { error })
+                    createLog.for('Schedule').error('FAILED Auto Delete - Session Templates!', { error, count })
 
-                return { total_deleted: count }
+                return { total: count }
             }
             const deletedSessionTemplates = await deleteExpiredSessionTemplates()
 
@@ -140,7 +140,7 @@ export function initializeDataDeletionSchedule() {
                 // Parse Results
                 const [free, premium, enterprise] = results.map((r, i) => {
                     if (r.status === 'fulfilled') return r.value.count
-                    createLog.for('Database').error(`Audit logs auto delete failed for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
+                    createLog.for('Database').error(`FAILED Auto Delete - Audit Logs - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
                     return 'ERROR'
                 })
 

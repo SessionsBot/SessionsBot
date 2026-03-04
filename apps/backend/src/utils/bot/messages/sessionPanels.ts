@@ -161,7 +161,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
         return msg;
     } catch (err) {
         // Msg Build - Error Occurred:
-        createLog.for('Bot').error('FAILED to create Session Signup - See Details', { err, sessionId: session.id, guildId: session.guild_id })
+        createLog.for('Bot').error(`FAILED to create Session Signup Message - Guild: ${session?.guild_id}`, { err, sessionId: session?.id, guildId: session?.guild_id })
         return null
     }
 }
@@ -187,12 +187,12 @@ export async function updateExistingSessionPanel(session: FullSessionData, water
         if (isBotPermissionError(error)) {
             await sendPermissionAlert(session?.guild_id)
             // Log & Return Error:
-            createLog.for('Bot').info('Perms - Failed to build/send a session panel update - See details...', { error })
-            return { success: false, message: 'Failed to update a session panel for an update!' }
+            createLog.for('Bot').info(`Perms - Failed to update an existing session panel message! - Guild: ${session?.guild_id}`, { error, guildId: session?.guild_id })
+            return { success: false, message: 'Perms - Failed to update an existing session panel message!' }
         }
         // Log & Return Error:
-        createLog.for('Bot').error('Failed to build/send a session panel update - See details...', { error })
-        return { success: false, message: 'Failed to update a session panel for an update!' }
+        createLog.for('Bot').error('Failed to update an existing session panel message!', { error, guildId: session?.guild_id })
+        return { success: false, message: 'Failed to update an existing session panel message!' }
     }
 }
 

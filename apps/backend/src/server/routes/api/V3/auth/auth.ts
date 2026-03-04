@@ -80,16 +80,16 @@ authRouter.get("/discord-callback", async (req, res) => {
         if (linkErr || !linkData?.properties?.action_link) throw new AuthError('generateLink', { context: { linkData, linkErr } });
 
         // 7. Log & Redirect New Auth Session:
-        createLog.for('Auth').info(`${userData?.username} Authorized! - Direct oAuth2`, { user: userData, timestamp: stringTimestamp() });
+        createLog.for('Auth').info(`${userData?.username} Authorized! - Direct oAuth2`, { user: userData, timestamp: stringTimestamp(), userId: userData?.id });
         return res.redirect(linkData.properties.action_link);
 
     } catch (err) {
         // Log & Redirect to failed sign in page:
         if (err instanceof AuthError) {
-            createLog.for('Auth').warn(`Auth FAILED - ${err.errorType} - see details`, { err, timestamp: stringTimestamp() })
+            createLog.for('Auth').error(`Auth FAILED - ${err.errorType} - See Details!`, { err, timestamp: stringTimestamp() })
             return res.redirect(frontendRedirects.authFailure + err.queryPath);
         } else {
-            createLog.for('Auth').warn(`Auth FAILED - UNKNOWN ERROR - see details`, { err, timestamp: stringTimestamp() })
+            createLog.for('Auth').error(`Auth FAILED - UNKNOWN ERROR - See Details!`, { err, timestamp: stringTimestamp() })
             return res.redirect(frontendRedirects.authFailure + '&errorType=unknown');
         }
     }
@@ -146,12 +146,12 @@ authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
         if (magicLinkERR || !hashed_token) throw new AuthError('generateLink', { err: magicLinkERR });
 
         // 8. Return Success - Fresh Token:
-        createLog.for('Auth').info(`${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userData, timestamp: stringTimestamp() })
+        createLog.for('Auth').info(`${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userData, userId: userData?.id, timestamp: stringTimestamp() })
         return new reply(res).success({ fresh_token: hashed_token });
 
     } catch (err) {
         // Log & Return - Refresh Error:
-        createLog.for('Auth').warn(`Auth Refresh Failed - See Details`, { err, timestamp: stringTimestamp() })
+        createLog.for('Auth').error(`Auth Refresh Failed - See Details!`, { err, timestamp: stringTimestamp() })
         return new reply(res).failure('Failed to update/refresh user data from Discord! Sign out and back in...');
     }
 });
