@@ -159,7 +159,7 @@ export async function initializeSentry(app: App) {
                 levels: ['warn', 'error']
             })
         ],
-        release: `web-app@v${__APP_VERSION}`,
+        release: `@sessionsbot/web-app-v${__APP_VERSION}`,
         environment: envMode,
 
     })
