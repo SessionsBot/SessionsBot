@@ -1,8 +1,9 @@
 <script lang="ts" setup>
     import { externalUrls } from '@/stores/nav';
-    import type { SubscriptionPlanName } from '@sessionsbot/shared';
+    import { SubscriptionLimits, type SubscriptionPlanName } from '@sessionsbot/shared';
     import { CheckIcon } from 'lucide-vue-next';
 
+    const limits = SubscriptionLimits
 
     type PlanData = {
         title: string,
@@ -16,8 +17,9 @@
             description: 'Available for all to enjoy, at absolutely no cost!',
             price: 0,
             features: [
-                'Schedule up to 7 active sessions.',
-                'Configure a max of 3 RSVP slots per session.',
+                `Schedule up to ${limits.FREE.MAX_SCHEDULES} active sessions.`,
+                `Configure a max of ${limits.FREE.MAX_RSVP_SLOTS} RSVP slots per session.`,
+                `Track bot actions and user engagement with your bot's audit logs.`,
                 'Post to a specified channel for EACH session.',
             ]
         },
@@ -26,8 +28,9 @@
             description: 'Great for medium-large servers, ready to get scheduling!',
             price: 3.99,
             features: [
-                'Schedule up to 15 active sessions.',
-                'Configure a max of 5 RSVP slots per session.',
+                `Schedule up to ${limits.PREMIUM.MAX_SCHEDULES} active sessions.`,
+                `Configure a max of ${limits.PREMIUM.MAX_RSVP_SLOTS} RSVP slots per session.`,
+                `Mention roles, users, channels, etc. within your Session Panel posts.`,
                 'All features from FREE Plan.',
             ]
         },
@@ -38,6 +41,7 @@
             features: [
                 'Schedule ∞ active sessions.',
                 'Configure a max of 10 RSVP slots per session.',
+                `Customize the name and start message of new Session Threads.`,
                 'All features from PREMIUM Plan.',
             ]
         },
@@ -80,7 +84,7 @@
             <!-- Features -->
             <div class="flex flex-col w-full items-center justify-center gap-2">
                 <p class="font-black text-xs opacity-70 uppercase w-full px-2">
-                    Features:
+                    Key Features:
                 </p>
 
 

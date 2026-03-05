@@ -12,8 +12,8 @@
         <XIcon v-else class="text-text-2/50" :size="18" />
     </span>
 
-    <span v-else class="text-text-2/50 font-rubik">
-        <InfinityIcon v-if="String(value) == '∞'" class="text-text-2/50" :size="18" />
+    <span v-else class="text-text-2/50 font-rubik font-medium text-sm">
+        <InfinityIcon v-if="String(value) == '∞' || value == Infinity" class="text-text-2/50" :size="18" />
         <p v-else>
             {{ value }}
         </p>

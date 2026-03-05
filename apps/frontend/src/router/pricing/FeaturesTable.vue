@@ -1,43 +1,63 @@
 <script setup lang="ts">
     import { CheckIcon, SparklesIcon, StarIcon, XIcon } from 'lucide-vue-next'
     import FeatureValue from './FeatureValue.vue';
-    import type { SubscriptionPlanName } from '@sessionsbot/shared';
+    import { SubscriptionLimits, type SubscriptionPlanName } from '@sessionsbot/shared';
     import DiamondIcon from '../../components/icons/DiamondIcon.vue'
+
+    const limits = SubscriptionLimits
 
 
     const features = [
         {
-            key: 'max_sessions',
-            title: 'Maximum Active Sessions',
+            key: 'max_schedules',
+            title: 'Maximum Active Schedules',
             values: {
-                FREE: 7,
-                PREMIUM: 15,
-                ENTERPRISE: '∞',
+                FREE: limits.FREE.MAX_SCHEDULES,
+                PREMIUM: limits.PREMIUM.MAX_SCHEDULES,
+                ENTERPRISE: limits.ENTERPRISE.MAX_SCHEDULES,
             },
         },
         {
             key: 'max_rsvp_slots',
             title: 'Maximum RSVP Slots',
             values: {
-                FREE: 3,
-                PREMIUM: 5,
-                ENTERPRISE: 10,
+                FREE: limits.FREE.MAX_RSVP_SLOTS,
+                PREMIUM: limits.PREMIUM.MAX_RSVP_SLOTS,
+                ENTERPRISE: limits.ENTERPRISE.MAX_RSVP_SLOTS,
             },
         },
         {
             key: 'max_rsvp_capacity',
             title: 'Maximum RSVP Capacity',
             values: {
-                FREE: 10,
-                PREMIUM: 20,
-                ENTERPRISE: '∞',
+                FREE: limits.FREE.MAX_RSVP_CAPACITY,
+                PREMIUM: limits.PREMIUM.MAX_RSVP_CAPACITY,
+                ENTERPRISE: limits.ENTERPRISE.MAX_RSVP_CAPACITY,
             },
         },
         {
-            key: 'notifications',
-            title: 'Automatic Session Notifications',
+            key: 'session_panels',
+            title: 'Automatic Session Panel Posts',
             values: {
-                FREE: false,
+                FREE: true,
+                PREMIUM: true,
+                ENTERPRISE: true,
+            },
+        },
+        {
+            key: 'custom_rsvps',
+            title: 'Customizable RSVP Slots',
+            values: {
+                FREE: true,
+                PREMIUM: true,
+                ENTERPRISE: true,
+            },
+        },
+        {
+            key: 'privatize_sessions',
+            title: 'Private Sessions',
+            values: {
+                FREE: true,
                 PREMIUM: true,
                 ENTERPRISE: true,
             },
@@ -46,18 +66,54 @@
             key: 'custom_accent_color',
             title: 'Customizable Accent Color',
             values: {
-                FREE: false,
-                PREMIUM: true,
-                ENTERPRISE: true,
+                FREE: limits.FREE.CUSTOM_ACCENT_COLOR,
+                PREMIUM: limits.PREMIUM.CUSTOM_ACCENT_COLOR,
+                ENTERPRISE: limits.ENTERPRISE.CUSTOM_ACCENT_COLOR,
             },
         },
         {
             key: 'watermark_shown',
             title: 'Session Bot Watermark Removed',
             values: {
-                FREE: false,
-                PREMIUM: true,
-                ENTERPRISE: true,
+                FREE: !limits.FREE.SHOW_WATERMARK,
+                PREMIUM: !limits.PREMIUM.SHOW_WATERMARK,
+                ENTERPRISE: !limits.ENTERPRISE.SHOW_WATERMARK,
+            },
+        },
+        {
+            key: 'allow_mentions',
+            title: 'Discord Mentions Allowed',
+            values: {
+                FREE: limits.FREE.ALLOW_MENTION_ROLES,
+                PREMIUM: limits.PREMIUM.ALLOW_MENTION_ROLES,
+                ENTERPRISE: limits.ENTERPRISE.ALLOW_MENTION_ROLES,
+            },
+        },
+        {
+            key: 'rsvp_role_restrictions',
+            title: 'RSVP Role Restrictions',
+            values: {
+                FREE: limits.FREE.ALLOW_RSVP_ROLE_RESTRICTION,
+                PREMIUM: limits.PREMIUM.ALLOW_RSVP_ROLE_RESTRICTION,
+                ENTERPRISE: limits.ENTERPRISE.ALLOW_RSVP_ROLE_RESTRICTION,
+            },
+        },
+        {
+            key: 'custom_thread_mode',
+            title: 'Customizable Thread Mode',
+            values: {
+                FREE: limits.FREE.CUSTOM_THREAD_START_MESSAGE,
+                PREMIUM: limits.PREMIUM.CUSTOM_THREAD_START_MESSAGE,
+                ENTERPRISE: limits.ENTERPRISE.CUSTOM_THREAD_START_MESSAGE,
+            },
+        },
+        {
+            key: 'data_retention',
+            title: 'Data Retention Days',
+            values: {
+                FREE: `${limits.FREE.MAX_DATA_RETENTION_AGE.SESSIONS} days`,
+                PREMIUM: `${limits.PREMIUM.MAX_DATA_RETENTION_AGE.SESSIONS} days`,
+                ENTERPRISE: `${limits.ENTERPRISE.MAX_DATA_RETENTION_AGE.SESSIONS} days`,
             },
         },
     ]
@@ -67,7 +123,7 @@
 
 
 <template>
-    <div class="w-full px-8">
+    <span class="w-full px-8">
 
         <!-- DESKTOP TABLE -->
         <div
@@ -79,14 +135,7 @@
                 <p class="font-bold"> Feature </p>
             </div>
             <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
-                <svg class="fill-zinc-500/25!" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    viewBox="0 0 24 24">
-                    <g fill="inherit" stroke="currentColor" stroke-width="1.5">
-                        <path
-                            d="M12.005 7.334V5.011m0 11.615v2.323m-3.031-4.646v.865c0 .806.653 1.458 1.458 1.458h3.278c.806 0 1.459-.652 1.459-1.458v-1.643a1.46 1.46 0 0 0-1.05-1.4l-4.095-1.194a1.46 1.46 0 0 1-1.05-1.4v-.739c0-.805.653-1.458 1.458-1.458h3.278c.806 0 1.459.653 1.459 1.459v.866" />
-                        <path d="M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0m18.66 5l-3.149-1.818M3.34 7l3.149 1.818" />
-                    </g>
-                </svg>
+                <Iconify icon="tabler:free-rights" class="opacity-80" />
                 <p class="font-bold"> Free </p>
             </div>
             <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
@@ -101,16 +150,19 @@
 
             <!-- Rows -->
             <template v-for="feature in features" :key="feature.key">
-                <div class="bg-bg-3 p-3 font-medium text-text-1/70">
+                <div class="bg-bg-3 p-3 font-semibold text-text-1/80">
                     {{ feature.title }}
                 </div>
 
                 <div v-for="plan in plans" :key="feature.key + plan"
-                    class=" bg-bg-2 p-3 flex items-center justify-center">
+                    class=" bg-bg-soft p-3 flex items-center justify-center">
                     <FeatureValue :value="feature.values[plan]" />
                 </div>
             </template>
+
         </div>
+
+
 
         <!-- MOBILE CARDS -->
         <div class="md:hidden flex flex-col items-center gap-4">
@@ -135,7 +187,8 @@
             </div>
         </div>
 
-    </div>
+
+    </span>
 </template>
 
 
