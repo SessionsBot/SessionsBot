@@ -7,6 +7,8 @@
         iconName: string,
         docPath?: string | undefined
         premiumType?: 'PREMIUM' | 'ENTERPRISE'
+        required?: true
+        showOptional?: true
     }>()
 </script>
 
@@ -16,7 +18,15 @@
         <!-- Title & Icon -->
         <span class="flex items-center gap-1 flex-wrap">
             <Iconify :size="18" :icon="props.iconName" />
-            {{ props?.title || 'Input Title?' }}
+            <span class="flex w-fit h-fit relative items-center">
+                {{ props?.title || '?' }}
+                <p v-if="props.required" title="Required" class="pl-0.5 self-start text-invalid-1/80 text-xs">
+                    *
+                </p>
+                <p v-if="props.showOptional" class="text-text-soft pl-1 relative top-px text-[10px] italic">
+                    (optional)
+                </p>
+            </span>
             <!-- Premium Feature Badge -->
             <span v-if="props.premiumType"
                 class="mx-0.5 flex flex-row gap-px p-0.5 pr-1 bg-text-1/8 text-text-1/80 border-indigo-400/70 border-2 rounded-lg">

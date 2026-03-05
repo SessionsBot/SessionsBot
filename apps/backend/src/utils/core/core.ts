@@ -2,12 +2,18 @@ import pkg from '../../../package.json' with { type: 'json' };
 import { ExtendedClient } from '../types/extendedClient.js';
 import { SKU } from 'discord.js';
 import { BotEmojiName } from '../bot/fetchEmojis';
+import { DateTime } from 'luxon';
 
 const core = {
     /** Current running Sessions Bot version. */
     botVersion: pkg.version,
     /** Currently logged in client instance. */
     botClient: <ExtendedClient>null,
+
+    startupDates: {
+        server: <string | undefined>undefined,
+        bot_client: <string | undefined>undefined
+    },
 
     /** Default core colors in default hex format. */
     colors: {

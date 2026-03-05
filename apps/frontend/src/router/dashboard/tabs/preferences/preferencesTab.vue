@@ -91,11 +91,7 @@
                     if (!access_token) throw { display_error: 'Cannot update guild preferences - No access token....' };
                     if (!dashboard.guildId) throw { display_error: 'Cannot update guild preferences - No guild selected....' };
 
-                    const result = await API.patch<APIResponseValue>(`/guilds/${dashboard.guildId}/preferences`, { data: fields }, {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`
-                        }
-                    })
+                    const result = await API.patch<APIResponseValue>(`/guilds/${dashboard.guildId}/preferences`, { data: fields })
 
                     // Read API Req Results:
                     if (result.data.success) {

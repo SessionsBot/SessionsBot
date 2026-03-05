@@ -10,9 +10,7 @@ export async function fetchGuildChannels(guildId: string | null, accessToken: st
     if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Channels - Missing "guildId".` })
     if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Channels - Missing "accessToken".` })
     // Make API Request:
-    const { data: apiResult } = await API.get<APIResponseValue<{ all: any[], sendable: any[] }>>(`/guilds/${guildId}/channels`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-    })
+    const { data: apiResult } = await API.get<APIResponseValue<{ all: any[], sendable: any[] }>>(`/guilds/${guildId}/channels`)
     // Return Result:
     if (apiResult?.success) {
         return apiResult.data;
@@ -28,9 +26,7 @@ export async function fetchGuildRoles(guildId: string | null, accessToken: strin
     if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Roles - Missing "guildId".` })
     if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Roles - Missing "accessToken".` })
     // Make API Request:
-    const { data: apiResult } = await API.get<APIResponseValue<any[]>>(`/guilds/${guildId}/roles`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-    })
+    const { data: apiResult } = await API.get<APIResponseValue<any[]>>(`/guilds/${guildId}/roles`)
     // Return Result:
     if (apiResult?.success) {
         return apiResult.data;
@@ -46,9 +42,7 @@ export async function fetchGuildSubscription(guildId: string | null, accessToken
     if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Subscription - Missing "guildId".` })
     if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Subscription - Missing "accessToken".` })
     // Make API Request:
-    const { data: apiResult } = await API.get<APIResponseValue<{ plan: SubscriptionPlanName, entitlements: any }>>(`/guilds/${guildId}/subscription`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-    })
+    const { data: apiResult } = await API.get<APIResponseValue<{ plan: SubscriptionPlanName, entitlements: any }>>(`/guilds/${guildId}/subscription`)
     // Return Result:
     if (apiResult?.success) {
         if (apiResult.data?.plan == 'ENTERPRISE') return SubscriptionLevel.ENTERPRISE

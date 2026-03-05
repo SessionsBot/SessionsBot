@@ -2,7 +2,7 @@
     import z from 'zod';
     import { RegExp_HexColorCode, type SubscriptionLevelType } from '@sessionsbot/shared';
     import type { PopoverMethods } from 'primevue';
-    import InputLabel from '../inputLabel.vue';
+    import InputLabel from '../../../../../../components/inputLabel.vue';
     import useNotifier from '@/stores/notifier';
 
 

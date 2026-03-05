@@ -16,9 +16,9 @@ apiRouter.use('/guilds', guildsRouter);
 apiRouter.use('/system', systemRouter);
 apiRouter.use('/discord', discordRouter);
 
-// Fallback route:
+// API ROOT - Html Response:
 apiRouter.all('/', (req, res) => {
-    res.send(rootDomainHtml);
+    res.send(rootDomainHtml());
 })
 
 // - Export Router:

@@ -126,7 +126,7 @@
 
 
                 <!-- Actions Row -->
-                <span class="notification-action-row" v-if="data.actions?.length">
+                <span class="notification-action-row" v-if="data?.actions && data?.actions?.length">
 
                     <!-- Defined Action Buttons: -->
                     <Button v-for="{ button, onClick } in data.actions" @click="(e) => {

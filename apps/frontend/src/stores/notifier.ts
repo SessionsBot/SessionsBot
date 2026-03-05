@@ -19,8 +19,11 @@ type NotificationOpts = {
     /** The amount of seconds this notification should stay visible on screen. To disable, set to `false`.
      * @default- 7s */
     duration?: number | false
-    /** Optional - Action Button(s) to include within the notification. */
-    actions?: undefined | NotificationAction[]
+    /** Optional - Action Button(s) to include within the notification.
+     * @default- dependant on `level`.
+     * @set-to `false` to DISABLE any defaults!
+     */
+    actions?: false | NotificationAction[] | undefined
     /** Option - Append additional css classes to various notification elements. */
     classes?: {
         root?: string,
@@ -163,7 +166,7 @@ const useNotifier = defineStore('notifier', () => {
     function send(notificationOpts: NotificationOpts) {
         // Generate Msg Id:
         const msgId = generateMsgId();
-        // Make Template "Raw" if provided:
+        // Make Content Template "Raw" (if provided):
         if (notificationOpts.content != null && typeof notificationOpts.content != 'string') {
             notificationOpts = {
                 ...notificationOpts,
@@ -188,13 +191,13 @@ const useNotifier = defineStore('notifier', () => {
             }
         }
 
-        // Add Default Actions if NONE are provided:
-        if (!notificationOpts.actions || notificationOpts.actions?.length == 0) {
-            if (notificationOpts.level == 'error') {
+        // Add Default Actions if NONE are provided & NOT disabled:
+        if (notificationOpts?.actions != false && !notificationOpts?.actions?.length) {
+            if (notificationOpts.level == 'error', notificationOpts.level == 'warn') {
                 // Add Default - Error Actions
                 notificationOpts.actions = [
                     {
-                        button: { icon: 'basil:chat-solid', title: 'Get Support', href: '+' + externalUrls.discordServer.supportInvite }
+                        button: { icon: 'basil:chat-solid', title: 'Support Chat', href: '+' + externalUrls.discordServer.supportInvite }
                     }
                 ]
             }

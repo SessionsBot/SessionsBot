@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 
 /** When enabled, routes all API traffic to local dev url at `http://localhost:3000/api` */
@@ -13,4 +14,14 @@ export const API = axios.create({
     },
     timeout: 10_000,
     timeoutErrorMessage: 'TIMED OUT! - Failed to receive a backend API response within 10 seconds! You might want to check out our status page at https://status.sessionsbot.fyi.',
+})
+
+// Middleware - Auto Attach Auth Token:
+API.interceptors.request.use((config) => {
+    const auth = useAuthStore();
+    const token = auth?.session?.access_token
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 })

@@ -383,9 +383,7 @@
             icon: 'lucide:trash-2',
             accept: async () => {
                 submitState.value = 'failed'
-                const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`, {
-                    headers: { Authorization: `Bearer ${auth.session?.access_token}` }
-                })
+                const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`)
                 if (!success || error || status >= 300) {
                     console.error('Failed to Delete Session:', status, error)
                     // Send Errored Alert:
@@ -656,7 +654,7 @@
             // Send API Request for Create/Edit Schedule:
             if (formAction.value == 'new') {
                 // Create New Session - Send Request
-                const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                const r = await API.post<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData)
                 if (r.status < 300) {
                     // Success! - Reset Form
                     resetFrom();
@@ -667,7 +665,7 @@
             } else if (formAction.value == 'edit' || formAction.value == 're-enable') {
                 // Edit Existing Session - Send Request
                 bodyData.data.id = editingId.value;
-                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData, { headers: { Authorization: `Bearer ${auth.session?.access_token}` } })
+                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates`, bodyData)
                 if (r.status < 300) {
                     // Success! - Reset Form
                     resetFrom();

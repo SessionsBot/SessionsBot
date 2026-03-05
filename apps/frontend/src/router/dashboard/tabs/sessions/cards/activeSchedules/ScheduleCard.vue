@@ -91,9 +91,7 @@
                     `,
                     icon: 'lucide:trash-2',
                     accept: async () => {
-                        const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${dashboard.guildId}/sessions/templates/${t?.value?.id}`, {
-                            headers: { Authorization: `Bearer ${auth.session?.access_token}` }
-                        })
+                        const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${dashboard.guildId}/sessions/templates/${t?.value?.id}`)
                         if (!success || error || status >= 300) {
                             console.error('Failed to Delete Session:', status, error)
                             // Send Errored Alert:

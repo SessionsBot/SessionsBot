@@ -8,8 +8,8 @@
     import { useConfirm } from 'primevue';
     import type { MultiButtonAction } from '@/components/MultiButton.vue';
     import { CheckIcon, XIcon } from 'lucide-vue-next';
-    import InputLabel from '../../../preferences/inputs/inputLabel.vue';
-    import ActionDialog from './actionDialog.vue';
+    import InputLabel from '../../../../../../components/inputLabel.vue';
+    import ActionDialog from './sessionDialog/sessionActionDialog.vue';
 
     // Incoming Props:
     const props = defineProps<{

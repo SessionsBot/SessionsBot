@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
-    import InputLabel from '../inputLabel.vue';
+    import InputLabel from '../../../../../../components/inputLabel.vue';
 
 
     // Props

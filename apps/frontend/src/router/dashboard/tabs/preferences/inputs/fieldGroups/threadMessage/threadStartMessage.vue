@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import InputLabel from '../../inputLabel.vue';
+    import InputLabel from '../../../../../../../components/inputLabel.vue';
     import type { PreferenceFormFields } from '../../../preferencesTab.vue';
     import useNotifier from '@/stores/notifier';
     import { XIcon } from 'lucide-vue-next';

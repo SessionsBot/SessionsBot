@@ -24,7 +24,7 @@ app.use('/api', apiRouter)
 
 // Domain Root:
 app.all('/', (req, res) => {
-    return res.status(200).send(rootDomainHtml);
+    return res.status(200).send(rootDomainHtml());
 })
 
 
@@ -35,9 +35,10 @@ app.use((req, res) => {
         message: 'NOT FOUND',
         server_version: core.botVersion,
         api_version: 3,
-        git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7)
+        git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7),
+        server_start_timestamp: core.startupDates.server,
+        client_start_timestamp: core.startupDates.bot_client
     }, 404);
-    // return res.redirect(URLS.website + '/api-not-found')
 });
 
 
