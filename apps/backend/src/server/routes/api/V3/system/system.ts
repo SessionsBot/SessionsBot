@@ -2,6 +2,10 @@ import axios from 'axios';
 import express from 'express';
 import { APIResponse as Reply } from '../utils/responseClass';
 import { useLogger } from '../../../../../utils/logs/logtail';
+import core from '../../../../../utils/core/core';
+import { ENVIRONMENT_GIT_COMMIT_SHA, ENVIRONMENT_TYPE } from '../../../../../utils/environment';
+import verifyToken from '../../../../middleware/verifyToken';
+import { verifyBotAdmin } from '../../../../middleware/verifyBotAdmin';
 
 const createLog = useLogger();
 
@@ -9,6 +13,7 @@ const systemRouter = express.Router({ mergeParams: true })
 
 
 // Get - System Status(es):
+// URL: https://api.sessionsbot.fyi/system/status
 systemRouter.all('/status', async (req, res) => {
     try {
         // Get system statuses from BetterStack monitors:
@@ -49,6 +54,40 @@ systemRouter.all('/status', async (req, res) => {
         createLog.for('Api').warn('Failed to fetch system statuses!', { err });
         return new Reply(res).failure(`Failed to fetch system statuses - Internal Error!`, 500);
     }
+})
+
+
+// BOT System Endpoint Root - BOT Data
+// URL: https://api.sessionsbot.fyi/system/bot
+systemRouter.all('/bot', verifyToken, verifyBotAdmin, async (req, res) => {
+
+    const bot = core.botClient;
+    if (!bot) return new Reply(res).failure('Bot client unavailable!');
+
+    const guildsCount = (await bot.guilds.fetch())?.size ?? 'UNKNOWN'
+
+    return new Reply(res).success({
+        current_guilds: guildsCount,
+        uptime: bot.uptime,
+        ping: bot.ws.ping
+    })
+
+})
+
+
+// System Endpoint Root - System Data
+// URL: https://api.sessionsbot.fyi/system/
+systemRouter.all('/', (req, res) => {
+    return new Reply(res).success({
+        startup: {
+            timestamps: {
+                server: core.startupDates.server,
+                bot: core.startupDates.bot_client
+            },
+            commit_sha: ENVIRONMENT_GIT_COMMIT_SHA,
+            env_type: ENVIRONMENT_TYPE
+        }
+    })
 })
 
 
