@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
             this.redirectAfterAuth.clear();
             // Signout w/ Supabase
             const { error } = await supabase.auth.signOut()
-            if (error) console.warn('[👤] - FAILED TO SIGN OUT', error);
+            if (error) console.error('[👤] - FAILED TO SIGN OUT', error);
         },
 
         async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult<any>> {

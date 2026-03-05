@@ -183,7 +183,7 @@ const useNotifier = defineStore('notifier', () => {
                 ) &&
                 existing.level === notificationOpts.level
             ) {
-                console.warn("Prevented duplicate notification");
+                console.info("(!) - Prevented duplicate notification");
                 return;
             }
         }

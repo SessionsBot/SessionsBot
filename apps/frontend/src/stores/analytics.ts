@@ -24,7 +24,7 @@ function waitForGtag(timeout = 2000): Promise<boolean> {
 export function safeGTag(...args: any[]) {
     if (typeof window.gtag == 'function') {
         window.gtag(args)
-    } else console.warn('GTag not available...')
+    } else console.warn('GTag not available...', args)
 }
 
 // Analytics Store:
@@ -65,7 +65,7 @@ const useAnalyticsStore = defineStore('analytics', () => {
             const rawSave = localStorage.getItem(save_key)
             if (!rawSave) {
                 // No Preferences - Show Cookie Consent Alert...
-                console.warn('No Cookie Preferences - Please Confirm...')
+                console.info('No Cookie Preferences - Please Confirm...')
                 // Show Cookie Notification:
                 showCookieAlert.value = true;
             } else {

@@ -391,7 +391,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                         }
                         // Timed Out? - Try Again:
                         if (s == 'TIMED_OUT' || s == 'CHANNEL_ERROR') {
-                            console.warn('[Realtime Updates]: Attempting to re-subscribe after timeout/error!')
+                            console.info('[Realtime Updates]: Attempting to re-subscribe after timeout/error!')
 
                             if (retryRealtimeAttempts.value >= 3) return console.error(`[Realtime Error]: FAILED to Subscribe AFTER 3 RETRY ATTEMPTS!`, { status: s, error: err })
                             else {
