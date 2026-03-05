@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import * as Sentry from '@sentry/vue'
 import type { App } from "vue";
+import { supabase } from "@/utils/supabase";
 
 /** Util - Await Gtag is ready */
 function waitForGtag(timeout = 2000): Promise<boolean> {
@@ -152,16 +153,18 @@ export async function initializeSentry(app: App) {
     // if (envMode == 'development') return console.warn('(i) Sentry NOT initialized in development environments...')
     Sentry.init({
         app,
-        dsn: 'https://rDTxV422fc9ZbJz1qYAsZMih@s1694266.eu-nbg-2.betterstackdata.com/1',
+        dsn: "https://DX4e7boeLWD2emwP1hYmFko7@s2166264.eu-fsn-3.betterstackdata.com/777",
         tracesSampleRate: 1.0,
         integrations: [
             Sentry.captureConsoleIntegration({
-                levels: ['warn', 'error']
+                levels: ['warn', 'error'],
+            }),
+            Sentry.supabaseIntegration({
+                supabaseClient: supabase
             })
         ],
         release: `@sessionsbot/web-app-v${__APP_VERSION}`,
         environment: envMode,
-
     })
 }
 
