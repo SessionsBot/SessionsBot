@@ -1,11 +1,14 @@
 <script lang="ts" setup>
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { externalUrls } from '@/stores/nav';
+    import useNotifier from '@/stores/notifier';
     import type { PopoverDesignTokens } from '@primeuix/themes/types/popover';
     import { ArrowLeftCircle, CircleDollarSignIcon } from 'lucide-vue-next';
     import type { Popover } from 'primevue';
 
     // Service(s):
     const dashboard = useDashboardStore();
+    const notifier = useNotifier()
 
     // Root - Popover Ref:
     const switchServerPoRef = ref<InstanceType<typeof Popover>>()
@@ -14,7 +17,7 @@
     }
 
     // Last Fetch Date: 
-    const lastGuildFetchDate = computed(() => null);
+    const lastGuildFetchDate = computed(() => dashboard.guildDataState.fetchedAt);
 
     // FN - Refresh API Data:
     async function refreshApiData() {
@@ -25,6 +28,18 @@
                 dashboard.guildId = prevSelectionId
             }, 300);
         }
+    }
+
+    async function attemptRefresh() {
+        const difMins = Math.abs(lastGuildFetchDate.value?.diffNow('minutes')?.minutes ?? 2)
+        const minCooldownMins = 2;
+        if (difMins < minCooldownMins) {
+            notifier.send({
+                level: 'warn',
+                header: 'Please Wait!',
+                content: `Please wait at least ${minCooldownMins - difMins > 1 ? Math.round(minCooldownMins - difMins) + ' min(s)' : Math.floor((minCooldownMins - difMins) * 60) + ' sec(s)'} before refreshing your dashboard server data!`
+            })
+        } else await refreshApiData()
     }
 
 </script>
@@ -43,16 +58,16 @@
                 </p>
             </Button>
 
-            <RouterLink :to="`/pricing?guild=${dashboard?.guildId}`">
+            <a :href="externalUrls.discordStore" target="_blank">
                 <Button unstyled class="option-button">
                     <CircleDollarSignIcon :size="17" />
                     <p class="text-sm">
                         Upgrade Bot Plan
                     </p>
                 </Button>
-            </RouterLink>
+            </a>
 
-            <Button @click="refreshApiData" unstyled class="option-button">
+            <Button @click="attemptRefresh" unstyled class="option-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 485 485">
                     <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="35"
                         d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192s192-86 192-192Z" />
@@ -76,8 +91,8 @@
     @reference '@/styles/main.css';
 
     .server-details-popover {
-        --p-popover-background: var(--c-bg-2) !important;
-        --p-popover-border-color: var(--c-ring-2) !important;
+        --p-popover-background: var(--c-bg-soft) !important;
+        --p-popover-border-color: var(--c-ring-soft) !important;
         --p-popover-color: var(--c-text-1) !important;
     }
 

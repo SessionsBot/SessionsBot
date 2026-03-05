@@ -80,8 +80,9 @@
 
     // CALENDAR - Current Month:
     const selectedMonth = ref(DateTime.now().startOf('month'));
-    const maxMonth = DateTime.now().plus({ year: 15 }).startOf('month');
-    const minMonth = DateTime.now().startOf('month').minus({ year: 5 })
+    const retentionCutoffDate = DateTime.local().minus({ days: dashboard.guildData.subscription.state?.limits?.MAX_DATA_RETENTION_AGE.SESSIONS })
+    const maxMonth = DateTime.local().plus({ year: 10 }).startOf('month');
+    const minMonth = DateTime.local().minus({ days: dashboard.guildData.subscription.state?.limits?.MAX_DATA_RETENTION_AGE.SESSIONS }).startOf('month')
     const previousMonth = () => selectedMonth.value = selectedMonth.value.minus({ month: 1 });
     const nextMonth = () => selectedMonth.value = selectedMonth.value.plus({ month: 1 });
 
@@ -209,15 +210,15 @@
                 <!-- Calendar DAYS -->
                 <Button unstyled v-for="day in daysInMonth" class="calendar-day" @click="openDayViewFor(day)" :class="{
                     'today-day': (DateTime.now().startOf('day').toSeconds() == day?.toSeconds())
-                }">
+                }" :title="day.toFormat('M/d/yy')" :disabled="day <= retentionCutoffDate">
                     {{ day.day }}
                     <!-- Chip Bar -->
                     <div class="absolute bottom-0.75 w-full h-1.75 gap-1 py-px flex items-center justify-center">
                         <!-- Single Session - Chip -->
-                        <div :class="{ 'flex!': dayHasSessions(day) }"
+                        <div :class="{ 'flex!': dayHasSessions(day) && (day > retentionCutoffDate) }"
                             class="hidden h-full w-fit rounded-full aspect-square bg-slate-600/55" />
                         <!-- Repeating Session - Chip -->
-                        <div :class="{ 'flex!': dayHasTemplates(day) }"
+                        <div :class="{ 'flex!': dayHasTemplates(day) && (day > retentionCutoffDate) }"
                             class="hidden h-full w-fit rounded-full aspect-square bg-indigo-500/55" />
                     </div>
                 </Button>
@@ -302,7 +303,7 @@
         }
 
         .calendar-days-wrap {
-            @apply bg-text-1/0 grid grid-cols-7 gap-2 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
+            @apply bg-text-1/0 grid grid-cols-7 gap-2.5 p-2 sm:p-3 sm:gap-3 w-full items-center justify-center;
 
             .calendar-day {
                 @apply relative bg-bg-soft text-text-1/50 w-full aspect-square rounded-sm ring-2 ring-ring-soft p-1 flex items-center justify-center font-black transition-all sm:p-2 sm:text-lg;
@@ -311,8 +312,12 @@
                     @apply ring-ring-1/80 text-text-1/80 cursor-pointer;
                 }
 
+                &:disabled {
+                    @apply opacity-60 !ring-ring-soft !text-text-1/50 cursor-default;
+                }
+
                 &.today-day {
-                    @apply text-blue-700/70 dark:text-blue-400/60;
+                    @apply text-amber-700/70 dark:text-amber-500/60;
                 }
             }
         }

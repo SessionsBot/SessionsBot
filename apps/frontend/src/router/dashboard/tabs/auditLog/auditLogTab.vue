@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- User -->
-                <div class="content-cell">
+                <div class="content-cell min-h-17!">
                     <UserLabel :userId="e.user_id" />
                 </div>
 

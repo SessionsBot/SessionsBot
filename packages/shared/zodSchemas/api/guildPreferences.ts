@@ -5,7 +5,7 @@ export const API_GuildPreferencesDefaults = {
     public_sessions: true,
     calendar_button: true,
     thread_message_title: "📅 Sessions - %day_sm%",
-    thread_message_description: "-# You can view today's scheduled events/sessions by opening the __attached thread below__. 😊"
+    thread_message_description: "> You can view today's scheduled events/sessions below. 😊"
 }
 
 /** Guild/Server Preferences API Data Schema */

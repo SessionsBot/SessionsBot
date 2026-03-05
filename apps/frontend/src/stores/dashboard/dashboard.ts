@@ -276,7 +276,6 @@ const useDashboardStore = defineStore('dashboard', () => {
 
                 // Create / Subscribe to Channel:
                 updateChannel.value = supabase.channel(`guild-updates-${guildId.value}`)
-
                     // Guild:
                     .on('postgres_changes',
                         {
@@ -379,7 +378,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                     )
 
                     // Subscribe
-                    .subscribe((s, err) => {
+                    .subscribe(async (s, err) => {
                         // Debug
                         if (debugRealtime) {
                             if (s == REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
@@ -392,16 +391,20 @@ const useDashboardStore = defineStore('dashboard', () => {
                         }
                         // Timed Out? - Try Again:
                         if (s == 'TIMED_OUT' || s == 'CHANNEL_ERROR') {
-                            console.warn('Attempting to re-subscribe after timeout/error!')
-                            retryRealtimeAttempts.value += 1
-                            if (retryRealtimeAttempts.value > 3) return
-                            else subscribe()
+                            console.warn('[Realtime Updates]: Attempting to re-subscribe after timeout/error!')
+
+                            if (retryRealtimeAttempts.value >= 3) return console.error(`[Realtime Error]: FAILED to Subscribe AFTER 3 RETRY ATTEMPTS!`, { status: s, error: err })
+                            else {
+                                retryRealtimeAttempts.value += 1;
+                                await supabase.removeAllChannels()
+                                await subscribe()
+                            }
                         }
                     })
 
             } catch (err) {
                 // Log Failure:
-                console.error('REALTIME GUILD UPDATES - ERR:', err)
+                console.error('[Realtime Updates]: Subscribe Error Caught', err)
             }
         }
 
@@ -411,7 +414,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                 else console.warn('Tried to unsubscribe from a guild updates channel! - No channel found!')
             } catch (err) {
                 // Log Failure:
-                console.error('REALTIME GUILD UPDATES - ERR:', err)
+                console.error('[Realtime Updates]: Unsubscribe Error Caught', err)
             }
         }
 

@@ -146,7 +146,7 @@
             </Button>
 
             <!-- Audit Log Tab -->
-            <Button title="Audit Log" unstyled class="tab-view-button" @click="openTab('AuditLog')" :class="{
+            <Button title="Audit Logs" unstyled class="tab-view-button" @click="openTab('AuditLog')" :class="{
                 'expanded': navExpanded,
                 'selected': dashboard.nav.currentTab == 'AuditLog'
             }">
@@ -162,7 +162,7 @@
             </Button>
 
             <!-- Preferences Tab -->
-            <Button title="Audit Log" unstyled class="tab-view-button" @click="openTab('Preferences')" :class="{
+            <Button title="Preferences" unstyled class="tab-view-button" @click="openTab('Preferences')" :class="{
                 'expanded': navExpanded,
                 'selected': dashboard.nav.currentTab == 'Preferences'
             }">
