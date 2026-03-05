@@ -1,17 +1,15 @@
 <script lang="ts" setup>
-    import useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Incoming Props:
     const props = defineProps<{
         title: string,
         value: any,
-        iconBackground?: string
+        iconName: string,
+        classes?: {
+            iconContainer?: string
+        }
     }>()
 
-
-    // Services:
-    const dashboard = useDashboardStore();
-    const totalSessions = computed(() => dashboard.guildData.sessions?.state?.length)
 
 </script>
 
@@ -19,23 +17,30 @@
 <template>
     <!-- Total Sessions - Card -->
     <div
-        class="border-2 bg-surface rounded-md min-h-14 h-fit min-w-fit! w-fit! border-ring flex flex-row content-center items-center justify-center">
-        <!-- Icon Area -->
-        <div class="m-2.5 mr-0 p-1.75 rounded-full aspect-square! border-4 bg-black/20 border-black/50 h-full min-w-fit flex-1 grow flex items-center justify-center"
-            :style="{ backgroundColor: props.iconBackground ?? '' }">
-            <slot name="icon">
-                <Iconify icon="carbon:unknown" />
-            </slot>
+        class="border-2 bg-bg-soft gap-1 rounded-md min-h-14 h-fit min-w-38 w-fit! border-ring-soft flex flex-col p-2 content-center items-center justify-center">
+
+        <!-- Card Title -->
+        <p class="text-xs text-start w-full uppercase font-black opacity-60">
+            {{ props.title || 'STAT_NAME' }}
+        </p>
+
+        <!-- Bottom Row -->
+        <div class="flex flex-row items-center w-full bg-red-500/0 gap-0 p-0">
+            <!-- Icon Area -->
+            <div class="p-1.25 sm:mt-1 rounded-lg aspect-square! bg-bg-4 border-2 border-ring-4 min-w-fit w-fit flex items-center justify-center"
+                :class="props?.classes?.iconContainer ?? ''">
+                <Iconify :icon="props?.iconName" class="sm:flex hidden" :size="28" />
+                <Iconify :icon="props?.iconName" class="sm:hidden flex" />
+            </div>
+            <!-- Detail Area -->
+            <div class="p-1.5 w-fit! bg-red-500/0 flex flex-col gap-0 items-center justify-center">
+                <p class="sm:text-2xl text-xl font-extrabold text-center">
+                    {{ props.value || '%' }}
+                </p>
+            </div>
         </div>
-        <!-- Detail Area -->
-        <span class="w-full max-h-full p-1.5 grow flex flex-col gap-0 items-center justify-center">
-            <p class="px-2 font-extrabold text-lg">
-                {{ props.title || 'STAT_NAME' }}
-            </p>
-            <p class="w-full text-2xl font-extrabold text-center">
-                {{ props.value || '%' }}
-            </p>
-        </span>
+
+
     </div>
 
 </template>

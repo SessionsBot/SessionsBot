@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 
-    import StatCard from './cards/StatCard.vue';
     import CurrentSessions from './cards/recentSessions/CurrentSessions.vue';
     import ActiveTemplates from './cards/activeSchedules/ActiveSchedules.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import DisabledTemplateAlert from './cards/DisabledTemplateAlert.vue';
+    import StatCard from './cards/StatCard.vue';
 
     // services:
     const dashboard = useDashboardStore();
@@ -50,28 +50,20 @@
             <DisabledTemplateAlert v-if="guildTemplates?.some(t => !t.enabled)" />
 
             <!-- Guild Stats - Bar Section -->
-            <span hidden class="w-full flex gap-5 flex-wrap items-center justify-center">
+            <span class="w-full flex gap-5 flex-wrap items-center justify-center">
 
                 <!-- Total Sessions -->
-                <StatCard title="Sessions Created" :value="guildSessions?.length" :icon-background="'red'">
-                    <template #icon>
-                        <Iconify icon="fluent:calendar-add-16-regular" />
-                    </template>
-                </StatCard>
+                <StatCard title="Sessions Created" :value="dashboard.guildData.guildStats.state?.sessions_created"
+                    :classes="{ iconContainer: 'bg-emerald-600/70!' }" iconName="fluent:calendar-add-16-regular" />
 
-                <!-- Total Templates -->
-                <StatCard title="Active Schedules" :value="guildTemplates?.length" :icon-background="'green'">
-                    <template #icon>
-                        <Iconify icon="fluent:calendar-sync-16-regular" />
-                    </template>
-                </StatCard>
 
                 <!-- Total RSVPs -->
-                <StatCard title="RSVPs Made" :value="'?'" :icon-background="'blue'">
-                    <template #icon>
-                        <Iconify icon="fluent:calendar-checkmark-16-regular" />
-                    </template>
-                </StatCard>
+                <StatCard title="RSVPs Assigned" :value="dashboard.guildData.guildStats.state?.sessions_created"
+                    :classes="{ iconContainer: 'bg-sky-600/70!' }" iconName="fluent:calendar-checkmark-16-regular" />
+
+                <!-- Total Templates -->
+                <StatCard title="Active Schedules" :value="guildTemplates?.length"
+                    :classes="{ iconContainer: 'bg-yellow-600/70!' }" iconName="fluent:calendar-sync-16-regular" />
 
             </span>
 

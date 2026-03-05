@@ -270,6 +270,8 @@ const useDashboardStore = defineStore('dashboard', () => {
                 if (updateChannel.value) { await supabase.removeChannel(updateChannel.value); updateChannel.value = undefined; }
 
                 // Set Realtime Auth:
+                if (!auth.authReady) return console.warn('[Realtime Updates]: FAILED to subscribe - AUTH NOT READY!')
+                if (!auth.user || !auth.session || !auth.signedIn) return console.warn('[Realtime Updates]: FAILED to subscribe - NO AUTH USER!')
                 const token = auth.session?.access_token
                 if (!token) return console.warn('[Realtime Updates]: FAILED to subscribe - NO AUTH TOKEN!')
                 await supabase.realtime.setAuth(auth?.session?.access_token)

@@ -141,7 +141,7 @@
                     </span>
 
                     <!-- Scheduled Sessions - List -->
-                    <span class="section-wrap">
+                    <span class="section-wrap" v-if="!pastDay">
                         <p class="section-heading"> Scheduled Sessions: </p>
                         <div v-for="template in thisDaysTemplates" class="list-item-card">
                             <!-- Title / Details -->
@@ -185,6 +185,7 @@
 
             </div>
 
+
         </template>
     </Dialog>
 </template>
@@ -212,7 +213,7 @@
     }
 
     .section-heading {
-        @apply uppercase !sticky text-sm self-start font-extrabold text-text-1/60 text-center bg-black/15 border-2 border-ring-soft drop-shadow-sm drop-shadow-black/20 p-0.5 px-1.75 rounded-md;
+        @apply uppercase !sticky text-sm self-start font-extrabold text-text-1/60 text-center bg-bg-1/15 border-2 border-ring-soft drop-shadow-sm drop-shadow-black/20 p-0.5 px-1.75 rounded-md;
     }
 
     .section-wrap {
