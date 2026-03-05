@@ -46,8 +46,7 @@
                     to check that out!
                 </p>
                 <div class="w-[80%] rounded-full h-0.75 bg-bg-4" />
-                <Button unstyled
-                    class="button-base font-bold mt-1 px-2 py-0.5 bg-zinc-500/75 hover:bg-zinc-500/60 active:bg-zinc-500/65 active:scale-95">
+                <Button unstyled class="button-base font-bold mt-1 px-2 py-0.5 button-secondary active:scale-95">
                     <Iconify icon="wpf:faq" size="18" class="mr-0.5" />
                     View FAQs
                 </Button>
@@ -70,8 +69,7 @@
                 </p>
                 <div class="w-[80%] rounded-full h-0.75 bg-bg-4" />
                 <a :href="externalUrls.documentation" target="_blank">
-                    <Button unstyled
-                        class="button-base font-bold mt-1 px-2 py-0.5 bg-zinc-500/75 hover:bg-zinc-500/60 active:bg-zinc-500/65 active:scale-95">
+                    <Button unstyled class="button-base font-bold mt-1 px-2 py-0.5 button-secondary active:scale-95">
                         <Iconify icon="material-symbols:docs" size="18" class="mr-0.5" />
                         View Docs
                     </Button>
@@ -95,8 +93,7 @@
                 </p>
                 <div class="w-[80%] rounded-full h-0.75 bg-bg-4" />
                 <a :href="externalUrls.discordServer.supportInvite" target="_blank">
-                    <Button unstyled
-                        class="button-base font-bold mt-1 px-2 py-0.5 bg-zinc-500/75 hover:bg-zinc-500/60 active:bg-zinc-500/65 active:scale-95">
+                    <Button unstyled class="button-base font-bold mt-1 px-2 py-0.5 button-secondary active:scale-95">
                         <Iconify icon="basil:chat-solid" size="22" class="mr-0.5" />
                         Support Chat
                     </Button>

@@ -6,7 +6,7 @@
 </script>
 
 <template>
-    <div class="landing-section">
+    <div class="landing-section text-center">
         <p class="title">
             Support Center
         </p>

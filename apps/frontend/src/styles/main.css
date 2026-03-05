@@ -78,8 +78,8 @@
 }
 
 @utility button-secondary {
-  @apply bg-bg-3 hover:bg-bg-3/60 active:bg-bg-3/80;
-  @apply dark:bg-neutral-600 dark:hover:bg-neutral-600/60 dark:active:bg-neutral-600/80;
+  @apply bg-neutral-400 hover:bg-neutral-400/85 active:bg-neutral-400/77;;
+  @apply dark:bg-neutral-600 dark:hover:bg-neutral-600/75 dark:active:bg-neutral-600/85;
 }
 
 

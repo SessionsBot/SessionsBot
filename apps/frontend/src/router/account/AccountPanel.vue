@@ -65,7 +65,7 @@
 
 
 <template>
-    <div class="bg-bg-soft ring-ring-3 ring-2 rounded-md overflow-clip w-[80%] max-w-120">
+    <div class="bg-bg-soft ring-ring-soft ring-2 rounded-md overflow-clip w-[80%] max-w-120">
 
         <!-- Panel Header -->
         <header

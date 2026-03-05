@@ -8,10 +8,10 @@
 
 <template>
     <div
-        class="flex flex-col w-[85%] max-w-120 bg-bg-soft ring-ring-3 ring-2 justify-center items-center content-center m-5 rounded-md overflow-clip">
+        class="flex flex-col w-[85%] max-w-120 bg-bg-soft ring-ring-4 ring-2 justify-center items-center content-center m-5 rounded-md overflow-clip">
         <!-- Panel Header -->
         <header
-            class="bg-text-1/20 dark:bg-text-1/20 gap-1.5 p-3 px-2 w-full flex flex-row flex-wrap justify-start items-center content-center border-b-2 border-ring-3">
+            class="bg-text-1/10 gap-1.5 p-3 px-2 w-full flex flex-row flex-wrap justify-start items-center content-center border-b-2 border-ring-4/50">
             <UserCircle2Icon />
             <p class="font-bold">Sign In</p>
         </header>
@@ -30,7 +30,7 @@
             <!-- Sign In Button -->
             <a href="https://api.sessionsbot.fyi/auth/discord-sign-in">
                 <Button unstyled
-                    class="mt-3 my-2 gap-1! p-2.25 py-1.5 rounded-md drop-shadow-2xl cursor-pointer bg-brand-1 hover:bg-brand-1/80 active:bg-brand-1/70 active:scale-95 transition-all flex items-center justify-center"
+                    class="mt-3 my-2 gap-1! p-2.25 py-1.5 rounded-md drop-shadow-2xl cursor-pointer button-primary active:scale-95 transition-all flex items-center justify-center"
                     size="small">
                     <DiscordIcon />
                     <p class="text-nowrap font-extrabold">Sign Into Account</p>
