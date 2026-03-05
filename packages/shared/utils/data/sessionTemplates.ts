@@ -75,9 +75,9 @@ export function dbIsoUtcToDateTime(
 }
 
 
-/** Maps RSVPs from `JSON` string data from database to an `array`.  */
+/** "Re-Maps" RSVP slots `JSON` data from database to a `typed array`.  */
 export function mapRsvps(rsvpJSON: any) {
-    const parsed = JSON.parse(String(rsvpJSON));
+    const parsed = JSON.parse(JSON.stringify(rsvpJSON))
     const rsvpsArray: {
         name: string,
         emoji?: string | null,
@@ -104,6 +104,7 @@ export function buildRule(rrule: string, start: DateTime): rrule.RRule {
         tzid: 'UTC'
     });
 }
+
 
 /** Calculate the next UCT Post Time for a session template. 
  * @returns A `DateTime` of the next post time after `referenceDate` in UTC. */
@@ -158,6 +159,7 @@ export function calculateNextPostUTC(opts: {
     };
 
 }
+
 
 /** Calculate the LAST UCT Post Time for a session template, effectively its expiration. 
  * @returns A `DateTime` of the templates "expiration date" in UTC. (will be deleted from *db* past this date) */

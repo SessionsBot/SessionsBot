@@ -313,7 +313,6 @@
         const accessible_channelId: string | null = dashboard.guildData.channels.state?.sendable?.find(c => c?.id == data?.channel_id)?.id
         const accessible_mentionRoles: string[] | undefined | null = dashboard.guildData.roles.state?.filter(r => data?.mention_roles?.includes(r?.id))?.flatMap(r => r?.id)
 
-
         // Set Form Data:
         formValues.value = {
             title: data.title,
@@ -638,7 +637,7 @@
                     starts_at_utc: startUtc.toISO(),
                     duration_ms: getDurationMs(),
                     time_zone: data.timeZone,
-                    rsvps: data?.rsvps?.length ? JSON.stringify(data.rsvps) : null,
+                    rsvps: data?.rsvps?.length ? data.rsvps : null,
                     rrule: rrule ? rrule.toString() : null,
                     channel_id: data.channelId,
                     post_before_ms: getPostOffsetMs(),
