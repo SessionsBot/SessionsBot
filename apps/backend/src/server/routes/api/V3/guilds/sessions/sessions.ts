@@ -15,9 +15,9 @@ const createdLog = useLogger();
 const sessionRouter = express.Router({ mergeParams: true });
 
 
-// POST - Delay Session
+// PATCH - Delay Session
 // URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/:sessionId/delay
-sessionRouter.post(`/:sessionId/delay`, verifyToken, verifyGuildMember(true), async (req, res) => {
+sessionRouter.patch(`/:sessionId/delay`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse Req:
         const guildId = String(req.params['guildId'])
@@ -70,9 +70,9 @@ sessionRouter.post(`/:sessionId/delay`, verifyToken, verifyGuildMember(true), as
 
 
 
-// POST - Cancel Session
+// PATCH - Cancel Session
 // URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/:sessionId/cancel
-sessionRouter.post(`/:sessionId/cancel`, verifyToken, verifyGuildMember(true), async (req, res) => {
+sessionRouter.patch(`/:sessionId/cancel`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse Req:
         const guildId = String(req.params['guildId'])

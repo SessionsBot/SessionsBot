@@ -8,8 +8,14 @@
 
     // services:
     const dashboard = useDashboardStore();
-    const guildSessions = computed(() => dashboard.guildData.sessions.state)
+    // const guildSessions = computed(() => dashboard.guildData.sessions.state)
     const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state)
+
+    const activeTemplates = computed(() => {
+        guildTemplates.value?.filter(t => t.enabled == true
+            && t.next_post_utc != null
+        )
+    })
 
 </script>
 
@@ -65,7 +71,7 @@
 
 
                 <!-- Total RSVPs -->
-                <StatCard title="RSVPs Assigned" :value="dashboard.guildData.guildStats.state?.sessions_created"
+                <StatCard title="RSVPs Assigned" :value="dashboard.guildData.guildStats.state?.rsvps_assigned"
                     :classes="{ iconContainer: 'bg-sky-600/70!' }" iconName="fluent:calendar-checkmark-16-regular" />
 
                 <!-- Total Templates -->

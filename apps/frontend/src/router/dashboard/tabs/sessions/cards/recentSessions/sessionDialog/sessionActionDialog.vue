@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import type { Database } from '@sessionsbot/shared';
+    import type { APIResponseValue, Database } from '@sessionsbot/shared';
     import { CheckIcon, XIcon } from 'lucide-vue-next';
     import InputLabel from '../../../../../../../components/inputLabel.vue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
@@ -62,25 +62,64 @@
         }
     })
 
+
+    const submitState = ref<'idle' | 'loading' | 'failed' | 'success'>('idle')
     async function dialogSubmit(e: FormSubmitEvent) {
-        if (e.valid) {
-            // Valid Submission:
-            const sessionId = props.session?.id
-            const guildId = props.session?.guild_id
-            const reqUrl = dialogAction.value == 'cancel'
-                ? API.getUri() + `/guilds/${guildId}/sessions/${sessionId}/cancel`
-                : API.getUri() + `/guilds/${guildId}/sessions/${sessionId}/delay`
-            const reqBody = e.values
-            console.log('VALID - Test URL:', { reqUrl, reqBody })
-        } else {
-            // Invalid Submission:
+        submitState.value = 'loading'
+        try {
+            if (e.valid) {
+                // Valid Submission:
+                const sessionId = props.session?.id
+                const guildId = props.session?.guild_id
+                const reqUrl = dialogAction.value == 'cancel'
+                    ? API.getUri() + `/guilds/${guildId}/sessions/${sessionId}/cancel`
+                    : API.getUri() + `/guilds/${guildId}/sessions/${sessionId}/delay`
+                const reqBody = {
+                    reason: e.values?.reason ?? null,
+                    new_start_iso: e.values?.newStartDate ?? null
+                }
+                console.log('VALID - Test URL:', { reqUrl, reqBody })
+                // Make API Request:
+                const { data: result } = await API.patch<APIResponseValue>(reqUrl, reqBody)
+                if (!result || !result?.success) {
+                    // API Failure:
+                    console.warn('API Failure - Session Delay/Cancel API', { result })
+                    submitState.value = 'failed'
+                } else {
+                    // API Success:
+                    submitState.value = 'success'
+                    showSessionDialog.value = false;
+                    notifier.send({
+                        level: 'success',
+                        header: `Session ${dialogAction.value == 'cancel' ? 'Canceled' : 'Delayed'}!`
+                    })
+                    // Quiet Refetch Sessions:
+                    dashboard.refetchData('sessions')
+                }
+
+            } else {
+                submitState.value = 'failed'
+                // Invalid Submission:
+                notifier.send({
+                    level: 'warn',
+                    header: 'Invalid Fields',
+                    content: 'Fix the invalid fields within the form and try again!',
+                    actions: false
+                })
+            }
+        } catch (error) {
+            // Session Action Form - FAILURE:
+            submitState.value = 'failed'
+            console.error('Failed to submit session action dialog form!', error)
             notifier.send({
                 level: 'warn',
-                header: 'Invalid Fields',
-                content: 'Fix the invalid fields within the form and try again!',
-                actions: false
+                header: 'Error Occurred',
+                content: 'Confirm input values are correct, if issue persist get in touch with support!',
             })
-            return
+        } finally {
+            setTimeout(() => {
+                submitState.value = 'idle'
+            }, 2_000);
         }
     }
 
@@ -157,9 +196,30 @@
                 <!-- Footer -->
                 <div class="flex flex-row gap-4 items-center justify-end p-5">
                     <!-- Save Button -->
-                    <Button type="submit" unstyled class="button-base button-secondary px-1.5">
-                        <CheckIcon :size="22" class="min-w-fit! aspect-square!" />
-                        <p class="font-bold pr-0.75"> Confirm </p>
+                    <Button type="submit" unstyled class="button-base button-secondary px-1.5"
+                        :disabled="submitState != 'idle'" :class="{
+                            'scale-95 opacity-65': submitState != 'idle',
+                        }">
+                        <Transition name="fade" mode="out-in">
+                            <span v-if="submitState == 'idle'" class="flex flex-row flex-center flex-wrap">
+                                <CheckIcon :size="22" class="min-w-fit! aspect-square!" />
+                                <p class="font-bold pr-0.75"> Confirm </p>
+                            </span>
+                            <span v-else-if="submitState == 'loading'" class="flex flex-row flex-center flex-wrap">
+                                <CheckIcon :size="22" class="min-w-fit! aspect-square!" />
+                                <p class="font-bold pr-0.75"> Loading </p>
+                            </span>
+                            <span v-else-if="submitState == 'failed'"
+                                class="text-invalid-1 flex flex-row flex-center flex-wrap">
+                                <XIcon :size="22" class="min-w-fit! aspect-square!" />
+                                <p class="font-bold pr-0.75"> Failed </p>
+                            </span>
+                            <span v-else-if="submitState == 'success'"
+                                class="text-emerald-700/80 flex flex-row flex-center flex-wrap">
+                                <CheckIcon :size="22" class="min-w-fit! aspect-square!" />
+                                <p class="font-bold pr-0.75"> Saved </p>
+                            </span>
+                        </Transition>
                     </Button>
                 </div>
 

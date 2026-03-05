@@ -30,13 +30,19 @@
     const templateData = computed(() => dashboard.guildData.sessionTemplates.state?.find(t => (t.id == props.session?.template_id)))
 
     // Session - Last Post Date
-    const postDate = computed(() => DateTime.fromISO(String(props.session?.starts_at_utc))
-        .setZone(props.session?.time_zone)
-        .minus({ milliseconds: templateData.value?.post_before_ms ?? 0 }))
+    const postDate = computed(() => DateTime.fromISO(String(props.session?.created_at), { zone: 'utc' })
+        ?.setZone(props.session?.time_zone)
+        ?? 'Unknown'
+    )
 
     // Session - Last Start Date:
     const startDate = computed(() => DateTime.fromISO(String(props.session?.starts_at_utc))
         .setZone(props.session?.time_zone))
+    const pastStartDate = computed(() => {
+        if (!startDate.value) return true
+        else return startDate.value?.toUTC() < DateTime.utc()
+    })
+
 
 
     // Session Time Zone Data:
@@ -51,11 +57,14 @@
         return `https://discord.com/channels/${props.session?.guild_id}/${props.session?.thread_id ? props.session?.thread_id : props.session?.channel_id}/${props.session?.panel_id}`
     })
 
+    // Status & Badges:
+    const sessionState = computed(() => props.session?.status)
+
 
     // extraButtonActions
     const extraButtonActions: MultiButtonAction[] = [
         {
-            label: 'View on Discord',
+            label: 'Open in Discord',
             icon: 'tabler:message',
             href: signupMsgUrl?.value
         },
@@ -70,6 +79,7 @@
             label: 'Delay Start',
             icon: 'tabler:clock-up',
             classes: { root: 'dark:text-amber-500 text-amber-700' },
+            disabled: (pastStartDate.value || sessionState.value == 'canceled'),
             fn: () => {
                 dialogAction.value = 'delay'
                 showSessionDialog.value = true
@@ -79,6 +89,7 @@
             label: 'Cancel',
             icon: 'basil:cancel-outline',
             classes: { icon: 'scale-110', root: 'text-invalid-1' },
+            disabled: (pastStartDate.value || sessionState.value == 'canceled'),
             fn: () => {
                 dialogAction.value = 'cancel'
                 showSessionDialog.value = true
@@ -120,7 +131,7 @@
     <!-- Session Card -->
     <div class="session-card" :class="{ 'border-brand-1!': highlightSession }" ref="sessionCardRef">
 
-        <!-- Name / Start Time / Zone -->
+        <!-- Name / Start Time / Zone / Badges -->
         <div class="name-and-time">
             <p class="session-title">
                 {{ templateData?.title }}
@@ -132,6 +143,27 @@
                 <p class="session-zone" :title="sessionZone?.name">
                     {{ sessionZone?.abbreviation }}
                 </p>
+            </div>
+            <!-- Badges -->
+            <div class="flex flex-row flex-center gap-2 p-1.5 flex-wrap text-xs" v-if="sessionState != 'scheduled'">
+                <!-- Delayed Badge -->
+                <div v-if="sessionState == 'delayed'"
+                    class="bg-bg-4 dark:text-amber-500 text-amber-700 border-2 border-ring-soft rounded-md font-bold px-2 p-px flex flex-row flex-center gap-1.25">
+                    <span class="aspect-square size-5! flex flex-center">
+                        <Iconify icon="tabler:clock-up" :size="16" />
+                    </span>
+                    <p>
+                        Delayed!
+                    </p>
+                </div>
+                <!-- Canceled Badge -->
+                <div v-if="sessionState == 'canceled'"
+                    class="bg-bg-4 text-invalid-1 border-2 border-ring-soft rounded-md font-bold px-2 p-px flex flex-row flex-center gap-1">
+                    <Iconify icon="basil:cancel-outline" :size="20" />
+                    <p>
+                        Canceled!
+                    </p>
+                </div>
             </div>
         </div>
 
