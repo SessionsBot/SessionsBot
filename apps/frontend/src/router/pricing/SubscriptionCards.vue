@@ -37,7 +37,7 @@
         ENTERPRISE: {
             title: 'Enterprise',
             description: 'Best for largest servers, looking to get the most from Sessions Bot!',
-            price: 8.99,
+            price: 7.99,
             features: [
                 'Schedule ∞ active sessions.',
                 'Configure a max of 10 RSVP slots per session.',
