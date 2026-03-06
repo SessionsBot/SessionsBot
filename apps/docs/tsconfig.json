@@ -1,11 +1,22 @@
 {
-    // "extends": ".vitepress/tsconfig",
+    "compilerOptions": {
+      "composite": true
+    },
     "include": [
-    "**/*.ts",
-    "**/*.vue",
-    "**/*.md",
-    "types/**/*.d.ts"
-  ],
+      "src",
+      ".vitepress",
+    ],
+    "exclude": [
+      ".vitepress/cache/*",
+      "*/dist/*"
+    ],
+
+    "references": [
+      {
+        "path": "../../packages/shared"
+      }
+    ],
+    
   "vueCompilerOptions": {
     "vitePressExtensions": [".md"],
   },
