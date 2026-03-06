@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#0c0a18] text-white">
+  <main class="min-h-screen bg-bg-2 text-text-1">
     <HeroSection />
     <FeaturesSection />
     <HowItWorks />
