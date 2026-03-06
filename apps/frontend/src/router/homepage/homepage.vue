@@ -15,7 +15,7 @@
     <FeaturesSection />
     <HowItWorks />
     <PanelPreview />
-    <DashboardPreview />
+    <DashboardPreview hidden />
     <UseCases />
     <CTASection />
     <SiteFooter />
