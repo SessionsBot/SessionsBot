@@ -23,7 +23,6 @@ export function processVariableText(text: string, opts?: { displayDate: DateTime
     let r = text
     for (const key of keys) {
         const searchExp = new RegExp(`${key}`, 'g')
-        // @ts-expect-error
         const replaceVal = variableMap[key]
         r = r?.replace(searchExp, replaceVal)
     }
