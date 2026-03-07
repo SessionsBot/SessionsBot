@@ -1,23 +1,23 @@
 {
-    "compilerOptions": {
-      "composite": true
-    },
-    "include": [
-      "src",
-      ".vitepress",
-    ],
-    "exclude": [
-      ".vitepress/cache/*",
-      "*/dist/*"
-    ],
+  // "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": ".vitepress/dist",
 
-    "references": [
-      {
-        "path": "../../packages/shared"
-      }
-    ],
-    
-  "vueCompilerOptions": {
-    "vitePressExtensions": [".md"],
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@theme/*": ["./.vitepress/theme/*"]
+    }
   },
+  "include": [
+    "src",
+    ".vitepress",
+    "**/*.md"
+  ],
+  "references": [
+    { "path": "../../packages/shared" }
+  ],
+  "vueCompilerOptions": {
+    "vitePressExtensions": [".md"]
+  }
 }

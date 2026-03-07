@@ -16,7 +16,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag) => tag === 'iconify-icon'
+          isCustomElement: (tag) => tag === 'iconify-icon',
         }
       }
     }),

@@ -2,11 +2,10 @@
 node_modules/
 private*
 *.private*
+*.tsbuildinfo
 
 
 apps/backend/src/*/migration
 
-apps/docs/*/cache
-apps/docs/*/dist
-apps/backend/dist
-apps/frontend/dist
+apps/**/cache
+**/dist

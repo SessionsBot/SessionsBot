@@ -1,4 +1,4 @@
-import { Database } from './supabase'
+import type { Database } from './supabase'
 
 type SessionRsvpSlots = Database['public']['Tables']['session_rsvp_slots']['Row'] & { session_rsvps: Database['public']['Tables']['session_rsvps']['Row'][] }
 export type FullSessionData = {

@@ -1,14 +1,14 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
     "outDir": "dist",
-    "rootDir": "src",
-    "lib": ["ES2022"]
+    "types": ["node"],
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "package.json"
+  ],
   "references": [
     { "path": "../../packages/shared" }
   ]

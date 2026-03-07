@@ -13,6 +13,7 @@
     "packages/*"
   ],
   "scripts": {
+    "ts:check-errors": "tsc -b -noEmit",
     "db:gen-types": "npx supabase gen types typescript --project-id nrhesahngnvomojthnta > packages/shared/types/database/supabase.ts"
   },
   "author": "",

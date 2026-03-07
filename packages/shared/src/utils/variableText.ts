@@ -23,7 +23,7 @@ export function processVariableText(text: string, opts?: { displayDate: DateTime
     let r = text
     for (const key of keys) {
         const searchExp = new RegExp(`${key}`, 'g')
-        const replaceVal = variableMap[key]
+        const replaceVal = variableMap[key as keyof typeof variableMap]
         r = r?.replace(searchExp, replaceVal)
     }
     return r
