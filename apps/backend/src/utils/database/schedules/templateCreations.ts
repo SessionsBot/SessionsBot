@@ -411,7 +411,7 @@ async function executeTemplateCreationSchedule() {
                                 startsAtUtc: DateTime?.fromISO(t.starts_at_utc),
                                 postOffsetMs: t.post_before_ms,
                                 RRule: t.rrule,
-                                afterDate: DateTime?.fromISO(t.next_post_utc)
+                                afterDate: DateTime?.fromISO(t.last_post_utc)
                             });
                             const { error: updateTemplateErr } = await supabase
                                 .from('session_templates')
