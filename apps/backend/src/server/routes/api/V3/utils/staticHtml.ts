@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import core from "../../../../../utils/core/core";
 
 
@@ -35,8 +36,8 @@ export const rootDomainHtml = () => {
         <p> API Version: 3 </p>
         <p> Current Version: ${c.botVersion} </p>
         <p> Current Commit SHA: ${process.env?.['KOYEB_GIT_SHA']?.slice(0, 7) ?? 'unknown'} </p>
-        <p> Server Boot Timestamp: ${c.startupDates.server} </p>
-        <p> Client Boot Timestamp: ${c.startupDates.bot_client} </p>
+        <p> Server Boot Timestamp: ${DateTime.fromSeconds(c.serverStartedAtTimestamp)?.setZone('America/Chicago')?.toFormat(`F '- CST'`) ?? 'UNKNOWN?'} </p>
+        <p> Client Boot Timestamp: ${DateTime.fromMillis(c.botClient.readyTimestamp)?.setZone('America/Chicago')?.toFormat(`F '- CST'`) ?? 'UNKNOWN?'} </p>
         <a href="https://status.sessionsbot.fyi"> Status Page </a>
     </body>
     </html>

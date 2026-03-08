@@ -106,8 +106,7 @@ if (ENVIRONMENT_TYPE == 'production') {
 
 
 // ------- [ Store Server Startup Timestamp: ] -------
-const startupDT = DateTime.now().setZone('America/Chicago')
-core.startupDates.server = DateTime.now().setZone('America/Chicago').toFormat(`F - '${startupDT.offsetNameShort}'`)
+core.serverStartedAtTimestamp = DateTime.utc().toUnixInteger()
 
 
 // ------- [ Web Server (api): ] -------

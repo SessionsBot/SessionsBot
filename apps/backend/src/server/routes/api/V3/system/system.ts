@@ -6,6 +6,8 @@ import core from '../../../../../utils/core/core';
 import { ENVIRONMENT_GIT_COMMIT_SHA, ENVIRONMENT_TYPE } from '../../../../../utils/environment';
 import verifyToken from '../../../../middleware/verifyToken';
 import { verifyBotAdmin } from '../../../../middleware/verifyBotAdmin';
+import { DateTime } from 'luxon';
+import { URLS } from 'apps/backend/src/utils/core/urls';
 
 const createLog = useLogger();
 
@@ -79,14 +81,19 @@ systemRouter.all('/bot', verifyToken, verifyBotAdmin, async (req, res) => {
 // URL: https://api.sessionsbot.fyi/system/
 systemRouter.all('/', (req, res) => {
     return new Reply(res).success({
-        startup: {
-            timestamps: {
-                server: core.startupDates.server,
-                bot: core.startupDates.bot_client
-            },
-            commit_sha: ENVIRONMENT_GIT_COMMIT_SHA,
-            env_type: ENVIRONMENT_TYPE
-        }
+        env_type: ENVIRONMENT_TYPE,
+        commit_sha: ENVIRONMENT_GIT_COMMIT_SHA?.slice(0, 7),
+        server_started_at: core.serverStartedAtTimestamp != null
+            ? DateTime.fromSeconds(core.serverStartedAtTimestamp)
+                ?.setZone('America/Chicago')
+                ?.toFormat(`F '- CST'`)
+            ?? 'UNKNOWN'
+            : 'UNKNOWN',
+        client_ready_at: DateTime.fromMillis(core.botClient.readyTimestamp)
+            ?.setZone('America/Chicago')
+            ?.toFormat(`F '- CST'`)
+            ?? 'UNKNOWN',
+        status: URLS.status_page
     })
 })
 

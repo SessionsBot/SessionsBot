@@ -10,10 +10,8 @@ const core = {
     /** Currently logged in client instance. */
     botClient: <ExtendedClient>null,
 
-    startupDates: {
-        server: <string | undefined>undefined,
-        bot_client: <string | undefined>undefined
-    },
+    /** The UTC Seconds / Unix Integer the server instance started at. */
+    serverStartedAtTimestamp: <number | null>null,
 
     /** Default core colors in default hex format. */
     colors: {

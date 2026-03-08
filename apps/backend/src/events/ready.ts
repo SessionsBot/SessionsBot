@@ -31,10 +31,6 @@ export default {
 		// Set Bot User's Activity:
 		client.user.setActivity('🔗 sessionsbot.fyi', { type: ActivityType.Custom });
 
-		// Set Client Startup Date:
-		const startupDT = DateTime.now().setZone('America/Chicago')
-		core.startupDates.bot_client = DateTime.now().setZone('America/Chicago').toFormat(`F - '${startupDT.offsetNameShort}'`)
-
 		// After Startup - Initialize Schedule System(s):
 		setTimeout(async () => {
 			// Run Dev Tests (if dev env):

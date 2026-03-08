@@ -6,6 +6,7 @@ import apiRouter from "./routes/api/V3/index.js";
 import { APIResponse } from "./routes/api/V3/utils/responseClass.js";
 import { ENVIRONMENT_TYPE } from "../utils/environment.js";
 import { rootDomainHtml } from "./routes/api/V3/utils/staticHtml.js";
+import { DateTime } from "luxon";
 
 /** Main backend web server instance for Sessions Bot. */
 const app = express()
@@ -36,8 +37,16 @@ app.use((req, res) => {
         server_version: core.botVersion,
         api_version: 3,
         git_commit_sha: process.env?.['KOYEB_GIT_SHA']?.slice(0, 7),
-        server_start_timestamp: core.startupDates.server,
-        client_start_timestamp: core.startupDates.bot_client
+        server_started_at: core.serverStartedAtTimestamp != null
+            ? DateTime.fromSeconds(core.serverStartedAtTimestamp)
+                ?.setZone('America/Chicago')
+                ?.toFormat(`F '- CST'`)
+            ?? 'UNKNOWN'
+            : 'UNKNOWN',
+        client_ready_at: DateTime.fromMillis(core.botClient.readyTimestamp)
+            ?.setZone('America/Chicago')
+            ?.toFormat(`F '- CST'`)
+            ?? 'UNKNOWN'
     }, 404);
 });
 
