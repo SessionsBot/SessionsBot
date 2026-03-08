@@ -1,4 +1,4 @@
-import { processVariableText, calculateNextPostUTC, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database } from "@sessionsbot/shared";
+import { processVariableText, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database, getSchedulesNextPostUTC } from "@sessionsbot/shared";
 import { useLogger } from "../../logs/logtail";
 import { supabase } from "../supabase"
 import { DateTime } from "luxon";
@@ -407,12 +407,11 @@ async function executeTemplateCreationSchedule() {
 
 
                             // Update Session Template - Next/Last Post UTC:
-                            const newNextPostUTC = calculateNextPostUTC({
-                                startDate: DateTime.fromISO(t.starts_at_utc),
-                                zone: t.time_zone,
+                            const newNextPostUTC = getSchedulesNextPostUTC({
+                                startsAtUtc: DateTime?.fromISO(t.starts_at_utc),
                                 postOffsetMs: t.post_before_ms,
-                                rrule: t.rrule,
-                                referenceDate: DateTime.fromISO(t.next_post_utc),
+                                RRule: t.rrule,
+                                afterDate: DateTime?.fromISO(t.next_post_utc)
                             });
                             const { error: updateTemplateErr } = await supabase
                                 .from('session_templates')

@@ -8,13 +8,13 @@
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { useAuthStore } from '@/stores/auth';
-    import { dbIsoUtcToDateTime, dbIsoUtcToFormDate, mapRsvps, utcDateTimeFromJs, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/LoadingIcon.vue';
-    import { RRule } from 'rrule';
+    import { datetime, RRule, rrulestr } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
 
@@ -424,6 +424,7 @@
     /** Form Submission Function */
     const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
     const debugSubmit = false;
+    const dryRun = false;
     async function submitForm() {
         try {
             // Mark Submit Busy:
@@ -450,7 +451,7 @@
                 submitState.value = 'failed';
                 setTimeout(() => submitState.value = 'idle', 1000)
                 // Return Invalid Submission:
-                return console.warn('Invalid Submission!', { result, values: formValues.value });
+                return console.warn('[Session Form]: Invalid Submission!', { result, values: formValues.value });
             }
 
             // Valid Submission - Prepare Req for API:
@@ -467,33 +468,40 @@
                 data.rsvps = null;
             }
 
-            // Convert - Start Date:
-            const startUtc = utcDateTimeFromJs(data.startDate, data.timeZone)
-            const { hour: startHour, minute: startMinute } = DateTime.fromJSDate(data.startDate);
+            // Get Start & End Dates:
+            const startInZone = DateTime.fromJSDate(data.startDate, { zone: 'local' })
+                .setZone(data.timeZone, { keepLocalTime: true })
+                .startOf('minute')
+            const startUtc = startInZone.toUTC()
+            const endInZone = data?.endDate
+                ? DateTime.fromJSDate(data.endDate, { zone: 'local' })
+                    .setZone(data.timeZone, { keepLocalTime: true })
+                    .startOf('minute')
+                : null;
+            const endUtc = endInZone
+                ? endInZone.toUTC()
+                : null;
 
             // Compute - Duration Ms:
             const getDurationMs = () => {
-                const endDate = data.endDate
-                if (!endDate) return null;
-                const endUtc = utcDateTimeFromJs(endDate, data.timeZone);
-                return (endUtc.toMillis() - startUtc.toMillis())
+                if (!endUtc) return null;
+                return Math.max((endUtc.toMillis() - startUtc.toMillis()), 0)
             }
 
-            // Compute - Post Offset Ms:
+            // Compute - Post Offset Ms (Positive Int):
             const getPostOffsetMs = () => {
                 const postTimeInput = DateTime.fromJSDate(data.postTime);
-                const postTimeDate = startUtc
-                    .setZone(data.timeZone) // session start in zone
+                const postTimeDate = startInZone
                     .set({ hour: postTimeInput.hour, minute: postTimeInput.minute }) // apply chosen post time
                 let postUtc = postTimeDate.toUTC() // convert back to utc
                 if (data.postDay == 'Day before') {
                     postUtc = postUtc.minus({ day: 1 });
                 }
-                return (startUtc.toMillis() - postUtc.toMillis())
+                return Math.max((startUtc.toMillis() - postUtc.toMillis()), 0)
             }
 
 
-            // Re-Build - RRule:
+            // RE BUILD CORRECT RRule:
             const baseRule = data?.recurrence ? RRule.fromString(data.recurrence) : null;
             const untilInput = baseRule?.options?.until
                 ? DateTime.fromJSDate(baseRule?.options?.until)
@@ -504,127 +512,71 @@
                     { zone: data.timeZone })
                     .endOf('day')
                 : null;
-            const untilUtc = untilInZone ? untilInZone.toUTC() : null;
-
-            const rrule = baseRule
+            const newRRule = baseRule
                 ? new RRule({
                     ...baseRule.origOptions,
-                    dtstart: startUtc.toJSDate(),
-                    until: untilUtc
-                        ? untilUtc.toJSDate()
-                        : undefined,
+                    dtstart: datetime(startInZone.year, startInZone.month, startInZone.day, startInZone.hour, startInZone.minute, 0),
+                    until: untilInZone ? datetime(untilInZone.year, untilInZone.month, untilInZone.day, untilInZone.hour, untilInZone.minute, 0) : undefined,
+                    tzid: data.timeZone
                 })
                 : null;
 
 
             // Compute - Next Post UTC:
-            let cursor = DateTime.now();
-            const getNextPostUtc = (): DateTime | null => {
-                while (true) {
-                    // No RRULE - Compute first/last post if after NOW:
-                    if (!rrule) {
-                        // Get First & Only Post Time:
-                        const post = startUtc.minus({ millisecond: getPostOffsetMs() })
-                        // IF EDITING - Ensure this post date is past its last post date:
-                        if (dashboard.sessionForm?.editPayload?.last_post_utc) {
-                            const lastPostUtc = DateTime.fromISO(dashboard.sessionForm.editPayload.last_post_utc)
-                            if (post <= lastPostUtc) {
-                                return null
-                            }
-                        }
-                        return post
-                    }
-                    // RRULE - Find Next Local Date in JS Date:
-                    const nextStartJs = rrule ? rrule.after(cursor.toJSDate(), true) : null;
-                    if (nextStartJs) {
-                        // Create DateTime in Zone w/ Post Offset of next recurrence:
-                        const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: data.timeZone })
-                            .set({ hour: startHour, minute: startMinute }); // maintain intended time
-                        const nextPostInZone = nextStartInZone.minus({ millisecond: getPostOffsetMs() });
-                        // IF EDITING - Ensure this post date is past its last post date:
-                        if (dashboard.sessionForm.editPayload?.last_post_utc) {
-                            const lastPostInZone = dbIsoUtcToDateTime(dashboard.sessionForm.editPayload.last_post_utc, data.timeZone)
-                            if (nextPostInZone <= lastPostInZone) {
-                                // This post was too early / already elapsed -> finding next
-                                cursor = cursor.plus({ day: 1 })
-                                continue
-                            }
-                        }
-                        // Checks Passed - Return UTC Date:
-                        return nextPostInZone.toUTC();
+            const nextAfterDT = dashboard.sessionForm.editPayload?.last_post_utc && formAction.value == 'edit'
+                ? DateTime.fromISO(String(dashboard.sessionForm.editPayload?.last_post_utc), { zone: 'utc' })
+                : DateTime.now().setZone(data.timeZone).startOf('day').toUTC()
+            const nextPostUTC = getSchedulesNextPostUTC({
+                startsAtUtc: startUtc,
+                postOffsetMs: getPostOffsetMs(),
+                RRule: newRRule?.toString(),
+                afterDate: nextAfterDT
+            })
 
-                    } else {
-                        // No Next Occurrence from NOW - Possible 1 Time with Day Before offsets
-                        // Find most recent occurrence - PREVIOUSLY and return that post date:
-                        console.error('No `nextStartJs` was found!');
-                        return null;
-                    };
+            // Compute - Last Post UTC:
+            const lastPostUTC = getSchedulesLastPostUTC({
+                startsAtUtc: startUtc,
+                postOffsetMs: getPostOffsetMs(),
+                RRule: newRRule?.toString()
+            })
 
-                };
-            };
-            const nextPostUtc = getNextPostUtc();
-
-            console.info({ nextPostUtc })
-
-            // Compute - Expiration Date UTC (last post time):
-            const getUtcExpiresAtDate = () => {
-                let lastStartJs: Date | null = null;
-
-                if (!rrule) {
-                    // No Recurrence:
-                    lastStartJs = startUtc
-                        .minus({ millisecond: getPostOffsetMs() })
-                        .toLocal()
-                        .toJSDate();
-                } else {
-                    // Has Recurrence:
-                    const { until, count } = rrule.options
-                    if (until) {
-                        // RRule End by Date:
-                        lastStartJs = untilUtc ? rrule.before(until, false) : null;
-
-                    } else if (count) {
-                        // RRule End by Count:
-                        const all = rrule.all();
-                        lastStartJs = all.at(-1) ?? null;
-                    } else {
-                        // No RRule End / Expiration Date:
-                        lastStartJs = null
-                    }
-                }
-
-                if (lastStartJs) {
-                    const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: data.timeZone })
-                        .set({ hour: startHour, minute: startMinute }); // maintain intended time
-                    const lastPostInZone = lastStartInZone.minus({ millisecond: getPostOffsetMs() });
-                    const expiresAtUtc = lastPostInZone.toUTC();
-                    return expiresAtUtc;
-                } else {
-                    return null;
-                }
-            };
-
-
-            // If Debugging - Return
+            // If Debug Submission - Return Logs:
             if (debugSubmit) {
-                console.info('Prepared Data', {
-                    rrule,
-                    rruleString: rrule?.toString(),
-                    startUtc: startUtc.toISO(),
+                console.info({
+                    rrule: newRRule,
+                    ruleString: newRRule?.toString(),
                     durationMs: getDurationMs(),
                     postOffsetMs: getPostOffsetMs(),
-                    expiration: {
-                        utc: getUtcExpiresAtDate(),
-                        inZone: getUtcExpiresAtDate()?.setZone(data.timeZone)
-                    },
-                    post: {
-                        utc: nextPostUtc,
-                        inZone: nextPostUtc?.setZone(data.timeZone)
-                    },
-                    startHour, startMinute,
                     rsvps: data.rsvps
-                });
-                return submitState.value = 'idle';
+                })
+                console.log({
+                    firstStart: {
+                        utc: startInZone.toUTC().toFormat('F'),
+                        local: startInZone.toFormat('F'),
+                        selected: startInZone.setZone(data.timeZone).toFormat('F'),
+                        cst: startInZone?.setZone('America/Chicago').toFormat('F')
+                    },
+                    firstEnd: {
+                        utc: endInZone?.toUTC()?.toFormat('F'),
+                        local: endInZone?.toFormat('F'),
+                        selected: endInZone?.setZone(data.timeZone)?.toFormat('F'),
+                        cst: endInZone?.setZone('America/Chicago')?.toFormat('F')
+                    },
+                    nextPost: {
+                        utc: nextPostUTC?.toFormat('F'),
+                        local: nextPostUTC?.setZone('local')?.toFormat('F'),
+                        selected: nextPostUTC?.setZone(data.timeZone)?.toFormat('F'),
+                        cst: nextPostUTC?.setZone('America/Chicago')?.toFormat('F')
+                    },
+                    lastPost: {
+                        utc: lastPostUTC?.toFormat('F'),
+                        local: lastPostUTC?.setZone('local')?.toFormat('F'),
+                        selected: lastPostUTC?.setZone(data.timeZone)?.toFormat('F'),
+                        cst: lastPostUTC?.setZone('America/Chicago')?.toFormat('F')
+                    }
+                })
+                submitState.value = 'idle';
+                if (dryRun) return console.info('(!) debug submit - prevented submission!');
             }
 
             // Else - Create Request Body:
@@ -638,14 +590,14 @@
                     duration_ms: getDurationMs(),
                     time_zone: data.timeZone,
                     rsvps: data?.rsvps?.length ? data.rsvps : null,
-                    rrule: rrule ? rrule.toString() : null,
+                    rrule: newRRule ? newRRule.toString() : null,
                     channel_id: data.channelId,
                     post_before_ms: getPostOffsetMs(),
                     mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? data?.mention_roles : null,
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
-                    next_post_utc: nextPostUtc ? nextPostUtc.toISO() : null,
-                    expires_at_utc: getUtcExpiresAtDate()?.toISO() ?? null,
+                    next_post_utc: nextPostUTC ? nextPostUTC?.toISO() : null,
+                    expires_at_utc: lastPostUTC ? lastPostUTC?.toISO() : null,
                 }
 
             };
@@ -675,10 +627,8 @@
             }
 
 
-
             // Mark Submit Un-Busy:
             submitState.value = 'idle';
-            // console.log('Form Submitted', formValues.value);
 
             // Reload Dashboard Templates:
             dashboard.refetchData('sessionTemplates')

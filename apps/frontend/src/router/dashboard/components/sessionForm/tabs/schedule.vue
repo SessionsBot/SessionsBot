@@ -7,11 +7,12 @@
     import InputTitle from '../labels/inputTitle.vue';
     import { DateTime } from 'luxon';
     import useDashboardStore from '@/stores/dashboard/dashboard';
+    import { rruleDateToLuxon } from '@sessionsbot/shared';
 
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
-        validateField: (name: NewSessions_FieldNames) => void
+        validateField: (name: NewSessions_FieldNames) => void,
     }>();
     const { invalidFields, validateField } = props;
 
@@ -27,6 +28,7 @@
 
     // Recurrence RRule String:
     const recurrence = defineModel<string>('recurrence');
+    // UI: Relative RRule Text
     const RRuleText = computed(() => {
         if (!recurrence.value) return 'Add more info to fields!';
         const rule = RRule.fromString(recurrence.value);
@@ -127,7 +129,7 @@
 
             const endDate = v.endRepeatDate
                 ? DateTime.fromJSDate(v.endRepeatDate)
-                    .startOf('day')
+                    .endOf('day')
                 : null;
 
             // Create Recurrence RRule:
@@ -137,13 +139,13 @@
                 byweekday: v.weekdays || undefined,
                 count: v.endRepeatCount,
                 until: endDate
-                    ? endDate.toJSDate() // datetime(endDate.year, endDate.month, endDate.day, 0, 0, 0)
+                    ? datetime(endDate.year, endDate.month, endDate.day, endDate.hour, endDate.minute, endDate.second)
                     : undefined,
-                // tzid: 'UTC'
+                // tzid: selectedTimeZoneName.value // applied later
             });
             if (newRule) {
                 // Assign to form values:
-                // console.info('CREATED RULE', newRule, newRule.toString())
+                // console.info('CREATED RAW RULE', newRule, newRule.toString())
                 recurrence.value = newRule.toString();
             }
 
@@ -180,12 +182,13 @@
                 localForm.value.formValues.weekdays = rule.origOptions.byweekday as any;
             }
             // Set End Repeat Date:
-            if (rule.options.until) {
-                const untilLocal = DateTime.fromJSDate(rule.options.until, { zone: payload.time_zone })
-                    .setZone('local', { keepLocalTime: true })
-                    .toJSDate();
+            if (rule.options.until && rule.options.tzid) {
                 endRepeatDateEnabled.value = true;
-                localForm.value.formValues.endRepeatDate = untilLocal;
+                // Fix RRule date to "local" but keep selected time zone time:
+                const untilInZoneAsLocal = DateTime.fromJSDate(rule.options.until)
+                    .toUTC()
+                    .setZone('local', { keepLocalTime: true })
+                localForm.value.formValues.endRepeatDate = untilInZoneAsLocal.toJSDate();
 
             }
             // Set Max Repeat Count:

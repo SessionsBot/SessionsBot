@@ -16,26 +16,18 @@ export const { RRule, rrulestr, datetime } = resolved;
 
 
 
-// -------[  FRONTEND --> BACKEND UTILITIES  ]-------
-
-/** Converts a local JavaScript (Form) `Date` to a `DateTime` in the UTC zone. 
- * @note Trims to beginning of minute */
-export function utcDateTimeFromJs(date: Date, zone: string) {
-    const base = DateTime.fromJSDate(date);
-    const start = DateTime.fromObject({
-        year: base.year,
-        month: base.month,
-        day: base.day,
-        hour: base.hour,
-        minute: base.minute
-    })
-        .setZone(zone, { keepLocalTime: true })
-        .startOf('minute');
-    return start.toUTC();
+/** "Re-Maps" RSVP slot(s) `JSON` from database to a `typed array`.  */
+export function mapRsvps(rsvpJSON: any) {
+    const parsed = JSON.parse(JSON.stringify(rsvpJSON))
+    const rsvpsArray: {
+        name: string,
+        emoji?: string | null,
+        capacity: number,
+        required_roles?: string[]
+    }[] = Array.from(parsed);
+    return rsvpsArray;
 }
 
-
-// -------[  BACKEND --> FRONTEND UTILITIES  ]-------
 
 /** Converts a database ISO string to a JavaScript `Date` in LOCAL zone 
  * @note Includes time from ISO in specified zone. (overrides local zone) */
@@ -59,141 +51,84 @@ export function dbIsoUtcToFormDate(
 }
 
 
-/** Converts a database ISO string to a `DateTime` in specified zone. */
-export function dbIsoUtcToDateTime(
-    isoUtc: string,
-    zone: string,
-    addMs?: number
-): DateTime {
-    let base = DateTime.fromISO(isoUtc, { zone })
-
-    if (addMs) {
-        base = base.plus({ milliseconds: addMs })
-    }
-
-    return base
+/** Converts a "malformed local/utc" `RRule date` to a specified timezone.
+ * @note Used for js `date` objects __returned by the `RRule` package__! */
+export function rruleDateToLuxon(jsDate: Date, tz: string) {
+    return DateTime.fromObject({
+        year: jsDate.getUTCFullYear(),
+        month: jsDate.getUTCMonth() + 1,
+        day: jsDate.getUTCDate(),
+        hour: jsDate.getUTCHours(),
+        minute: jsDate.getUTCMinutes(),
+        second: jsDate.getUTCSeconds(),
+    }, {
+        zone: 'local'
+    })
+        ?.setZone(tz)
 }
 
 
-/** "Re-Maps" RSVP slots `JSON` data from database to a `typed array`.  */
-export function mapRsvps(rsvpJSON: any) {
-    const parsed = JSON.parse(JSON.stringify(rsvpJSON))
-    const rsvpsArray: {
-        name: string,
-        emoji?: string | null,
-        capacity: number,
-        required_roles?: string[]
-    }[] = Array.from(parsed);
-    return rsvpsArray;
-}
-
-
-// -------[  HYBRID --> SESSION TEMPLATES  ]-------
-
-/** Builds an `RRule` from RRule string and origin start time from template.
- * @deprecated - RRules should be stable enough to be built directly from string! *(fingers crossed)* */
-export function buildRule(rrule: string, start: DateTime): rrule.RRule {
-    const base = RRule.fromString(rrule);
-    const startUTC = start.toUTC().startOf('minute')
-    return new RRule({
-        ...base.options,
-        byhour: startUTC.hour,
-        byminute: startUTC.minute,
-        bysecond: 0,
-        dtstart: datetime(startUTC.year, startUTC.month, startUTC.day, startUTC.hour, startUTC.minute, 0),
-        tzid: 'UTC'
-    });
-}
-
-
-/** Calculate the next UCT Post Time for a session template. 
- * @returns A `DateTime` of the next post time after `referenceDate` in UTC. */
-export function calculateNextPostUTC(opts: {
-    /** `DateTime` of the templates FIRST start date in UTC. */
-    startDate: DateTime,
-    /** The post offset in milliseconds as negative number from session start time. */
+/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. */
+export function getSchedulesNextPostUTC(opts: {
+    /** The sessions first start date in UTC zone as `DateTime`. */
+    startsAtUtc: DateTime,
+    /** Post offset in positive milliseconds from the sessions start time. */
     postOffsetMs: number,
-    /** The time zone string assigned to this session/dates. */
-    zone: string,
-    /** The `RRule` recurrence string for session repeats, if any. */
-    rrule?: string | null,
-    /** The reference `DateTime` to only search for next post dates ***AFTER***(and including) this date, if undefined defaults to current time in zone. 
-     * @note `zone` should be set to 'utc'!
-    */
-    referenceDate?: DateTime
-}) {
-    // Assign Reference Default if Null:
-    if (!opts.referenceDate) opts.referenceDate = DateTime.now()
-    // Get Intended Start Time of Day:
-    const { hour: startHour, minute: startMinute } = opts.startDate.setZone(opts.zone)
+    /** The RRule String representing this sessions schedule. */
+    RRule: string | undefined | null,
+    /** Search for the next occurrence AFTER this date 
+     * @Default `DateTime.now()`
+     * @TimeZone `UTC` */
+    afterDate?: DateTime | undefined | null,
 
-    // Compute - Next Post UTC from Reference Date:
-    let cursor = DateTime.now();
-    let rule = opts.rrule ? RRule.fromString(opts.rrule) : null;
-    while (true) {
-        // Find Next Local Date in JS Date:
-        const nextStartJs = rule ? rule.after(cursor.toJSDate(), true) : null;
-        if (nextStartJs) {
-            // Create DateTime in Zone w/ Post Offset of next recurrence:
-            const nextStartInZone = DateTime.fromJSDate(nextStartJs, { zone: opts.zone })
-                .set({ hour: startHour, minute: startMinute }); // maintain intended time
-            const nextPostInZone = nextStartInZone.minus({ millisecond: opts.postOffsetMs });
-            // Ensure this post date is past the specified `reference date`:
-            if (nextPostInZone.toSeconds() <= opts.referenceDate.toSeconds()) {
-                // This post was too early / already elapsed -> finding next
-                cursor = cursor.plus({ day: 1 })
-                continue
-            }
-            // Checks Passed - Return UTC Date:
-            return nextPostInZone.toUTC();
-
-        } else {
-            // No Next Start Js?: - 
-            const firstPost = opts.startDate.plus({ millisecond: opts.postOffsetMs })
-            // Return First Post if not past now or null:
-            if (firstPost.toUTC().toSeconds() > DateTime.now().toSeconds()) {
-                return firstPost
-            } else return null;
-        };
-
-    };
-
-}
-
-
-/** Calculate the LAST UCT Post Time for a session template, effectively its expiration. 
- * @returns A `DateTime` of the templates "expiration date" in UTC. (will be deleted from *db* past this date) */
-export function calculateExpiresAtUTC(opts: {
-    /** `DateTime` of the templates FIRST start date in UTC. */
-    startDate: DateTime,
-    /** The post offset in milliseconds as negative number from session start time. */
-    postOffsetMs: number,
-    /** The time zone string assigned to this session/dates. */
-    zone: string,
-    /** The `RRule` recurrence string for session repeats, if any. */
-    rrule?: string | null,
-}) {
-
-    const startUtc = opts.startDate.toUTC();
-    const startInZone = opts.startDate.setZone(opts.zone)
-    const { hour: startHour, minute: startMinute } = startInZone;
-
-    const rule = opts.rrule ? RRule.fromString(opts.rrule) : null;
-
-    let lastStartJs: Date | null = null;
-
-    if (!rule) {
-        // No Recurrence:
-        lastStartJs = startUtc
-            .minus({ millisecond: opts.postOffsetMs })
-            .toLocal()
-            .toJSDate();
+}): DateTime | null {
+    if (!opts.RRule) {
+        // No Recurrence - Return First / Last Date:
+        return opts.startsAtUtc.plus({
+            milliseconds: opts.postOffsetMs
+        })
     } else {
-        // Has Recurrence:
-        const { until, count } = rule.options
+        // Recurrence - Get next POST date from afterDate:
+        const rule = rrulestr(opts.RRule)
+        const timeZone = rule.options.tzid;
+        const afterInZone = (opts.afterDate ?? DateTime.utc())?.setZone(timeZone)
+
+        // Compute Next Session Start from RRule:
+        const nextJsDate = rule.after(afterInZone.toJSDate())
+        if (!nextJsDate) return null
+        // Get Next Start as DateTime:
+        const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
+        // Return in UTC w/ post offset:
+        return nextStartDT
+            ? nextStartDT?.minus({ milliseconds: opts.postOffsetMs })?.toUTC()
+            : null;
+    }
+}
+
+
+/** Calculates a session template schedule's **LAST POST** `DateTime` in UTC zone. */
+export function getSchedulesLastPostUTC(opts: {
+    /** The sessions first start date in UTC zone. */
+    startsAtUtc: DateTime,
+    /** Post offset in positive milliseconds from the sessions start time. */
+    postOffsetMs: number,
+    /** The RRule String representing this sessions schedule. */
+    RRule: string | undefined | null,
+}): DateTime | null {
+    if (!opts.RRule) {
+        // Return start date w/ post offset:
+        return opts.startsAtUtc.minus({
+            milliseconds: opts.postOffsetMs
+        })
+    } else {
+        // Has recurrence(s) - Find last start w/ post offset:
+        const rule = rrulestr(opts.RRule);
+        const { until, count, tzid: timeZone } = rule.options
+        let lastStartJs: Date | null = null
         if (until) {
             // RRule End by Date:
-            lastStartJs = rule.before(until, false);
+            lastStartJs = rule.before(until, true)
+
         } else if (count) {
             // RRule End by Count:
             const all = rule.all();
@@ -202,15 +137,14 @@ export function calculateExpiresAtUTC(opts: {
             // No RRule End / Expiration Date:
             lastStartJs = null
         }
-    }
-
-    if (lastStartJs) {
-        const lastStartInZone = DateTime.fromJSDate(lastStartJs, { zone: opts.zone })
-            .set({ hour: startHour, minute: startMinute }); // maintain intended time
-        const lastPostInZone = lastStartInZone.minus({ millisecond: opts.postOffsetMs });
-        const expiresAtUtc = lastPostInZone.toUTC();
-        return expiresAtUtc;
-    } else {
-        return null;
+        if (!lastStartJs) return null // no expiration
+        else {
+            // Found expiration date:
+            const lastStartDT = rruleDateToLuxon(lastStartJs, timeZone)
+            // Return in UTC w/ post offset:
+            return lastStartDT?.minus({
+                milliseconds: opts.postOffsetMs
+            })?.toUTC()
+        }
     }
 }
