@@ -66,6 +66,7 @@
             name: `${z.alternativeName} - ${z.mainCities[0] || ''} (${offsetHrs}:00)`,
             value: z.name
         }
+        validateField('timeZone')
     }
 
 </script>

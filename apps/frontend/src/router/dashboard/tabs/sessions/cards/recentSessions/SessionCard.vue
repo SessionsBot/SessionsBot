@@ -134,7 +134,7 @@
         <!-- Name / Start Time / Zone / Badges -->
         <div class="name-and-time">
             <p class="session-title">
-                {{ templateData?.title }}
+                {{ session?.title }}
             </p>
             <div class="time-and-zone">
                 <p class="session-date">

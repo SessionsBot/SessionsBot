@@ -7,7 +7,7 @@
 
 <template>
     <!-- Default Dialog - Headless w/ Question Icon - Red Confirm Button -->
-    <ConfirmDialog class="m-7! border-none!">
+    <ConfirmDialog class="m-12! border-none!">
         <template #container="{ message, acceptCallback, rejectCallback }">
             <div class="flex text-text-1 ring-2 ring-ring-4/80 flex-col items-center p-6 bg-bg-3 rounded max-w-120">
                 <div
