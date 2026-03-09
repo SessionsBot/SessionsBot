@@ -46,11 +46,10 @@ async function sendHeartbeat(success: boolean) {
     const heartbeatUrl = process?.env?.['BETTERSTACK_TEMPLATE_CREATION_HEARTBEAT_URL']
     if (!heartbeatUrl) return;
     try {
-        console.info('Sending heartbeat', success)
         const url = success ? heartbeatUrl : `${heartbeatUrl}/fail`;
         await fetch(url, { method: 'POST' });
     } catch (err) {
-        createLog.for('Schedule').warn('Template/Schedule Creation(s) Heartbeat FAILED!', { err });
+        createLog.for('Api').warn('Template/Schedule Creation(s) - Heartbeat Send FAILED!', { err });
     }
 }
 
@@ -126,7 +125,7 @@ async function executeTemplateCreationSchedule() {
                         // Confirm Channel:
                         if (!channel) {
                             // Failed to Fetch Post Channel - Alert & Escalate Failure:
-                            const failedIds = g?.session_templates?.map(t => t?.id)
+                            const failedIds = channelTemplates?.map(t => t?.id)
                             await escalateTemplateFailure(failedIds)
                             sendTemplateCreationAlert(g?.id, "Guild Channel", failedIds)
                             createLog.for('Schedule').error(`Failed to fetch a guild's post channel for template creation schedule!`, { channelId, channelTemplates, guildId: g?.id })
@@ -134,7 +133,7 @@ async function executeTemplateCreationSchedule() {
                         }
                         // Confirm Channel is Sendable:
                         if (!channel.isSendable()) {
-                            const failedIds = g?.session_templates?.map(t => t?.id)
+                            const failedIds = channelTemplates?.map(t => t?.id)
                             createLog.for('Bot').info(`Missing Perms - Couldn't use post channel! - Template Creation(s) Schedule`, { channelId, channelTemplates, guildId: g?.id });
                             await escalateTemplateFailure(failedIds)
                             sendTemplateCreationAlert(g?.id, 'Permissions', failedIds)
@@ -145,6 +144,9 @@ async function executeTemplateCreationSchedule() {
                             await channel.threads.fetch()
                         }
 
+                        // Small DELAY Per Channel:
+                        await new Promise(res => setTimeout(res, 225))
+
                         // For EACH OVERDUE TEMPLATE:
                         for (const t of channelTemplates) {
                             // Get Vars:
@@ -154,9 +156,6 @@ async function executeTemplateCreationSchedule() {
                             const sessionStart = DateTime.fromISO(t.next_post_utc, { zone: 'utc' }).plus({ millisecond: t.post_before_ms });
                             /** The **BEGINNING of day** of this sessions start time in sessions specified time zone */
                             const dayInZone = sessionStart.setZone(t.time_zone).startOf('day')
-
-                            // Small DELAY:
-                            await new Promise(res => setTimeout(res, 350))
 
                             // Save NEW SESSION from Template:
                             const { data: newSession, error: newSessionErr } = await supabase.from('sessions').insert({
@@ -169,8 +168,9 @@ async function executeTemplateCreationSchedule() {
                                 guild_id: t?.guild_id,
                                 channel_id: t?.channel_id,
                                 template_id: t?.id,
-                                mention_roles: t?.mention_roles,
-                                panel_id: 'undefined',
+                                mention_roles: mentionRoles,
+                                panel_id: 'awaiting_update',
+                                status: 'scheduled'
                             }).select('*').single()
                             if (newSessionErr) {
                                 // Failed to save new session from template! - Escalate & Return Failure:
@@ -185,10 +185,10 @@ async function executeTemplateCreationSchedule() {
                             if (templateRsvps?.length > 0) {
                                 const { data: newRsvpSlots, error: newRsvpSlotsErr } = await supabase.from('session_rsvp_slots').insert(
                                     templateRsvps.map(data => ({
-                                        title: data.name,
-                                        emoji: data.emoji,
-                                        capacity: data.capacity,
-                                        roles_required: data.required_roles,
+                                        title: data?.name,
+                                        emoji: data?.emoji ?? null,
+                                        capacity: data?.capacity,
+                                        roles_required: data?.required_roles ?? [],
                                         session_id: newSession?.id,
                                         guild_id: t?.guild_id
                                     }))
@@ -215,7 +215,7 @@ async function executeTemplateCreationSchedule() {
                                 try {
                                     // Compute Thread Title - Preferences:
                                     const getThreadTitle = () => {
-                                        let raw = g?.thread_message_title;
+                                        let raw = subscription?.limits?.CUSTOM_THREAD_START_MESSAGE ? g?.thread_message_title : null;
                                         if (!raw || raw == 'DEFAULT') raw = API_GuildPreferencesDefaults.thread_message_title;
                                         return processVariableText(raw, { displayDate: dayInZone })
                                     }
@@ -229,7 +229,7 @@ async function executeTemplateCreationSchedule() {
                                     } else {
                                         // CREATING THREAD - Send "Thread Start" Message - Compute Thread Desc:
                                         const getThreadDescription = () => {
-                                            let raw = g?.thread_message_description;
+                                            let raw = subscription?.limits?.CUSTOM_THREAD_START_MESSAGE ? g?.thread_message_description : null;
                                             if (!raw || raw == 'DEFAULT') raw = API_GuildPreferencesDefaults.thread_message_description;
                                             return processVariableText(raw, { displayDate: dayInZone })
                                         }
@@ -361,6 +361,7 @@ async function executeTemplateCreationSchedule() {
                                         entityType: GuildScheduledEventEntityType.External,
                                         privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                                         entityMetadata: { location: t?.url ? t.url : panelMsg?.url },
+                                        image: guild?.iconURL() ?? undefined
                                     })
                                 } catch (err) {
                                     // Discord Event Creation Error:
@@ -396,6 +397,10 @@ async function executeTemplateCreationSchedule() {
                                     if (cleanup.some(s => s.error != null)) {
                                         createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From failed session update after post!', { guildId: t?.guild_id, cleanupResults: cleanup })
                                     }
+                                    // Delete Session Panel - Already Posted:
+                                    if (panelMsg.deletable) {
+                                        try { await panelMsg?.delete() } catch { }
+                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Session Update Err!', { err: retry.error })
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -406,19 +411,21 @@ async function executeTemplateCreationSchedule() {
                             }
 
 
-                            // Update Session Template - Next/Last Post UTC:
-                            const latestPostDT = t?.last_post_utc
+                            // Get Templates Next Post Date - IN FUTURE ONLY!
+                            const latestStartDT = t?.last_post_utc
                                 ? DateTime.fromISO(t.last_post_utc, { zone: 'utc' })
+                                    ?.plus({ millisecond: t?.post_before_ms })
                                 : null;
-                            const postFromDT = latestPostDT?.isValid
-                                ? DateTime.max(latestPostDT, DateTime.utc())
+                            const postFromDT = latestStartDT?.isValid
+                                ? DateTime.max(latestStartDT, DateTime.utc())
                                 : DateTime.utc();
                             const newNextPostUTC = getSchedulesNextPostUTC({
                                 startsAtUtc: DateTime?.fromISO(t.starts_at_utc, { zone: 'utc' }),
                                 postOffsetMs: t.post_before_ms,
                                 RRule: t.rrule,
-                                afterDate: postFromDT?.isValid ? postFromDT : DateTime.utc()
+                                afterDate: postFromDT
                             });
+                            // Update Session Template - Next/Last Post UTC:
                             const { error: updateTemplateErr } = await supabase
                                 .from('session_templates')
                                 .update({
@@ -457,6 +464,10 @@ async function executeTemplateCreationSchedule() {
                                     if (cleanup.some(s => s.error != null)) {
                                         createLog.for('Database').error('FAILED TO REMOVE BROKEN SESSION/RSVPs - From failed template update after session update/post!', { guildId: t?.guild_id, cleanupResults: cleanup })
                                     }
+                                    // Delete Session Panel - Already Posted:
+                                    if (panelMsg.deletable) {
+                                        try { await panelMsg?.delete() } catch { }
+                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Template Update Err!', { err: retry.error })
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -488,7 +499,7 @@ async function executeTemplateCreationSchedule() {
 
                     } catch (error) {
                         // Failed to Process Guild Post Channel - Alert & Escalate Failure:
-                        const failedIds = g?.session_templates?.map(t => t?.id).filter(i => !succeededChannelTemplates.includes(i))
+                        const failedIds = channelTemplates?.map(t => t?.id).filter(i => !succeededChannelTemplates.includes(i))
                         if (isBotPermissionError(error)) {
                             sendTemplateCreationAlert(g?.id, "Permissions", failedIds)
                             createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, channelTemplates, guildId: g?.id })
