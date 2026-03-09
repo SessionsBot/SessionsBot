@@ -1,15 +1,23 @@
 <script lang="ts" setup>
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { ArrowLeftCircleIcon, ArrowRightCircleIcon, XIcon } from 'lucide-vue-next';
+    import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { Popover, type PopoverMethods } from 'primevue';
-    import { RRule } from 'rrule';
     import DayViewDialog from './dayView/DayViewDialog.vue';
+    import { dayKey, getTemplateDayMapForMonth, isoToLocalDayKey } from './calendarUtils';
 
     // Services:
     const dashboard = useDashboardStore();
     const guildSessions = computed(() => dashboard.guildData.sessions.state);
     const guildTemplates = computed(() => dashboard.guildData.sessionTemplates.state);
+
+    const todayStart = computed(() => DateTime.local().startOf('day'));
+    const retentionDays = computed(
+        () => dashboard.guildData.subscription.state?.limits?.MAX_DATA_RETENTION_AGE.SESSIONS ?? 0
+    );
+    const retentionCutoffDate = computed(() =>
+        DateTime.local().minus({ days: retentionDays.value }).startOf('day')
+    );
 
     // HEADER - Month / Year Select Popover:
     const useMonthPopover = () => {
@@ -35,8 +43,8 @@
 
                     const date = DateTime.local(year, monthNumber, 1).startOf('month');
 
-                    const isAfterMin = date >= minMonth.startOf('month');
-                    const isBeforeMax = date <= maxMonth.startOf('month');
+                    const isAfterMin = date >= minMonth.value;
+                    const isBeforeMax = date <= maxMonth.value;
 
                     if (!isAfterMin || !isBeforeMax) return null;
 
@@ -50,11 +58,11 @@
 
         const yearOptions = computed(() => {
             // Get available years:
-            let years = [];
-            let cursor = minMonth.startOf('year');
+            const years: number[] = [];
+            let cursor = minMonth.value.startOf('year');
             while (true) {
-                const isAfterMin = cursor >= minMonth.startOf('year');
-                const isBeforeMax = cursor <= maxMonth.startOf('year');
+                const isAfterMin = cursor >= minMonth.value.startOf('year');
+                const isBeforeMax = cursor <= maxMonth.value.startOf('year');
                 if (!isAfterMin || !isBeforeMax) break;
                 else {
                     years.push(cursor.year)
@@ -80,11 +88,14 @@
 
     // CALENDAR - Current Month:
     const selectedMonth = ref(DateTime.now().startOf('month'));
-    const retentionCutoffDate = DateTime.local().minus({ days: dashboard.guildData.subscription.state?.limits?.MAX_DATA_RETENTION_AGE.SESSIONS })
-    const maxMonth = DateTime.local().plus({ year: 10 }).startOf('month');
-    const minMonth = DateTime.local().minus({ days: dashboard.guildData.subscription.state?.limits?.MAX_DATA_RETENTION_AGE.SESSIONS }).startOf('month')
+    const maxMonth = computed(() => DateTime.local().plus({ year: 5 }).startOf('month'));
+    const minMonth = computed(() => retentionCutoffDate.value.startOf('month'));
     const previousMonth = () => selectedMonth.value = selectedMonth.value.minus({ month: 1 });
     const nextMonth = () => selectedMonth.value = selectedMonth.value.plus({ month: 1 });
+    watch([minMonth, maxMonth], () => {
+        if (selectedMonth.value < minMonth.value) selectedMonth.value = minMonth.value;
+        if (selectedMonth.value > maxMonth.value) selectedMonth.value = maxMonth.value;
+    }, { immediate: true });
 
     // CALENDAR - Computed Dates:
     const calendarWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -112,35 +123,40 @@
 
 
     // Calendar Day Badge - Utils:
-    function dayHasSessions(d: DateTime) {
-        return guildSessions.value?.some((s) => DateTime.fromISO(s.starts_at_utc, { zone: 'local' })?.startOf('day')?.toSeconds() == d?.startOf('day')?.toSeconds())
-    }
-    function dayHasTemplates(d: DateTime) {
-        // Get viewing day start:
-        const viewDay = d?.startOf('day')
-        if (viewDay.toSeconds() <= DateTime.now().startOf('day').toSeconds()) return false;
-        if (!guildTemplates.value) return false;
-        // Check each template:
-        for (const t of guildTemplates.value) {
-            const templateStartDay = DateTime.fromISO(t.starts_at_utc, { zone: 'local' }).startOf('day')
-            // If template start date:
-            if (templateStartDay.toSeconds() == viewDay.toSeconds()) return true;
-            // Else - Check recurrences for this month:
-            if (t.rrule) {
-                const rule = RRule.fromString(t.rrule)
-                const thisMonthOccurrences = rule.between(monthStart.value.toJSDate(), monthEnd.value.toJSDate());
-                if (thisMonthOccurrences.length) {
-                    // Recurrences THIS Month:
-                    for (const reDateJs of thisMonthOccurrences) {
-                        const localRecurrenceDate = DateTime.fromJSDate(reDateJs)
-                        const zonedRecurrenceDate = localRecurrenceDate.setZone(t.time_zone)
-                        if (zonedRecurrenceDate.startOf('day').toSeconds() == viewDay.toSeconds()) return true;
-                    }
-                }
-            }
+    const sessionDaysInMonth = computed(() => {
+        const keys = new Set<string>();
+        const startKey = dayKey(monthStart.value);
+        const endKey = dayKey(monthEnd.value);
+        if (!startKey || !endKey) return keys;
+
+        for (const session of guildSessions.value ?? []) {
+            const key = isoToLocalDayKey(session.starts_at_utc);
+            if (!key) continue;
+            if (key < startKey || key > endKey) continue;
+            keys.add(key);
         }
-        // Checks Failed - No Template for Day:
-        return false;
+        return keys;
+    });
+
+    const templateDaysInMonth = computed(() => {
+        return getTemplateDayMapForMonth(
+            guildTemplates.value ?? [],
+            monthStart.value,
+            monthEnd.value,
+            todayStart.value
+        );
+    });
+
+    function dayHasSessions(d: DateTime) {
+        const key = dayKey(d);
+        if (!key) return false;
+        return sessionDaysInMonth.value.has(key);
+    }
+
+    function dayHasTemplates(d: DateTime) {
+        const key = dayKey(d);
+        if (!key) return false;
+        return templateDaysInMonth.value.daysWithTemplates.has(key);
     }
 
 </script>
@@ -196,7 +212,7 @@
 
             <!-- Weekday Header Row -->
             <div class="weekday-header-row">
-                <p v-for="weekday in calendarWeekdays" class="weekday-header">
+                <p v-for="weekday in calendarWeekdays" :key="weekday" class="weekday-header">
                     {{ weekday }}
                 </p>
             </div>
@@ -205,12 +221,13 @@
             <div class="calendar-days-wrap">
 
                 <!-- Leading EMPTY DAYS -->
-                <div v-for="_ in leadingEmptyDays" class="size-px" />
+                <div v-for="n in leadingEmptyDays" :key="`lead-${n}`" class="size-px" />
 
                 <!-- Calendar DAYS -->
-                <Button unstyled v-for="day in daysInMonth" class="calendar-day" @click="openDayViewFor(day)" :class="{
-                    'today-day': (DateTime.now().startOf('day').toSeconds() == day?.toSeconds())
-                }" :title="day.toFormat('M/d/yy')" :disabled="day <= retentionCutoffDate">
+                <Button unstyled v-for="day in daysInMonth" :key="String(day.toISODate())" class="calendar-day"
+                    @click="openDayViewFor(day)" :class="{
+                        'today-day': (DateTime.now().startOf('day').toSeconds() == day?.toSeconds())
+                    }" :title="day.toFormat('M/d/yy')" :disabled="day <= retentionCutoffDate">
                     {{ day.day }}
                     <!-- Chip Bar -->
                     <div class="absolute bottom-0.75 w-full h-1.75 gap-1 py-px flex items-center justify-center">
