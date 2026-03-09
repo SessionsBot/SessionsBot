@@ -419,10 +419,6 @@ async function executeTemplateCreationSchedule() {
                                 RRule: t.rrule,
                                 afterDate: postFromDT?.isValid ? postFromDT : DateTime.utc()
                             });
-                            console.info('Getting Next Post Dates', {
-                                latestsPost: latestPostDT.setZone('America/Chicago').toFormat('F'),
-                                newNextPostUTC: newNextPostUTC.setZone('America/Chicago').toFormat('F')
-                            })
                             const { error: updateTemplateErr } = await supabase
                                 .from('session_templates')
                                 .update({
