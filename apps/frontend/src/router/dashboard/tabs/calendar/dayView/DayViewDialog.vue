@@ -2,16 +2,18 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
-    import { RRule } from 'rrule';
+    import { dayKey, getTemplateDayMapForMonth, isoToLocalDayKey } from '../calendarUtils';
 
 
     // Incoming Props / Modals:
     const isVisible = defineModel<boolean>('visible');
     const selectedDay = defineModel<DateTime | undefined>('selectedDay');
+    const selectedDayStart = computed(() => selectedDay.value?.startOf('day'));
+    const selectedDayKey = computed(() => dayKey(selectedDayStart.value));
 
     const pastDay = computed(() => {
-        if (!selectedDay.value) return true;
-        else return selectedDay.value?.startOf('day') < DateTime.now().startOf('day')
+        if (!selectedDayStart.value) return true;
+        return selectedDayStart.value < DateTime.now().startOf('day');
     })
 
     // Services:
@@ -19,53 +21,39 @@
 
     // Get Sessions that OCCURRED this day:
     const thisDaysSessions = computed(() => {
-        return dashboard.guildData.sessions.state?.filter(s => {
-            const startInZone = DateTime.fromISO(s.starts_at_utc, { zone: 'local' });
-            return startInZone.startOf('day').toSeconds() == selectedDay.value?.toSeconds()
-        }).sort((a, b) => DateTime.fromISO(a.starts_at_utc).toSeconds() - DateTime.fromISO(b.starts_at_utc).toSeconds()) || []
+        const key = selectedDayKey.value;
+        if (!key) return [];
+        return dashboard.guildData.sessions.state?.filter((s) => {
+            return isoToLocalDayKey(s.starts_at_utc) === key;
+        }).sort((a, b) => DateTime.fromISO(a.starts_at_utc).toSeconds() - DateTime.fromISO(b.starts_at_utc).toSeconds()) || [];
     })
+
+    const templatesBySelectedMonth = computed(() => {
+        const day = selectedDayStart.value;
+        if (!day) return new Map();
+        const monthStart = day.startOf('month');
+        const monthEnd = day.endOf('month');
+        return getTemplateDayMapForMonth(
+            dashboard.guildData.sessionTemplates.state ?? [],
+            monthStart,
+            monthEnd,
+            DateTime.now().startOf('day')
+        ).templatesByDay;
+    });
 
     // Get Sessions that are SCHEDULED to this day:
     const thisDaysTemplates = computed(() => {
-        const guildTemplates = dashboard.guildData.sessionTemplates.state;
-        if (!guildTemplates || !guildTemplates.length) return [];
-
         // If day has already occurred - Return []:
         if (pastDay.value) return []
-
-        // Check each template:
-        return guildTemplates.filter((t) => {
-            const templateStartDay = DateTime.fromISO(t.starts_at_utc, { zone: 'local' }).startOf('day')
-            // If template start date:
-            if (templateStartDay.toSeconds() == selectedDay.value?.toSeconds()) return true;
-            // Else - Check recurrences for this month:
-            if (t.rrule) {
-                const rule = RRule.fromString(t.rrule)
-                if (!selectedDay.value) return false;
-                const todaysRecurrence = rule.between(
-                    selectedDay.value?.startOf('day').toJSDate(),
-                    selectedDay.value?.endOf('day').toJSDate(),
-                    true
-                )
-                if (todaysRecurrence) {
-                    // Recurrences THIS Month:
-                    for (const reDateJs of todaysRecurrence) {
-                        const localRecurrenceDate = DateTime.fromJSDate(reDateJs)
-                        // const zonedRecurrenceDate = localRecurrenceDate.setZone(t.time_zone)
-                        if (localRecurrenceDate.startOf('day').toSeconds() == selectedDay.value?.toSeconds()) return true;
-                    }
-                }
-            }
-            // Check(s) Failed:
-            return false;
-        }).sort((a, b) => {
+        const key = selectedDayKey.value;
+        if (!key) return [];
+        const templates = templatesBySelectedMonth.value.get(key) ?? [];
+        return [...templates].sort((a, b) => {
             // Sort by Next Start Time
-            const startDateA = DateTime.fromISO(String(a?.next_post_utc)).plus({ millisecond: a.post_before_ms })
-            const startDateB = DateTime.fromISO(String(b?.next_post_utc)).plus({ millisecond: b.post_before_ms })
+            const startDateA = DateTime.fromISO(String(a?.next_post_utc)).plus({ milliseconds: a.post_before_ms })
+            const startDateB = DateTime.fromISO(String(b?.next_post_utc)).plus({ milliseconds: b.post_before_ms })
             return (startDateA.toUnixInteger() - startDateB.toUnixInteger())
         })
-
-
     })
 
 
@@ -111,7 +99,7 @@
                         <p class="section-heading"> Occurred Sessions: </p>
 
                         <!-- Session Card -->
-                        <div v-for="session in thisDaysSessions" class="list-item-card ">
+                        <div v-for="session in thisDaysSessions" :key="session.id" class="list-item-card ">
                             <!-- Title / Details -->
                             <span class="flex flex-col gap-2">
                                 <p class="font-bold text-[17px]">
@@ -134,7 +122,7 @@
                             <p v-if="pastDay" class="font-semibold italic opacity-55 inline">
                                 Day has already concluded!
                             </p>
-                            <p v-else="pastDay" class="font-semibold italic opacity-55 inline">
+                            <p v-else class="font-semibold italic opacity-55 inline">
                                 No Sessions Created Yet!
                             </p>
                         </div>
@@ -143,7 +131,7 @@
                     <!-- Scheduled Sessions - List -->
                     <span class="section-wrap" v-if="!pastDay">
                         <p class="section-heading"> Scheduled Sessions: </p>
-                        <div v-for="template in thisDaysTemplates" class="list-item-card">
+                        <div v-for="template in thisDaysTemplates" :key="template.id" class="list-item-card">
                             <!-- Title / Details -->
                             <span class="flex flex-col gap-2">
                                 <p class="font-bold text-[17px]">
