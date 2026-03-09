@@ -407,12 +407,22 @@ async function executeTemplateCreationSchedule() {
 
 
                             // Update Session Template - Next/Last Post UTC:
+                            const latestPostDT = t?.last_post_utc
+                                ? DateTime.fromISO(t.last_post_utc, { zone: 'utc' })
+                                : null;
+                            const postFromDT = latestPostDT?.isValid
+                                ? DateTime.max(latestPostDT, DateTime.utc())
+                                : DateTime.utc();
                             const newNextPostUTC = getSchedulesNextPostUTC({
-                                startsAtUtc: DateTime?.fromISO(t.starts_at_utc),
+                                startsAtUtc: DateTime?.fromISO(t.starts_at_utc, { zone: 'utc' }),
                                 postOffsetMs: t.post_before_ms,
                                 RRule: t.rrule,
-                                afterDate: DateTime?.fromISO(t.last_post_utc)
+                                afterDate: postFromDT?.isValid ? postFromDT : DateTime.utc()
                             });
+                            console.info('Getting Next Post Dates', {
+                                latestsPost: latestPostDT.setZone('America/Chicago').toFormat('F'),
+                                newNextPostUTC: newNextPostUTC.setZone('America/Chicago').toFormat('F')
+                            })
                             const { error: updateTemplateErr } = await supabase
                                 .from('session_templates')
                                 .update({

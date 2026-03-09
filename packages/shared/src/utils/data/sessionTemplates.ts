@@ -83,15 +83,16 @@ export function getSchedulesNextPostUTC(opts: {
 
 }): DateTime | null {
     if (!opts.RRule) {
-        // No Recurrence - Return First / Last Date:
-        return opts.startsAtUtc.plus({
+        // No Recurrence - Return first scheduled post date:
+        return opts.startsAtUtc.minus({
             milliseconds: opts.postOffsetMs
         })
     } else {
         // Recurrence - Get next POST date from afterDate:
         const rule = rrulestr(opts.RRule)
-        const timeZone = rule.options.tzid;
-        const afterInZone = (opts.afterDate ?? DateTime.utc())?.setZone(timeZone)
+        const timeZone = rule.options.tzid ?? 'utc';
+        const normalizedAfterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
+        const afterInZone = normalizedAfterDate.setZone(timeZone)
 
         // Compute Next Session Start from RRule:
         const nextJsDate = rule.after(afterInZone.toJSDate())
@@ -123,7 +124,8 @@ export function getSchedulesLastPostUTC(opts: {
     } else {
         // Has recurrence(s) - Find last start w/ post offset:
         const rule = rrulestr(opts.RRule);
-        const { until, count, tzid: timeZone } = rule.options
+        const { until, count } = rule.options
+        const timeZone = rule.options.tzid ?? 'utc'
         let lastStartJs: Date | null = null
         if (until) {
             // RRule End by Date:
