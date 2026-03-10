@@ -144,7 +144,7 @@
 
                 <Button v-if="shownCount + batchSize <= auditEvents.length" @click="showMore" unstyled
                     class="button-base button-secondary gap-1 py-0.5 px-1.25 text-text-1/90">
-                    <Iconify icon="tabler:reload" size="16" />
+                    <Iconify icon="tabler:calendar-down" size="16" />
                     <p class="font-bold text-sm pr-0.5">
                         Load More
                     </p>
