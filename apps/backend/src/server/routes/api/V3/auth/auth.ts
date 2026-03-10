@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { HttpStatusCode } from "axios";
 import { supabase } from "../../../../../utils/database/supabase.js";
 import express from "express";
 import { useLogger } from "../../../../../utils/logs/logtail.js";
@@ -106,11 +106,11 @@ authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
         // 2. Get PREV Discord token data from profile:
         const { discord_refresh_token, discord_token_expires_at } = reqUserProfile
         // Confirm token is available:
-        if (!discord_refresh_token || !discord_token_expires_at) return new reply(res).failure('Failed to get refresh token/data for user, sign out and back in.');
+        if (!discord_refresh_token || !discord_token_expires_at) return new reply(res).failure('Failed to get Discord refresh token/data for user, sign out and back in.');
         const tokenExpDate = DateTime.fromISO(discord_token_expires_at)
         const tokenExpired = tokenExpDate?.diffNow('seconds')?.seconds <= 0;
         // Confirm token hasn't expired:
-        if (!tokenExpDate || tokenExpired) return new reply(res).failure('Token has expired! You will have to sign back into Discord.')
+        if (!tokenExpDate || tokenExpired) return new reply(res).failure('Discord Token has expired! You will have to sign back into Discord.', HttpStatusCode.Unauthorized)
 
         // 3. Exchange refresh token for FRESH tokens:
         const tokenReq = await axios.post(

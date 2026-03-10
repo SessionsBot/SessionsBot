@@ -4,10 +4,11 @@ import type { Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
-import type { AppUser, AppUserMetadata } from "@sessionsbot/shared";
+import type { APIResponseValue, AppUser, AppUserMetadata } from "@sessionsbot/shared";
 import router from "@/router/router";
 import * as Sentry from '@sentry/vue'
 import { safeGTag } from "../analytics";
+import { API } from "@/utils/api";
 
 /** Debug Auth - Boolean 🏁 */
 const debugAuth = false;
@@ -91,7 +92,7 @@ export const useAuthStore = defineStore('auth', {
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
-                const { status, data: { data: { fresh_token } } } = await axios.get(refreshEndpoint);
+                const { status, data: { data: { fresh_token } } } = await API.get<APIResponseValue<any>>(refreshEndpoint);
 
                 // Handle request response - Fetch new user data:
                 if (fresh_token) {
@@ -122,7 +123,7 @@ export const useAuthStore = defineStore('auth', {
                 // Redirect new sign in after wait:
                 setTimeout(() => {
                     this.signIn();
-                }, 4_000);
+                }, 1_000);
 
                 // Return Failure:
                 return {

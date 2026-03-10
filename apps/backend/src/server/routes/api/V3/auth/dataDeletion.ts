@@ -46,7 +46,7 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
 
             if (error) throw error
 
-            // Valid Req Body - Save Request to Database:
+            // Send Successful Response:
             return new reply(res).success({
                 message: 'Request Received!',
                 values: validatedBody.data,
