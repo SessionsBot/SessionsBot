@@ -11,7 +11,7 @@
     // ALL Active Templates - Sorted by Time next START time
     const guildTemplates = computed(() =>
         dashboard.guildData.sessionTemplates.state?.filter(t => {
-            if (!t.next_post_utc) return false
+            if (t.expires_at_utc && DateTime.fromISO(t.expires_at_utc, { zone: 'utc' }) < DateTime.utc()) return false
             if (!t.enabled) return false
             else return true
         }).sort((a, b) => {
@@ -30,7 +30,6 @@
     // Watch - Highlighted Template/Schedule Id - Correct Page:
     watch(() => dashboard.nav.highlightedTemplateId, (id) => {
         if (id) {
-
             const template = dashboard.guildData.sessionTemplates.state?.find(t => t.id == id)
             if (!template) return console.warn('Failed to find template by id to highlight!')
             const t_index = guildTemplates.value?.findIndex(t => t.id == id);
@@ -39,7 +38,6 @@
 
             // Switch paginator page
             tPageIndexStart.value = pageStart
-
         } else return
     }, { immediate: true, flush: "sync" })
 
