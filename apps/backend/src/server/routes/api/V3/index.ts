@@ -6,12 +6,14 @@ import guildsRouter from "./guilds/guilds";
 import systemRouter from "./system/system";
 import discordRouter from "./discord/discord";
 import { rootDomainHtml } from "./utils/staticHtml";
+import dataDeletionRouter from "./auth/dataDeletion.js";
 
 // Create Router
 const apiRouter = express.Router();
 
 // Nested Routes:
 apiRouter.use('/auth', authRouter);
+apiRouter.use('/data-deletion', dataDeletionRouter);
 apiRouter.use('/guilds', guildsRouter);
 apiRouter.use('/system', systemRouter);
 apiRouter.use('/discord', discordRouter);

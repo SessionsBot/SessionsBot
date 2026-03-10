@@ -5,6 +5,8 @@
     import { FileWarningIcon, MessageCircleWarningIcon, Trash2Icon, XIcon, ArrowLeft, AlertTriangleIcon, CheckIcon, TriangleAlertIcon } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
     import defaultDiscordIcon from '/discord-grey.png'
+    import type { API_DataDeletionRequestBodyInterface } from '@sessionsbot/shared';
+    import { API } from '@/utils/api';
 
 
     // Checkbox Styles/PT:
@@ -75,7 +77,7 @@
     }
 
     // Form Submit:
-    function submitForm() {
+    async function submitForm() {
         try {
             // Get Submitted Values:
             const deleteGuild = deleteServerData.value
@@ -91,16 +93,38 @@
 
             // If missing guild selection:
             if (deleteGuild && !deleteGuildId) {
-                formState.value = 'failed';
-                return formErrors.value?.set('deletionGuildId', [
+                formErrors.value?.set('deletionGuildId', [
                     'Please select a server for deletion!'
                 ])
+                return formState.value = 'failed'
             }
 
+            // If missing any data selection:
+            if (!deleteUser && !deleteGuild) {
+                formErrors.value.set('deleteAccountData', [
+                    'Please select at least one option to delete to continue..'
+                ])
+                return formState.value = 'failed'
+            }
+
+            // Checks Passed:
+            console.info('Submission Allowed - Sending Data Deletion Request')
+            const reqBody: API_DataDeletionRequestBodyInterface = {
+                deleteUserData: deleteUser,
+                deleteGuildData: deleteGuild,
+                guildIds: deleteGuildId ? [
+                    deleteGuildId
+                ] : null
+            }
+
+            // Make API Req:
+            const result = await API.post('/data-deletion/request', reqBody)
+            console.info('API RESULT:', result)
 
         } catch (err) {
             // Form Submit - Error:
             console.error('Form Submission ERROR', err)
+            formState.value = 'failed'
         } finally {
             // Reset Form State:
             setTimeout(() => {
@@ -122,21 +146,19 @@
 
 <template>
     <Dialog v-model:visible="isVisible" modal block-scroll :draggable="false"
-        class="m-10 max-w-130 ring-ring-3 ring-2! bg-bg-2! overflow-auto! border-0! text-text-1! flex!">
-        <template #container="{ closeCallback }">
+        class="m-10 max-w-130 ring-ring-soft ring-2! bg-bg-soft! overflow-auto! border-0! text-text-1! flex!">
+        <template #container>
 
             <!-- Header -->
             <section
                 class="flex p-2 bg-black/30 flex-row gap-0.75 flex-wrap items-center justify-between w-full border-b-2 border-ring-soft">
-
-                <ColorModeToggle />
 
                 <span class="flex flex-row gap-0.75 items-center justify-center">
                     <Trash2Icon class="relative bottom-px" :size="21" />
                     <p class="font-semibold text-xl"> Deletion Requests </p>
                 </span>
 
-                <Button unstyled @click="closeCallback"
+                <Button unstyled @click="isVisible = false"
                     class="hover:bg-zinc-500/50 active:scale-95 p-1 rounded-md transition-all cursor-pointer">
                     <XIcon class="opacity-75" />
                 </Button>
@@ -145,7 +167,7 @@
 
             <!-- Content -->
             <section
-                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-start bg-black/15 w-full border-b-2 border-ring-3">
+                class="flex flex-col p-2 gap-0.75 flex-wrap items-start justify-start bg-black/15 w-full border-b-2 border-ring-soft">
                 <!-- Subheading / Top Info -->
                 <p>
                     As an individual you have certain rights over your personal information and if you wish to have it
@@ -163,13 +185,22 @@
 
                 <!-- Check - Account Data -->
                 <div class="flex flex-row flex-wrap justify-start items-center gap-1 w-full mb-1">
-                    <Checkbox input-id="accountDataCheck" v-model="deleteAccountData" binary :dt="checkboxPT" />
+                    <Checkbox input-id="accountDataCheck" v-model="deleteAccountData" binary :dt="checkboxPT"
+                        @value-change="formErrors.delete('deleteAccountData')" />
                     <label for="accountDataCheck" class="font-bold relative bottom-px">
                         Account Data
                     </label>
                     <p class="text-xs w-full opacity-50">
                         This includes: Username, email, profile picture, user guilds, etc.
                     </p>
+                    <!-- Invalid - Msg(s) -->
+                    <div v-if="formErrors.has('deleteAccountData')"
+                        class="p-1 pl-0.5 pt-1.25 pb-0 gap-1 w-full flex flex-col items-center justify-center content-center flex-wrap">
+                        <p v-for="err in formErrors?.get('deleteAccountData')"
+                            class="text-xs w-full font-bold text-start text-invalid-1">
+                            {{ err }}
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Check - Guild Data -->
@@ -244,7 +275,7 @@
 
             <!-- Warning -->
             <section
-                class="flex flex-col p-2 gap-1.5 flex-wrap items-center justify-center bg-black/15 w-full border-b-2 border-ring-1">
+                class="flex flex-col p-2 gap-1.5 flex-wrap items-center justify-center bg-black/15 w-full border-b-2 border-ring-soft">
                 <div
                     class="text-sm opacity-75 bg-bg-4/30 gap-0.5 p-1 rounded w-full flex items-center justify-center flex-wrap self-start">
                     <AlertTriangleIcon class="size-5 aspect-square min-w-fit!" />
@@ -264,7 +295,7 @@
             <section class="w-full bg-black/30 flex flex-wrap flex-row gap-3 p-2 items-center justify-center">
 
                 <!-- Back Tab Button -->
-                <Button @click="closeCallback"
+                <Button @click="isVisible = false"
                     class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-zinc-500 hover:bg-zinc-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                     unstyled>
                     <p class="text-sm mx-0.75 font-bold"> Cancel </p>

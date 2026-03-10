@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "ts:check-errors": "tsc -b -noEmit",
-    "db:gen-types": "npx supabase gen types typescript --project-id nrhesahngnvomojthnta > packages/shared/types/database/supabase.ts"
+    "db:gen-types": "npx supabase gen types typescript --project-id nrhesahngnvomojthnta > packages/shared/src/types/database/supabase.ts"
   },
   "author": "",
   "license": "ISC",

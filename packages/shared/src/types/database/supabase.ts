@@ -49,6 +49,36 @@ export type Database = {
           },
         ]
       }
+      deletion_requests: {
+        Row: {
+          created_at: string
+          delete_guild: boolean
+          delete_user: boolean
+          guild_ids: string[] | null
+          id: number
+          status: Database["public"]["Enums"]["Deletion Request Status"]
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delete_guild: boolean
+          delete_user: boolean
+          guild_ids?: string[] | null
+          id?: number
+          status: Database["public"]["Enums"]["Deletion Request Status"]
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delete_guild?: boolean
+          delete_user?: boolean
+          guild_ids?: string[] | null
+          id?: number
+          status?: Database["public"]["Enums"]["Deletion Request Status"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       entitlements: {
         Row: {
           created_at: string | null
@@ -446,6 +476,7 @@ export type Database = {
       }
     }
     Enums: {
+      "Deletion Request Status": "pending" | "processing" | "completed"
       "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
       "Session Status": "scheduled" | "delayed" | "canceled"
     }
@@ -575,6 +606,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      "Deletion Request Status": ["pending", "processing", "completed"],
       "Entitlement Status": ["ACTIVE", "EXPIRED", "CANCELED"],
       "Session Status": ["scheduled", "delayed", "canceled"],
     },

@@ -7,6 +7,7 @@
     import { supabase } from '@/utils/supabase';
     import { CheckCircle2, CheckCircle2Icon, XCircleIcon } from 'lucide-vue-next';
     import useAnalyticsStore from '@/stores/analytics';
+    import DeleteData from './deleteData.vue';
 
     // Incoming Modal - Delete Data Dialog Visible:
     const deleteDataDialogVisible = defineModel<boolean>('deleteDataDialogVisible')
@@ -60,6 +61,10 @@
             return toaster.update(thisToast, { content: 'Success! Your account data has been refreshed with Discord.', options: { type: TYPE.SUCCESS, timeout: 5_000, closeOnClick: true, icon: CheckCircle2Icon } })
         }
     }
+
+
+    // Fn - Start Data Delete Request
+    const showDataDelete = ref<boolean>(false)
 
 </script>
 
@@ -139,8 +144,6 @@
         <!-- Action Buttons Wrap -->
         <div class="gap-4 p-2 py-4 mb-2 flex items-center justify-center flex-col sm:flex-row flex-wrap w-full">
 
-            <!-- <LastSyncedBadge /> -->
-
             <!-- Refresh Data -->
             <Button unstyled @click="resyncDiscordData()" title="Resync Discord Data"
                 class="bg-zinc-500/80 hover:bg-zinc-500/72 active:bg-zinc-500/64 gap-0.75! action-button"
@@ -175,6 +178,9 @@
             <p class="w-full sm:w-fit">
                 <b>UID:</b> {{ user?.id }}
             </p>
+            <p @click="showDataDelete = true" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                Data Deletion Requests
+            </p>
             <a @click="copyAccessToken" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                 Copy Access Token
             </a>
@@ -187,6 +193,10 @@
                 Manage Cookie Preferences
             </a>
         </footer>
+
+
+        <!-- Data Delete - Modal -->
+        <DeleteData v-model:is-visible="showDataDelete" />
 
     </div>
 </template>
