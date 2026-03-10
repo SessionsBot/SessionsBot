@@ -441,7 +441,6 @@ async function executeTemplateCreationSchedule() {
                                 .from('session_templates')
                                 .update({
                                     failure_count: 0,
-                                    last_fail_at: null,
                                     enabled: true,
                                     next_post_utc: newNextPostUTC?.toISO() || null,
                                     last_post_utc: DateTime.now()?.toUTC()?.toISO()
@@ -454,7 +453,6 @@ async function executeTemplateCreationSchedule() {
                                     .from('session_templates')
                                     .update({
                                         failure_count: 0,
-                                        last_fail_at: null,
                                         enabled: true,
                                         next_post_utc: newNextPostUTC?.toISO() || null,
                                         last_post_utc: DateTime.now().toUTC().toISO()
