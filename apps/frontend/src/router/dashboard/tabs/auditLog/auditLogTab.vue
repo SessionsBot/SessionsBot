@@ -10,13 +10,28 @@
     // Services:
     const dashboard = useDashboardStore();
 
-    // Dashboard Data
-    const auditEvents = computed(() => {
-        let allEvents = dashboard.guildData.auditLog.state
-            ?.sort((a, b) => DateTime.fromISO(b.created_at).toSeconds() - DateTime.fromISO(a.created_at).toSeconds())
-        allEvents?.splice(75)
-        return allEvents
+    type AuditEventData = Database['public']['Tables']['audit_logs']['Row']
+
+    const batchSize = 15
+    const shownCount = ref(batchSize)
+
+    const auditEvents = computed<AuditEventData[]>(() => {
+        return [...(dashboard.guildData.auditLog.state ?? [])]
+            .sort((a, b) =>
+                DateTime.fromISO(b.created_at).toSeconds() -
+                DateTime.fromISO(a.created_at).toSeconds()
+            )
     })
+
+    const shownEvents = computed(() => {
+        return auditEvents.value.slice(0, shownCount.value)
+    })
+
+    function showMore() {
+        shownCount.value += batchSize
+    }
+
+
 
     // Event Details Modal:
     const useEventDetailsModal = () => {
@@ -92,8 +107,9 @@
             </div>
 
             <!-- Content Row(s) -->
-            <div title="View Details" v-for="e of auditEvents"
-                class="content-row group odd:bg-text-1/5 even:bg-text-1/10" @click="eventDetailsModal.openDetails(e)">
+            <div title="View Details" v-for="e of shownEvents"
+                class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
+                @click="eventDetailsModal.openDetails(e as any)">
                 <!-- Date -->
                 <p class="content-cell ">
                     {{ DateTime.fromISO(e.created_at).toFormat('M/d/yy - h:mm a') }}
@@ -113,14 +129,33 @@
             </div>
 
             <!-- Footer / No Events -->
-            <p v-if="!auditEvents?.length"
-                class="italic font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
-                No Events Found!
-            </p>
-            <p v-else
-                class="italic font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center uppercase text-xs text-text-1/40">
-                END OF EVENTS
-            </p>
+            <div v-if="!shownEvents?.length"
+                class="flex flex-center flex-col flex-wrap gap-1 font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center text-text-1/40">
+
+                <p class="uppercase mt-1 text-xs">
+                    No Events Found!
+                </p>
+                <div class="bg-ring-soft/80 h-0.75 w-12 rounded-full " />
+                <p class="text-xs italic px-3 font-semibold">
+                    This is where (after the bor or users) perform actions, you'll be able to view the history here.
+                </p>
+            </div>
+            <div v-else class="flex flex-center flex-wrap py-2 px-5 gap-2 bg-text-3/10 ring-ring-soft ring">
+
+                <Button v-if="shownCount + batchSize <= auditEvents.length" @click="showMore" unstyled
+                    class="button-base button-secondary gap-1 py-0.5 px-1.25 text-text-1/90">
+                    <Iconify icon="tabler:reload" size="16" />
+                    <p class="font-bold text-sm pr-0.5">
+                        Load More
+                    </p>
+                </Button>
+
+                <p v-else class="font-extrabold uppercase text-xs text-text-1/40">
+                    End of Events...
+                </p>
+
+            </div>
+
 
         </div>
 
