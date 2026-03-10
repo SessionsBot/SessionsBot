@@ -35,8 +35,6 @@
                 </Transition>
             </RouterView>
         </div>
-
-        <SiteFooter hidden />
     </div>
 
     <!-- Confirm Dialog -->
