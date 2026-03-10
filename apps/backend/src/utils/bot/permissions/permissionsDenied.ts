@@ -22,7 +22,12 @@ const startCooldown = (guildId: string) => {
 }
 
 // Check granted permissions for a givin guild:
-export const sendPermissionAlert = async (guildId: string) => {
+export const sendPermissionAlert = async (
+    guildId: string,
+    options?: {
+        leadingDesc?: string
+    }
+) => {
     try {
         // Check/Start Cooldown:
         if (canAlert(guildId)) startCooldown(guildId);
@@ -135,6 +140,10 @@ export const sendPermissionAlert = async (guildId: string) => {
                 accent_color: core.colors.getOxColor('error'),
                 components: <any>[
                     new TextDisplayBuilder({ content: `# ${core.emojis.string('warning')} I'm Missing Required Permissions! \n-# <@${guild.ownerId}> @here` }),
+                    ...options?.leadingDesc ? [
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('info')}  Details: \n> ${options.leadingDesc}` })
+                    ] : [],
                     new SeparatorBuilder(),
                     new TextDisplayBuilder({ content: `## ${core.emojis.string('star')}  All Required Permissions: \nIn order this bot to function properly make sure **EACH** of these permissions are granted: \n> \`${requiredBotPermsStrings.join(', ')}\` ` }),
                     new SeparatorBuilder(),

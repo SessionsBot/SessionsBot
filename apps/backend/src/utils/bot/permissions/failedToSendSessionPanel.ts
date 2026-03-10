@@ -94,7 +94,7 @@ export async function sendSessionPostFailedFromPerms(guildId: string, templateId
                 new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `${core.emojis.string('info')}  **Missed Session Template IDs:** \n${missingTemplateIdsTEXT}` }),
                 new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `**${core.emojis.string('help')}  Still Need Help?** \n-# Don't worry, there's plenty or resources to help you resolve your issues with Sessions Bot!` }),
+                new TextDisplayBuilder({ content: `**${core.emojis.string('help')}  Need Help?** \n-# Don't worry, there's plenty or resources to help you resolve your issues with Sessions Bot!` }),
                 new ActionRowBuilder({
                     components: [
                         new ButtonBuilder({
@@ -154,7 +154,7 @@ export async function sendSessionPostFailedFromErrorAlert(guildId: string, reaso
                 new SeparatorBuilder(),
                 new TextDisplayBuilder({ content: `${core.emojis.string('list')}  **Missed Session Template IDs:** \n${missingTemplateIdsTEXT}` }),
                 new SeparatorBuilder(),
-                new TextDisplayBuilder({ content: `**${core.emojis.string('help')}  Still Need Help?** \n-# Don't worry, there's plenty or resources to help you resolve your issues with Sessions Bot!` }),
+                new TextDisplayBuilder({ content: `**${core.emojis.string('help')}  Need Help?** \n-# Don't worry, there's plenty or resources to help you resolve your issues with Sessions Bot!` }),
                 new ActionRowBuilder({
                     components: [
                         new ButtonBuilder({

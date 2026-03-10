@@ -5,13 +5,13 @@ import { DateTime } from "luxon";
 import core from "../../core/core";
 import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "../../bot/permissions/failedToSendSessionPanel";
 import { buildSessionPanelMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionPanels";
-import { ChannelType, Guild, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, Message, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
+import { ChannelType, DiscordAPIError, Guild, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, Message, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
 import { createAuditLog } from "../auditLog";
 import { getGuildSubscriptionFromId } from "../../bot/entitlements";
 import { URLS } from "../../core/urls";
 import { increaseGuildStat } from "../manager/statsManager";
-import { isBotPermissionError } from "../../bot/permissions/permissionsDenied";
+import { isBotPermissionError, sendPermissionAlert } from "../../bot/permissions/permissionsDenied";
 import pLimit from "p-limit";
 
 const createLog = useLogger();
@@ -70,7 +70,7 @@ async function executeTemplateCreationSchedule() {
             })
         // Confirm Data Fetched:
         if (overdueGuildsErr) {
-            createLog.for('Database').error('Failed to Load Overdue Guilds! - Schedule Creation Scheduler - CRITICAL', { details: overdueGuildsErr })
+            createLog.for('Database').error('Failed to Load Overdue Guilds! - Schedule Creation Scheduler - CRITICAL', { err: overdueGuildsErr })
             return sendHeartbeat(false)
         }
         if (!overdueGuilds?.length) {
@@ -100,7 +100,7 @@ async function executeTemplateCreationSchedule() {
                     const failedIds = g?.session_templates?.map(t => t?.id)
                     await escalateTemplateFailure(failedIds)
                     sendTemplateCreationAlert(g?.id, "Guild Fetch", failedIds)
-                    createLog.for('Schedule').error('Failed to fetch a guild (or subscription) for template creation schedule! - See details...', { details: { dbGuild: g, guildInst: guild, subscription }, guildId: g?.id })
+                    createLog.for('Schedule').error('Failed to fetch a guild (or subscription) for template creation schedule! - See details...', { details: { dbGuild: g, guildInst: guild?.available, subscription }, guildId: g?.id })
                     return { success: false }
                 }
                 // Map Overdue Templates -> Post Channels:
@@ -134,7 +134,7 @@ async function executeTemplateCreationSchedule() {
                         // Confirm Channel is Sendable:
                         if (!channel.isSendable()) {
                             const failedIds = channelTemplates?.map(t => t?.id)
-                            createLog.for('Bot').info(`Missing Perms - Couldn't use post channel! - Template Creation(s) Schedule`, { channelId, channelTemplates, guildId: g?.id });
+                            createLog.for('Bot').info(`Missing Perms - Couldn't use post channel (un-sendable)! - Template Creation(s) Schedule`, { channelId, channelTemplates, guildId: g?.id });
                             await escalateTemplateFailure(failedIds)
                             sendTemplateCreationAlert(g?.id, 'Permissions', failedIds)
                             return { success: false }
@@ -364,8 +364,19 @@ async function executeTemplateCreationSchedule() {
                                         image: guild?.iconURL() ?? undefined
                                     })
                                 } catch (err) {
-                                    // Discord Event Creation Error:
-                                    createLog.for('Bot').error('Failed to create a NATIVE DISCORD EVENT for a session!', { guildId: g?.id, session: newSession, error: err })
+                                    // Native Discord Event Creation - FAILED:
+                                    if (err instanceof DiscordAPIError && err.code == 30038) {
+                                        // Max Discord Events (100) - Reached:
+                                        createLog.for('Bot').info('Failed to create a NATIVE DISCORD EVENT for a session - Max of 100 Reached!', { guildId: g?.id, session: newSession, error: err })
+                                    }
+                                    if (isBotPermissionError(err)) {
+                                        // Bot Permission Failure:
+                                        createLog.for('Bot').info('Failed to create a NATIVE DISCORD EVENT for a session - Perms Missing!', { guildId: g?.id, session: newSession, error: err })
+                                        sendPermissionAlert(g?.id, { leadingDesc: 'Failed to post a Discord Native Event tied to a session schedule! This error was due to bot permissions...' })
+                                    } else {
+                                        // Unknown Error:
+                                        createLog.for('Unknown').error('Failed to create a NATIVE DISCORD EVENT for a session! - SEE DETAILS', { guildId: g?.id, session: newSession, error: err })
+                                    }
                                 }
 
                             }
@@ -386,7 +397,7 @@ async function executeTemplateCreationSchedule() {
                                 }).eq('id', newSession?.id)
                                 if (retry.error) {
                                     // Fully Failed - Session Update - Log & Escalate:
-                                    createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "true id(s)"', { updateSessionErr, newSession, guildId: g?.id })
+                                    createLog.for('Database').error('FAILED TO UPDATE - Session on creation - Applying "true id(s)"', { retryError: retry.error, newSession, guildId: g?.id })
                                     sendTemplateCreationAlert(g?.id, 'Update Session', [t.id])
                                     await escalateTemplateFailure([t.id])
                                     // Clean up DB Session + RSVPs:
@@ -400,7 +411,7 @@ async function executeTemplateCreationSchedule() {
                                     // Delete Session Panel - Already Posted:
                                     if (panelMsg.deletable) {
                                         try { await panelMsg?.delete() } catch { }
-                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Session Update Err!', { err: retry.error })
+                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Session Update Err!', { err: retry.error, guildId: t?.guild_id, })
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -452,7 +463,7 @@ async function executeTemplateCreationSchedule() {
                                 if (retry.error) {
                                     // Delete Broken Session Data:
                                     // FAILED - Updating Template - Delete Invalid Database Results - Alert:
-                                    createLog.for('Database').error('FAILED TO UPDATE - Template on session creation - Applying "true dates"', { updateTemplateErr, guildId: g?.id, template: t, session: newSession })
+                                    createLog.for('Database').error('FAILED TO UPDATE - Template on session creation - Applying "true dates"', { retryError: retry.error, guildId: g?.id, template: t, session: newSession })
                                     // Alert & Escalate Failure:
                                     sendTemplateCreationAlert(g?.id, 'Update Template', [t.id])
                                     await escalateTemplateFailure([t.id])
@@ -467,7 +478,7 @@ async function executeTemplateCreationSchedule() {
                                     // Delete Session Panel - Already Posted:
                                     if (panelMsg.deletable) {
                                         try { await panelMsg?.delete() } catch { }
-                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Template Update Err!', { err: retry.error })
+                                    } else createLog.for('Bot').warn('Failed to DELETE a broken session panel - Template Update Err!', { err: retry.error, guildId: t?.guild_id })
                                     // If Discord Event Created - Delete:
                                     if (nativeEvent) {
                                         try { await nativeEvent.delete(); } catch { }
@@ -502,10 +513,10 @@ async function executeTemplateCreationSchedule() {
                         const failedIds = channelTemplates?.map(t => t?.id).filter(i => !succeededChannelTemplates.includes(i))
                         if (isBotPermissionError(error)) {
                             sendTemplateCreationAlert(g?.id, "Permissions", failedIds)
-                            createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, channelTemplates, guildId: g?.id })
+                            createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, error, channelTemplates, guildId: g?.id })
                         } else {
                             sendTemplateCreationAlert(g?.id, "Guild Channel", failedIds)
-                            createLog.for('Schedule').error(`Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, channelTemplates, guildId: g?.id })
+                            createLog.for('Schedule').error(`Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, error, channelTemplates, guildId: g?.id })
                         }
                         await escalateTemplateFailure(failedIds)
                         return { success: false }
