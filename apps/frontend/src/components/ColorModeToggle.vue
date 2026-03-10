@@ -42,7 +42,7 @@
         class="bg-bg-3/20 group/cm hover:border-ring-4 w-11 rounded-full cursor-pointer h-5 border-2 border-ring-soft gap-1.5 flex overflow-auto relative transition-all">
 
         <!-- Handle -->
-        <div class="h-full left-0 bg-bg-3 group-hover/cm:bg-bg-4 w-fit flex p-1 rounded-full aspect-square absolute items-center justify-center transition-all duration-250 ease-in-out"
+        <div class="h-full overflow-clip left-0 bg-bg-3 group-hover/cm:bg-bg-4 w-fit flex p-1 rounded-full aspect-square absolute items-center justify-center transition-all duration-250 ease-in-out"
             :class="{
                 'translate-x-0 text-purple-500': colorMode == 'dark',
                 'translate-x-6 text-orange-500': (colorMode == 'light' || colorMode == 'auto')
