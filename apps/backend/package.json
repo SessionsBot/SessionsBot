@@ -11,11 +11,12 @@
     "release": "npx release-it"
   },
   "dependencies": {
-    "@sessionsbot/shared": "*",
     "@logtail/node": "^0.5.6",
+    "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.78.0",
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.12.2",
+    "calendar-link": "^2.11.0",
     "chrono-node": "^2.9.0",
     "cors": "^2.8.5",
     "discord.js": "^14.25.1",
