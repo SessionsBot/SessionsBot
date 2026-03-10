@@ -6,6 +6,7 @@ import express from 'express';
 import { APIResponse as reply } from '../utils/responseClass';
 import { HttpStatusCode } from 'axios';
 import z from 'zod';
+import { supabase } from 'apps/backend/src/utils/database/supabase';
 
 const dataDeletionRouter = express.Router({ mergeParams: true })
 
@@ -17,13 +18,39 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
         const validatedBody = API_DataDeletionRequestBodySchema.safeParse(req?.body);
         if (validatedBody.success) {
 
+            const userId = req?.auth?.profile?.discord_id
+
+            const { data: existing } = await supabase
+                .from('deletion_requests')
+                .select('id')
+                .eq('user_id', userId)
+                .in('status', ['pending', 'processing'])
+                .maybeSingle()
+
+            if (existing) {
+                return new reply(res).failure(
+                    { message: 'A deletion request is already in progress.' },
+                    HttpStatusCode.Conflict
+                )
+            }
+
             // Save Request to Database:
-            // const { } = await supabase.from('deletion_requests')
+            const { data, error } = await supabase.from('deletion_requests').insert({
+                user_id: userId,
+                status: 'processing',
+                delete_guild: validatedBody.data.deleteGuildData,
+                delete_user: validatedBody.data.deleteUserData,
+                guild_ids: validatedBody.data?.guildIds ?? null
+            }).select('id')
+                .maybeSingle()
+
+            if (error) throw error
 
             // Valid Req Body - Save Request to Database:
             return new reply(res).success({
                 message: 'Request Received!',
-                values: validatedBody.data
+                values: validatedBody.data,
+                request_id: data?.id
             })
 
         } else {
@@ -32,7 +59,7 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
             return new reply(res).failure({
                 message: 'Invalid request body! - See input_errors',
                 input_errors,
-                values: validatedBody.data
+                body: req?.body
             }, HttpStatusCode.BadRequest)
         }
 
@@ -40,6 +67,10 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
     } catch (err) {
         // Log & Return Error:
         createLog.for('Api').error('Failed to process data deletion request - See Details!', { userId: req?.auth?.profile?.discord_id, err })
+        return new reply(res).failure(
+            { message: 'Failed to process request.' },
+            HttpStatusCode.InternalServerError
+        )
     }
 })
 

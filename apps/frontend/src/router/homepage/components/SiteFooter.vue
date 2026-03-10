@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <footer class="border-t border-ring-soft/70 px-6 py-10">
+  <footer class="border-t border-ring-soft/70 px-6 py-10 w-full">
     <div
       class="mx-auto flex max-w-6xl flex-col items-center text-center justify-between gap-4 text-sm text-text-4 sm:flex-row">
       <p>© {{ new Date().getFullYear() }} Sessions Bot</p>

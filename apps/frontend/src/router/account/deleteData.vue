@@ -5,9 +5,12 @@
     import { FileWarningIcon, MessageCircleWarningIcon, Trash2Icon, XIcon, ArrowLeft, AlertTriangleIcon, CheckIcon, TriangleAlertIcon } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
     import defaultDiscordIcon from '/discord-grey.png'
-    import type { API_DataDeletionRequestBodyInterface } from '@sessionsbot/shared';
+    import type { API_DataDeletionRequestBodyInterface, APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
+    import useNotifier from '@/stores/notifier';
 
+    // Services:
+    const notifier = useNotifier();
 
     // Checkbox Styles/PT:
     const checkboxPT: CheckboxDesignTokens = {
@@ -87,10 +90,6 @@
             // Mark Form Busy:
             formState.value = 'busy'
 
-            console.info({
-                deleteGuild, deleteGuildId, deleteUser
-            })
-
             // If missing guild selection:
             if (deleteGuild && !deleteGuildId) {
                 formErrors.value?.set('deletionGuildId', [
@@ -98,7 +97,6 @@
                 ])
                 return formState.value = 'failed'
             }
-
             // If missing any data selection:
             if (!deleteUser && !deleteGuild) {
                 formErrors.value.set('deleteAccountData', [
@@ -107,8 +105,8 @@
                 return formState.value = 'failed'
             }
 
+
             // Checks Passed:
-            console.info('Submission Allowed - Sending Data Deletion Request')
             const reqBody: API_DataDeletionRequestBodyInterface = {
                 deleteUserData: deleteUser,
                 deleteGuildData: deleteGuild,
@@ -118,12 +116,40 @@
             }
 
             // Make API Req:
-            const result = await API.post('/data-deletion/request', reqBody)
-            console.info('API RESULT:', result)
+            const result = await API.post<APIResponseValue>('/data-deletion/request', reqBody)
+            if (!result.data?.success) {
+                // Already Requested - CONFLICT - 409:
+                if (result.status == 409) {
+                    formState.value = 'failed'
+                    return notifier.send({
+                        level: 'warn',
+                        header: 'Already Requested',
+                        content: 'It appears we already have a deletion request from this user on file!'
+                    })
+                }
+                // API Req Failed:
+                formState.value = 'failed'
+                notifier.send({
+                    level: 'error',
+                    header: 'Submission Failed',
+                    content: 'Confirm that your inputs are correct and try again!'
+                })
+            } else {
+                // API Succeeded:
+                notifier.send({
+                    level: 'success',
+                    header: 'Request Received',
+                    content: 'Please allow us some time to process your request!'
+                })
+                formState.value = 'succeeded'
+                setTimeout(() => {
+                    isVisible.value = false
+                }, 450);
+            }
 
         } catch (err) {
             // Form Submit - Error:
-            console.error('Form Submission ERROR', err)
+            console.error('[Data Deletion Form]: Submission ERROR', err)
             formState.value = 'failed'
         } finally {
             // Reset Form State:
@@ -295,11 +321,11 @@
             <section class="w-full bg-black/30 flex flex-wrap flex-row gap-3 p-2 items-center justify-center">
 
                 <!-- Back Tab Button -->
-                <Button @click="isVisible = false"
+                <Button hidden @click="isVisible = false"
                     class="gap-0.25! p-2 py-1.75 flex flex-row-reverse items-center content-center justify-center bg-zinc-500 hover:bg-zinc-500/80 active:scale-95 transition-all rounded-lg drop-shadow-md flex-wrap cursor-pointer"
                     unstyled>
                     <p class="text-sm mx-0.75 font-bold"> Cancel </p>
-                    <ArrowLeft :stroke-width="3" :size="17" />
+                    <ArrowLeft hidden :stroke-width="3" :size="17" />
                 </Button>
 
                 <!-- Next Tab Button -->
@@ -309,7 +335,7 @@
                         'bg-emerald-500/80!': formState == 'succeeded',
                         'bg-amber-600/80!': formState == 'failed'
                     }">
-                    <p class="text-sm font-bold"> Delete Data </p>
+                    <p class="text-sm font-bold"> Submit Request </p>
                     <Transition name="fade" mode="out-in">
                         <LoadingIcon class="size-5.5! mr-0.5" v-if="formState == 'busy'" />
                         <CheckIcon v-else-if="formState == 'succeeded'" :size="17" :stroke-width="3"

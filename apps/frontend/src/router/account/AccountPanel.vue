@@ -173,25 +173,34 @@
 
 
         <!-- Footer -->
-        <footer v-if="userAppRoles?.includes('admin')"
+        <footer
             class="bg-text-1/10 text-text-1/50 text-[11px] text-center gap-2 sm:gap-4 p-1.5 px-2 w-full flex flex-col sm:flex-row flex-wrap justify-between items-center content-center border-t-2 border-ring">
-            <p class="w-full sm:w-fit">
-                <b>UID:</b> {{ user?.id }}
-            </p>
+
             <p @click="showDataDelete = true" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                 Data Deletion Requests
             </p>
-            <a @click="copyAccessToken" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
-                Copy Access Token
-            </a>
-            <a @click="console.log({ session: auth.session, user: auth.user })"
-                class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
-                Log User/Session Data
-            </a>
+
+
             <a @click="analytics.cookieConsent.openPreferences(false)"
                 class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                 Manage Cookie Preferences
             </a>
+            <!-- Extra Admin/Dev Resources -->
+            <span v-if="!userAppRoles?.includes('admin')"
+                class="flex flex-wrap w-full justify-around items-center gap-2">
+
+                <p class="w-full sm:w-fit">
+                    <b>UID:</b> {{ user?.id }}
+                </p>
+                <a @click="copyAccessToken" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                    Copy Access Token
+                </a>
+                <a @click="console.log({ session: auth.session, user: auth.user })"
+                    class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
+                    Log User/Session Data
+                </a>
+
+            </span>
         </footer>
 
 
