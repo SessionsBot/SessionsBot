@@ -1,4 +1,4 @@
-import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
+import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordGuildIdentity, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
 import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
@@ -137,17 +137,20 @@ const useDashboardStore = defineStore('dashboard', () => {
     })
 
 
-    /** Discord Identities - From User Ids */
+    /** Discord Identities - From Ids */
     const useDiscordIdentities = () => {
         // Cached Identities:
-        type cachedIdentity = API_DiscordUserIdentity & { fetched_at: DateTime }
+        type cachedUserIdentity = API_DiscordUserIdentity & { fetched_at: DateTime }
+        type cachedGuildIdentity = API_DiscordGuildIdentity & { fetched_at: DateTime }
 
-        const inFlight = ref<Map<string, Promise<cachedIdentity | undefined>>>(new Map())
-        const cache = ref<Map<string, cachedIdentity>>(new Map())
+        const inFlight_users = ref<Map<string, Promise<cachedUserIdentity | undefined>>>(new Map())
+        const cache_users = ref<Map<string, cachedUserIdentity>>(new Map())
+        const inFlight_guilds = ref<Map<string, Promise<cachedGuildIdentity | undefined>>>(new Map())
+        const cache_guilds = ref<Map<string, cachedGuildIdentity>>(new Map())
         const cacheTimeMs = (15 * 60 * 1000)
 
-        /** Gets a Discord Identity by UserId (using cache). */
-        async function get(userId: string) {
+        /** Gets a Discord User Identity by UserId (using cache). */
+        async function getUser(userId: string) {
             // Confirm User Id:
             const { success: validUserId, error: userIdError } = z.safeParse(discordSnowflakeSchema, userId)
             if (!validUserId) {
@@ -155,44 +158,94 @@ const useDashboardStore = defineStore('dashboard', () => {
                 return undefined
             }
             // Get & Return Cached User if NOT Expired:
-            const cachedUser = cache.value.get(userId)
+            const cachedUser = cache_users.value.get(userId)
             if (cachedUser) {
                 const expired = Math.abs(cachedUser.fetched_at.diffNow().milliseconds) >= cacheTimeMs
                 if (!expired) return cachedUser
             }
 
             // Already fetching?
-            const existing = inFlight.value.get(userId)
+            const existing = inFlight_users.value.get(userId)
             if (existing) return existing
 
             // Create request
             const request = (async () => {
                 try {
                     const result = await API.get<APIResponseValue<API_DiscordUserIdentity>>(
-                        `/discord/identity/${userId}`
+                        `/discord/identity/user/${userId}`
                     )
 
                     if (!result.data?.success) return undefined
 
-                    const identity: cachedIdentity = {
+                    const identity: cachedUserIdentity = {
                         ...result.data.data,
                         fetched_at: DateTime.now(),
                     } as any
 
-                    cache.value.set(userId, identity)
+                    cache_users.value.set(userId, identity)
                     return identity
                 } finally {
-                    inFlight.value.delete(userId)
+                    inFlight_users.value.delete(userId)
                 }
             })()
 
-            inFlight.value.set(userId, request)
+            inFlight_users.value.set(userId, request)
+            return request
+        }
+
+
+        /** Gets a Discord Guild Identity by UserId (using cache). */
+        async function getGuild(guildId: string) {
+            // Confirm Guild Id:
+            const { success: validGuildId, error: guildIdError } = z.safeParse(discordSnowflakeSchema, guildId)
+            if (!validGuildId) {
+                console.warn(`[!] Failed to fetch Discord Identity - INVALID GUILD ID - ${guildId}`, { input_errors: z.treeifyError(guildIdError)?.errors })
+                return undefined
+            }
+            // Get & Return Cached Guild if NOT Expired:
+            const cachedGuild = cache_guilds.value.get(guildId)
+            if (cachedGuild) {
+                const expired = Math.abs(cachedGuild.fetched_at.diffNow().milliseconds) >= cacheTimeMs
+                if (!expired) return cachedGuild
+            }
+
+            // Already fetching?
+            const existing = inFlight_guilds.value.get(guildId)
+            if (existing) return existing
+
+            // Create request
+            const request = (async () => {
+                try {
+                    const result = await API.get<APIResponseValue<API_DiscordGuildIdentity>>(
+                        `/discord/identity/guild/${guildId}`
+                    )
+
+                    if (!result.data?.success) return undefined
+
+                    const identity: cachedGuildIdentity = {
+                        ...result.data.data,
+                        fetched_at: DateTime.now(),
+                    } as any
+
+                    cache_guilds.value.set(guildId, identity)
+                    return identity
+                } finally {
+                    inFlight_guilds.value.delete(guildId)
+                }
+            })()
+
+            inFlight_guilds.value.set(guildId, request)
             return request
         }
 
         // Return States & Methods:
         return {
-            get
+            user: {
+                get: getUser
+            },
+            guild: {
+                get: getGuild
+            }
         }
     }
     const discordIdentities = useDiscordIdentities()
