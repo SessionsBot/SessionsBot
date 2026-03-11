@@ -1,10 +1,14 @@
 import { HttpStatusCode } from 'axios';
 import express from 'express';
-import { API_DiscordGuildIdentity, API_DiscordUserIdentity, discordSnowflakeSchema } from '@sessionsbot/shared'
+import { API_DiscordGuildIdentity, API_DiscordSelfIdentity, API_DiscordUserIdentity, discordSnowflakeSchema } from '@sessionsbot/shared'
 import { APIResponse as Reply } from '../utils/responseClass';
 import { useLogger } from '../../../../../utils/logs/logtail';
 import core from '../../../../../utils/core/core';
 import z from 'zod';
+import verifyToken from 'apps/backend/src/server/middleware/verifyToken';
+import { supabase } from 'apps/backend/src/utils/database/supabase';
+import { fetchUserDiscordData } from '../auth/authUtils';
+import { AuthError } from '../auth/authErrTypes';
 
 const createLog = useLogger();
 const discordRouter = express.Router({ mergeParams: true })
@@ -37,6 +41,46 @@ discordRouter.get(`/identity/user/:userId`, async (req, res) => {
         // Return Failure:
         createLog.for('Api').warn(`Failed to fetch Discord User Identity!`, { error })
         return new Reply(res).failure(`Error Occurred - Failed to fetch user's Discord identity!`);
+    }
+})
+
+// GET - Discord SELF User Identity - From TOKEN:
+discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
+    try {
+        const userId = req?.auth?.profile?.discord_id
+        if (!userId) return new Reply(res).failure('Invalid Input - Missing "userId" to fetch identity for!', HttpStatusCode.BadRequest);
+
+        // Get Access Token for User:
+        const { data, error } = await supabase.from('profiles').select('*')
+            .eq('id', req?.auth?.user?.id)
+            .single()
+        if (error) throw error
+        if (!data) throw 'Data returned null'
+
+        const userData = await fetchUserDiscordData(data.discord_access_token)
+        if (userData instanceof AuthError) {
+            // Log & Return Failure:
+            createLog.for('Api').error('Failed to get a SELF Discord Identity! - See Details!', { userId: req?.auth?.profile?.discord_id, err: userData })
+            return new Reply(res).failure({
+                message: userData?.message,
+                errType: userData?.errorType
+            })
+        }
+
+        // Return FILTERED User Data:
+        const userIdentity: API_DiscordSelfIdentity = {
+            id: userData?.user?.id,
+            username: userData?.user?.username,
+            email: userData?.user?.email,
+            display_name: userData?.user?.display_name,
+            avatar: userData?.user?.avatar,
+            guilds: userData?.guilds
+        }
+        return new Reply(res).success(userIdentity)
+    } catch (error) {
+        // Return Failure:
+        createLog.for('Api').warn(`Failed to fetch Discord SELF User Identity!`, { error })
+        return new Reply(res).failure(`Error Occurred - Failed to fetch self user's Discord identity!`);
     }
 })
 

@@ -160,7 +160,7 @@
 
                     <!-- Open In Sever - If Applicable -->
                     <span class="flex flex-center w-full">
-                        <a v-if="auth.signedIn && auth.userData?.guilds.all.find(g => g?.id == s?.guild_id)"
+                        <a v-if="auth.signedIn && auth.identity?.guilds.all.find(g => g?.id == s?.guild_id)"
                             :href="`https://discord.com/channels/${s?.guild_id}/${s?.thread_id ?? s?.channel_id}/${s?.panel_id}`"
                             target="_blank">
                             <Button unstyled class="button-secondary button-base px-1 mt-1">

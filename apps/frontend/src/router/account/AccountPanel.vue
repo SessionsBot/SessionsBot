@@ -1,6 +1,5 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
-    import DefaultAvatar from '/discord.png'
     import { DateTime } from 'luxon';
     import { TYPE, useToast } from 'vue-toastification';
     import type { ToastID } from 'vue-toastification/dist/types/types';
@@ -20,8 +19,8 @@
 
     // Auth Data:
     const user = computed(() => auth.user)
-    const username = computed(() => auth.userData?.username || '%Username%')
-    const userIconUrl = computed(() => auth.userData?.avatar)
+    const username = computed(() => auth.identity?.username || '%Username%')
+    const userIconUrl = computed(() => auth.identity?.avatar)
     const userAppRoles = computed(() => auth.user?.app_metadata.roles)
 
     // Fn - Copy Access Token:
@@ -108,7 +107,7 @@
                     Display Name
                 </p>
                 <p class="detail-field-value">
-                    {{ user?.app_metadata?.display_name }}
+                    {{ auth.identity?.display_name ?? '%display_name%' }}
                 </p>
             </div>
             <!-- User Email -->
@@ -135,7 +134,7 @@
             <!-- User - Icon/Avatar -->
             <div class="aspect-square w-25 sm:w-30 p-1 py-2.5">
                 <img class="w-full aspect-square rounded-full border-2 border-ring-3"
-                    :src="userIconUrl || DefaultAvatar" />
+                    :src="userIconUrl || '/discord.png'" />
             </div>
 
         </div>

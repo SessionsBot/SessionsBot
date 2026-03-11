@@ -49,7 +49,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                 grant_type: "authorization_code",
                 code: code,
                 redirect_uri: REDIRECT_URI,
-                scope: "identify guilds, email",
+                scope: "identify guilds email",
             }),
             { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
         );

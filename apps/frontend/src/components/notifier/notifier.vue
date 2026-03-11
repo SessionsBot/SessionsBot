@@ -236,7 +236,7 @@
         }
 
         .header-icon {
-            @apply pt-0.5
+            @apply pt-1
         }
     }
 

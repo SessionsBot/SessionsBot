@@ -81,7 +81,7 @@ const useDashboardStore = defineStore('dashboard', () => {
     }
 
     /** Guild Data - From Auth User - **`UNTRUSTED`** */
-    const userGuildData = computed(() => auth.user?.app_metadata?.guilds?.manageable.find(g => g.id == guildId.value))
+    const userGuildData = computed(() => auth.identity?.guilds?.manageable.find(g => g.id == guildId.value))
 
     /** Selected Guild Data Fetch States - **NESTED** */
     const guildDataState = {
@@ -526,7 +526,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         }
 
         // Confirm selected Guild Id is within user's Manageable Guilds:
-        const isManageable = auth.user?.app_metadata?.guilds?.manageable?.some(g => g.id == id)
+        const isManageable = auth.identity?.guilds?.manageable?.some(g => g.id == id)
         if (!isManageable) {
             useNotifier().send({
                 header: 'Cannot Access Server!',

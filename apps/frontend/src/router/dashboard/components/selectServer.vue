@@ -10,7 +10,7 @@
     const dashboard = useDashboardStore();
 
     // User Guilds
-    const guildsWSession = computed(() => auth.userData?.guilds.manageable.filter(g => g.hasSessionsBot));
+    const guildsWSession = computed(() => auth.identity?.guilds.manageable.filter(g => g.hasSessionsBot));
 
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {

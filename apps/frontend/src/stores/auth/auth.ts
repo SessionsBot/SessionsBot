@@ -4,14 +4,16 @@ import type { Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
-import type { APIResponseValue, AppUser, AppUserAppData } from "@sessionsbot/shared";
+import type { APIResponseValue, AppUser, AppUserAppData, API_DiscordSelfIdentity } from "@sessionsbot/shared";
 import router from "@/router/router";
 import * as Sentry from '@sentry/vue'
 import { safeGTag } from "../analytics";
-import { API } from "@/utils/api";
+import { API, apiUrl } from "@/utils/api";
+import { identity } from "@vueuse/core";
+import useNotifier from "../notifier";
 
 /** Debug Auth - Boolean 🏁 */
-const debugAuth = true;
+const debugAuth = false;
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
@@ -19,7 +21,7 @@ export const useAuthStore = defineStore('auth', {
         authReady: false,
         signedIn: false,
         user: <AppUser | undefined>undefined,
-        userData: <AppUserAppData | undefined>undefined,
+        identity: <API_DiscordSelfIdentity | undefined>undefined,
         session: <Session | undefined>undefined,
         refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
         redirectAfterAuth: {
@@ -49,7 +51,6 @@ export const useAuthStore = defineStore('auth', {
             // Clear Store State:
             this.signedIn = false;
             this.user = undefined;
-            this.userData = undefined;
             this.session = undefined;
             this.refreshStatus = 'idle';
             this.redirectAfterAuth.clear();
@@ -152,44 +153,91 @@ export const useAuthStore = defineStore('auth', {
  * - Handles auth events and keeps user in `useAuthStore()` up to date. */
 export const watchAuth = async () => {
     const store = useAuthStore();
+    const notifier = useNotifier();
+
+    // Util: Fetch Discord Identity:
+    async function fetchSelfIdentity(token: string | undefined) {
+        try {
+            // Confirm Token:
+            if (!token) throw 'No token provided to fetch identity!'
+            // Make API Request:
+            const result = await axios.get<APIResponseValue>(apiUrl + '/discord/identity/@me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                validateStatus: (s) => true
+            })
+            // Handle Response:
+            if (!result.data?.success) {
+                // Identity Fetch Failed:
+                console.error(`[👤 Auth]: Failed to fetch SELF Discord IDENTITY!`, { api_result: result })
+                throw { message: 'API Result Failure', api_result: result }
+            } else {
+                store.identity = result.data.data as any;
+                if (debugAuth) console.info(`Fetched Discord Identity - @me`, store.identity)
+
+                // Update Sentry User w/ Identity:
+                Sentry.setUser({
+                    id: store.identity?.id,
+                    username: store.identity?.username
+                })
+
+                store.authReady = true;
+            }
+        } catch (err) {
+            console.error(`[AUTH 👤]: Failed to fetch self user Discord identity!`, err)
+            // store.signOut()
+            // Send Alert:
+            notifier.send({
+                level: 'error',
+                duration: false,
+                icon: 'tdesign:user-error-1-filled',
+                header: `Failed to load user identity!`,
+                content: 'It seems we ran into an authentication error! <br><span class="mt-0.5 text-xs opacity-65"> <b>TIP:</b> Try refreshing the page or signing out and back in.</span>'
+            })
+        }
+    }
+
     // Watch for auth events:
     supabase.auth.onAuthStateChange(async (event, session) => {
         // Get current auth user 
         const user = session?.user;
         // Update auth store:
-        store.authReady = true;
         store.signedIn = user ? true : false;
         store.user = user as any;
         store.session = session as any;
-        store.userData = user?.app_metadata as any;
 
         // G-Tag id:
         const gTagId = import.meta.env.VITE_GTAG_ID
 
         // If Initial Session (first sign in):
         if (event == 'INITIAL_SESSION') {
+            // If signed in:
+            if (session?.access_token) {
+                // If redirect path (after auth) found:
+                const redirectPath = store.redirectAfterAuth.get();
+                if (redirectPath) {
+                    router.push(redirectPath);
+                    store.redirectAfterAuth.clear();
+                }
 
-            // Update G-Tag "user_id" Config:
-            if (debugAuth) { console.log('updating', gTagId, user?.id) }
-            safeGTag('config', gTagId, {
-                'user_id': user?.id || null
-            })
-            // Send G-Tag "login" Event:
-            safeGTag('event', 'login', {
-                'method': 'Discord'
-            })
+                // Fetch Identity Data
+                await fetchSelfIdentity(session?.access_token)
 
-            // Update Sentry User:
-            Sentry.setUser({
-                id: store.userData?.id,
-                username: store.userData?.username
-            })
+                // Set gTag Config:
+                safeGTag('config', gTagId, {
+                    'user_id': user?.id || null
+                })
+                // Send G-Tag "login" Event:
+                safeGTag('event', 'login', {
+                    'method': 'Discord'
+                })
 
-            // If redirect path (after auth) found:
-            const redirectPath = store.redirectAfterAuth.get();
-            if (redirectPath) {
-                router.push(redirectPath);
-                store.redirectAfterAuth.clear();
+
+
+            } else {
+                // Mark Auth Ready:
+                store.authReady = true
             }
         }
 
@@ -201,11 +249,24 @@ export const watchAuth = async () => {
                 'user_id': null
             })
             Sentry.setUser(null)
+            store.identity = undefined
+        }
+
+        // On Refresh - Update Identity:
+        if (event == 'TOKEN_REFRESHED') {
+            console.info('Refreshing Self Discord Identity...')
+            //  Re-Fetch Identity Data:
+            await fetchSelfIdentity(session?.access_token)
+        }
+
+        // Reset Identity
+        if (!session) {
+            store.identity = undefined
         }
 
         // Debug:
         if (debugAuth) {
-            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
+            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, identity: store.identity })
         }
 
         // Check for outdated Discord Data:
@@ -224,7 +285,7 @@ export const watchAuth = async () => {
                         trigger_type: result.data?.triggerType
                     })
                 }
-            } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
+            } else console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
         }
     })

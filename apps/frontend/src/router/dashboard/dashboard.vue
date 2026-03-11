@@ -27,7 +27,7 @@
             }, { once: true })),
             // Timeout in X seconds:
             new Promise<boolean>((res) => {
-                setTimeout(() => { res(false) }, 2_500);
+                setTimeout(() => { res(false) }, 10_000);
             })
         ])
     }
@@ -48,7 +48,7 @@
         const { guild, action: action_raw } = route.query
         if (guild) {
             // Guild selected from URL - Confirm guild allowed via auth:
-            const authGuild = auth.userData?.guilds.manageable.find(g => g.id == guild)
+            const authGuild = auth.identity?.guilds.manageable.find(g => g.id == guild)
             if (authGuild) {
                 if (authGuild.hasSessionsBot) {
                     // Allowed - Select Guild:
@@ -142,9 +142,23 @@
 
         <Transition name="slide" mode="out-in">
 
+            <!-- Loading Card - Await Auth -->
+            <div v-if="!auth.authReady" class="w-full h-full flex grow flex-center p-5">
+
+                <div
+                    class="flex flex-center text-center flex-col flex-wrap gap-1 p-5 rounded-lg border-2 border-ring-soft bg-bg-soft">
+                    <ProgressSpinner />
+                    <p class="text-lg font-bold px-3"> Loading Account </p>
+                    <p class="px-4 text-sm opacity-65 italic ">
+                        We're fetching your account data..<br>Please wait!
+                    </p>
+                </div>
+
+            </div>
+
 
             <!-- Select Guild - Card -->
-            <div v-if="!dashboard.guildId" class="w-full h-full flex grow items-center justify-center p-5">
+            <div v-else-if="!dashboard.guildId" class="w-full h-full flex grow items-center justify-center p-5">
                 <SelectServer />
             </div>
 
