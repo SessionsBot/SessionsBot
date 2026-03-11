@@ -423,7 +423,7 @@
 
     /** Form Submission Function */
     const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
-    const debugSubmit = false;
+    const debugSubmit = true;
     const dryRun = false;
     async function submitForm() {
         try {
@@ -523,14 +523,14 @@
 
 
             // Compute - Next Post UTC:
-            const nextAfterDT = dashboard.sessionForm.editPayload?.last_post_utc && formAction.value == 'edit'
+            const nextAfterDT = formAction.value == 'edit'
                 ? DateTime.fromISO(String(dashboard.sessionForm.editPayload?.last_post_utc), { zone: 'utc' })
                 : DateTime.now().setZone(data.timeZone).startOf('day').toUTC()
             const nextPostUTC = getSchedulesNextPostUTC({
                 startsAtUtc: startUtc,
                 postOffsetMs: getPostOffsetMs(),
                 RRule: newRRule?.toString(),
-                afterDate: nextAfterDT
+                afterDate: nextAfterDT?.isValid ? nextAfterDT : DateTime.utc()
             })
 
             // Compute - Last Post UTC:

@@ -82,29 +82,41 @@ export function getSchedulesNextPostUTC(opts: {
     afterDate?: DateTime | undefined | null,
 
 }): DateTime | null {
-    if (!opts.RRule) {
-        // No Recurrence - Return first scheduled post date:
-        if (opts.afterDate && opts.afterDate > opts.startsAtUtc) {
-            return null
-        }
-        return opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
-    } else {
-        // Recurrence - Get next POST date from afterDate:
-        const rule = rrulestr(opts.RRule, { forceset: false })
-        const timeZone = rule.options.tzid ?? 'utc';
-        const normalizedAfterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
-        const afterInZone = normalizedAfterDate.setZone(timeZone)
 
-        // Compute Next Session Start from RRule:
-        const nextJsDate = rule.after(afterInZone.toJSDate())
-        if (!nextJsDate) return null
-        // Get Next Start as DateTime:
-        const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
-        // Return in UTC w/ post offset:
-        return nextStartDT
-            ? nextStartDT?.minus({ milliseconds: opts.postOffsetMs })?.toUTC()
-            : null;
+    const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
+
+
+    if (!opts.RRule) {
+        // No Recurrence - Return First (and last) POST Date:
+        const postTime = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
+        return postTime > afterDate ? postTime : null
     }
+    // Get Recurrence Rule:
+    const rule = rrulestr(opts.RRule, { forceset: false })
+    const timeZone = rule.options.tzid ?? "UTC"
+    const searchAfterInZone = afterDate.setZone(timeZone)
+
+    console.info('Searching for next session post AFTER:', searchAfterInZone?.setZone('America/Chicago')?.toFormat(`F - 'CST'`))
+
+    // Confirm - Check if past "After Date":
+    let cursor = searchAfterInZone
+    while (true) {
+        // Find NEXT Schedule Start Date:
+        const nextJsDate = rule.after(cursor?.toJSDate())
+        if (!nextJsDate) return null
+        const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
+        console.info('Found NEXT Start Date:', nextStartDT?.setZone('America/Chicago')?.toFormat(`F - 'CST'`))
+        if (!nextStartDT) return null
+        // Get Post Date - Subtract Post Offset:
+        const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
+        if (nextPostDT < searchAfterInZone) {
+            // Date TOO EARLY - Push up cursor:
+            cursor = rruleDateToLuxon(nextJsDate, timeZone)
+        } else {
+            return nextPostDT?.toUTC()
+        }
+    }
+
 }
 
 
