@@ -4,14 +4,14 @@ import type { Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
-import type { APIResponseValue, AppUser, AppUserMetadata } from "@sessionsbot/shared";
+import type { APIResponseValue, AppUser, AppUserAppData } from "@sessionsbot/shared";
 import router from "@/router/router";
 import * as Sentry from '@sentry/vue'
 import { safeGTag } from "../analytics";
 import { API } from "@/utils/api";
 
 /** Debug Auth - Boolean 🏁 */
-const debugAuth = false;
+const debugAuth = true;
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', {
         authReady: false,
         signedIn: false,
         user: <AppUser | undefined>undefined,
-        userData: <AppUserMetadata | undefined>undefined,
+        userData: <AppUserAppData | undefined>undefined,
         session: <Session | undefined>undefined,
         refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
         redirectAfterAuth: {
@@ -161,7 +161,7 @@ export const watchAuth = async () => {
         store.signedIn = user ? true : false;
         store.user = user as any;
         store.session = session as any;
-        store.userData = user?.user_metadata as any;
+        store.userData = user?.app_metadata as any;
 
         // G-Tag id:
         const gTagId = import.meta.env.VITE_GTAG_ID

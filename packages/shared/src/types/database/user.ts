@@ -25,7 +25,9 @@ export type AppUserGuilds = {
     manageable: AppUserGuildData[]
 }
 
-export type AppUserMetadata = {
+
+type AppRoles = 'user' | 'admin'
+export type AppUserAppData = {
     /** The **Discord Id** of the current user. */
     id: string
     /** The username of the current user */
@@ -38,11 +40,6 @@ export type AppUserMetadata = {
     avatar: string
     /** */
     guilds: AppUserGuilds
-}
-
-
-type AppRoles = 'user' | 'admin'
-export type AppUserAppData = {
     /** APP/SYSTEM wide roles for the user.
      *@example
      roles = ["user","admin"];
@@ -53,6 +50,6 @@ export type AppUserAppData = {
 }
 
 export interface AppUser extends User {
-    user_metadata: AppUserMetadata,
     app_metadata: AppUserAppData,
+    user_metadata: never
 }

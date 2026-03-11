@@ -108,7 +108,7 @@
                     Display Name
                 </p>
                 <p class="detail-field-value">
-                    {{ user?.user_metadata?.display_name }}
+                    {{ user?.app_metadata?.display_name }}
                 </p>
             </div>
             <!-- User Email -->

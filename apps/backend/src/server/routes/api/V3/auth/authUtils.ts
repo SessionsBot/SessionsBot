@@ -86,11 +86,9 @@ export async function updateAuthUser(userData: any, guildsData: AppUserGuilds, a
                 email: userData.email,
                 app_metadata: {
                     roles: appRoles(userData?.id),
-                    last_synced: new Date().toISOString(),
-                },
-                user_metadata: {
                     ...userData,
-                    guilds: guildsData
+                    guilds: guildsData,
+                    last_synced: new Date().toISOString(),
                 },
             });
             if (!updUser || updateUserErr) throw new AuthError('updateUser', { updUser, updateUserErr, userData });
@@ -106,12 +104,10 @@ export async function updateAuthUser(userData: any, guildsData: AppUserGuilds, a
                 email_confirm: true,
                 app_metadata: {
                     roles: appRoles(userData?.id),
-                    last_synced: new Date().toISOString()
-                },
-                user_metadata: {
+                    last_synced: new Date().toISOString(),
                     ...userData,
                     guilds: guildsData,
-                },
+                }
             });
             if (!newUser || createUserErr) throw new AuthError('createUser', { newUser, createUserErr, userData });
 
