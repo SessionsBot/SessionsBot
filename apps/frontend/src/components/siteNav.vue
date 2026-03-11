@@ -195,7 +195,7 @@
                         </RouterLink>
 
                         <!-- Sign Out -->
-                        <RouterLink :to="'/account'" v-slot="{ isActive }">
+                        <RouterLink :to="'/'" v-slot="{ isActive }">
                             <Button v-if="auth.signedIn" class="nav-button hover:bg-red-400/20!"
                                 @click="auth.signOut(), closeNav()" unstyled :disabled="isActive">
                                 <LogOutIcon />

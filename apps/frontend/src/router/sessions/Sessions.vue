@@ -1,13 +1,10 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { externalUrls } from '@/stores/nav';
     import { supabase } from '@/utils/supabase';
-    import { toHTML } from '@odiffey/discord-markdown';
-    import { processVariableText } from '@sessionsbot/shared';
-    import { DateTime } from 'luxon';
     import z from 'zod';
     import SessionDetailsCard from './components/SessionDetailsCard.vue';
+    import ErrorFetchingCard from './components/ErrorFetchingCard.vue';
 
 
     // Services:
@@ -20,18 +17,20 @@
     const sessionIdInvalid = ref(false)
 
     const sessionData = useAsyncState(async (id: string) => {
-        await new Promise<void>((r) => setTimeout(() => r(), 1_500))
         if (!id) throw new Error('No Session ID for data fetch provided!')
         const { data, error } = await supabase.from('sessions')
             .select('*, session_rsvp_slots(*, session_rsvps(*))')
             .eq('id', id)
-            .maybeSingle()
+            .single()
         if (error) throw error
         else return data
     }, null, {
         immediate: false,
         onError(e) {
             console.error(`[SESSION DATA]: Failed to fetch!`, e)
+        },
+        onSuccess(data) {
+            console.info(`[Session Data]: Fetched!`, data)
         },
     })
     const s = computed(() => sessionData.state.value)
@@ -64,7 +63,8 @@
         <!-- Back to Dashboard - Breadcrumb -->
         <div class="absolute! group/bc hover:text-brand-2 cursor-pointer flex w-fit h-fit top-3.5! left-3.5! z-3!">
 
-            <RouterLink to="/dashboard" class="flex w-fit h-fit flex-center gap-1.5 text-sm flex-row">
+            <RouterLink v-if="auth.signedIn" to="/dashboard"
+                class="flex w-fit h-fit flex-center gap-1.5 text-sm flex-row">
                 <Iconify icon="mynaui:arrow-long-left" class="group-hover/bc:-translate-x-0.75 transition-all"
                     size="20" />
                 <p class="opacity-65"> Go to Dashboard </p>
@@ -98,19 +98,7 @@
 
 
                 <!-- Failure Fetching - Card -->
-                <div v-else-if="sessionData.error.value != null" class="card p-7 flex-col">
-                    <span class="flex flex-center gap-1.5 flex-row text-xl p-2">
-                        <Iconify icon="mdi:warning" size="26" class="animate-spin" />
-                        <p class="font-bold"> Invalid Session ID! </p>
-                    </span>
-
-                    <p class="opacity-75 font-semibold text-sm">
-                        Please confirm your...
-                    </p>
-                    <p class="text-xs italic opacity-55 px-4 mt-4">
-                        Requested UID: {{ rawId ?? '?' }}
-                    </p>
-                </div>
+                <ErrorFetchingCard v-else-if="sessionData.error.value != null" :rawId />
 
 
                 <!-- Loading Session - Card -->
