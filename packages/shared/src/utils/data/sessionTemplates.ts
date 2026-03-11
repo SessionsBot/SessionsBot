@@ -96,8 +96,6 @@ export function getSchedulesNextPostUTC(opts: {
     const timeZone = rule.options.tzid ?? "UTC"
     const searchAfterInZone = afterDate.setZone(timeZone)
 
-    console.info('Searching for next session post AFTER:', searchAfterInZone?.setZone('America/Chicago')?.toFormat(`F - 'CST'`))
-
     // Confirm - Check if past "After Date":
     let cursor = searchAfterInZone
     while (true) {
@@ -105,7 +103,6 @@ export function getSchedulesNextPostUTC(opts: {
         const nextJsDate = rule.after(cursor?.toJSDate())
         if (!nextJsDate) return null
         const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
-        console.info('Found NEXT Start Date:', nextStartDT?.setZone('America/Chicago')?.toFormat(`F - 'CST'`))
         if (!nextStartDT) return null
         // Get Post Date - Subtract Post Offset:
         const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })

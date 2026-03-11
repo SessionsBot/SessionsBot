@@ -92,7 +92,11 @@ export const useAuthStore = defineStore('auth', {
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
-                const { status, data: { data: { fresh_token } } } = await API.get<APIResponseValue<any>>(refreshEndpoint);
+                const { status, data: { data: { fresh_token } } } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
+                    headers: {
+                        ['trigger-type']: triggerType
+                    }
+                });
 
                 // Handle request response - Fetch new user data:
                 if (fresh_token) {
