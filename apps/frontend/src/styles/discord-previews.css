@@ -1,5 +1,7 @@
 .discord-preview {
 
+    @apply text-start;
+
     strong {
         font-weight: 800 !important;
     }
