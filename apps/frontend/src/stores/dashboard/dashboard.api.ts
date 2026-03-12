@@ -118,6 +118,7 @@ export async function fetchGuildSessions(guildId: string | null) {
     const { data, error } = await supabase.from('sessions')
         .select('*')
         .eq('guild_id', guildId)
+        .order('starts_at_utc', { ascending: false })
     // Return Result:
     if (!error) {
         return data
@@ -135,6 +136,7 @@ export async function fetchGuildAuditLog(guildId: string | null) {
     const { data, error } = await supabase.from('audit_logs')
         .select('*')
         .eq('guild_id', guildId)
+        .order('created_at', { ascending: false })
     // Return Result:
     if (!error) {
         return data
