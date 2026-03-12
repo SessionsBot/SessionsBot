@@ -9,44 +9,51 @@ const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") 
 
 /** Fetch FRESH Discord Data for a user by `accessToken`. */
 export async function fetchUserDiscordData(accessToken: string) {
-    // 1. Get Discord - USER Data:
-    const userResponse = await axios.get("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${accessToken}` } });
-    const userData: APIUser = userResponse?.data;
-    if (!userData) return new AuthError('fetchUser', { source: 'Discord user data fetch from token.' });
-    const userDataMapped = {
-        id: userData?.id,
-        username: userData?.username,
-        email: userData?.email,
-        display_name: userData?.global_name,
-        avatar: userData?.avatar
-            ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
-            : `https://cdn.discordapp.com/embed/avatars/0.png`,
-    };
-    if (!userDataMapped.email) return new AuthError('missingEmail');
+    try {
+        // 1. Get Discord - USER Data:
+        const userResponse = await axios.get("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${accessToken}` } });
+        const userData: APIUser = userResponse?.data;
+        if (!userData) return new AuthError('fetchUser', { source: 'Discord user data fetch from token.' });
+        const userDataMapped = {
+            id: userData?.id,
+            username: userData?.username,
+            email: userData?.email,
+            display_name: userData?.global_name,
+            avatar: userData?.avatar
+                ? `https://cdn.discordapp.com/avatars/${userData?.id}/${userData.avatar}.${userData.avatar.startsWith("a_") ? "gif" : "png"}`
+                : `https://cdn.discordapp.com/embed/avatars/0.png`,
+        };
+        if (!userDataMapped.email) return new AuthError('missingEmail');
 
-    // 2. Get DISCORD - User's Guilds - Map:
-    const botGuilds = await core.botClient.guilds.fetch();
-    const botGuildsIds = botGuilds.map((g) => g.id);
-    const ADMINISTRATOR = 0x00000008;
-    const MANAGE_GUILD = 0x00000020;
-    const guildsResponse = await axios.get("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${accessToken}` } });
-    const guilds: RESTGetAPICurrentUserGuildsResult = guildsResponse.data;
-    if (!guilds) return new AuthError('fetchUser', { source: 'Discord user guilds data fetch from token.' });
-    const userGuildsMapped = guilds.map((g) => ({
-        id: g?.id,
-        name: g?.name,
-        icon: g?.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}` : `https://cdn.discordapp.com/embed/avatars/0.png`,
-        permissions: g?.permissions,
-        isOwner: g?.owner,
-        memberCount: g?.approximate_member_count,
-        hasSessionsBot: botGuildsIds.includes(g?.id),
-    }));
-    const manageableGuildsMapped = userGuildsMapped.filter((guild) => {
-        const permissions = BigInt(guild.permissions);
-        return (permissions & BigInt(ADMINISTRATOR)) !== 0n || (permissions & BigInt(MANAGE_GUILD)) !== 0n;
-    });
+        // 2. Get DISCORD - User's Guilds - Map:
+        const botGuilds = await core.botClient.guilds.fetch();
+        const botGuildsIds = botGuilds.map((g) => g.id);
+        const ADMINISTRATOR = 0x00000008;
+        const MANAGE_GUILD = 0x00000020;
+        const guildsResponse = await axios.get("https://discord.com/api/users/@me/guilds?with_counts=true", { headers: { Authorization: `Bearer ${accessToken}` } });
+        const guilds: RESTGetAPICurrentUserGuildsResult = guildsResponse.data;
+        if (!guilds) return new AuthError('fetchUser', { source: 'Discord user guilds data fetch from token.' });
+        const userGuildsMapped = guilds.map((g) => ({
+            id: g?.id,
+            name: g?.name,
+            icon: g?.icon
+                ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.${g.icon.startsWith("a_") ? "gif" : "png"}`
+                : `https://cdn.discordapp.com/embed/avatars/0.png`,
+            permissions: g?.permissions,
+            isOwner: g?.owner,
+            memberCount: g?.approximate_member_count,
+            hasSessionsBot: botGuildsIds.includes(g?.id),
+        }));
+        const manageableGuildsMapped = userGuildsMapped.filter((guild) => {
+            const permissions = BigInt(guild.permissions);
+            return (permissions & BigInt(ADMINISTRATOR)) !== 0n || (permissions & BigInt(MANAGE_GUILD)) !== 0n;
+        });
 
-    return { user: userDataMapped, guilds: { all: userGuildsMapped, manageable: manageableGuildsMapped } };
+        return { user: userDataMapped, guilds: { all: userGuildsMapped, manageable: manageableGuildsMapped } };
+    } catch (err) {
+        // Failed to fetch User Discord Data - Caught Err - Log & Return:
+        return new AuthError('unknown', { message: 'failed to fetch a discord users data!', err })
+    }
 }
 
 
@@ -121,7 +128,8 @@ export async function updateAuthUser(userData: any, guildsData: AppUserGuilds, a
                     created_at: new Date().toISOString(),
                     manageable_guild_ids: guildsData.manageable.map((g) => g.id)
                 })
-                .select();
+                .select()
+                .single()
             if (!newProfile || createProfileErr) throw new AuthError('createUser', { newProfile, createProfileErr, userData });
 
             // Return User/Profile:

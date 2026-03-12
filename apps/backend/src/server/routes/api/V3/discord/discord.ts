@@ -51,7 +51,7 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
         if (!userId) return new Reply(res).failure('Invalid Input - Missing "userId" to fetch identity for!', HttpStatusCode.BadRequest);
 
         // Get Access Token for User:
-        const { data, error } = await supabase.from('profiles').select('*')
+        const { data, error } = await supabase.from('profiles').select('discord_access_token')
             .eq('id', req?.auth?.user?.id)
             .single()
         if (error) throw error
