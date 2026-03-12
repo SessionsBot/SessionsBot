@@ -13,7 +13,7 @@ import { identity } from "@vueuse/core";
 import useNotifier from "../notifier";
 
 /** Debug Auth - Boolean 🏁 */
-const debugAuth = false;
+const debugAuth = true;
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
