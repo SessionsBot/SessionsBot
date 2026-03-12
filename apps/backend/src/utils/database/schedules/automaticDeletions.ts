@@ -1,6 +1,6 @@
 import cron, { ScheduledTask } from 'node-cron'
 import core from '../../core/core';
-import { APIEntitlement, RESTGetAPIEntitlementsResult, Routes } from 'discord.js';
+import { APIEntitlement, DiscordAPIError, RESTGetAPIEntitlementsResult, Routes } from 'discord.js';
 import { SubscriptionLimits, SubscriptionSKUs } from '@sessionsbot/shared';
 import { useLogger } from '../../logs/logtail';
 import { supabase } from '../supabase';
@@ -26,6 +26,75 @@ export function initializeDataDeletionSchedule() {
             // Debug & Vars:
             if (debug) createLog.for('Schedule').info(`🗑 - Started Automatic Deletion Process - At: ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')}`)
             const { botClient: bot } = core
+
+            // Process Data Deletion Requests:
+            const { data: deletionRequests, error: deletionRequestsERR } = await supabase.from('deletion_requests').select('*')
+                .eq('status', 'pending')
+            if (deletionRequestsERR) {
+                // Log Error - Proceed:
+                createLog.for('Schedule').error('FAILED to fetch deletion requests! - Will NOT be processed..', { error: deletionRequestsERR })
+            } else for (const deletionReq of deletionRequests) {
+                // Log & Set as processing:
+                createLog.for('Database').info(`(!)[DATA DELETION REQUEST]: Processing a pending data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
+                const { error: updateErr } = await supabase.from('deletion_requests').update({
+                    status: 'processing'
+                }).eq('id', deletionReq?.id)
+                if (updateErr) createLog.for('Database').warn('(!) Failed to mark a deletion request as "processing"?', { deletionReqId: deletionReq?.id, updateErr })
+                // Parse request:
+                const deletingUserData = deletionReq.delete_user
+                const deletingGuildData = deletionReq.delete_guild
+                const deletionGuildIds = deletionReq.guild_ids
+                const deletionUserId = deletionReq.user_id
+                // Delete Guild Data (if applicable):
+                if (deletingGuildData) {
+                    if (!deletionGuildIds?.length) createLog.for('Database').warn('(!) Failed to delete an "empty array" of guild ids!?', { deletionReq })
+                    else for (const guildId of deletionGuildIds) {
+                        // Delete each guild by id
+                        const { error: guildDeletionErr } = await supabase.from('guilds').delete()
+                            .eq('id', guildId)
+                        // If deletion err:
+                        if (guildDeletionErr) createLog.for('Database').error(`(!)[DATA DELETION REQUEST]: FAILED to delete a guild by id - GuildId: ${guildId}`, { guildId, err: guildDeletionErr, deletionReq })
+                        // Remove Bot from Guild (if applicable)
+                        try {
+                            const guild = await core.botClient.guilds.fetch(guildId)
+                            await guild?.leave()
+                        } catch (err) {
+                            if (err instanceof DiscordAPIError && err.code == 10004) {
+                                createLog.for('Database').info('(i) Guild has already removed bot for deletion request...', { deletionReq, err })
+                            } else {
+                                createLog.for('Bot').error('(!) Failed to remove the bot from a deletion requested guild!', { guildId, err })
+                            }
+                        }
+                    }
+                }
+                // Delete User Data (if applicable):
+                if (deletingUserData) {
+                    if (!deletionUserId) createLog.for('Database').error('(!) Failed to delete user data for an unprovided "userId"!?', { deletionReq })
+                    else {
+                        const { data: userProfile, error: profileErr } = await supabase.from('profiles')
+                            .select('*')
+                            .eq('discord_id', deletionUserId)
+                            .single()
+                        if (profileErr) createLog.for('Database').error('(!) Failed to delete user data - Error fetching user profile!', { deletionReq, err: profileErr })
+                        else {
+                            // Delete user in auth:
+                            const { error: authErr } = await supabase.auth.admin.deleteUser(userProfile?.id)
+                            if (authErr) createLog.for('Database').error(`[DATA DELETION REQUEST]: Failed to delete an auth user from deletion request!`, { deletionReq, err: authErr })
+                            // Delete user profile row:
+                            const { error: profileErr } = await supabase.from('profiles').delete()
+                                .eq('id', userProfile.id)
+                            if (profileErr) createLog.for('Database').error(`[DATA DELETION REQUEST]: Failed to delete a profile row for user from deletion request!`, { deletionReq, err: profileErr })
+                        }
+                    }
+                }
+
+                // Log & Set as "Completed":
+                createLog.for('Database').info(`(✔)[DATA DELETION REQUEST]: Completed processing a data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
+                const { error: updateErr2 } = await supabase.from('deletion_requests').update({
+                    status: 'completed'
+                }).eq('id', deletionReq?.id)
+                if (updateErr2) createLog.for('Database').error('(!)[DATA DELETION REQUEST]: Failed to mark a deletion request as "completed"!', { deletionReq, err: updateErr2 })
+            }
 
             // Load All Premium & Enterprise Owner Server IDs:
             const getPaidGuilds = async () => {
