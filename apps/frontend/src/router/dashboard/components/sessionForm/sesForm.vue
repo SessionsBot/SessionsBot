@@ -111,7 +111,7 @@
 
     /** Form Resolver Schema */
     const formSchema = z.object({
-        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
+        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').max(32, 'Title cannot exceed 32 characters.').normalize(),
         description: z.string('Please enter a valid description.').trim().max(225, 'Description cannot exceed 225 characters.').normalize().refine(s => {
             if (subscription.value?.limits?.ALLOW_MENTION_ROLES != true) {
                 // Check for any native discord mentions in string:
