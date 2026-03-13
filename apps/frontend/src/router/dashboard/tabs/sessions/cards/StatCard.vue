@@ -35,7 +35,7 @@
             <!-- Detail Area -->
             <div class="p-1.5 w-fit! bg-red-500/0 flex flex-col gap-0 items-center justify-center">
                 <p class="sm:text-2xl text-xl font-extrabold text-center">
-                    {{ props.value || '%' }}
+                    {{ props.value ?? '%' }}
                 </p>
             </div>
         </div>
