@@ -2,16 +2,17 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import discordLog from "./logs/discord.js";
-import { initializeTemplateCreationScheduler } from "./database/schedules/templateCreations.js";
+import { initializeTemplateCreationScheduler } from "./schedules/templateCreations.js";
 import sendWithFallback from "./bot/messages/sendWithFallback.js";
 import { defaultFooterText, genericErrorMsg } from "./bot/messages/basic.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
 import { URLS } from "./core/urls.js";
 import { increaseGuildStat } from "./database/manager/statsManager.js";
-import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
+import { initializeDataDeletionSchedule } from "./schedules/automaticDeletions.js";
 import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendSessionPanel.js";
 import dbManager from "./database/manager/dbManager.js";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
+import { getEventImage } from "./bot/messages/images/eventImages.js";
 
 
 const createLog = useLogger();
@@ -29,8 +30,26 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // const r = await dbManager.sessions.cancel(guildId, '76907ba3-55a0-4f4c-a308-9d28637e2046', userId)
-                // console.info('Result', r)
+
+                // const guild = await bot.guilds.fetch(guildId)
+                // const a = await getEventImage({
+                //     title: 'This is a session title with 32c',
+                //     timeText: '10/10/2010 - 10:00AM CST',
+                //     showWatermark: true,
+                //     botIconUrl: 'https://sessionsbot.fyi/sessionsBot.png',
+                //     guildIconUrl: guild?.iconURL()
+                // })
+                // const sysChannel = guild?.systemChannel
+
+                // await sysChannel.send({
+                //     content: 'Heres a test event panel img: \n-# @scrixt',
+                //     files: [a]
+                // })
+
+                // Initialize Schedules:
+                initializeTemplateCreationScheduler({
+                    runOnExecution: true
+                })
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

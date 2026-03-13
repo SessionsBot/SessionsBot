@@ -6,7 +6,7 @@ import tests from "../utils/tests.js";
 import fetchEmojis from "../utils/bot/fetchEmojis.js";
 import fetchSKUs from "../utils/bot/fetchSKUs.js";
 import fetchCommands from "../utils/bot/fetchCommands.js";
-import { initializeDataDeletionSchedule } from "../utils/database/schedules/automaticDeletions.js";
+import { initializeDataDeletionSchedule } from "../utils/schedules/automaticDeletions.js";
 import { DateTime } from "luxon";
 
 const createLog = useLogger();

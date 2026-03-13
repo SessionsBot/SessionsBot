@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@logtail/node": "^0.5.6",
+    "@napi-rs/canvas": "^0.1.96",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.78.0",
     "@vvo/tzdb": "^6.198.0",
