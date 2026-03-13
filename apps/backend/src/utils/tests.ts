@@ -31,26 +31,6 @@ export default {
                 // Test here..\
 
 
-                // const guild = await bot.guilds.fetch(guildId)
-                // const a = await getEventImage({
-                //     title: 'This is a session title with 32c',
-                //     timeText: '10/10/2010 - 10:00AM CST',
-                //     showWatermark: true,
-                //     botIconUrl: 'https://sessionsbot.fyi/sessionsBot.png',
-                //     guildIconUrl: guild?.iconURL()
-                // })
-                // const sysChannel = guild?.systemChannel
-
-                // await sysChannel.send({
-                //     content: 'Heres a test event panel img: \n-# @scrixt',
-                //     files: [a]
-                // })
-
-                // Initialize Schedules:
-                initializeTemplateCreationScheduler({
-                    runOnExecution: true
-                })
-
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');
             }

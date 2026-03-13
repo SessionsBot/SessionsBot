@@ -8,6 +8,7 @@ import fetchSKUs from "../utils/bot/fetchSKUs.js";
 import fetchCommands from "../utils/bot/fetchCommands.js";
 import { initializeDataDeletionSchedule } from "../utils/schedules/automaticDeletions.js";
 import { DateTime } from "luxon";
+import { initializeTemplateCreationScheduler } from "../utils/schedules/templateCreations.js";
 
 const createLog = useLogger();
 
@@ -37,6 +38,8 @@ export default {
 			await tests.init();
 			// Initialize Auto-Deletion Schedule:
 			initializeDataDeletionSchedule()
+			// Initialize Auto-Session/Schedule Creation(s) Schedule:
+			initializeTemplateCreationScheduler()
 		}, 1_500);
 
 	},

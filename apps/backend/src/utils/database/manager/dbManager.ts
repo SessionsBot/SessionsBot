@@ -42,9 +42,13 @@ export default {
                 joined_at: guild.joinedAt?.toISOString() ?? null,
             }, { onConflict: 'id' }).select().single();
 
-            if (!saveData || error) {
+            const { error: statsRowErr } = await supabase.from('guild_stats').insert({
+                guild_id: guild?.id
+            })
+
+            if (!saveData || error || statsRowErr) {
                 // Failed save - Return:
-                return dbResult.failure({ message: `Failed to add guild!`, saveData, error });
+                return dbResult.failure({ message: `Failed to add guild to database!`, saveData, error, statsRowErr });
             } else {
                 // Succeeded - Return data:
                 return dbResult.success({ saveData })
