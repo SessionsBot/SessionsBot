@@ -1,9 +1,9 @@
 import cron, { ScheduledTask } from 'node-cron'
-import core from '../../core/core';
+import core from '../core/core';
 import { APIEntitlement, DiscordAPIError, RESTGetAPIEntitlementsResult, Routes } from 'discord.js';
 import { SubscriptionLimits, SubscriptionSKUs } from '@sessionsbot/shared';
-import { useLogger } from '../../logs/logtail';
-import { supabase } from '../supabase';
+import { useLogger } from '../logs/logtail';
+import { supabase } from '../database/supabase';
 import { DateTime } from 'luxon';
 
 const createLog = useLogger();

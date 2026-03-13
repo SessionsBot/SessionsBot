@@ -1,18 +1,19 @@
 import { processVariableText, mapRsvps, AuditEvent, API_GuildPreferencesDefaults, Database, getSchedulesNextPostUTC } from "@sessionsbot/shared";
-import { useLogger } from "../../logs/logtail";
-import { supabase } from "../supabase"
+import { useLogger } from "../logs/logtail";
+import { supabase } from "../database/supabase"
 import { DateTime } from "luxon";
-import core from "../../core/core";
-import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "../../bot/permissions/failedToSendSessionPanel";
-import { buildSessionPanelMsg, buildSessionThreadStartMsg } from "../../bot/messages/sessionPanels";
+import core from "../core/core";
+import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "../bot/permissions/failedToSendSessionPanel";
+import { buildSessionPanelMsg, buildSessionThreadStartMsg } from "../bot/messages/sessionPanels";
 import { ChannelType, DiscordAPIError, Guild, GuildScheduledEvent, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, Message, MessageFlags, TextChannel, TextThreadChannel, ThreadAutoArchiveDuration } from "discord.js";
 import cron, { ScheduledTask } from 'node-cron'
-import { createAuditLog } from "../auditLog";
-import { getGuildSubscriptionFromId } from "../../bot/entitlements";
-import { URLS } from "../../core/urls";
-import { increaseGuildStat } from "../manager/statsManager";
-import { isBotPermissionError, sendPermissionAlert } from "../../bot/permissions/permissionsDenied";
+import { createAuditLog } from "../database/auditLog";
+import { getGuildSubscriptionFromId } from "../bot/entitlements";
+import { URLS } from "../core/urls";
+import { increaseGuildStat } from "../database/manager/statsManager";
+import { isBotPermissionError, sendPermissionAlert } from "../bot/permissions/permissionsDenied";
 import pLimit from "p-limit";
+import { createNativeEventForSession } from "../bot/nativeEvents";
 
 const createLog = useLogger();
 const debugSchedule = true;
@@ -278,13 +279,14 @@ async function executeTemplateCreationSchedule() {
                             }
 
                             // Build Session's Panel's Content:
+                            const fullSessionData = {
+                                ...newSession,
+                                session_rsvp_slots: rsvpSlots.map(s => {
+                                    return { ...s, session_rsvps: <any>[] }
+                                })
+                            }
                             const panelContent = await buildSessionPanelMsg(
-                                {
-                                    ...newSession,
-                                    session_rsvp_slots: rsvpSlots.map(s => {
-                                        return { ...s, session_rsvps: <any>[] }
-                                    })
-                                },
+                                fullSessionData,
                                 subscription.limits.SHOW_WATERMARK,
                                 g?.accent_color,
                                 g?.calendar_button
@@ -324,61 +326,15 @@ async function executeTemplateCreationSchedule() {
                             let nativeEvent: GuildScheduledEvent | null = null;
                             if (t.native_events) {
                                 // Events Enabled - Create
-                                try {
-                                    // Get Event Safe Dates:
-                                    const baseStart = sessionStart > DateTime.utc()
-                                        ? sessionStart
-                                        : DateTime.utc().plus({ hour: 1 }).startOf("hour");
-                                    const localStart = baseStart.setZone(t.time_zone);
-                                    const eventStart = baseStart
-                                        .setZone(t.time_zone)
-                                        .toJSDate();
-                                    const eventEnd = t.duration_ms
-                                        ? baseStart
-                                            .plus({ milliseconds: t.duration_ms })
-                                            .setZone(t.time_zone)
-                                            .toJSDate()
-                                        : baseStart
-                                            .plus({ hour: 1 })
-                                            .setZone(t.time_zone)
-                                            .toJSDate();
-                                    const eventDescription = () => {
-                                        const raw = t?.description?.trim();
-                                        const hasContent = raw && raw.length > 1;
-                                        const showWatermark = subscription.limits.SHOW_WATERMARK;
-                                        const watermark = `${core.emojis.string('logo')} Powered by Sessions Bot | [Learn More](${URLS.website})`;
-                                        if (!hasContent && !showWatermark) return null;
-                                        if (!hasContent && showWatermark) return watermark;
-                                        if (hasContent && !showWatermark) return raw;
-                                        return `${raw}\n${watermark}`;
-                                    }
-                                    // Create Discord Native Event:
-                                    nativeEvent = await guild.scheduledEvents.create({
-                                        name: t.title,
-                                        description: eventDescription(),
-                                        scheduledStartTime: eventStart,
-                                        scheduledEndTime: eventEnd,
-                                        entityType: GuildScheduledEventEntityType.External,
-                                        privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
-                                        entityMetadata: { location: t?.url ? t.url : panelMsg?.url },
-                                        image: guild?.iconURL() ?? undefined
-                                    })
-                                } catch (err) {
-                                    // Native Discord Event Creation - FAILED:
-                                    if (err instanceof DiscordAPIError && err.code == 30038) {
-                                        // Max Discord Events (100) - Reached:
-                                        createLog.for('Bot').info('Failed to create a NATIVE DISCORD EVENT for a session - Max of 100 Reached!', { guildId: g?.id, session: newSession, error: err })
-                                    }
-                                    if (isBotPermissionError(err)) {
-                                        // Bot Permission Failure:
-                                        createLog.for('Bot').info('Failed to create a NATIVE DISCORD EVENT for a session - Perms Missing!', { guildId: g?.id, session: newSession, error: err })
-                                        sendPermissionAlert(g?.id, { leadingDesc: 'Failed to post a Discord Native Event tied to a session schedule! This error was due to bot permissions...' })
-                                    } else {
-                                        // Unknown Error:
-                                        createLog.for('Unknown').error('Failed to create a NATIVE DISCORD EVENT for a session! - SEE DETAILS', { guildId: g?.id, session: newSession, error: err })
-                                    }
+                                const result = await createNativeEventForSession({
+                                    session: fullSessionData,
+                                    panelMsgUrl: panelMsg?.url,
+                                    startDate: sessionStart,
+                                    showWatermark: subscription?.limits?.SHOW_WATERMARK
+                                })
+                                if (result?.success && result?.event) {
+                                    nativeEvent = result?.event
                                 }
-
                             }
 
 
