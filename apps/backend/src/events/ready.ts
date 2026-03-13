@@ -9,6 +9,7 @@ import fetchCommands from "../utils/bot/fetchCommands.js";
 import { initializeDataDeletionSchedule } from "../utils/schedules/automaticDeletions.js";
 import { DateTime } from "luxon";
 import { initializeTemplateCreationScheduler } from "../utils/schedules/templateCreations.js";
+import { initializeEntitlementsSyncSchedule } from "../utils/schedules/syncEntitlements.js";
 
 const createLog = useLogger();
 
@@ -36,10 +37,12 @@ export default {
 		setTimeout(async () => {
 			// Run Dev Tests (if dev env):
 			await tests.init();
+			// Initialize Auto-Session/Schedule Creation(s) Schedule:
+			await initializeTemplateCreationScheduler()
 			// Initialize Auto-Deletion Schedule:
 			initializeDataDeletionSchedule()
-			// Initialize Auto-Session/Schedule Creation(s) Schedule:
-			initializeTemplateCreationScheduler()
+			// Initialize Auto Entitlement(s) Database Synchronization:
+			initializeEntitlementsSyncSchedule()
 		}, 1_500);
 
 	},
