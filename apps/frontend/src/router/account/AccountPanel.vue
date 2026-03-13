@@ -185,7 +185,7 @@
                 Manage Cookie Preferences
             </a>
             <!-- Extra Admin/Dev Resources -->
-            <span v-if="!userAppRoles?.includes('admin')"
+            <span v-if="userAppRoles?.includes('admin')"
                 class="flex flex-wrap w-full justify-around items-center gap-2">
 
                 <p class="w-full sm:w-fit">
