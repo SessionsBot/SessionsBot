@@ -7,7 +7,7 @@ const createLog = useLogger();
 
 /** Event - Guild has removed Sessions Bot */
 export default {
-    name: Events.GuildCreate,
+    name: Events.GuildDelete,
     async execute(guild: Guild) {
         // Log removing guild - cloud:
         createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
