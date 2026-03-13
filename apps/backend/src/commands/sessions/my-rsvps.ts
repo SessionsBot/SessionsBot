@@ -76,7 +76,7 @@ export default {
 
             // FREE PLAN - Add Watermark:
             if (guildSubscription.limits.SHOW_WATERMARK) {
-                msgBuild.components.push(defaultFooterText())
+                msgBuild.components.push(defaultFooterText({ lightFont: true }))
             }
 
             // Send My Sessions Response:

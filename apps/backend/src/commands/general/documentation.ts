@@ -45,7 +45,7 @@ export default {
             if (subscription.limits.SHOW_WATERMARK) {
                 responseMsg.components.push(
                     new SeparatorBuilder(),
-                    defaultFooterText({ showHelpLink: true })
+                    defaultFooterText({ showHelpLink: true, lightFont: true })
                 )
             }
 

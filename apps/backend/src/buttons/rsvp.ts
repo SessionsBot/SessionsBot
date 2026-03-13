@@ -190,7 +190,10 @@ export default {
 
         // If SHOW WATERMARK - Add to Response:
         if (guildSubscription.limits.SHOW_WATERMARK) {
-            responseContent.components.push(defaultFooterText({ showHelpLink: true }))
+            responseContent.components.push(
+                new SeparatorBuilder(),
+                defaultFooterText({ lightFont: true })
+            )
         }
 
         return await i.editReply({
