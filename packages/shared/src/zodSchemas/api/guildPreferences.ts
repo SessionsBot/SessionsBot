@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const API_GuildPreferencesDefaults = {
-    accent_color: '#7332c7',
+    accent_color: '#6960e6',
     public_sessions: true,
     calendar_button: true,
     thread_message_title: "📅 Sessions - %day_sm%",
