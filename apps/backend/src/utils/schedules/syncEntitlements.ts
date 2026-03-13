@@ -7,7 +7,7 @@ import { updateEntitlementToDatabase } from "../bot/entitlements";
 import { supabase } from "../database/supabase";
 import { DateTime } from "luxon";
 
-const createLog = useLogger('[Data Sync Schedule]:').for('Entitlements')
+const createLog = useLogger('[Entitlements Synchronization]:').for('Schedule')
 
 export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
 

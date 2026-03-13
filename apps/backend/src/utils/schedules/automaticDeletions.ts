@@ -24,7 +24,7 @@ export function initializeDataDeletionSchedule() {
     cron.schedule('30 22 * * *', async () => {
         try {
             // Debug & Vars:
-            if (debug) createLog.for('Schedule').info(`🗑 - Started Automatic Deletion Process - At: ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')}`)
+            if (debug) createLog.for('Schedule').info(`[🗑 Auto Data Deletion]: Process started at ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')}`)
             const { botClient: bot } = core
 
             // Process Data Deletion Requests:
@@ -32,14 +32,14 @@ export function initializeDataDeletionSchedule() {
                 .eq('status', 'pending')
             if (deletionRequestsERR) {
                 // Log Error - Proceed:
-                createLog.for('Schedule').error('FAILED to fetch deletion requests! - Will NOT be processed..', { error: deletionRequestsERR })
+                createLog.for('Schedule').error('[🗑 Auto Data Deletion - DELETION REQUESTS]: FAILED to fetch deletion requests! - Will NOT be processed..', { error: deletionRequestsERR })
             } else for (const deletionReq of deletionRequests) {
                 // Log & Set as processing:
-                createLog.for('Database').info(`(!)[DATA DELETION REQUEST]: Processing a pending data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
+                createLog.for('Database').info(`(!)[🗑 DATA DELETION REQUEST]: Processing a pending data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
                 const { error: updateErr } = await supabase.from('deletion_requests').update({
                     status: 'processing'
                 }).eq('id', deletionReq?.id)
-                if (updateErr) createLog.for('Database').warn('(!) Failed to mark a deletion request as "processing"?', { deletionReqId: deletionReq?.id, updateErr })
+                if (updateErr) createLog.for('Database').warn('(!)[🗑 DATA DELETION REQUEST]: Failed to mark a deletion request as "processing"?', { deletionReqId: deletionReq?.id, updateErr })
                 // Parse request:
                 const deletingUserData = deletionReq.delete_user
                 const deletingGuildData = deletionReq.delete_guild
@@ -47,7 +47,7 @@ export function initializeDataDeletionSchedule() {
                 const deletionUserId = deletionReq.user_id
                 // Delete Guild Data (if applicable):
                 if (deletingGuildData) {
-                    if (!deletionGuildIds?.length) createLog.for('Database').warn('(!) Failed to delete an "empty array" of guild ids!?', { deletionReq })
+                    if (!deletionGuildIds?.length) createLog.for('Database').warn('(!)[🗑 DATA DELETION REQUEST]: Failed to delete an "empty array" of guild ids!?', { deletionReq })
                     else for (const guildId of deletionGuildIds) {
                         // Delete each guild by id
                         const { error: guildDeletionErr } = await supabase.from('guilds').delete()
@@ -60,40 +60,40 @@ export function initializeDataDeletionSchedule() {
                             await guild?.leave()
                         } catch (err) {
                             if (err instanceof DiscordAPIError && err.code == 10004) {
-                                createLog.for('Database').info('(i) Guild has already removed bot for deletion request...', { deletionReq, err })
+                                createLog.for('Database').info('(i)[🗑 DATA DELETION REQUEST]: Guild has already removed bot for deletion request...', { deletionReq, err })
                             } else {
-                                createLog.for('Bot').error('(!) Failed to remove the bot from a deletion requested guild!', { guildId, err })
+                                createLog.for('Bot').error('(!)[🗑 DATA DELETION REQUEST]: Failed to remove the bot from a deletion requested guild!', { guildId, err })
                             }
                         }
                     }
                 }
                 // Delete User Data (if applicable):
                 if (deletingUserData) {
-                    if (!deletionUserId) createLog.for('Database').error('(!) Failed to delete user data for an unprovided "userId"!?', { deletionReq })
+                    if (!deletionUserId) createLog.for('Database').error('(!)[🗑 DATA DELETION REQUEST]: Failed to delete user data for an unprovided "userId"!?', { deletionReq })
                     else {
                         const { data: userProfile, error: profileErr } = await supabase.from('profiles')
                             .select('*')
                             .eq('discord_id', deletionUserId)
                             .single()
-                        if (profileErr) createLog.for('Database').error('(!) Failed to delete user data - Error fetching user profile!', { deletionReq, err: profileErr })
+                        if (profileErr) createLog.for('Database').error('(!)[🗑 DATA DELETION REQUEST]: Failed to delete user data - Error fetching user profile!', { deletionReq, err: profileErr })
                         else {
                             // Delete user in auth:
                             const { error: authErr } = await supabase.auth.admin.deleteUser(userProfile?.id)
-                            if (authErr) createLog.for('Database').error(`[DATA DELETION REQUEST]: Failed to delete an auth user from deletion request!`, { deletionReq, err: authErr })
+                            if (authErr) createLog.for('Database').error(`(!)[🗑 DATA DELETION REQUEST]: Failed to delete an auth user from deletion request!`, { deletionReq, err: authErr })
                             // Delete user profile row:
                             const { error: profileErr } = await supabase.from('profiles').delete()
                                 .eq('id', userProfile.id)
-                            if (profileErr) createLog.for('Database').error(`[DATA DELETION REQUEST]: Failed to delete a profile row for user from deletion request!`, { deletionReq, err: profileErr })
+                            if (profileErr) createLog.for('Database').error(`(!)[🗑 DATA DELETION REQUEST]: Failed to delete a profile row for user from deletion request!`, { deletionReq, err: profileErr })
                         }
                     }
                 }
 
                 // Log & Set as "Completed":
-                createLog.for('Database').info(`(✔)[DATA DELETION REQUEST]: Completed processing a data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
+                createLog.for('Database').info(`(✔)[🗑 DATA DELETION REQUEST]: Completed a data deletion request! -- (Request #: ${deletionReq?.id})`, { request: deletionReq })
                 const { error: updateErr2 } = await supabase.from('deletion_requests').update({
                     status: 'completed'
                 }).eq('id', deletionReq?.id)
-                if (updateErr2) createLog.for('Database').error('(!)[DATA DELETION REQUEST]: Failed to mark a deletion request as "completed"!', { deletionReq, err: updateErr2 })
+                if (updateErr2) createLog.for('Database').error('(!)[🗑 DATA DELETION REQUEST]: Failed to mark a deletion request as "completed"!', { deletionReq, err: updateErr2 })
             }
 
             // Load All Premium & Enterprise Owner Server IDs:
@@ -158,7 +158,7 @@ export function initializeDataDeletionSchedule() {
                 // Parse Results
                 const [free, premium, enterprise] = results.map((r, i) => {
                     if (r.status === 'fulfilled') return r.value.count
-                    createLog.for('Database').error(`FAILED Auto Delete - Sessions - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
+                    createLog.for('Database').error(`[🗑 Auto Data Deletion]: FAILED to delete! - Sessions - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
                     return 'ERROR'
                 })
 
@@ -176,7 +176,7 @@ export function initializeDataDeletionSchedule() {
 
                 // If failure:
                 if (error)
-                    createLog.for('Schedule').error('FAILED Auto Delete - Session Templates!', { error, count })
+                    createLog.for('Schedule').error('[🗑 Auto Data Deletion]: FAILED to delete! - Session Templates!', { error, count })
 
                 return { total: count }
             }
@@ -209,7 +209,7 @@ export function initializeDataDeletionSchedule() {
                 // Parse Results
                 const [free, premium, enterprise] = results.map((r, i) => {
                     if (r.status === 'fulfilled') return r.value.count
-                    createLog.for('Database').error(`FAILED Auto Delete - Audit Logs - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
+                    createLog.for('Database').error(`[🗑 Auto Data Deletion]: FAILED to delete! - Audit Logs - for batch ${i}`, { details: r.status === 'rejected' ? r.reason : r })
                     return 'ERROR'
                 })
 
@@ -219,12 +219,13 @@ export function initializeDataDeletionSchedule() {
 
             // Log Results:
             if (debug) {
-                createLog.for('Schedule').info(`✅ Automatic Deletion Schedule Succeeded - At: ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')} - See Details...`, {
+                createLog.for('Schedule').info(`(✔)[🗑 Auto Data Deletion]: Deletion Schedule Succeeded - At: ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')} - See Details...`, {
                     deletion_counts: {
                         sessions: deletedSessions,
                         audit_events: deletedAuditEvents,
                         deletedSessionTemplates
-                    }
+                    },
+                    processed_deletion_requests: deletionRequests?.length
                 })
             }
 
@@ -233,7 +234,7 @@ export function initializeDataDeletionSchedule() {
             return 'Succeeded - Automatic Data Deletion!'
         } catch (err) {
             // Log & Return Error:
-            createLog.for('Schedule').error('AUTO DATA DELETION - ERROR! - See Details...', { error: err })
+            createLog.for('Schedule').error('[🗑 Auto Data Deletion]: - ERROR! - See Details...', { error: err })
             return 'Failed - See Logs!'
         }
     }, {
