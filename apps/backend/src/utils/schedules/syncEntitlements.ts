@@ -7,7 +7,11 @@ import { updateEntitlementToDatabase } from "../bot/entitlements";
 import { supabase } from "../database/supabase";
 import { DateTime } from "luxon";
 
-const createLog = useLogger('[Entitlements Synchronization]:').for('Schedule')
+const createLog = useLogger('[Entitlements Synchronization]:').for('Schedule');
+const devGuildIds = [
+    process.env?.['GUILD_ID_DEVELOPMENT'],
+    '593097033368338435'
+]
 
 export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
 
@@ -33,6 +37,7 @@ export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
 
                 // Update Each SKU to Database:
                 for (const e of results) {
+
                     // Util: Entitlement Active Bool:
                     const isActive = () => {
                         if (e.consumed || e.deleted) return false
@@ -42,6 +47,11 @@ export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
                     // Util: Entitlement Test/Dev Bool:
                     const isTest = () => (!e.starts_at && !e.ends_at) || (e.type == EntitlementType.TestModePurchase)
 
+                    if (devGuildIds?.includes(e?.guild_id) && !isActive()) {
+                        // Skip True Dev Testing Entitlement(s):
+                        continue
+                    }
+
                     // Save to Database:
                     const { error } = await supabase.from('entitlements').upsert({
                         id: e?.id,
@@ -50,7 +60,8 @@ export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
                         starts_at: e?.starts_at,
                         ends_at: e?.ends_at,
                         is_active: isActive(),
-                        is_test: isTest()
+                        is_test: isTest(),
+                        created_at: e?.['fulfilled_at'] || undefined
                     })
 
                     if (error) {
