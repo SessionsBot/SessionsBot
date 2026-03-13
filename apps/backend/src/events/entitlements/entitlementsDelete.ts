@@ -1,8 +1,6 @@
 import { Entitlement, Events } from "discord.js";
 import discordLog from "../../utils/logs/discord.js";
 import { useLogger } from "../../utils/logs/logtail.js";
-import { supabase } from "../../utils/database/supabase.js";
-import { DateTime } from "luxon";
 import { updateEntitlementToDatabase } from "../../utils/bot/entitlements.js";
 
 const createLog = useLogger();

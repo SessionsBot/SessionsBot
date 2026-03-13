@@ -80,9 +80,9 @@ for (const filePath of eventFiles) {
 	};
 	const { default: event } = await import(pathToFileURL(filePath).href);
 	if (event?.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+		client.once(event?.name, (...args) => event?.execute(...args));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+		client.on(event?.name, (...args) => event?.execute(...args));
 	}
 }
 
