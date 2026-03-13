@@ -67,7 +67,7 @@ logtail.use(async (log) => {
  * const createLog = useLogger();
  * // Usage Example:
  * createLog.for('Database').info('This is a log message!', {extra: any}) */
-export function useLogger() {
+export function useLogger(leading?: string) {
     return {
 
         /** Creates a new log within a specified category. */
@@ -75,8 +75,11 @@ export function useLogger() {
             /** The category to create a new log for. */
             category: categoryName
         ) => {
+            // Log Category Title:
             const logTitle = `${LogCategories[category].emoji} ${LogCategories[category].name}`
-            // Get Log Payload:
+            // Log Message Content:
+            const logMsg = (msg: string) => leading ? leading + ' ' + msg : msg;
+            // Log Context Payload:
             const payload = (extra: any) => {
                 return {
                     ...extra,
@@ -86,13 +89,13 @@ export function useLogger() {
             // Return Static Log Save Functions:
             return {
                 /** Creates an `Info` level log. */
-                info: (msg: string, extra?: LogMeta) => logtail.info(`[${logTitle}] - ${msg}`, payload(extra)),
+                info: (msg: string, extra?: LogMeta) => logtail.info(`[${logTitle}] - ${logMsg(msg)}`, payload(extra)),
                 /** Creates a `Debug` level log. */
-                debug: (msg: string, extra?: LogMeta) => logtail.debug(`[${logTitle}] - ${msg}`, payload(extra)),
+                debug: (msg: string, extra?: LogMeta) => logtail.debug(`[${logTitle}] - ${logMsg(msg)}`, payload(extra)),
                 /** Creates a `Warning` level log. */
-                warn: (msg: string, extra?: LogMeta) => logtail.warn(`[${logTitle}] - ${msg}`, payload(extra)),
+                warn: (msg: string, extra?: LogMeta) => logtail.warn(`[${logTitle}] - ${logMsg(msg)}`, payload(extra)),
                 /** Creates an `Error` level log. */
-                error: (msg: string, extra?: LogMeta) => logtail.error(`[${logTitle}] - ${msg}`, payload(extra)),
+                error: (msg: string, extra?: LogMeta) => logtail.error(`[${logTitle}] - ${logMsg(msg)}`, payload(extra)),
             }
         },
 
