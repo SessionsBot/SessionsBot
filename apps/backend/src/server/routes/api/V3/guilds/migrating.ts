@@ -11,82 +11,54 @@ import z, { treeifyError } from 'zod'
 const migratingRouter = express.Router({ mergeParams: true })
 const createdLog = useLogger();
 
-// POST - Update/Confirm Migrating Templates/Schedules:
+// PATCH - Update/Confirm Migrating Templates/Schedules:
 // URL: https://api.sessionsbot.fyi/guilds/:guildId/migrating/schedules
-migratingRouter.post('/schedules', verifyToken, verifyGuildMember(true), async (req, res) => {
+migratingRouter.patch('/schedules', verifyToken, verifyGuildMember(true), async (req, res) => {
     const guildId = String(req?.params?.guildId)
     const userId = req?.auth?.profile?.discord_id
     try {
-        const bodyData: API_SessionTemplateBodyInterface[] = req?.body
-        const bodyIds = bodyData?.map(t => t?.id);
+        const bodyData: API_SessionTemplateBodyInterface = req?.body?.data
+        if (!bodyData) return new Reply(res).failure(`Missing body data for confirming migrating session!`, HttpStatusCode.BadRequest)
 
-        // Confirm Ids Exist as Templates:
+        // Confirm Id Exists as Migrating Templates:
         const { data, error } = await supabase.from('migrating_templates').select('*')
             .eq('guild_id', guildId)
-            .in('id', bodyIds)
-        if (error || !data?.length) {
+            .eq('id', bodyData?.id)
+            .single()
+        if (error || !data) {
             // Log & Return Error:
-            createdLog.for('Api').error(`FAILED / POST - Fetching migrating templates! -- GuildId: ${guildId}`, { guildId, userId, err: error, body: req?.body })
-            return new Reply(res).failure(`FAILED / POST - Fetching migrating templates - Contact Support if this continues...`)
-        } if (data?.length != bodyIds?.length) {
-            const foundIds = data?.map(d => d?.id)
-            return new Reply(res).failure({ message: `1 or more template ids is invalid!`, invalidIds: bodyIds?.filter(id => !foundIds?.includes(id)) }, HttpStatusCode.BadRequest)
+            createdLog.for('Api').error(`FAILED / POST - Fetching migrating template! -- GuildId: ${guildId}`, { guildId, userId, err: error, body: req?.body })
+            return new Reply(res).failure(`FAILED / POST - Fetching migrating template - Contact Support if this continues...`)
         }
 
-        // Validate Each Schedule AS NEW:
-        const succeededSchs = new Map<string, API_SessionTemplateBodyInterface>()
-        const failedSchs = new Map<string, { value: API_SessionTemplateBodyInterface, input_errors?: any, reason?: any } & { [x: string]: any }>()
-        await Promise.all(
-            bodyData.map(async (d) => {
-                // Validate Migrating Schedule Data:
-                const validation = API_SessionTemplateBodySchema.safeParse(d)
-                if (!validation?.success) {
-                    // Template Data Invalid:
-                    failedSchs.set(d?.id, {
-                        value: d,
-                        input_errors: treeifyError(validation.error)?.properties
-                    })
-                } else {
-                    // Migrating Data Valid -- Save as New Template:
-                    const v = validation.data
-                    const { error: saveErr } = await supabase.from('session_templates').upsert({
-                        ...v
-                    })
-                    if (saveErr) {
-                        // Failed Saving New Template:
-                        createdLog.for('Database').error(`Failed to save a migrating template as NEW!`, { guildId, userId, saveErr, t: d })
-                        return failedSchs.set(v?.id, {
-                            value: v,
-                            reason: 'Failed to save to "session_templates"!'
-                        })
-                    }
-                    // Delete "Migrating Template":
-                    const { error: deleteERR } = await supabase.from('migrating_templates').delete()
-                        .eq('id', v?.id)
-                    if (deleteERR) {
-                        // Failed Deleting Migrating Template:
-                        createdLog.for('Database').error(`Failed to delete a migrating template!`, { guildId, userId, deleteERR, id: d?.id })
-                        return failedSchs.set(v?.id, {
-                            value: v,
-                            reason: 'Failed to delete from "migrating_templates"!'
-                        })
-                    } else return succeededSchs.set(v?.id, v)
-                }
+        // Validate Migrating Schedule Data:
+        const validation = API_SessionTemplateBodySchema.safeParse(bodyData)
+        if (!validation?.success) {
+            // Template Data Invalid:
+            return new Reply(res).failure({ message: `Invalid Fields - Bad Request: Verify Session/Schedule data input fields and try again!`, errors: treeifyError(validation.error)?.properties }, HttpStatusCode.BadRequest)
+        } else {
+            // Migrating Data Valid -- Save as New Template:
+            const v = validation.data
+            const { error: saveErr } = await supabase.from('session_templates').upsert({
+                ...v
             })
-        )
+            if (saveErr) {
+                // Failed Saving New Template:
+                createdLog.for('Database').error(`Failed to save a migrating template as NEW!`, { guildId, userId, saveErr, data: v })
+                return new Reply(res).failure({ message: `Internal Error: Failed to save new schedule to database!` })
+            }
+            // Delete "Migrating Template":
+            const { error: deleteErr } = await supabase.from('migrating_templates').delete()
+                .eq('id', v?.id)
+            if (deleteErr) {
+                // Failed Deleting Migrating Template:
+                createdLog.for('Database').error(`Failed to delete a migrating template!`, { guildId, userId, deleteErr, deletionId: v?.id })
+                return new Reply(res).failure({ message: `Internal Error: Failed to delete old migrating schedule from database!` })
+            }
 
-        // Send Result Response:
-        const hadFailures = failedSchs?.size > 0
-        return new Reply(res).success({
-            had_failures: hadFailures,
-            succeeded: Object.fromEntries(succeededSchs),
-            failed: failedSchs?.size
-                ? Object.fromEntries(failedSchs)
-                : undefined
-        }, hadFailures
-            ? HttpStatusCode.MultiStatus
-            : HttpStatusCode.Ok
-        )
+            // Return Success:
+            return new Reply(res).success(`Saved new schedule from migrating template! - Id: ${validation?.data?.id}`)
+        }
 
     } catch (err) {
         // Log & Return Error:

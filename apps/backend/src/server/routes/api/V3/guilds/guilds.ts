@@ -101,7 +101,7 @@ guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
 guildsRouter.use('/:guildId/preferences', guildPreferencesRouter)
 
 // Migrating Templates - Endpoints:
-migratingRouter.use(`/:guildId/migrating`)
+guildsRouter.use(`/:guildId/migrating`, migratingRouter)
 
 
 // Export Router:

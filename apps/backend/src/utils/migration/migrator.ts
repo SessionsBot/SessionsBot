@@ -10,6 +10,8 @@ const { RRule, datetime } = rrulePkg
 
 const debugAll = false
 
+const testSaveGuildId = '593097033368338435'
+
 
 type SESSION_TEMPLATE = Database['public']['Tables']['session_templates']['Row']
 interface RSVP_DATA {
@@ -42,6 +44,9 @@ export async function testMigrator() {
 
     // For Each Guild:
     for (const guildDoc of guilds) {
+
+        if (guildDoc.id != testSaveGuildId) continue
+
         // Guild Vars:
         const guildData = guildDoc?.data()
         if (!guildData) { console.warn('No data for guild doc:', guildDoc?.id); continue }
@@ -70,7 +75,7 @@ export async function testMigrator() {
 
         }[] = guildData?.sessionSchedules
 
-        // Guils Session Signup Config:
+        // Guilds Session Signup Config:
         const guildSignupConfig: {
             dailySignupPostTime: {
                 hours: number,
@@ -138,15 +143,16 @@ export async function testMigrator() {
                 }
 
                 // Get RRule "days of week" from Firebase:
-                const daysOfWkFromFb = (weekdaysFB: string[]) => {
+                const daysOfWkFromFb = () => {
                     let wds: rrulePkg.ByWeekday[] = [];
-                    if (weekdaysFB?.includes('sunday')) wds.push(RRule.SU);
-                    if (weekdaysFB?.includes('monday')) wds.push(RRule.MO);
-                    if (weekdaysFB?.includes('tuesday')) wds.push(RRule.TU);
-                    if (weekdaysFB?.includes('wednesday')) wds.push(RRule.WE);
-                    if (weekdaysFB?.includes('thursday')) wds.push(RRule.TH);
-                    if (weekdaysFB?.includes('friday')) wds.push(RRule.FR);
-                    if (weekdaysFB?.includes('saturday')) wds.push(RRule.SA);
+                    if (!sch?.daysOfWeek) return [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
+                    if (sch.daysOfWeek?.includes('sunday')) wds.push(RRule.SU);
+                    if (sch.daysOfWeek?.includes('monday')) wds.push(RRule.MO);
+                    if (sch.daysOfWeek?.includes('tuesday')) wds.push(RRule.TU);
+                    if (sch.daysOfWeek?.includes('wednesday')) wds.push(RRule.WE);
+                    if (sch.daysOfWeek?.includes('thursday')) wds.push(RRule.TH);
+                    if (sch.daysOfWeek?.includes('friday')) wds.push(RRule.FR);
+                    if (sch.daysOfWeek?.includes('saturday')) wds.push(RRule.SA);
                     return wds
                 }
 
@@ -154,7 +160,7 @@ export async function testMigrator() {
                 const schRRule = new RRule({
                     freq: RRule.WEEKLY,
                     interval: 1,
-                    byweekday: daysOfWkFromFb(sch?.daysOfWeek),
+                    byweekday: daysOfWkFromFb(),
                     dtstart: datetime(startInZone.year, startInZone.month, startInZone.day, startInZone.hour, startInZone.minute, 0),
                     tzid: guildTimeZone
                 })
@@ -185,8 +191,9 @@ export async function testMigrator() {
         }
         if (debugAll) console.info(`------- END GUILD -------`)
 
-        // Actualy Save - Test Guilds:
-        const testSaveGuildId = '593097033368338435'
+
+
+        // Actually Save - Test Guilds:
         if (guildDoc?.id == testSaveGuildId) {
 
             // Use Prod Bot Client
@@ -205,6 +212,12 @@ export async function testMigrator() {
                 owner_id: guild?.owner_id
             }).single()
             if (guildERR) console.warn('FAILED SAVING TEST GUILD', guildERR)
+
+            // Save Test Guild Stats Row
+            const { data: guildStatsData, error: guildStatsERR } = await supabase.from('guild_stats').upsert({
+                guild_id: newGuildSave?.id
+            }).single()
+            if (guildERR) console.warn('FAILED SAVING TEST GUILD STATS', guildStatsERR)
 
             // Save Test Guild Migrating Tempalte Rows:
             const { data: templatesData, error: templatesERR } = await supabase.from('migrating_templates')
@@ -225,7 +238,7 @@ export async function testMigrator() {
 
 export async function clearMigrationTests() {
 
-    const delete_guild_ids = ['1420496963782053910']
+    const delete_guild_ids = ['1420496963782053910', '593097033368338435']
 
     const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
         .in('guild_id', delete_guild_ids)
