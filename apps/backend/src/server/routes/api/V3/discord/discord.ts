@@ -95,15 +95,38 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
         // Save to cache
         selfIdentity_Cache.set(userId, userIdentity)
 
-        // SYNCHRONOUSLY - Update User Profile:
-        void supabase.from('profiles').update({
-            username: userData?.user?.username,
-            email: userData?.user?.email,
-            manageable_guild_ids: userData?.guilds?.manageable?.map(g => g?.id) || []
-        }).then(({ error: updateERR }) => {
-            // Error Updating Profile:
-            createLog.for('Api').error(`[SELF IDENTITY]: Failed to update user profile!`, { userId: req?.auth?.profile?.discord_id, error: updateERR })
-        })
+        // Detect Changes to Profile's Manageable Guilds:
+        const onFile = req?.auth?.profile?.manageable_guild_ids || []
+        const fresh = userData?.guilds?.manageable?.map(g => g?.id) || []
+        const hasChanges = () => {
+            if (onFile.length != fresh.length) return true;
+            // Save has extra (now un-manageable) ids:
+            const extraIds = onFile.filter(id => !fresh.includes(id))
+            if (extraIds?.length) return true
+            // Save is missing (newly manageable) ids:
+            const missingIds = fresh.filter(id => !onFile.includes(id))
+            if (missingIds?.length) return true
+            // ALSO: Check for username / email changes:
+            if (
+                userData?.user?.username != req?.auth?.profile?.username
+                || userData?.user?.email != req?.auth?.profile?.email
+            ) return true;
+            return false // no changes - no db update(s)
+        }
+
+        // SYNCHRONOUSLY - Update User Profile - IF CHANGES from current db save:
+        if (hasChanges()) {
+            void supabase.from('profiles').update({
+                username: userData?.user?.username,
+                email: userData?.user?.email,
+                manageable_guild_ids: userData?.guilds?.manageable?.map(g => g?.id) || []
+            })
+                .eq('id', req?.auth?.profile?.id)
+                .then(({ error: updateERR }) => {
+                    // Error Updating Profile:
+                    createLog.for('Api').error(`[SELF IDENTITY]: Failed to update user profile!`, { userId: req?.auth?.profile?.discord_id, error: updateERR })
+                })
+        }
 
         // Return "Fresh" User Identity:
         return new Reply(res).success(userIdentity)
