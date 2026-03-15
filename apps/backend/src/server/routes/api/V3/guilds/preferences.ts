@@ -15,7 +15,7 @@ const createLog = useLogger();
 
 
 // PATCH - Update Guild Preferences Endpoint:
-// URL: https://api-host.fyi/guilds/:guildId/preferences
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/preferences
 preferencesRouter.patch('/', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse Req:

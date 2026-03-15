@@ -11,11 +11,13 @@ import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/re
 import { getGuildEntitlementsFromId } from "../../../../../utils/bot/entitlements.js";
 import guildPreferencesRouter from "./preferences.js";
 import sessionRouter from "./sessions/sessions.js";
+import migratingRouter from "./migrating.js";
 
 const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();
 
 // GET/FETCH - Guild Channels:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/channels
 guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
@@ -44,6 +46,7 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), asy
 
 
 // GET/FETCH - Guild Roles:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/roles
 guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
@@ -63,6 +66,7 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async 
 
 
 // GET/FETCH - Guild Subscription:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/subscription
 guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
@@ -95,6 +99,9 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true),
 guildsRouter.use(`/:guildId/sessions`, sessionRouter);
 guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
 guildsRouter.use('/:guildId/preferences', guildPreferencesRouter)
+
+// Migrating Templates - Endpoints:
+migratingRouter.use(`/:guildId/migrating`)
 
 
 // Export Router:

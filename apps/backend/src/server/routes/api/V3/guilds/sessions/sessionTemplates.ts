@@ -12,11 +12,12 @@ import { createAuditLog } from '../../../../../../utils/database/auditLog';
 const createLog = useLogger();
 
 // Create Router:
-// path: `API_ROOT/api/guilds/:guildId/sessions/templates`;
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates
 const sessionTemplatesRouter = express.Router({ mergeParams: true });
 
 
 // POST - Create New Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/
 sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
@@ -61,6 +62,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
 
 
 // PATCH - Edit Existing Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/
 sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
@@ -110,6 +112,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
 
 
 // DELETE - Delete Existing Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/:templateId
 sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
