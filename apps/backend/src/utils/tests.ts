@@ -22,7 +22,7 @@ export default {
                 // console.log(await sendUpgradeAlert('start', guildId))
                 // console.log(await sendUpgradeAlert('completed', guildId))
 
-                // await clearMigrationTests()
+                await clearMigrationTests()
 
                 // await testMigrator()
 

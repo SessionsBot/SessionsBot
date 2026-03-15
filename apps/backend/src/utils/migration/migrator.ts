@@ -10,7 +10,8 @@ const { RRule, datetime } = rrulePkg
 
 const debugAll = false
 
-const testSaveGuildId = '593097033368338435'
+const save_guild_ids = ['593097033368338435']
+const delete_guild_ids = ['1420496963782053910', '593097033368338435']
 
 
 type SESSION_TEMPLATE = Database['public']['Tables']['session_templates']['Row']
@@ -45,7 +46,7 @@ export async function testMigrator() {
     // For Each Guild:
     for (const guildDoc of guilds) {
 
-        if (guildDoc.id != testSaveGuildId) continue
+        if (!save_guild_ids?.includes(guildDoc?.id)) continue
 
         // Guild Vars:
         const guildData = guildDoc?.data()
@@ -194,13 +195,13 @@ export async function testMigrator() {
 
 
         // Actually Save - Test Guilds:
-        if (guildDoc?.id == testSaveGuildId) {
+        if (save_guild_ids?.includes(guildDoc?.id)) {
 
             // Use Prod Bot Client
             const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
 
             const guild: APIGuild = await rest.get(
-                Routes.guild(testSaveGuildId)
+                Routes.guild(guildDoc?.id)
             ) as any;
 
             console.log(`fetched guild FROM PROD CLIENT! --- ${guild?.name}`)
@@ -237,9 +238,6 @@ export async function testMigrator() {
 
 
 export async function clearMigrationTests() {
-
-    const delete_guild_ids = ['1420496963782053910', '593097033368338435']
-
     const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
         .in('guild_id', delete_guild_ids)
     console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })

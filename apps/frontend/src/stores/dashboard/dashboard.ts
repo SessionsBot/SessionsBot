@@ -590,6 +590,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         discordIdentities,
         sessionForm,
     }
+
 })
 
 export default useDashboardStore;
