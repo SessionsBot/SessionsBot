@@ -30,7 +30,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         const { data: userProfile, error: fetchProfileErr } = await supabase.from('profiles').select('*').eq('id', authUser?.id).maybeSingle()
         if (fetchProfileErr) {
             // Log & Return Error:
-            createLog.for('Api').error('🔑 - Token Verification - Profile Fetch Error!', { err: fetchProfileErr, userId: authUser?.app_metadata?.id });
+            createLog.for('Api').error('🔑 - Token Verification - Profile Fetch Error!', { err: fetchProfileErr, uid: authUser?.id });
             return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
         }
         if (!userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);

@@ -47,8 +47,9 @@ export const verifyGuildMember = (requireAdmin: boolean) => {
                 err,
                 userId: req?.auth?.user?.id,
                 guildId: String(req?.params?.guildId),
-                username: req?.auth?.user?.app_metadata?.username,
-                userGuildsMeta: req?.auth?.user?.app_metadata?.guilds?.all,
+                username: req?.auth?.profile?.username,
+                manageableGuildIds: req?.auth?.profile?.manageable_guild_ids,
+                requireAdmin,
                 route: req.originalUrl
             });
             return new APIResponse(res).failure(`Internal Error - Failed to confirm guild membership/permissions for user! - Guild: ${req?.params?.guildId}`);
