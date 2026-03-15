@@ -5,7 +5,5 @@ private*
 *.tsbuildinfo
 
 
-apps/backend/src/*/migration
-
 apps/**/cache
 **/dist

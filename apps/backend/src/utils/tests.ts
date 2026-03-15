@@ -5,7 +5,7 @@ import discordLog from "./logs/discord.js";
 import { initializeTemplateCreationScheduler } from "./schedules/templateCreations.js";
 import sendWithFallback from "./bot/messages/sendWithFallback.js";
 import { defaultFooterText, genericErrorMsg } from "./bot/messages/basic.js";
-import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder, MessageFlags } from "discord.js";
 import { URLS } from "./core/urls.js";
 import { increaseGuildStat } from "./database/manager/statsManager.js";
 import { initializeDataDeletionSchedule } from "./schedules/automaticDeletions.js";
@@ -13,6 +13,8 @@ import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } f
 import dbManager from "./database/manager/dbManager.js";
 import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
 import { getEventImage } from "./bot/messages/images/eventImages.js";
+import { sendUpgradeAlert, upgradeCompleteMessage, upgradeStartingMessage } from "./migration/alerts.js";
+import { clearMigrationTests, testMigrator } from "./migration/migrator.js";
 
 
 const createLog = useLogger();
@@ -30,6 +32,12 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
+                // console.log(await sendUpgradeAlert('start', guildId))
+                // console.log(await sendUpgradeAlert('completed', guildId))
+
+                // await clearMigrationTests()
+
+                // await testMigrator()
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

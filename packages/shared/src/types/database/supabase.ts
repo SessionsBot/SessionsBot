@@ -174,6 +174,89 @@ export type Database = {
         }
         Relationships: []
       }
+      migrating_templates: {
+        Row: {
+          channel_id: string
+          created_at: string
+          description: string | null
+          duration_ms: number | null
+          enabled: boolean
+          expires_at_utc: string | null
+          failure_count: number
+          guild_id: string
+          id: string
+          last_fail_at: string | null
+          last_post_utc: string | null
+          mention_roles: string[] | null
+          native_events: boolean
+          next_post_utc: string | null
+          post_before_ms: number
+          post_in_thread: boolean
+          rrule: string | null
+          rsvps: Json | null
+          starts_at_utc: string
+          time_zone: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          description?: string | null
+          duration_ms?: number | null
+          enabled?: boolean
+          expires_at_utc?: string | null
+          failure_count?: number
+          guild_id: string
+          id?: string
+          last_fail_at?: string | null
+          last_post_utc?: string | null
+          mention_roles?: string[] | null
+          native_events?: boolean
+          next_post_utc?: string | null
+          post_before_ms: number
+          post_in_thread?: boolean
+          rrule?: string | null
+          rsvps?: Json | null
+          starts_at_utc: string
+          time_zone: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          description?: string | null
+          duration_ms?: number | null
+          enabled?: boolean
+          expires_at_utc?: string | null
+          failure_count?: number
+          guild_id?: string
+          id?: string
+          last_fail_at?: string | null
+          last_post_utc?: string | null
+          mention_roles?: string[] | null
+          native_events?: boolean
+          next_post_utc?: string | null
+          post_before_ms?: number
+          post_in_thread?: boolean
+          rrule?: string | null
+          rsvps?: Json | null
+          starts_at_utc?: string
+          time_zone?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migrating_templates_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
