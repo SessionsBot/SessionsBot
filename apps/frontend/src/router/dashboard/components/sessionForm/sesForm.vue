@@ -82,7 +82,7 @@
 
     /** Form Value Defaults - Factory Fn */
     function createFormDefaults() {
-        return {
+        return <Record<NewSessions_FieldNames, any>>{
             title: '',
             description: '',
             url: '',
@@ -346,6 +346,9 @@
 
         // Open Form:
         sessionsFormVisible.value = true;
+
+        // Validate Form:
+        validateFields(Array.from(Object.keys(formValues.value)) as any)
     }
 
     /** Starts/Creates a "Duplicate" from an Editing Session */
@@ -626,6 +629,19 @@
                 } else throw r;
             }
 
+            // Process MIGRATING TEMPLATE Submissions:
+            if (formAction.value == 're-enable-migrating') {
+                bodyData.data.id = editingId.value;
+                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/migrating/schedules`, bodyData)
+                if (r.status < 300) {
+                    // Success! - Reset Form
+                    resetFrom();
+                    // Close Form
+                    sessionsFormVisible.value = false;
+                    dashboard.refetchData('migratingTemplates')
+                } else throw r;
+            }
+
 
             // Mark Submit Un-Busy:
             submitState.value = 'idle';
@@ -636,6 +652,11 @@
         } catch (err) {
             // Failed Session Form Submission
             console.error('Session Form - SUBMIT ERROR', err)
+            notifier.send({
+                level: 'error',
+                header: 'Failed Submission',
+                content: `It seems like there was an issue submitting the form. Confirm you're inputs and try again!`
+            })
         } finally {
             setTimeout(() => {
                 submitState.value = 'idle'
@@ -676,7 +697,7 @@
                             <p class="font-bold text-lg"> Edit Schedule </p>
                         </span>
                         <!-- Re Enable Schedule - Title -->
-                        <span v-if="formAction == 're-enable'"
+                        <span v-if="formAction == 're-enable' || formAction == 're-enable-migrating'"
                             class="flex flex-row gap-1.25 items-center content-center">
                             <Iconify icon="mynaui:tool" />
                             <p class="font-bold text-lg"> Re-Enable Schedule </p>
@@ -786,7 +807,8 @@
                                     <Layers2Icon :size="20" />
                                 </Button>
 
-                                <Button unstyled title="Delete" @click="startDeletionPrompt"
+                                <Button v-if="formAction != 're-enable-migrating'" unstyled title="Delete"
+                                    @click="startDeletionPrompt"
                                     class="aspect-square p-1 bg-[color-mix(in_oklab,var(--c-bg-3),black_10%)] hover:bg-red-400/50 cursor-pointer rounded-md active:bg-red-400/50 active:scale-95 transition-all">
                                     <Trash2Icon :size="20" />
                                 </Button>

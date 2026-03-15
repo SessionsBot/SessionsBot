@@ -1,6 +1,6 @@
 import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordGuildIdentity, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
-import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates } from "./dashboard.api";
+import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates, fetchMigratingTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
@@ -77,6 +77,13 @@ const useDashboardStore = defineStore('dashboard', () => {
             immediate: false,
             resetOnExecute: false,
             onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Migrating Templates *(temporary)* */
+        migratingTemplates: useAsyncState(() => fetchMigratingTemplates(guildId.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD MIGRATING TEMPLATES] - Fetch Error:', e) },
         })
     }
 
@@ -90,11 +97,11 @@ const useDashboardStore = defineStore('dashboard', () => {
             return Object.values(guildData).every(s => s?.isReady.value == true)
         }),
         initialFetchOk: ref(false),
+        fetchedAt: ref<DateTime | null>(null),
         errors: computed(() => {
             if (guildId.value == null) return []
             return Object.values(guildData).filter(s => s?.error.value != null)?.map(s => s?.error.value)
-        }),
-        fetchedAt: ref<DateTime | null>(null)
+        })
     }
 
     async function refetchData(data: keyof typeof guildData) {
@@ -257,7 +264,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         const visible = ref(false)
 
         /** The current 'action' the session form will perform */
-        const actionMode = ref<'new' | 'edit' | 're-enable'>('new');
+        const actionMode = ref<'new' | 'edit' | 're-enable' | 're-enable-migrating'>('new');
 
         /** Current session (template) payload/data for editing. */
         const editPayload = ref<API_SessionTemplateBodyInterface | null>(null)

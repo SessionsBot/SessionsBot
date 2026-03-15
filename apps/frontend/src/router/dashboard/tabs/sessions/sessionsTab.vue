@@ -5,6 +5,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import DisabledTemplateAlert from './cards/DisabledTemplateAlert.vue';
     import StatCard from './cards/StatCard.vue';
+    import MigratingTemplates from './cards/migratingTemplates.vue';
 
     // services:
     const dashboard = useDashboardStore();
@@ -54,6 +55,15 @@
 
             <!-- Disbanded Schedule(s) - Alert -->
             <DisabledTemplateAlert v-if="guildTemplates?.some(t => !t.enabled)" />
+
+            <!-- Col Wrap -->
+            <Transition name="fade">
+                <div v-if="dashboard.guildData.migratingTemplates?.state?.length"
+                    class="flex flex-center w-full flex-wrap">
+                    <!-- Migrating Templates - Alert/Card -->
+                    <MigratingTemplates />
+                </div>
+            </Transition>
 
             <!-- Current Sessions Card -->
             <CurrentSessions />

@@ -144,3 +144,20 @@ export async function fetchGuildAuditLog(guildId: string | null) {
         return Promise.reject({ message: `[!] Failed to Fetch - Guild Audit Log - DB ERROR`, error })
     }
 }
+
+
+// @temporary - Migrating Templates:
+export async function fetchMigratingTemplates(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('migrating_templates')
+        .select('*')
+        .eq('guild_id', guildId)
+    // Return Result:
+    if (!error) {
+        return data
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - DB ERROR`, error })
+    }
+}

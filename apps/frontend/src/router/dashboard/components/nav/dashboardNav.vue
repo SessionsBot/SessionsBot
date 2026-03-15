@@ -72,8 +72,8 @@
                 <template #default="{ togglePopOver }">
 
                     <Button unstyled @click="togglePopOver"
-                        class="bg-white/5 hover:bg-text-1/10 mx-2.5! ring-2 ring-ring-soft hover:ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
-                        :class="{ 'aspect-square': !navExpanded }">
+                        class="bg-white/5 w-[92%] hover:bg-text-1/10 mx-2.5! ring-2 ring-ring-soft hover:ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
+                        :class="{ 'aspect-square! w-fit!': !navExpanded }">
 
                         <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring-1"
                             :src="userGuildData?.icon || DiscordLogo" />

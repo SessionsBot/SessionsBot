@@ -8,13 +8,14 @@
     import InputTitle from '../../labels/inputTitle.vue';
     import InputErrors from '../../labels/inputErrors.vue';
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
+    import type useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
         validateField: (name: NewSessions_FieldNames) => void,
         validateFields: (fields: NewSessions_FieldNames[]) => void
-        formAction: 'edit' | 'new' | 're-enable'
+        formAction: ReturnType<typeof useDashboardStore>['sessionForm']['actionMode']
     }>();
     const { invalidFields, validateField, validateFields } = props;
 
