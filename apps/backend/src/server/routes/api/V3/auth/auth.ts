@@ -97,6 +97,7 @@ authRouter.get("/discord-callback", async (req, res) => {
 
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
+// @depreciated (?) - may no longer be needed with self identity endpoint - but was nice to "quietly extend session"
 authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
     try {
         // 1. Get Data/User from Req:

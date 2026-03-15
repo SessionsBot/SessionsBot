@@ -96,12 +96,15 @@ export const useAuthStore = defineStore('auth', {
                 const { status, data: { data: { fresh_token } } } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
                     headers: {
                         ['trigger-type']: triggerType
-                    }
+                    },
+                    timeout: 10_000,
+                    timeoutErrorMessage: 'API Timeout! - Refresh Auth Endpoint FAILED to respond within 10 secs...'
                 });
 
                 // Handle request response - Fetch new user data:
                 if (fresh_token) {
-                    await supabase.auth.setSession({
+                    console.info('REFRESH AUTH -- Received a fresh token!')
+                    const newSession = await supabase.auth.setSession({
                         access_token: fresh_token,
                         refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || 'null'
                     });
@@ -174,7 +177,7 @@ export const watchAuth = async () => {
                 throw { message: 'API Result Failure', api_result: result }
             } else {
                 store.identity = result.data.data as any;
-                if (debugAuth) console.info(`Fetched Discord Identity - @me`, store.identity)
+                if (debugAuth) console.info(`[👤 Auth]: Fetched Discord Identity - @me`, store.identity)
 
                 // Update Sentry User w/ Identity:
                 Sentry.setUser({
@@ -192,7 +195,7 @@ export const watchAuth = async () => {
                 level: 'error',
                 duration: false,
                 icon: 'tdesign:user-error-1-filled',
-                header: `Failed to load user identity!`,
+                header: `Failed to load account identity!`,
                 content: 'It seems we ran into an authentication error! <br><span class="mt-0.5 text-xs opacity-65"> <b>TIP:</b> Try refreshing the page or signing out and back in.</span>'
             })
         }
@@ -288,5 +291,20 @@ export const watchAuth = async () => {
             } else console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
         }
+    })
+
+    // Auth Ready - Timed Out Alert:
+    await new Promise((r) => {
+        setTimeout(() => {
+            if (!store.authReady) {
+                notifier.send({
+                    level: 'error',
+                    header: 'Failed to load Account!',
+                    icon: 'mdi:user',
+                    duration: false,
+                    content: `It appears we're having trouble initiating our account system.. please refresh this page and try again, or else get in contact with our Support Team!`
+                })
+            }
+        }, 10_000);
     })
 }

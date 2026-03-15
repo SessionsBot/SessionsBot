@@ -9,6 +9,7 @@ import verifyToken from 'apps/backend/src/server/middleware/verifyToken';
 import { supabase } from 'apps/backend/src/utils/database/supabase';
 import { fetchUserDiscordData } from '../auth/authUtils';
 import { AuthError } from '../auth/authErrTypes';
+import { LRUCache } from 'lru-cache'
 
 const createLog = useLogger();
 const discordRouter = express.Router({ mergeParams: true })
@@ -45,10 +46,24 @@ discordRouter.get(`/identity/user/:userId`, async (req, res) => {
 })
 
 // GET - Discord SELF User Identity - From TOKEN:
+const selfIdentity_Cache = new LRUCache<string, API_DiscordSelfIdentity>({
+    max: 250, // 250 users
+    ttl: (2 * 60 * 1000) // 2 mins
+})
 discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
     try {
         const userId = req?.auth?.profile?.discord_id
         if (!userId) return new Reply(res).failure('Invalid Input - Missing "userId" to fetch identity for!', HttpStatusCode.BadRequest);
+
+        // Check Cache:
+        const cachedIdentify = selfIdentity_Cache?.get(userId)
+        if (cachedIdentify) {
+            // Return cached identity:
+            return new Reply(res).success({
+                ...cachedIdentify,
+                _cache: true
+            })
+        }
 
         // Get Access Token for User:
         const { data, error } = await supabase.from('profiles').select('discord_access_token')
@@ -67,7 +82,7 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
             })
         }
 
-        // Return FILTERED User Data:
+        // User Identity - FILTERED User Data:
         const userIdentity: API_DiscordSelfIdentity = {
             id: userData?.user?.id,
             username: userData?.user?.username,
@@ -76,7 +91,23 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
             avatar: userData?.user?.avatar,
             guilds: userData?.guilds
         }
+
+        // Save to cache
+        selfIdentity_Cache.set(userId, userIdentity)
+
+        // SYNCHRONOUSLY - Update User Profile:
+        void supabase.from('profiles').update({
+            username: userData?.user?.username,
+            email: userData?.user?.email,
+            manageable_guild_ids: userData?.guilds?.manageable?.map(g => g?.id) || []
+        }).then(({ error: updateERR }) => {
+            // Error Updating Profile:
+            createLog.for('Api').error(`[SELF IDENTITY]: Failed to update user profile!`, { userId: req?.auth?.profile?.discord_id, error: updateERR })
+        })
+
+        // Return "Fresh" User Identity:
         return new Reply(res).success(userIdentity)
+
     } catch (error) {
         // Return Failure:
         createLog.for('Api').warn(`Failed to fetch Discord SELF User Identity!`, { error })
