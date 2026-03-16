@@ -1,9 +1,10 @@
 .env 
-node_modules/
+node_modules
 private*
 *.private*
 *.tsbuildinfo
 
 
 apps/**/cache
+apps/**/node_modules
 **/dist
