@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonData, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
@@ -6,10 +6,11 @@ import { DateTime } from "luxon";
 import dbManager from "../utils/database/manager";
 import { URLS } from "../utils/core/urls";
 
-export default {
+export default <ButtonData>{
     data: {
         customId: 'unRsvp'
     },
+    cooldown: 7,
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const [_, rsvpId, sessionId] = i.customId.split(':');

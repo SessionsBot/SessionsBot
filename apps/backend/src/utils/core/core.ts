@@ -1,6 +1,5 @@
 import pkg from '../../../package.json' with { type: 'json' };
-import { ExtendedClient } from '../types/extendedClient.js';
-import { SKU } from 'discord.js';
+import { Client, SKU } from 'discord.js';
 import { BotEmojiName } from '../bot/fetchEmojis';
 import { DateTime } from 'luxon';
 
@@ -8,7 +7,7 @@ const core = {
     /** Current running Sessions Bot version. */
     botVersion: pkg.version,
     /** Currently logged in client instance. */
-    botClient: <ExtendedClient>null,
+    botClient: <Client>null,
 
     /** The UTC Seconds / Unix Integer the server instance started at. */
     serverStartedAtTimestamp: <number | null>null,

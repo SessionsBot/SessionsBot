@@ -1,5 +1,4 @@
-import { Events, ActivityType } from "discord.js";
-import { ExtendedClient } from "../utils/types/extendedClient.js";
+import { Events, ActivityType, Client, EventData } from "discord.js";
 import core from "../utils/core/core.js";
 import { useLogger } from "../utils/logs/logtail.js";
 import tests from "../utils/tests.js";
@@ -13,10 +12,10 @@ import { initializeEntitlementsSyncSchedule } from "../utils/schedules/syncEntit
 
 const createLog = useLogger();
 
-export default {
-	name: Events.ClientReady,
+export default <EventData>{
+	name: "clientReady",
 	once: true,
-	async execute(client: ExtendedClient) {
+	async execute(client: Client) {
 		// Assign Fresh Client to Global Variables:
 		core.botClient = client;
 

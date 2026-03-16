@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
@@ -8,7 +8,7 @@ import dbManager from "../../utils/database/manager";
 import { URLS } from "../../utils/core/urls";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 
-export default {
+export default <CommandData>{
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('cancel')
@@ -29,7 +29,7 @@ export default {
                 .setMaxLength(100)
         )
     ,
-
+    cooldown: 10,
     // Command Autocomplete:
     autocomplete: async (i: AutocompleteInteraction) => {
         // Get current text input:

@@ -1,4 +1,4 @@
-import { ButtonStyle, ComponentType, ContainerBuilder, Events, Guild, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, EventData, Events, Guild, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { useLogger } from "../utils/logs/logtail";
 import core from "../utils/core/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
@@ -14,7 +14,7 @@ const createLog = useLogger();
 
 
 /** Event - New guild added Sessions Bot */
-export default {
+export default <EventData>{
     name: Events.GuildCreate,
     async execute(guild: Guild) {
         // Log new guild added:

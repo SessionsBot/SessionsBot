@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
@@ -12,7 +12,7 @@ import { useLogger } from "../../utils/logs/logtail";
 // Logger Util:
 const createLog = useLogger();
 
-export default {
+export default <CommandData>{
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('update')
@@ -26,7 +26,7 @@ export default {
                 .setRequired(true)
         )
     ,
-
+    cooldown: 10,
     // Command Autocomplete:
     autocomplete: async (i: AutocompleteInteraction) => {
         // Get current text input:

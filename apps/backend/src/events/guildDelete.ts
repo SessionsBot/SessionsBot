@@ -1,4 +1,4 @@
-import { Events, Guild } from "discord.js";
+import { EventData, Events, Guild } from "discord.js";
 import dbManager from "../utils/database/manager";
 import discordLog from "../utils/logs/discord.js";
 import { useLogger } from "../utils/logs/logtail.js";
@@ -6,7 +6,7 @@ import { useLogger } from "../utils/logs/logtail.js";
 const createLog = useLogger();
 
 /** Event - Guild has removed Sessions Bot */
-export default {
+export default <EventData>{
     name: Events.GuildDelete,
     async execute(guild: Guild) {
         // Log removing guild - cloud:

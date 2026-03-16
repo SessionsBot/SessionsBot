@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SelectMenuOptionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder, TextDisplayComponent } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SelectMenuOptionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder, TextDisplayComponent } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
@@ -8,7 +8,7 @@ import { defaultFooterText, genericErrorMsg } from "../../utils/bot/messages/bas
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import dbManager from "../../utils/database/manager";
 
-export default {
+export default <CommandData>{
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('delay')
@@ -36,9 +36,9 @@ export default {
                 .setMaxLength(100)
         )
     ,
-
+    cooldown: 10,
     // Command Autocomplete:
-    autocomplete: async (i: AutocompleteInteraction) => {
+    autocomplete: async (i) => {
         // Get current text input:
         const focused = i.options.getFocused()
         // Get current sessions for guild:
