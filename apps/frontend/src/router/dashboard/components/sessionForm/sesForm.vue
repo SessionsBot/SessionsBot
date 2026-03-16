@@ -13,7 +13,7 @@
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import LoadingIcon from '@/components/icons/LoadingIcon.vue';
+    import LoadingIcon from '@/components/icons/loadingIcon.vue';
     import { datetime, RRule, rrulestr } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
