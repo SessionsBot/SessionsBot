@@ -9,8 +9,8 @@ type RRuleExports = {
     datetime: typeof import("rrule").datetime;
 };
 // Runtime-safe resolution
-const resolved: RRuleExports = (rrule as any).default
-    ? (rrule as any).default // Backend / Node / tsx
+const resolved: RRuleExports = !!(rrule as any)?.default
+    ? (rrule as any)?.default // Backend / Node / tsx
     : (rrule as any); // Frontend / Vite / ESM
 export const { RRule, rrulestr, datetime } = resolved;
 
