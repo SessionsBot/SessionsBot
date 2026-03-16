@@ -20,8 +20,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                console.log(await sendUpgradeAlert('start', guildId))
-                console.log(await sendUpgradeAlert('completed', guildId))
+                // console.log(await sendUpgradeAlert('start', guildId))
+                // console.log(await sendUpgradeAlert('completed', guildId))
 
                 // await clearMigrationTests()
 
