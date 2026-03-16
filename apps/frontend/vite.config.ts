@@ -28,13 +28,13 @@ export default defineConfig({
     }),
     AutoImport({
       imports: ['vue', 'vue-router', '@vueuse/core'],
-      dts: 'private/auto-vue-imports.d.ts'
+      // dts: 'private/auto-vue-imports.d.ts'
     }),
     Components({
       resolvers: [
         PrimeVueResolver()
       ],
-      dts: 'private/auto-component-imports.d.ts'
+      // dts: 'private/auto-component-imports.d.ts'
     })
   ],
   define: {
