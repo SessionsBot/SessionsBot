@@ -3,7 +3,7 @@
     import useNotifier from '@/stores/notifier';
     import { API } from '@/utils/api';
     import { supabase } from '@/utils/supabase';
-    import { API_SessionTemplateBodySchema, type Database } from '@sessionsbot/shared';
+    import { API_SessionTemplateBodySchema, MigratingTemplates_DeletionDate, type Database } from '@sessionsbot/shared';
     import { XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { useConfirm } from 'primevue';
@@ -99,7 +99,7 @@
             Instantly take advantage of Sessions Bot's new features with your old schedules!
         </p>
         <p class="opacity-65 text-xs">
-            <b class="underline">Auto Deletes: <i> {{ DateTime.local().plus({ days: 30 }).toFormat('M/d/y') }} </i></b>
+            <b class="underline">Auto Deletes: <i> {{ MigratingTemplates_DeletionDate.toFormat('M/d/y') }} </i></b>
         </p>
 
         <!-- View Dialog Button -->

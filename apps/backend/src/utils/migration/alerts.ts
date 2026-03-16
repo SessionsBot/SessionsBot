@@ -4,6 +4,7 @@ import { URLS } from "../core/urls";
 import { DateTime } from "luxon";
 import { useLogger } from "../logs/logtail";
 import sendWithFallback from "../bot/messages/sendWithFallback";
+import { MigratingTemplates_DeletionDate } from "@sessionsbot/shared";
 
 const createLog = useLogger()
 
@@ -15,7 +16,7 @@ export const upgradeStartingMessage = (ownerId: string) => new ContainerBuilder(
         new SeparatorBuilder(),
         new SectionBuilder({
             components: <any>[
-                new TextDisplayBuilder({ content: `${core.emojis.string('down')}  **Temporary Downtime**: \n> As we begin to publish the new changes to Sessions Bot our interal system and discord bot **will be breifly unavailble**. You can keep track of updates regrading this on our status page!` })
+                new TextDisplayBuilder({ content: `${core.emojis.string('down')}  **Temporary Downtime**: \n> As we begin to publish the new changes to Sessions Bot our internal system and discord bot **will be briefly unavailable**. You can keep track of updates regrading this on our status page!` })
             ],
             accessory: {
                 type: ComponentType.Button,
@@ -28,7 +29,7 @@ export const upgradeStartingMessage = (ownerId: string) => new ContainerBuilder(
         new SeparatorBuilder(),
         new SectionBuilder({
             components: <any>[
-                new TextDisplayBuilder({ content: `${core.emojis.string('help')}  **Questions/Concerns?**: \n> Our **support team is available** to assit you! Join our community server and open a support ticket or check out these other [useful resources](${URLS.site_links.support}).` })
+                new TextDisplayBuilder({ content: `${core.emojis.string('help')}  **Questions/Concerns?**: \n> Our **support team is available** to assist you! Join our community server and open a support ticket or check out these other [useful resources](${URLS.site_links.support}).` })
             ],
             accessory: {
                 type: ComponentType.Button,
@@ -47,11 +48,11 @@ export const upgradeStartingMessage = (ownerId: string) => new ContainerBuilder(
 export const upgradeCompleteMessage = (ownerId: string) => new ContainerBuilder({
     accent_color: core.colors.getOxColor('purple'),
     components: <any>[
-        new TextDisplayBuilder({ content: `## 🎉 Upgraded to Sessions Bot \`V2\`! \n> Your bot's **update** has finally arived! Make sure to read important details below:` }),
+        new TextDisplayBuilder({ content: `## 🎉 Upgraded to Sessions Bot \`V2\`! \n> Your bot's **update** has finally arrived! Make sure to read important details below:` }),
         new SeparatorBuilder(),
         new SectionBuilder({
             components: <any>[
-                new TextDisplayBuilder({ content: `${core.emojis.string('star')}  **New Features**: \n> Congrats! Your bot just got **way more amazing**! Vist your all **NEW Bot Dashboard** to take advantage of exciting features like: \n> - Custom Session Repeat Intervals (daily, weekly, monthly, yearly) \n> - Customizable Session (Signup) Panels (using Discord Markdown!) \n> - Native Discord Event Integration \n> - Online Session/Event Viewing \n> - And so much more!` })
+                new TextDisplayBuilder({ content: `${core.emojis.string('star')}  **New Features**: \n> Congrats! Your bot just got **way more amazing**! Visit your all **NEW Bot Dashboard** to take advantage of exciting features like: \n> - Custom Session Repeat Intervals (daily, weekly, monthly, yearly) \n> - Customizable Session (Signup) Panels (using Discord Markdown!) \n> - Native Discord Event Integration \n> - Online Session/Event Viewing \n> - And so much more!` })
             ],
             accessory: {
                 type: ComponentType.Button,
@@ -64,7 +65,7 @@ export const upgradeCompleteMessage = (ownerId: string) => new ContainerBuilder(
         new SeparatorBuilder(),
         new SectionBuilder({
             components: <any>[
-                new TextDisplayBuilder({ content: `${core.emojis.string('right')}  **Migrating Previous Schedules**: \n> By default, your previously configured session schedules **WILL NOT be enabled**! However, you can easily __re-enable your past schedules by visiting you new [bot dashboard](${URLS.site_links.dashboard})__. \n> -- \n> -# **NOTE**: Your "previous" schedules will be available to "migrate over" for the next 30 days! *(Deletes on: <t:${DateTime.utc().plus({ day: 30 }).startOf('day').toUnixInteger()}:d>)* ` }),
+                new TextDisplayBuilder({ content: `${core.emojis.string('right')}  **Migrating Previous Schedules**: \n> By default, your previously configured session schedules **WILL NOT be enabled**! However, you can easily __re-enable your past schedules by visiting you new [bot dashboard](${URLS.site_links.dashboard})__. \n> -- \n> -# **NOTE**: Your "previous" schedules will be available to "migrate over" for the next 30 days! *(Deletes on: <t:${MigratingTemplates_DeletionDate.startOf('day').toUnixInteger()}:d>)* ` }),
             ],
             accessory: {
                 type: ComponentType.Button,
@@ -77,7 +78,7 @@ export const upgradeCompleteMessage = (ownerId: string) => new ContainerBuilder(
         new SeparatorBuilder(),
         new SectionBuilder({
             components: <any>[
-                new TextDisplayBuilder({ content: `${core.emojis.string('help')}  **Questions/Concerns?**: \n> Our **support team is available** to assit you! Join our community server and open a support ticket or check out these other [useful resources](${URLS.site_links.support}).` })
+                new TextDisplayBuilder({ content: `${core.emojis.string('help')}  **Questions/Concerns?**: \n> Our **support team is available** to assist you! Join our community server and open a support ticket or check out these other [useful resources](${URLS.site_links.support}).` })
             ],
             accessory: {
                 type: ComponentType.Button,
