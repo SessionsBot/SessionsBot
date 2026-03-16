@@ -2,7 +2,7 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder, MessageFlags } from "discord.js";
-import { clearMigrationTests } from "./migration/migrator.js";
+import { clearMigrationTests, testMigrator } from "./migration/migrator.js";
 
 
 const createLog = useLogger();
@@ -22,7 +22,7 @@ export default {
                 // console.log(await sendUpgradeAlert('start', guildId))
                 // console.log(await sendUpgradeAlert('completed', guildId))
 
-                await clearMigrationTests()
+                // await clearMigrationTests()
 
                 // await testMigrator()
 
