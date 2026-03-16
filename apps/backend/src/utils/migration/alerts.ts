@@ -111,11 +111,6 @@ export async function sendUpgradeAlert(alert: 'start' | 'completed', guildId: st
         // Fetch Guild Owner (DM):
         const guildOwner = await core.botClient.users.fetch(guild?.ownerId)
         if (!guildOwner) createLog.for('Bot').warn('Failed to fetch a guild owner! - Wont DM about migration upgrades...', { guildId, userId: guild?.ownerId })
-        const dmChannel = guildOwner
-            ? (await guildOwner.dmChannel?.fetch())?.isSendable()
-                ? guildOwner?.dmChannel
-                : await guildOwner?.createDM(true)
-            : null;
 
         // Message Content:
         let msg: ContainerBuilder = null
@@ -135,13 +130,18 @@ export async function sendUpgradeAlert(alert: 'start' | 'completed', guildId: st
         await sendWithFallback(guildId, msg)
 
         // Send to Owner DM:
-        if (dmChannel?.isSendable()) {
+        try {
+            const dmChannel = guildOwner
+                ? (await guildOwner.dmChannel?.fetch())?.isSendable()
+                    ? guildOwner?.dmChannel
+                    : await guildOwner?.createDM(true)
+                : null;
             await dmChannel.send({
                 components: [msg],
                 flags: MessageFlags.IsComponentsV2
             })
-        } else {
-            createLog.for('Bot').warn(`CANNOT DM USER! - Bot Migraqtion/Update Alerts (UserId: ${guild?.ownerId})`, { guildId, userId: guild?.ownerId })
+        } catch (error) {
+            createLog.for('Bot').warn(`CANNOT DM USER! - Bot Migration/Update Alerts (UserId: ${guild?.ownerId})`, { guildId, userId: guild?.ownerId })
         }
 
         // Return Success

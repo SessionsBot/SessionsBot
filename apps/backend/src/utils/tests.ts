@@ -3,6 +3,7 @@ import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder, MessageFlags } from "discord.js";
 import { clearMigrationTests, testMigrator } from "./migration/migrator.js";
+import { sendUpgradeAlert } from "./migration/alerts.js";
 
 
 const createLog = useLogger();
@@ -19,8 +20,8 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // console.log(await sendUpgradeAlert('start', guildId))
-                // console.log(await sendUpgradeAlert('completed', guildId))
+                console.log(await sendUpgradeAlert('start', guildId))
+                console.log(await sendUpgradeAlert('completed', guildId))
 
                 // await clearMigrationTests()
 
