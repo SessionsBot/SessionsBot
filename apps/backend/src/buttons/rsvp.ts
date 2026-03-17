@@ -11,7 +11,7 @@ export default <ButtonData>{
     data: {
         customId: 'rsvp'
     },
-    cooldown: 7,
+    cooldown: 5,
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const [_, rsvpId, sessionId] = i.customId.split(':');

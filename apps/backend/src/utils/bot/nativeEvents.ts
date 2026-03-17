@@ -92,7 +92,7 @@ export async function createNativeEventForSession(opts: {
         }
         if (isBotPermissionError(err) && guildId) {
             // Bot Permission Failure:
-            createLog.for('Bot').info('Failed to create a NATIVE DISCORD EVENT for a session - Perms Missing!', { guildId, session: sessionData, error: err })
+            createLog.for('Permissions').info('Failed to create a NATIVE DISCORD EVENT for a session - Perms Missing!', { guildId, session: sessionData, error: err })
             sendPermissionAlert(guildId, { leadingDesc: 'Failed to post a Discord Native Event tied to a session schedule! This error was due to bot permissions...' })
         } else {
             // Unknown Error:

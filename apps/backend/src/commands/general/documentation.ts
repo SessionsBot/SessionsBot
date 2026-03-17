@@ -57,7 +57,10 @@ export default {
 
         } catch (err) {
             // Check for Bot Permission Error:
-            if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
+            if (isBotPermissionError(err)) {
+                createLog.for('Permissions').warn(`The /documentation command failed during an interaction - due to permissions`, { userId: i?.user?.id, interactionId: i?.id, guildId: i?.guildId })
+                return sendPermissionAlert(i.guildId)
+            }
             // Log failure
             createLog.for('Bot').warn(`The /documentation command failed during an interaction...`, {
                 interaction: {

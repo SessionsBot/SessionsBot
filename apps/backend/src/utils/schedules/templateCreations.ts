@@ -253,7 +253,7 @@ async function executeTemplateCreationSchedule() {
                                 } catch (err) {
                                     // Failed to get Panel Destination Channel (thread/channel) - Log & Escalate Failure:
                                     if (isBotPermissionError(err)) {
-                                        createLog.for('Schedule').info(`Perms - Failed to get/create a template's destination thread! - Skipping Template`, { err, channelId, newSession, template: t, guildId: g?.id })
+                                        createLog.for('Permissions').info(`Failed to get/create a template's destination thread! - Skipping Template`, { err, channelId, newSession, template: t, guildId: g?.id })
                                         sendTemplateCreationAlert(g?.id, 'Permissions', [t.id])
                                     } else {
                                         createLog.for('Schedule').error(`Failed to get/create a template's destination thread! - See Details...`, { err, channelId, newSession, template: t, guildId: g?.id })
@@ -302,7 +302,7 @@ async function executeTemplateCreationSchedule() {
                             } catch (err) {
                                 // Failed to Send Sessions Panel - Check & Alert Error:
                                 if (isBotPermissionError(err)) {
-                                    createLog.for('Schedule').info('Perms - Failed to send session panel message! - No access!', { guildId: g?.id, channelId, session: newSession, error: err });
+                                    createLog.for('Permissions').info('Failed to send session panel message! - No access!', { guildId: g?.id, channelId, session: newSession, error: err });
                                     sendTemplateCreationAlert(g?.id, 'Permissions', [t.id])
                                 } else {
                                     createLog.for('Schedule').error('Failed to send session panel message! - See details..', { guildId: g?.id, channelId, session: newSession, error: err });
@@ -460,7 +460,7 @@ async function executeTemplateCreationSchedule() {
                         const failedIds = channelTemplates?.map(t => t?.id).filter(i => !succeededChannelTemplates.includes(i))
                         if (isBotPermissionError(error)) {
                             sendTemplateCreationAlert(g?.id, "Permissions", failedIds)
-                            createLog.for('Schedule').info(`Perms Missing - Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, error, channelTemplates, guildId: g?.id })
+                            createLog.for('Permissions').info(`Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, error, channelTemplates, guildId: g?.id })
                         } else {
                             sendTemplateCreationAlert(g?.id, "Guild Channel", failedIds)
                             createLog.for('Schedule').error(`Failed to process guild's post channel for template creation schedule! - See details!`, { channelId, error, channelTemplates, guildId: g?.id })

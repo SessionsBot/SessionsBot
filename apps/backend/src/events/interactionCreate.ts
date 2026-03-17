@@ -96,9 +96,10 @@ export default <EventData>{
 				}
 			} catch (error) {
 				// On Failure:
-				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				const isPermErr = isBotPermissionError(error)
+				if (isPermErr) sendPermissionAlert(i.guildId)
 				// Log:
-				createLog.for('Bot').warn('Command Interaction Error - See Details', {
+				createLog.for(isPermErr ? 'Permissions' : 'Bot').warn('Command Interaction Error - See Details', {
 					error,
 					userId: i?.user?.id,
 					guildId: i?.guildId,
@@ -142,9 +143,10 @@ export default <EventData>{
 
 			} catch (error) {
 				// On failure: 
-				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				const isPermErr = isBotPermissionError(error)
+				if (isPermErr) sendPermissionAlert(i.guildId)
 				// Log:
-				createLog.for('Bot').warn('Button Interaction Error - See Details', {
+				createLog.for(isPermErr ? 'Permissions' : 'Bot').warn('Button Interaction Error - See Details', {
 					error,
 					buttonId: i?.customId,
 					guildId: i?.guildId,
@@ -169,13 +171,15 @@ export default <EventData>{
 				await command.autocomplete(i);
 			} catch (error) {
 				// Check for Bot Permission Error:
-				if (isBotPermissionError(error)) sendPermissionAlert(i.guildId)
+				const isPermErr = isBotPermissionError(error)
+				if (isPermErr) sendPermissionAlert(i.guildId)
+
 				// Force Empty Response:
 				if (!i.responded) {
 					await i.respond([])
 				}
 				// Log:
-				createLog.for('Bot').error(`AUTO COMPLETE Interaction Error - See Details `, { error, userId: i?.user?.id, guildId: i?.guildId, cmd: { id: i?.commandId, name: i?.commandName } })
+				createLog.for(isPermErr ? 'Permissions' : 'Bot').error(`AUTO COMPLETE Interaction Error - See Details `, { error, userId: i?.user?.id, guildId: i?.guildId, cmd: { id: i?.commandId, name: i?.commandName } })
 			}
 		}
 

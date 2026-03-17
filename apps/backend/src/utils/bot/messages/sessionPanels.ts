@@ -187,7 +187,7 @@ export async function updateExistingSessionPanel(session: FullSessionData, water
         if (isBotPermissionError(error)) {
             await sendPermissionAlert(session?.guild_id)
             // Log & Return Error:
-            createLog.for('Bot').info(`Perms - Failed to update an existing session panel message! - Guild: ${session?.guild_id}`, { error, guildId: session?.guild_id })
+            createLog.for('Permissions').info(`Failed to update an existing session panel message! - Guild: ${session?.guild_id}`, { error, guildId: session?.guild_id })
             return { success: false, message: 'Perms - Failed to update an existing session panel message!' }
         }
         // Log & Return Error:
