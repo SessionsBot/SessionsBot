@@ -57,7 +57,7 @@ Prompts and redirects the user to the [Bot Dashboard](https://sessionsbot.fyi/da
 ### `/support`
 
 Prompts the user with useful support resources for Sessions Bot and it's related services.
-> Still Stuck? Get in touch with [Bot Support](https://discord.gg/49gNbwA8t6).
+> Still Stuck? Get in touch with [Bot Support](https://discord.gg/rkSdTMbq5p).
 
 
 ### `/update`

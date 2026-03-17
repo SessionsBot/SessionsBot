@@ -56,8 +56,8 @@ export const externalUrls = {
     documentation: "https://docs.sessionsbot.fyi",
     gitHub: "https://github.com/SessionsBot",
     discordServer: {
-        invite: "https://discord.gg/dKp5HZPjCg",
-        supportInvite: "https://discord.gg/49gNbwA8t6",
+        invite: "https://discord.gg/mMqpJEDy9u",
+        supportInvite: "https://discord.gg/rkSdTMbq5p",
     },
     discordStore: "https://discord.com/discovery/applications/1137768181604302848/store"
 }

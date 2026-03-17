@@ -34,6 +34,6 @@ export const URLS = {
                 : `https://discord.com/oauth2/authorize?client_id=${process.env.DEV_CLIENT_ID}`
     },
 
-    community_server: "https://discord.gg/dKp5HZPjCg",
-    support_chat: "https://discord.gg/49gNbwA8t6"
+    community_server: "https://discord.gg/mMqpJEDy9u",
+    support_chat: "https://discord.gg/rkSdTMbq5p"
 } as const
