@@ -50,12 +50,12 @@
     }
 
     blockquote {
-        @apply pl-6 !bg-text-1/14 w-full !py-2 !mt-2.5 mb-1.5 px-1 relative font-semibold !text-text-1/80 rounded-md;
+        @apply pl-4 !bg-text-1/0 w-full !py-2 !mt-2.5 mb-1.5 px-1 relative font-semibold !text-text-1/80 rounded-md;
 
         &::after {
             z-index: 1;
             content: '';
-            @apply !bg-text-1/40 h-[70%] w-1 rounded-full absolute left-2 top-[15%];
+            @apply !bg-text-1/40 h-[70%] w-1 rounded-full absolute left-1.25 top-[15%];
         }
 
         a {
