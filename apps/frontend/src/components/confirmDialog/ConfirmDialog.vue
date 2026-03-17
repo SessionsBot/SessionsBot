@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+    import AnomalyScheduleAlert from '@/router/dashboard/components/sessionForm/components/anomalyScheduleAlert.vue';
     import { CircleQuestionMarkIcon } from 'lucide-vue-next';
     import { ConfirmDialog } from 'primevue';
 
@@ -29,6 +30,12 @@
             </div>
         </template>
 
+    </ConfirmDialog>
+
+    <ConfirmDialog group="anomaly-schedule-confirm" class="w-full flex flex-center border-none! bg-transparent! p-8">
+        <template #container="{ acceptCallback, rejectCallback }">
+            <AnomalyScheduleAlert @accept="acceptCallback" @reject="rejectCallback" />
+        </template>
     </ConfirmDialog>
 
 </template>

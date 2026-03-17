@@ -89,7 +89,7 @@ export function getSchedulesNextPostUTC(opts: {
     if (!opts.RRule) {
         // No Recurrence - Return First (and last) POST Date:
         const postTime = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
-        return postTime > afterDate ? postTime : null
+        return postTime
     }
     // Get Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })

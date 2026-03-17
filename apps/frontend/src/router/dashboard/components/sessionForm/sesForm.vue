@@ -17,6 +17,7 @@
     import { datetime, RRule, rrulestr } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
+    import AnomalyScheduleAlert from './components/anomalyScheduleAlert.vue';
 
     // Services:
     const confirmService = useConfirm();
@@ -605,6 +606,16 @@
 
             };
 
+            // DETECT - Anomaly Sessions (no rrule / first & last post already occurred):
+            if ((!nextPostUTC || nextPostUTC < DateTime.utc()) && !newRRule) {
+                const confirmed = await new Promise<boolean>(r => confirmService.require({
+                    group: 'anomaly-schedule-confirm',
+                    accept: () => { r(true) },
+                    reject: () => { r(false) }
+                }))
+                if (!confirmed) return
+            }
+
             // Send API Request for Create/Edit Schedule:
             if (formAction.value == 'new') {
                 // Create New Session - Send Request
@@ -663,7 +674,6 @@
             }, 1_500)
         }
     }
-
 
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
