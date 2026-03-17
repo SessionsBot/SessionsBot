@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-
     import CurrentSessions from './cards/recentSessions/CurrentSessions.vue';
     import ActiveTemplates from './cards/activeSchedules/ActiveSchedules.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
@@ -65,15 +64,8 @@
                 </div>
             </Transition>
 
-            <!-- Current Sessions Card -->
-            <CurrentSessions />
-
-            <!-- Active Session Templates Card -->
-            <ActiveTemplates />
-
-
             <!-- Guild Stats - Bar Section -->
-            <span class="w-full mt-10 flex gap-5 flex-wrap items-center justify-center">
+            <span class="w-full mt-7 flex gap-5 flex-wrap items-center justify-center">
 
                 <!-- Total Sessions -->
                 <StatCard title="Sessions Created" :value="dashboard.guildData.guildStats.state?.sessions_created ?? 0"
@@ -89,6 +81,12 @@
                     :classes="{ iconContainer: 'bg-yellow-600/70!' }" iconName="fluent:calendar-sync-16-regular" />
 
             </span>
+
+            <!-- Current Sessions Card -->
+            <CurrentSessions />
+
+            <!-- Active Session Templates Card -->
+            <ActiveTemplates />
 
         </div>
 

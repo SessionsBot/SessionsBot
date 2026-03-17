@@ -170,7 +170,7 @@
             `Post Time must occur before or at event Start Time if posting "Day of".`
         ),
         postDay: z.literal(['Day before', 'Day of'], 'Please select an option.'),
-        mention_roles: z.nullish(z.array(z.string('Please select valid Discord roles.').min(17, 'Invalid Discord role id selected.'))),
+        mention_roles: z.nullish(z.array(z.string('Please select valid Discord roles.').min(17, 'Invalid Discord role id selected.')).max(5, 'You can only select a maximum of 5 mention roles!')),
         postInThread: z.boolean(),
         nativeEvents: z.boolean(),
 
