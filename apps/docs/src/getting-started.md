@@ -1,6 +1,6 @@
 # Getting Started
 
-To get started with using Sessions Bot for the first time please instal the bot to any Discord server you <u>manage</u> or <u>own</u>.
+To get started with using Sessions Bot for the first time please install the bot to any Discord server you <u>manage</u> or <u>own</u>.
 
 ### Who is it available for?
 
