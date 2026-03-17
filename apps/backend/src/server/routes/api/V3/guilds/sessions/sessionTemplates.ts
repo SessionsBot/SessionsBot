@@ -34,7 +34,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
             const { data: newSession, error: saveError } = await supabase.from('session_templates').insert(sessionData).select('*').single()
             if (saveError || !newSession) {
                 // Return Failure:
-                createLog.for('Api').error('Failed to Save - New Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.id });
+                createLog.for('Api').error('Failed to Save - New Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.discord_id });
                 return new reply(res).failure({ reason: "Failed to Save - New Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
@@ -53,7 +53,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const errTxt = `Failed to create/save a new session template!`;
         createLog.for('Api').error(errTxt, { err, body: req.body, guildId, userId });
         return new reply(res).failure(errTxt);
@@ -83,7 +83,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
 
             if (saveError || !ExtSession) {
                 // Return Failure:
-                createLog.for('Api').error('Failed to Edit - Existing Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.id });
+                createLog.for('Api').error('Failed to Edit - Existing Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.discord_id });
                 return new reply(res).failure({ reason: "Failed to Edit - Existing Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
@@ -102,7 +102,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const templateId = String(req?.params?.templateId)
         const errTxt = `Failed to edit existing session template!`;
         createLog.for('Api').error(errTxt, { err, body: req?.body, templateId, userId, guildId });
@@ -144,7 +144,7 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(tru
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const templateId = String(req?.params?.templateId)
         const errTxt = `Failed to delete existing session template!`;
         createLog.for('Api').error(errTxt, { err, templateId, guildId, userId });

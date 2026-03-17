@@ -13,16 +13,20 @@ const commandCooldowns = new Collection<string, Collection<string, number>>()
 const buttonCooldowns = new Collection<string, Collection<string, number>>()
 /** Util: Process a interaction that has a cooldown *active* */
 const processCooldownInteraction = async (i: CommandInteraction | ButtonInteraction, type: "Button" | "Command", remainingSecs: number) => {
-	if (i.replied || i.deferred) {
-		await i.followUp({
-			components: [cooldownAlertMsg(type, remainingSecs)],
-			flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
-		})
-	} else {
-		await i.reply({
-			components: [cooldownAlertMsg(type, remainingSecs)],
-			flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
-		})
+	try {
+		if (i.replied || i.deferred) {
+			await i.followUp({
+				components: [cooldownAlertMsg(type, remainingSecs)],
+				flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
+			})
+		} else {
+			await i.reply({
+				components: [cooldownAlertMsg(type, remainingSecs)],
+				flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
+			})
+		}
+	} catch (err) {
+		createLog.for('Bot').warn(`Failed to send/respond with a cooldown alert to an interaction!`, { userId: i?.user?.id, guildId: i?.guildId, type, err })
 	}
 }
 
@@ -30,34 +34,38 @@ const processCooldownInteraction = async (i: CommandInteraction | ButtonInteract
 // Default Error Alert(s):
 /** Util: Sends a response to the interaction with generic error/support information. */
 const processDefaultInteractionError = async (i: CommandInteraction | ButtonInteraction) => {
-	// Get Reason Description:
-	let reason = `> **This interaction has failed!** If this error persists, please get in contact with [Bot Support](${URLS.support_chat})!`
-	if (i?.isCommand()) {
-		// Command Error:
-		reason = [
-			`The </${i?.commandName}:${i?.commandId}> command has **FAILED** execution! Confirm inputs *(if any)* and try again!`,
-			`> If this issue persists feel free to contact Bot Support!`,
-			`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nCommand Name: ${i.commandName} \nCommand Id: ${i.commandId}\`\`\``,
-			`-# Please provide the above text to a Support Agent if assistance is required.`
-		].join(`\n`);
-	}
-	if (i?.isButton()) {
-		// Button Error:
-		reason = [
-			`This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${URLS.status_page}) or contact Bot Support!`,
-			`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nButton Id: ${i.customId}\`\`\``,
-			`-# Please provide the above text to a Support Agent if assistance is required.`
-		].join(`\n`)
-	}
-	// Build Alert Msg/Container:
-	const alertMsg = genericErrorMsg({
-		reasonDesc: reason
-	});
-	// Respond with Alert:
-	if (i?.replied || i?.deferred) {
-		await i.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
-	} else {
-		await i.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+	try {
+		// Get Reason Description:
+		let reason = `> **This interaction has failed!** If this error persists, please get in contact with [Bot Support](${URLS.support_chat})!`
+		if (i?.isCommand()) {
+			// Command Error:
+			reason = [
+				`The </${i?.commandName}:${i?.commandId}> command has **FAILED** execution! Confirm inputs *(if any)* and try again!`,
+				`> If this issue persists feel free to contact Bot Support!`,
+				`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nCommand Name: ${i.commandName} \nCommand Id: ${i.commandId}\`\`\``,
+				`-# Please provide the above text to a Support Agent if assistance is required.`
+			].join(`\n`);
+		}
+		if (i?.isButton()) {
+			// Button Error:
+			reason = [
+				`This button has **FAILED** execution! This likely shouldn't be happening check our [status page](${URLS.status_page}) or contact Bot Support!`,
+				`**Support Data**: \`\`\`Guild Id: ${i.guildId} \nButton Id: ${i.customId}\`\`\``,
+				`-# Please provide the above text to a Support Agent if assistance is required.`
+			].join(`\n`)
+		}
+		// Build Alert Msg/Container:
+		const alertMsg = genericErrorMsg({
+			reasonDesc: reason
+		});
+		// Respond with Alert:
+		if (i?.replied || i?.deferred) {
+			await i.followUp({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+		} else {
+			await i.reply({ components: [alertMsg], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+		}
+	} catch (err) {
+		createLog.for('Bot').warn(`Failed to send/respond with a generic error alert to an interaction!`, { userId: i?.user?.id, guildId: i?.guildId, err })
 	}
 }
 
@@ -69,7 +77,7 @@ export default <EventData>{
 		const botClient = i.client;
 
 		// Disregard Already Handled Interactions:
-		if (i?.isRepliable() && (i?.replied || i?.deferred)) return console.info('(i) Skipping already handled interaction from global listener.');
+		if (i?.isRepliable() && (i?.replied || i?.deferred)) return // console.info('(i) Skipping already handled interaction from global listener.');
 
 		// Command Interactions:
 		if (i.isChatInputCommand()) {
@@ -176,7 +184,7 @@ export default <EventData>{
 
 				// Force Empty Response:
 				if (!i.responded) {
-					await i.respond([])
+					await i.respond([]).catch(() => { })
 				}
 				// Log:
 				createLog.for(isPermErr ? 'Permissions' : 'Bot').error(`AUTO COMPLETE Interaction Error - See Details `, { error, userId: i?.user?.id, guildId: i?.guildId, cmd: { id: i?.commandId, name: i?.commandName } })
