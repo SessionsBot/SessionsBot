@@ -46,10 +46,11 @@ const core = {
         /** Bot application command ids mapped by their command names. */
         ids: <{ [cmdName: string]: string }>{},
         /** Returns a command "link" string for a provided command name or else just the name itself if undefined. */
-        getLinkString: (
+        string: (
             /** The * ***exact*** * command name to retrieve a string for. (e.g "dashboard")*/
             cmdName: string
         ) => {
+            cmdName = cmdName?.replace('/', '')
             const cmdId = core.commands.ids[cmdName] || null;
             if (!cmdId) return '/' + cmdName;
             else return `</${cmdName}:${cmdId}>`

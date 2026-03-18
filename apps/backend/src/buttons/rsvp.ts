@@ -45,7 +45,7 @@ export default <ButtonData>{
                     components: <any>[
                         new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to RSVP` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records you are **already RSVPed** within this session! \n**Session Title**: \n> \`${sessionData?.title}\` \n**RSVP Title**: \n> \`${currentSlot?.title}\` \n-# If you wish to modify your current upcoming RSVP assignments use the ${core.commands.getLinkString('my-rsvps')} command.` }),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records you are **already RSVPed** within this session! \n**Session Title**: \n> \`${sessionData?.title}\` \n**RSVP Title**: \n> \`${currentSlot?.title}\` \n-# If you wish to modify your current upcoming RSVP assignments use the ${core.commands.string('my-rsvps')} command.` }),
                         new SeparatorBuilder(),
                         new ActionRowBuilder({
                             components: [

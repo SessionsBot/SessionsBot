@@ -25,7 +25,7 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')}  Read the Bot Documentation \n> This is a great resource to **learn about Sessions Bot** and how to use it's core features! \n> -# **Experiencing Issues?** Use ${core.commands.getLinkString('support')} for help!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')}  Read the Bot Documentation \n> This is a great resource to **learn about Sessions Bot** and how to use it's core features! \n> -# **Experiencing Issues?** Use ${core.commands.string('support')} for help!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [

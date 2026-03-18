@@ -42,7 +42,7 @@ export default <ButtonData>{
                     components: <any>[
                         new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to Remove RSVP` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `**Reason**: \n> You are **NOT assigned as an RSVP** within this session! Therefore we cannot remove you as one... \n**Session Title**: \n> \`${sessionData?.title}\` \n**Help**: \n> Use the ${core.commands.getLinkString('my-rsvps')} command to view your currently assigned RSVP slots.\n-# Experiencing issues? Chat with [Bot Support](${URLS.support_chat})!` }),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> You are **NOT assigned as an RSVP** within this session! Therefore we cannot remove you as one... \n**Session Title**: \n> \`${sessionData?.title}\` \n**Help**: \n> Use the ${core.commands.string('my-rsvps')} command to view your currently assigned RSVP slots.\n-# Experiencing issues? Chat with [Bot Support](${URLS.support_chat})!` }),
                         new SeparatorBuilder(),
                         new ActionRowBuilder({
                             components: [
