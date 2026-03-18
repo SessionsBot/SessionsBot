@@ -1,12 +1,11 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
     import { DateTime } from 'luxon';
-    import { TYPE, useToast } from 'vue-toastification';
-    import type { ToastID } from 'vue-toastification/dist/types/types';
     import { supabase } from '@/utils/supabase';
     import { CheckCircle2, CheckCircle2Icon, XCircleIcon } from 'lucide-vue-next';
     import useAnalyticsStore from '@/stores/analytics';
     import DeleteData from './deleteData.vue';
+    import useNotifier from '@/stores/notifier';
 
     // Incoming Modal - Delete Data Dialog Visible:
     const deleteDataDialogVisible = defineModel<boolean>('deleteDataDialogVisible')
@@ -14,7 +13,7 @@
     // Services:
     const auth = useAuthStore();
     const clipboard = useClipboard();
-    const toaster = useToast();
+    const notifier = useNotifier();
     const analytics = useAnalyticsStore();
 
     // Auth Data:
@@ -36,28 +35,35 @@
     // Fn - Refresh Discord Auth/Sync Data:
     const resyncStatus = computed(() => auth.refreshStatus)
     async function resyncDiscordData() {
-        // Send Toast - loading data:
-        let thisToast: ToastID | undefined = undefined;
-        thisToast = toaster('Resyncing Discord User Data...', { icon: 'pi pi-sync animate-spin', type: TYPE.WARNING, timeout: false, closeOnClick: false, draggable: false, showCloseButtonOnHover: true });
-
         // Make Refresh Call:
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return toaster.update(thisToast, { content: `Failed! Couldn't find your current session.. If this error persists please contact support!` })
-        const result = await auth.resyncDiscordData(session?.access_token, 'MANUAL');
+        const result = await auth.resyncDiscordData('MANUAL');
 
         // Handle Refresh Result:
         if (!result.success) {
             // Failed:
             if (result.data.reason == 'COOLDOWN') {
-                // Reason - Cooldown:
-                return toaster.update(thisToast, { content: result.data.message, options: { type: TYPE.ERROR, timeout: 7_000, closeOnClick: true, icon: true } })
+                // Reason - Cooldown - Send Alert:
+                return notifier.send({
+                    level: 'warn',
+                    icon: 'mdi:timer-outline',
+                    header: 'Refreshed too recently!',
+                    content: result.data.message,
+                })
             } else {
-                // Reason - Other/Unknown:
-                return toaster.update(thisToast, { content: result.data.message, options: { type: TYPE.ERROR, timeout: 10_000, closeOnClick: true, icon: true } })
+                // Reason - Other/Unknown- Send Alert:
+                return notifier.send({
+                    level: 'warn',
+                    header: 'Failed to refresh account!',
+                    content: `Unfortunately we ran into an error refreshing you account. Try signing out and back in!`,
+                })
             }
         } else {
             // Succeeded:
-            return toaster.update(thisToast, { content: 'Success! Your account data has been refreshed with Discord.', options: { type: TYPE.SUCCESS, timeout: 5_000, closeOnClick: true, icon: CheckCircle2Icon } })
+            return notifier.send({
+                level: 'success',
+                header: 'Account Refreshed',
+                duration: 3,
+            })
         }
     }
 
