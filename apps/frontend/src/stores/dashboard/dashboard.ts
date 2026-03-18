@@ -1,6 +1,6 @@
 import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordGuildIdentity, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
-import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates, fetchMigratingTemplates } from "./dashboard.api";
+import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildEmojis, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates, fetchMigratingTemplates } from "./dashboard.api";
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
@@ -49,6 +49,13 @@ const useDashboardStore = defineStore('dashboard', () => {
             immediate: false,
             resetOnExecute: false,
             onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
+        }),
+
+        /** Guild Data - Emojis */
+        emojis: useAsyncState(() => fetchGuildEmojis(guildId.value, authKey.value), undefined, {
+            immediate: false,
+            resetOnExecute: false,
+            onError(e) { console.error('[GUILD Emojis] - Fetch Error:', e) },
         }),
 
         /** Guild Data - Subscription */
@@ -412,12 +419,12 @@ const useDashboardStore = defineStore('dashboard', () => {
                                 if (guildSessions.value?.some(s => s?.id == newRow?.id)) return;
                                 guildSessions.value?.unshift(newRow as any)
                             } else if (eventType == 'UPDATE') {
-                                const index = guildSessions.value?.findIndex(t => t?.id == newRow?.id)
+                                const index = guildSessions.value?.findIndex(s => s?.id == newRow?.id)
                                 if (index != undefined && index !== -1 && guildSessions.value) {
                                     guildSessions.value[index] = newRow as any;
                                 } else console.warn('[Realtime]: Failed to update guild sessions', { newRow, index })
                             } else if (eventType == 'DELETE') {
-                                guildSessions.value = guildSessions.value?.filter(t => t?.id != oldRow?.id)
+                                guildSessions.value = guildSessions.value?.filter(s => s?.id != oldRow?.id)
                             }
                         }
                     )
@@ -448,7 +455,7 @@ const useDashboardStore = defineStore('dashboard', () => {
                             } else if (s == REALTIME_SUBSCRIBE_STATES.CLOSED) {
                                 console.info('[Realtime Updates]: 🗑️ UNSUBSCRIBED!')
                             } else {
-                                console.warn(`[Realtime Error]: ❌ FAILED to Subscribe! - ${s}`, { error: err })
+                                console.warn(`[Realtime Error]: ❌ FAILED to Subscribe! - ${s}`, ...[err ? { error: err } : null].filter(Boolean))
                             }
                         }
                         // Timed Out? - Try Again:
@@ -466,7 +473,7 @@ const useDashboardStore = defineStore('dashboard', () => {
 
             } catch (err) {
                 // Log Failure:
-                console.error('[Realtime Updates]: Subscribe Error Caught', err)
+                console.error('[Realtime Updates]: Subscribe Error Caught!', err)
             }
         }
 

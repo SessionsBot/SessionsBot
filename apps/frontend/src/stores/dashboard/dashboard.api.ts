@@ -36,6 +36,28 @@ export async function fetchGuildRoles(guildId: string | null, accessToken: strin
 }
 
 
+// Guild Emojis:
+export async function fetchGuildEmojis(guildId: string | null, accessToken: string | undefined) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - Missing "guildId".` })
+    if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - Missing "accessToken".` })
+    // Make API Request:
+    const { data: apiResult } = await API.get<APIResponseValue<{
+        name: string;
+        animated: boolean;
+        id: string;
+        url: string;
+        value: string;
+    }[]>>(`/guilds/${guildId}/emojis`)
+    // Return Result:
+    if (apiResult?.success) {
+        return apiResult.data;
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - API ERROR`, response: apiResult })
+    }
+}
+
+
 // Guild Subscription:
 export async function fetchGuildSubscription(guildId: string | null, accessToken: string | undefined) {
     // Confirm Inputs:
