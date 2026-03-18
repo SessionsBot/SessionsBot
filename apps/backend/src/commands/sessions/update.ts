@@ -1,8 +1,7 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, LabelBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, StringSelectMenuBuilder, StringSelectMenuInteraction, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
-import { getTimeZones } from '@vvo/tzdb'
 import { defaultFooterText, genericErrorMsg } from "../../utils/bot/messages/basic";
 import { URLS } from "../../utils/core/urls";
 import { updateExistingSessionPanel } from "../../utils/bot/messages/sessionPanels";
@@ -18,146 +17,201 @@ export default <CommandData>{
         .setName('update')
         .setDescription('Update/refresh a recently posted Session Panel.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-        .addStringOption(
-            new SlashCommandStringOption()
-                .setAutocomplete(true)
-                .setName('session')
-                .setDescription('Select the session you wish to cancel.')
-                .setRequired(true)
-        )
     ,
+    // Command Cooldown:
     cooldown: 10,
-    // Command Autocomplete:
-    autocomplete: async (i: AutocompleteInteraction) => {
-        // Get current text input:
-        const focused = i.options.getFocused()
-        // Get current sessions for guild:
-        const { data, error } = await supabase.from('sessions')
-            .select('id, time_zone, title, duration_ms, starts_at_utc')
-            .eq('guild_id', i.guildId)
-            .order('starts_at_utc', { ascending: false, nullsFirst: false })
-            .limit(25)
-        if (error || !data) return i.respond([]);
-        // Filter - Cancelable:
-        const cancelableSessions = data.filter(s => {
-            const startBase = DateTime.fromISO(s.starts_at_utc, { zone: 'utc' })
-            if (s.duration_ms) {
-                // Check if past the end date exactly in zone:
-                const endDate = startBase.plus({ milliseconds: s.duration_ms })
-                return endDate > DateTime.utc()
-            } else {
-                // Check if past the start date day in zone + (24 hrs):
-                const endDate = startBase.setZone(s.time_zone).plus({ hour: 24 })
-                return endDate > DateTime.now().setZone(s.time_zone)
-            }
-        }).map(s => {
-            // Get Timezone Abbreviation:
-            const sessionZone = getTimeZones().find(tz => tz.name == s.time_zone)
-            return {
-                name: (s.title + ' - ') + DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone }).toFormat(`M/d t`) + ` ${sessionZone?.abbreviation ?? ''}`,
-                value: s.id
-            }
-        })
-        // Filter by User Input - Title Search:
-        const filtered = cancelableSessions
-            .filter(s =>
-                s.name.toLowerCase().includes(focused.toLowerCase())
-            )
-            .slice(0, 25)
-        // Send back options:
-        await i.respond(filtered)
-    },
-
     // Command Execution:
     execute: async (i: ChatInputCommandInteraction) => {
         // Defer Reply:
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
-        // Get Selected Session:
-        const selectedSessionId = i.options.getString('session', true)
-
         // Guild Subscription:
         const guildSubscription = getSubscriptionFromInteraction(i)
 
-        // Get Full Session Data:
-        const { data: guildData, error: guildDataError } = await supabase.from('guilds')
-            .select(`accent_color, calendar_button, sessions(*, session_rsvp_slots(*, session_rsvps(*)))`)
-            .eq('id', i.guildId)
-            .eq('sessions.id', selectedSessionId)
-            .single()
-        const sessionData = guildData.sessions?.[0]
-        if (guildDataError) throw guildDataError; // Sends default failure msg
-        if (!guildData || !sessionData) {
-            createLog.for('Database').error('Failed to fetch a session for updating a panel!', { guildData, sessionData, guildDataError, guildId: i.guildId })
-            return await i.editReply({
-                components: <any>[
-                    genericErrorMsg({
-                        title: `${core.emojis.string('warning')} Failed to update Session Panel!`,
-                        reasonDesc: `Unfortunately we were unable to find the requested session you're trying to refresh. If you believe this is an error please get in contact with [Bot Support](${URLS.support_chat}). `
-                    })
-                ]
+        // Get Updatable Sessions:
+        const getUpdatableSessions = async () => {
+            const { data: sessions, error } = await supabase.from('sessions')
+                .select('id, time_zone, title, duration_ms, starts_at_utc')
+                .eq('guild_id', i.guildId)
+                .order('starts_at_utc', { ascending: false, nullsFirst: false })
+                .limit(25)
+            if (error) throw error;
+            // Filter - Updatable:
+            const updatableSessions = sessions?.filter(s => {
+                const startBase = DateTime.fromISO(s.starts_at_utc, { zone: 'utc' })
+                if (s.duration_ms) {
+                    // Check if past the end date exactly in zone:
+                    const endDate = startBase.plus({ milliseconds: s.duration_ms })
+                    return endDate > DateTime.utc()
+                } else {
+                    // Check if past the start date day in zone + (24 hrs):
+                    const endDate = startBase.setZone(s.time_zone).plus({ hour: 24 })
+                    return endDate > DateTime.now().setZone(s.time_zone)
+                }
+            }).map(s => {
+                // Get Timezone Abbreviation:
+                const startInZone = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
+                return {
+                    label: (s.title + ' - ') + startInZone?.toFormat(`M/d t`) + ` ${startInZone?.offsetNameShort ?? ''}`,
+                    value: s.id
+                }
             })
+            return updatableSessions
         }
+        const sessions = await getUpdatableSessions()
 
-        // Update Session Panel:
-        const update = await updateExistingSessionPanel(
-            sessionData,
-            guildSubscription.limits.SHOW_WATERMARK,
-            guildData.accent_color,
-            guildData.calendar_button
-        )
-
-
-        // Build Command Interaction Response:
-        let response: ContainerBuilder
-        if (!update.success) {
-            // Failed to Update - Alert:
-            response = new ContainerBuilder({
-                accent_color: core.colors.getOxColor('error'),
+        // If No Updatable Sessions Found - Send/Return Alert:
+        if (!sessions || !sessions?.length) return await i.reply({
+            components: [new ContainerBuilder({
+                accent_color: core.colors.getOxColor('blue'),
                 components: <any>[
-                    genericErrorMsg({
-                        title: `${core.emojis.string('warning')} Failed to update Session Panel!`,
-                        reasonDesc: `Unfortunately we were unable to update requested session panel you're trying to refresh. If you believe this is an error please get in contact with [Bot Support](${URLS.support_chat}). `
-                    })
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('info')} No Updatable Sessions Found...` }),
+                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `**Details:**\n> It appears you don't have any recently posted \`Session Panels\` available to be updated!` }),
+                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `-# **TIP:** Create a new session/event on your [Bot Dashboard](${URLS.site_links.dashboard}). \n-# [Need Help?](${URLS.support_chat})` })
                 ]
-            })
-        } else {
-            // Updated Successfully - Alert:
-            response = new ContainerBuilder({
-                accent_color: core.colors.getOxColor('success'),
+            })],
+            flags: MessageFlags.IsComponentsV2
+        })
+
+        // Send Selection Msg & Await Response:
+        const choiceMsg = await i.editReply({
+            components: [new ContainerBuilder({
+                accent_color: core.colors.getOxColor('blue'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `## ${core.emojis.string('success')}  Update Success!` }),
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('help')}  Update Session - Selection:` }),
                     new SeparatorBuilder(),
-                    new TextDisplayBuilder({ content: `**Details**: \n> You're session panel has been updated, click the button below to view any changes. \n-# Trying to modify a session schedule? Visit your [Bot Dashboard](${URLS.site_links.dashboard}).` }),
-                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `Select a posted session to update: \n> -# Trying to modify a session schedule? Visit your [Bot Dashboard](${URLS.site_links.dashboard}).` }),
                     new ActionRowBuilder({
                         components: [
-                            new ButtonBuilder({
-                                style: ButtonStyle.Link,
-                                url: `https://discord.com/channels/${i?.guildId}/${sessionData?.thread_id ?? sessionData?.channel_id}/${sessionData?.panel_id}`,
-                                emoji: { name: 'eye', id: core.emojis.ids.eye },
-                                label: `View Session Panel`
+                            new StringSelectMenuBuilder({
+                                custom_id: 'update-selected-id',
+                                placeholder: 'Select a session...',
+                                options: [...sessions]
                             })
                         ]
                     })
                 ]
-            })
-        }
+            })],
+            flags: MessageFlags.IsComponentsV2
+        })
 
-        // If SHOW WATERMARK - Add to Response:
-        if (guildSubscription.limits.SHOW_WATERMARK) {
-            response.components.push(
-                new SeparatorBuilder(),
-                defaultFooterText({ showHelpLink: true })
-            )
-        }
+        // Await Response / Selection:
+        const collector = choiceMsg.createMessageComponentCollector({
+            filter: (n) => i.user?.id == n.user.id,
+            idle: 30_000,
+        })
 
-        // Response to Command Interaction:
-        await i.editReply({
-            components: [
-                response
-            ],
-            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+        // On Collector Response:
+        collector.on('collect', async (ni: StringSelectMenuInteraction) => {
+            try {
+                const selected = ni?.values
+                await ni.deferUpdate()
+
+                // Confirm selected id:
+                const selectedId = selected?.at(-1)
+                if (!selectedId) {
+                    collector.stop('errored')
+                    return await i.editReply({
+                        components: [genericErrorMsg({
+                            reasonDesc: `Invalid/missing session (id) to update? Please try again and select a valid session!`
+                        })]
+                    })
+                }
+
+                // Update Session Panel:
+                // Get Full Session Data:
+                const { data: guildData, error: guildDataError } = await supabase.from('guilds')
+                    .select(`accent_color, calendar_button, sessions(*, session_rsvp_slots(*, session_rsvps(*)))`)
+                    .eq('id', i.guildId)
+                    .eq('sessions.id', selectedId)
+                    .single()
+                const fullSessionData = guildData?.sessions?.[0]
+                if (guildDataError || !fullSessionData) {
+                    // Data Fetch Err - Alert:
+                    createLog.for('Bot').warn(`Failed to find a session for /update cmd interaction!`, { userId: i?.user?.id, guildId: i?.guildId, selectedId, guildDataError, fullSessionData })
+                    collector.stop('errored')
+                    return await i?.editReply({
+                        components: [genericErrorMsg({
+                            reasonDesc: `It seems like we can't find the session you've selected to update! If this issue persists, please get in contact with bot support!`
+                        })]
+                    })
+                }
+                const update = await updateExistingSessionPanel(
+                    fullSessionData,
+                    guildSubscription?.limits?.SHOW_WATERMARK,
+                    guildData?.accent_color,
+                    guildData?.calendar_button
+                )
+                if (!update.success) {
+                    // Alert - Update Error:
+                    collector.stop('errored')
+                    return await i?.editReply({
+                        components: [genericErrorMsg({
+                            reasonDesc: `It seems like we ran into an error while updating the session you selected to update! If this issue persists, please get in contact with bot support!`
+                        })]
+                    })
+                } else {
+                    // Alert - Update Successful:
+                    collector.stop('success')
+                    return await i?.editReply({
+                        components: [new ContainerBuilder({
+                            accent_color: core.colors.getOxColor('success'),
+                            components: <any>[
+                                new TextDisplayBuilder({ content: `## ${core.emojis.string('success')}  Update Success!` }),
+                                new SeparatorBuilder(),
+                                new TextDisplayBuilder({ content: `**Details**: \n> You're session panel has been updated, click the button below to view any changes. \n-# Trying to modify a session schedule? Visit your [Bot Dashboard](${URLS.site_links.dashboard}).` }),
+                                new SeparatorBuilder(),
+                                new ActionRowBuilder({
+                                    components: [
+                                        new ButtonBuilder({
+                                            style: ButtonStyle.Link,
+                                            url: `https://discord.com/channels/${i?.guildId}/${fullSessionData?.thread_id ?? fullSessionData?.channel_id}/${fullSessionData?.panel_id}`,
+                                            emoji: { name: 'eye', id: core.emojis.ids.eye },
+                                            label: `View Session Panel`
+                                        })
+                                    ]
+                                }),
+                                ...[(guildSubscription?.limits?.SHOW_WATERMARK)
+                                    ? [
+                                        new SeparatorBuilder(),
+                                        defaultFooterText({ lightFont: true })
+                                    ]
+                                    : []
+                                ].flat()
+                            ]
+                        })],
+                        flags: MessageFlags.IsComponentsV2
+                    })
+                }
+
+            } catch (err) {
+                collector.stop('errored')
+                throw err
+            }
+        })
+
+
+        // On Collector End/Timeout:
+        collector.on('end', async (is, r) => {
+            try {
+                if (r == 'idle') {
+                    // Send timed out alert:
+                    return await i?.editReply({
+                        components: [new ContainerBuilder({
+                            accent_color: core.colors.getOxColor('warning'),
+                            components: <any>[
+                                new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')}  Interaction Timed Out!` }),
+                                new SeparatorBuilder(),
+                                new TextDisplayBuilder({ content: `**Details:** \n> Unfortunately, you ran out of time to respond to this interaction... you'll have to start over to try again!` })
+                            ]
+                        })]
+                    })
+                }
+            } catch (err) {
+                return createLog.for('Bot').warn('Failed to notify of collector ended - /update cmd interaction', { userId: i?.user?.id, guildId: i?.guildId, err, end_reason: r })
+            }
         })
 
     }

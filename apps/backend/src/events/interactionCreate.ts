@@ -176,7 +176,7 @@ export default <EventData>{
 				return createLog.for('Bot').error(`No auto complete logic found for cmd ${i?.commandName} interaction!`, { userId: i?.user?.id, guildId: i?.guildId, cmd: { id: i?.commandId, name: i?.commandName } })
 			}
 			try {
-				await command.autocomplete(i);
+				await command?.autocomplete(i);
 			} catch (error) {
 				// Check for Bot Permission Error:
 				const isPermErr = isBotPermissionError(error)
