@@ -139,16 +139,9 @@ authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
         if (saveResult instanceof AuthError) throw saveResult;
         const { user, profile } = saveResult;
 
-        // 7. Create MagicLink - Extract new JWT for user:
-        const { error: magicLinkERR, data: { properties: { hashed_token } } } = await supabase.auth.admin.generateLink({
-            type: 'magiclink',
-            email: user.email,
-        })
-        if (magicLinkERR || !hashed_token) throw new AuthError('generateLink', { err: magicLinkERR });
-
-        // 8. Return Success - Fresh Token:
+        // 7. Return Success:
         createLog.for('Auth').info(`${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userData, userId: userData?.id, timestamp: stringTimestamp() })
-        return new reply(res).success({ fresh_token: hashed_token });
+        return new reply(res).success(null);
 
     } catch (err) {
         // Log & Return - Refresh Error:

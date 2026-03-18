@@ -13,4 +13,4 @@ type ResyncError = {
     }
 }
 
-export type ResyncResult<T> = ResyncSuccess<T> | ResyncError;
+export type ResyncResult<T = Record<string, any>> = ResyncSuccess<T> | ResyncError;
