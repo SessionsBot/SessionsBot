@@ -108,6 +108,35 @@
             <!-- Sessions Paginator -->
             <Paginator v-model:first="sPageIndexStart" v-if="guildSessions?.length"
                 :total-records="guildSessions.length" :rows="5" :always-show="false" class="paginator">
+                <template
+                    #container="{ page, pageCount, prevPageCallback, nextPageCallback, lastPageCallback, firstPageCallback, }">
+                    <div class="flex-center gap-2 w-full flex-wrap p-2">
+                        <!-- First -->
+                        <Button @click="firstPageCallback" :disabled="page == 0" unstyled
+                            class="button-base aspect-square p-1 rounded hidden sm:flex">
+                            <Iconify icon="mingcute:arrows-left-line" />
+                        </Button>
+                        <!-- Previous -->
+                        <Button @click="prevPageCallback" :disabled="page == 0" unstyled
+                            class="button-base aspect-square p-1 rounded">
+                            <Iconify icon="mingcute:left-line" />
+                        </Button>
+                        <p class="opacity-75">
+                            Page {{ page + 1 }} of {{ pageCount }}
+                        </p>
+                        <!-- Next -->
+                        <Button @click="nextPageCallback" :disabled="(page + 1) == pageCount" unstyled
+                            class="button-base aspect-square p-1 rounded">
+                            <Iconify icon="mingcute:right-line" />
+                        </Button>
+                        <!-- Final -->
+                        <Button @click="lastPageCallback" :disabled="(page + 1) == pageCount" unstyled
+                            class="button-base aspect-square p-1 rounded hidden sm:flex">
+                            <Iconify icon="mingcute:arrows-right-line" />
+                        </Button>
+                    </div>
+
+                </template>
             </Paginator>
 
         </section>
