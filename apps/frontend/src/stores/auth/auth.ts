@@ -1,6 +1,6 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
-import type { Session } from "@supabase/supabase-js";
+import type { AuthResponse, Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
@@ -93,7 +93,7 @@ export const useAuthStore = defineStore('auth', {
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
-                const { status } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
+                const { status, data } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
                     headers: {
                         ['trigger-type']: triggerType
                     },
@@ -102,9 +102,31 @@ export const useAuthStore = defineStore('auth', {
                 });
 
                 if (status < 299) {
-                    // Refresh API Success - Refresh Auth Token (Supabase):
-                    const { error, data: { session, user } } = await supabase.auth.refreshSession()
-                    if (error) throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!' }
+                    // API Success - Attempt to Refresh Auth Token (Supabase):
+                    const attempt1: AuthResponse | 'timed_out' = await Promise.race([
+                        supabase.auth.refreshSession(),
+                        new Promise<'timed_out'>(r => setTimeout(() => {
+                            r('timed_out')
+                        }, 5_000))
+                    ])
+                    if (debugAuth) console.info('Refresh Session Result:', attempt1)
+                    if (attempt1 != 'timed_out' && attempt1?.error) {
+                        console.warn('Auth Session Refresh -- FAILED!', { result: attempt1 })
+                        throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt1 }
+                    } else if (attempt1 == 'timed_out') {
+                        // Try to refresh auth - Attempt 2:
+                        const attempt2: AuthResponse | 'timed_out' = await Promise.race([
+                            supabase.auth.refreshSession(),
+                            new Promise<'timed_out'>(r => setTimeout(() => {
+                                r('timed_out')
+                            }, 5_000))
+                        ])
+                        if (attempt2 != 'timed_out' && attempt2?.error) {
+                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt2 }
+                        } else if (attempt2 == 'timed_out') {
+                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh client supabase auth session (2 attempts) after API success!', attempt: attempt2 }
+                        }
+                    }
                     // Log & Return Refresh Success:
                     this.refreshStatus = 'succeeded';
                     console.info('✅ - REFRESHED AUTH SESSION!');
@@ -115,7 +137,7 @@ export const useAuthStore = defineStore('auth', {
                         }
                     } as const
 
-                } else throw { reason: "REFRESH ERROR", message: 'Failed to refresh auth session from API - You\'ll have to sign back in... Sorry! Redirecting you now....' };
+                } else throw { reason: "REFRESH ERROR", message: 'Failed to refresh auth session from API - You\'ll have to sign back in... Sorry! Redirecting you now....', result: data, status };
 
 
             } catch (err: any) {
@@ -191,7 +213,7 @@ export const watchAuth = async () => {
             // Send Alert:
             notifier.send({
                 level: 'error',
-                duration: false,
+                duration: 15_000,
                 icon: 'tdesign:user-error-1-filled',
                 header: `Failed to load account identity!`,
                 content: 'It seems we ran into an authentication error! <br><span class="mt-0.5 text-xs opacity-65"> <b>TIP:</b> Try refreshing the page or signing out and back in.</span>'
