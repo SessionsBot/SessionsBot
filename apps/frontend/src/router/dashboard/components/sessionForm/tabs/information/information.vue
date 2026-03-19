@@ -138,7 +138,7 @@
                     auto-option-focus />
                 <!-- Local Zone - Button -->
                 <Button title="Local Time Zone" v-if="!timeZone" @click="selectLocalTimeZone()" unstyled
-                    class="absolute! right-12 bottom-2.5 z-99! h-6 button-base opacity-65 hover:opacity-80 aspect-square">
+                    class="absolute! right-12 top-9.25 z-99! h-6 button-base opacity-65 hover:opacity-80 aspect-square">
                     <Iconify icon="lsicon:location-filled" size="18" />
                 </Button>
             </span>

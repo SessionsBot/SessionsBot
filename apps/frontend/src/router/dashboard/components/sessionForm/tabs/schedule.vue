@@ -207,7 +207,9 @@
 
         <!-- INPUT: Recurrence Toggle -->
         <div class="flex gap-1 mb-1 flex-wrap flex-row w-full items-center justify-start">
-            <ToggleSwitch input-id="recurrenceEnabled" v-model="recurrenceEnabled" class="scale-85" />
+            <ToggleSwitch input-id="recurrenceEnabled"
+                @value-change="(v) => { if (!v) invalidFields.delete('recurrence') }" v-model="recurrenceEnabled"
+                class="scale-85" />
             <label for="recurrenceEnabled" class="block gap-0.25 flex-row items-center">
                 <p class="inline!"> Repeating Session </p>
             </label>

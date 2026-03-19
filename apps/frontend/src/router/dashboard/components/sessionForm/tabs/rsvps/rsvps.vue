@@ -31,10 +31,10 @@
         const maxSlotCount = guildSubscription?.value?.limits?.MAX_RSVP_SLOTS ?? 3;
 
         return rs.slice(0, maxSlotCount)
-            .map(r => ({
+            ?.map(r => ({
                 ...r,
                 capacity: Math.min(r?.capacity, maxSlotCapacity)
-            }))
+            })) ?? []
     }
 
     // RSVP Panel Ref:
@@ -44,9 +44,20 @@
     const rsvpsEnabled = defineModel<boolean>('rsvpsEnabled')
     const rsvps = defineModel<RsvpSlotFormData[]>('rsvps', { default: [] });
 
+    // WATCH - RSVPs Enabled (prepare value array)
+    watch(rsvpsEnabled, (enabled) => {
+        if (enabled) {
+            if (!rsvps.value) {
+                console.log('fixed rsvp array!')
+                rsvps.value = []
+            }
+        }
+    })
+
     // Add New - RSVP:
     type RsvpSlotFormData = { name: string, emoji: string, capacity: number, required_roles?: string[] }
     function addNewRsvp(data: { name: string, capacity: number, emoji: string }) {
+        if (rsvps.value == null) rsvps.value = []
         rsvps.value.push(data)
         // apply subscription limits:
         rsvps.value = applySubscriptionLimitsToRsvps(rsvps.value)
@@ -70,6 +81,9 @@
 
     // Add Template Rsvps:
     function addTemplateRsvps(templates: any) {
+        if (rsvps.value == null) {
+            rsvps.value = []
+        }
         rsvps.value = applySubscriptionLimitsToRsvps([...rsvps.value, ...templates])
     }
 
@@ -146,7 +160,7 @@
                 <!-- Footer Area -->
                 <div class="flex items-center justify-center w-full gap-2 p-3 flex-wrap">
                     <!-- Add Custom Rsvp Btn -->
-                    <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                    <Button v-if="(rsvps?.length ?? 0) < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                         @click="rsvpDialogVisible = !rsvpDialogVisible"
                         class="bg-bg-3  py-0.75 px-2.25 pl-1.25 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
                         <PlusIcon class="size-5 p-0.5" />
@@ -154,7 +168,7 @@
                     </Button>
 
                     <!-- Add Rsvp from Template Btn -->
-                    <Button v-if="rsvps.length < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                    <Button v-if="(rsvps?.length ?? 0) < maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                         @click="rsvpTemplatesDialogVisible = !rsvpTemplatesDialogVisible"
                         class="bg-bg-3 py-0.75 px-2.25 gap-0.5 pl-1.25 rounded-lg transition-all cursor-pointer font-medium flex items-center flex-row hover:bg-[color-mix(var(--c-bg-3),var(--c-text-1)_12%)]">
                         <Iconify icon="akar-icons:paper" class="opacity-70" size="16" />
@@ -162,18 +176,20 @@
                     </Button>
 
                     <!-- Upgrade Btn -->
-                    <span v-if="rsvps.length >= maxRsvpSlots"
+                    <span v-if="(rsvps?.length ?? 0) >= maxRsvpSlots"
                         class="text-text-1/40 mb-0 italic text-xs mx-5 text-center">
                         Maximum allowed RSVP slots reached for your current subscription plan. Upgrade your bot
                         to increase your limits!
                     </span>
                     <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
-                        <Button v-if="rsvps.length >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
+                        <Button v-if="(rsvps?.length ?? 0) >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                             class="bg-brand-1/50 py-0.75 px-2.25 pl-1.25 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-brand-1/60 flex items-center flex-row">
                             <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
                             <p class="text-sm"> Upgrade Bot </p>
                         </Button>
                     </a>
+
+                    {{ rsvps }}
                 </div>
 
 
