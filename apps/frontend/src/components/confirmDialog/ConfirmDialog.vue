@@ -17,10 +17,10 @@
                     <CircleQuestionMarkIcon v-else
                         class="grow! flex! size-max! p-3 drop-shadow-md drop-shadow-black/40" />
                 </div>
-                <span class="font-bold text-3xl block mb-2 mt-6">
+                <span class="font-bold text-3xl block mb-2 mt-6 text-center">
                     {{ message.header }}
                 </span>
-                <p v-html="message.message" class="mb-0" />
+                <p v-html="message.message" class="mb-0 text-center" />
                 <div class="flex items-center gap-2 mt-6">
 
                     <Button label="Cancel" variant="outlined" severity="secondary" @click="rejectCallback"
