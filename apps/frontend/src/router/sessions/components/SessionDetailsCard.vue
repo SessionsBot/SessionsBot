@@ -16,6 +16,9 @@
     const auth = useAuthStore();
     const dashboard = useDashboardStore();
 
+    // Self Identity:
+    const selfIdentity = computed(() => auth.identity)
+
     // Guild Identity:
     const guildIdentity = computedAsync(async () => {
         if (s.value?.guild_id != null) {
@@ -67,118 +70,148 @@
 
 
 <template>
-    <div class="flex flex-center p-5 grow">
 
-        <div class="p-4 rounded-md bg-bg-2 border-2 border-ring-soft flex gap-2 flex-center flex-col">
+    <!-- Details Card -->
+    <div class="p-4 max-w-75 w-[90%] rounded-md bg-bg-2 border-2 border-ring-soft flex gap-2 flex-center flex-col">
 
-            <!-- Title - Header -->
-            <div class="flex flex-center flex-col gap-2">
-                <!-- Title -->
-                <p class="w-full text-2xl font-bold">
-                    {{ s?.title }}
-                </p>
-            </div>
-
-
-            <!-- Description -->
-            <div v-if="parsedDescription" class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <Iconify icon="mdi:text" class="opacity-80" size="20" />
-                    <p> Description </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 block! discord-preview" v-html="parsedDescription" />
-            </div>
-
-            <!-- Start Date -->
-            <div class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <Iconify icon="mdi:clock" class="opacity-80" size="20" />
-                    <p> Start Date </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
-                    {{ DateTime.fromISO(String(s?.starts_at_utc)).toFormat('f') ?? 'Unknown' }}
-                </span>
-            </div>
-
-            <!-- End Date -->
-            <div v-if="s?.duration_ms && Number(s?.duration_ms)" class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <Iconify icon="mdi:clock" class="opacity-80" size="20" />
-                    <p> End Date </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
-                    {{ DateTime.fromISO(String(s?.starts_at_utc)).plus({
-                        millisecond: Number(s?.duration_ms)
-                    }).toFormat('f') ?? 'Unknown' }}
-                </span>
-            </div>
-
-            <!-- Time Zone -->
-            <div class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <Iconify icon="mdi:clock" class="opacity-80" size="20" />
-                    <p> Time Zone </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
-                    {{ s?.time_zone ?? 'Unknown' }}
-                </span>
-            </div>
-
-            <!-- RSVPS -->
-            <div class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <Iconify icon="mdi:user-check" class="opacity-80" size="20" />
-                    <p> RSVPs </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 flex flex-center">
-
-                    <Button v-if="!auth.signedIn" title="Sign into account" @click="auth.signIn($route.fullPath)"
-                        unstyled class="button-base button-primary active:scale-95 py-0.5 my-1">
-                        <DiscordIcon class="scale-90 opacity-80" />
-                        Sign in to view
-                    </Button>
-
-                    <p v-else class="opacity-55 italic text-xs py-12">
-                        (rsvps here)
-                    </p>
-
-                </span>
-            </div>
-
-
-            <!-- Server -->
-            <div class="flex w-full flex-col gap-1">
-                <span class="flex items-center gap-px">
-                    <DiscordIcon class="scale-90" />
-                    <p> Server </p>
-                </span>
-                <span class="ml-2 bg-bg-3 rounded-md p-2 px-1.5 flex flex-center flex-row flex-wrap gap-1">
-                    <img :src="guildIdentity?.iconUrl ? String(guildIdentity?.iconUrl) : '/discord-grey.png'"
-                        class="size-6.25 bg-bg-3/30 rounded-md border-2 border-ring-soft" />
-
-                    <p> {{ guildIdentity?.name || 'Unknown Server?' }} </p>
-
-                    <!-- Open In Sever - If Applicable -->
-                    <span class="flex flex-center w-full">
-                        <a v-if="auth.signedIn && auth.identity?.guilds.all.find(g => g?.id == s?.guild_id)"
-                            :href="`https://discord.com/channels/${s?.guild_id}/${s?.thread_id ?? s?.channel_id}/${s?.panel_id}`"
-                            target="_blank">
-                            <Button unstyled class="button-secondary button-base px-1 mt-1">
-                                <DiscordIcon class="size-5" />
-                                <p class="text-sm font-semibold">
-                                    View in Discord
-                                </p>
-                            </Button>
-                        </a>
-                    </span>
-                </span>
-            </div>
-
-
-
-
+        <!-- Title - Header -->
+        <div class="flex flex-center flex-col gap-2">
+            <!-- Title -->
+            <p class="w-full text-2xl font-bold">
+                {{ s?.title }}
+            </p>
         </div>
+
+        <!-- Badges -->
+        <!-- Delayed Session -->
+        <div v-if="s?.status == 'delayed'" class="flex-center flex-row gap-px text-amber-600">
+            <Iconify icon="tabler:clock-up" size="20" />
+            <p class="font-bold uppercase italic">
+                Delayed!
+            </p>
+        </div>
+        <!-- Canceled Session -->
+        <div v-if="s?.status == 'canceled'" class="flex-center flex-row text-invalid-1">
+            <Iconify icon="basil:cancel-outline" />
+            <p class="font-bold uppercase italic">
+                Canceled!
+            </p>
+        </div>
+
+
+        <!-- Description -->
+        <div v-if="parsedDescription" class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <Iconify icon="mdi:text" class="opacity-80" size="20" />
+                <p> Description </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 block! discord-preview" v-html="parsedDescription" />
+        </div>
+
+        <!-- Start Date -->
+        <div class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <Iconify icon="mdi:clock" class="opacity-80" size="20" />
+                <p> Start Date </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
+                {{ DateTime.fromISO(String(s?.starts_at_utc)).toFormat('f') ?? 'Unknown' }}
+            </span>
+        </div>
+
+        <!-- End Date -->
+        <div v-if="s?.duration_ms && Number(s?.duration_ms)" class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <Iconify icon="mdi:clock" class="opacity-80" size="20" />
+                <p> End Date </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
+                {{ DateTime.fromISO(String(s?.starts_at_utc)).plus({
+                    millisecond: Number(s?.duration_ms)
+                }).toFormat('f') ?? 'Unknown' }}
+            </span>
+        </div>
+
+        <!-- Time Zone -->
+        <div class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <Iconify icon="mdi:clock" class="opacity-80" size="20" />
+                <p> Time Zone </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5">
+                {{ startDateUTC?.setZone(s?.time_zone)?.offsetNameShort ?? '' }} - {{ s?.time_zone ?? 'Unknown' }}
+            </span>
+        </div>
+
+        <!-- RSVPS -->
+        <div class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <Iconify icon="mdi:user-check" class="opacity-80" size="20" />
+                <p> RSVPs </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 flex flex-center">
+
+                <Button v-if="!auth.signedIn" title="Sign into account" @click="auth.signIn($route.fullPath)" unstyled
+                    class="button-base button-primary active:scale-95 py-0.5 my-1">
+                    <DiscordIcon class="scale-90 opacity-80" />
+                    Sign in to view
+                </Button>
+
+                <p v-else class="opacity-55 italic text-xs py-12">
+                    (rsvps here)
+                </p>
+
+            </span>
+        </div>
+
+
+        <!-- Server -->
+        <div class="flex w-full flex-col gap-1">
+            <span class="flex items-center gap-px">
+                <DiscordIcon class="scale-90" />
+                <p> Server </p>
+            </span>
+            <span class="ml-2 bg-bg-3 rounded-md p-2 px-1.5 flex flex-center flex-row flex-wrap gap-1">
+                <img :src="guildIdentity?.iconUrl ? String(guildIdentity?.iconUrl) : '/discord-grey.png'"
+                    class="size-6.25 bg-bg-3/30 rounded-md border-2 border-ring-soft" />
+
+                <p> {{ guildIdentity?.name || 'Unknown Server?' }} </p>
+            </span>
+        </div>
+
+
+        <!-- Actions -->
+
+        <!-- Open In Sever - If Applicable -->
+        <span class="mt-2.5 flex flex-center w-full" v-if="selfIdentity?.guilds?.all?.find(g => g?.id == s?.guild_id)">
+            <a v-if="auth.signedIn && auth.identity?.guilds.all.find(g => g?.id == s?.guild_id)"
+                :href="`https://discord.com/channels/${s?.guild_id}/${s?.thread_id ?? s?.channel_id}/${s?.panel_id}`"
+                target="_blank">
+                <Button unstyled
+                    class="button-base bg-text-1/5 border border-ring-soft px-1 mt-1 hover:bg-text-1/10 active:scale-95">
+                    <DiscordIcon class="size-5 opacity-70" />
+                    <p class="text-sm font-semibold opacity-75">
+                        View in Discord
+                    </p>
+                </Button>
+            </a>
+        </span>
+
+        <!-- Add to Calendar -->
+        <Button unstyled
+            class="button-base bg-text-1/5 border border-ring-soft px-1 mt-1 hover:bg-text-1/10 active:scale-95">
+            <Iconify icon="solar:calendar-add-bold" size="18" class="size-5! opacity-70" />
+            <p class="text-sm font-semibold opacity-75">
+                Add to Calendar
+            </p>
+        </Button>
+
+
+
+
     </div>
+
+
 </template>
 
 

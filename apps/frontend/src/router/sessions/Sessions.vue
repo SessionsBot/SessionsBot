@@ -58,7 +58,7 @@
 
 
 <template>
-    <main class="flex relative justify-center items-center flex-col gap-2 p-4">
+    <main class="flex relative justify-center items-center flex-col gap-2 p-4 max-w-[100vw]!">
 
         <!-- Back to Dashboard - Breadcrumb -->
         <div class="absolute! group/bc hover:text-brand-2 cursor-pointer flex w-fit h-fit top-3.5! left-3.5! z-3!">
@@ -73,7 +73,7 @@
         </div>
 
         <!-- Main Content - Wrap -->
-        <div class="flex flex-center grow w-full h-full p-10 text-center">
+        <div class="w-full flex-center h-full min-h-[87vh] p-5 pt-7 text-center overflow-x-auto">
             <Transition name="zoom" mode="out-in">
 
 
