@@ -1,17 +1,17 @@
 <script lang="ts" setup>
     import { zodResolver } from '@primevue/forms/resolvers/zod';
-    import z, { ZodError, ZodObject } from 'zod';
-    import { ArrowRightIcon, CheckIcon, PencilIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon, SparklesIcon, ExternalLink } from 'lucide-vue-next';
+    import z from 'zod';
+    import { CheckIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
-    import EmojiPicker, { type Emoji, type EmojiExt } from 'vue3-emoji-picker'
+
     import 'vue3-emoji-picker/css'
     import type { PopoverMethods } from 'primevue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
     import InputTitle from '../../labels/inputTitle.vue'
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { IconifyIconComponent } from 'iconify-icon';
     import { SubscriptionLevel } from '@sessionsbot/shared';
     import useNotifier from '@/stores/notifier';
+    import EmojiPanel from './emojiPanel.vue';
 
     // Services:
     const confirm = useConfirm();
@@ -31,16 +31,6 @@
 
     // Emoji Picker - Ref
     const emojiPickerPORef = ref<PopoverMethods>(null as any);
-    const emojiPickerElRef = ref<InstanceType<typeof EmojiPicker> | null>(null)
-    function focusEmojiSearch() {
-        nextTick(() => {
-            const pickerRoot = emojiPickerElRef.value?.$el as HTMLElement | undefined;
-            if (!pickerRoot) return;
-
-            const searchInput = pickerRoot.querySelector('input');
-            searchInput?.focus();
-        });
-    }
 
 
     // Guild Role Options:
@@ -57,6 +47,7 @@
             return r;
         } else return [];
     })
+    const guildEmojis = computed(() => dashboard.guildData.emojis.state)
 
 
     // Form v-modal Values:
@@ -75,11 +66,17 @@
     const RsvpFormSchema = z.object({
         name: z.string("Invalid Title").trim().min(1, "Title must be at least 1 character.").max(32, "Title cannot exceed 32 characters."),
         emoji: z.string()
-            .regex(/^\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*$/u, "Please enter a valid emoji.")
+            .regex(/^(?:<(?:a)?:[A-Za-z0-9_]{2,32}:\d{17,20}>|\p{Extended_Pictographic}(?:\uFE0F)?)$/u, "Please enter a valid emoji.")
             .or(z.literal("")),
         capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! <br> <a href="./pricing" target="_blank" class="text-sky-400/80 underline">Upgrade your bot</a> for higher limits!`),
         required_roles: z.nullish(z.array(z.string()))
     })
+
+
+    // Dynamic Emoji Input Display - Text/Img (custom emojis):
+    const emojiIsCustom = computed(() =>
+        !!guildEmojis.value?.find(e => e.value == RsvpFormValues.value.emoji)
+    )
 
 
     // Reset RSVP Form:
@@ -97,7 +94,7 @@
     const confirmRSVPDelete = () => {
         confirm.require({
             header: 'Please Confirm',
-            message: "Are you sure you'd like to remove this RSVP option? This action cannot be undone!",
+            message: `Are you sure you'd like to <b>remove this RSVP slot?</b> <br><br> <span class="text-invalid-1 font-bold text-sm underline">This action cannot be undone!</span>`,
             accept: () => {
                 emits('deleteRsvp', editingId.value as number)
                 isVisible.value = false;
@@ -216,8 +213,12 @@
             <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': $form.emoji?.invalid }">
                 <InputTitle fieldTitle="Emoji" :icon="SmileIcon" />
                 <!-- Emoji Input -->
-                <div class="relative w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
-                    <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1" />
+                <div class="relative! w-full cursor-pointer!" @click="(e) => emojiPickerPORef.show(e)">
+                    <inputText name="emoji" fluid v-model="RsvpFormValues.emoji" class="relative! z-1"
+                        :class="{ 'text-[0px]! py-5!': emojiIsCustom }" />
+                    <!-- Custom Emoji - Display -->
+                    <img v-if="emojiIsCustom" class="aspect-square size-4.5 block! z-3 absolute top-3.25 left-3.5"
+                        :src="guildEmojis?.find(e => e?.value == RsvpFormValues.emoji)?.url || '/discord-grey.png'" />
                 </div>
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
                     v-for="err in $form?.emoji?.errors || []">
@@ -227,11 +228,16 @@
                 </Message>
 
                 <!-- Emoji Picker -->
-                <Popover unstyled ref="emojiPickerPORef" class="p-2!" @show="focusEmojiSearch">
-                    <EmojiPicker class="text-text-1!" ref="emojiPickerElRef" disable-skin-tones native @select="(e) => {
+                <Popover unstyled ref="emojiPickerPORef" class="p-2! bg-bg-2! border! border-ring-soft! rounded-md">
+                    <EmojiPanel @select-custom-emoji="(e) => {
+                        RsvpFormValues.emoji = e;
+                        rsvpFormRef?.setFieldValue('emoji', e)
+                        emojiPickerPORef?.hide()
+                        rsvpFormRef?.validate()
+                    }" @select-emoji="(e) => {
                         RsvpFormValues.emoji = e.i;
                         rsvpFormRef?.setFieldValue('emoji', e.i)
-                        emojiPickerPORef.hide();
+                        emojiPickerPORef.hide()
                         rsvpFormRef?.validate('emoji')
                     }" />
                 </Popover>
@@ -289,8 +295,6 @@
 
         </Form>
 
-
-
         <!-- Footer -->
         <template #footer>
             <!-- Panel Btns -->
@@ -328,23 +332,6 @@
 
 
 <style scoped>
-
-    .v3-emoji-picker {
-        --v3-picker-bg: var(--c-bg-2);
-        --v3-picker-fg: color-mix(in oklab, var(--c-bg-2), var(--c-text-1) 11%);
-        --v3-picker-border: var(--c-ring-2);
-        --v3-picker-input-bg: color-mix(in oklab, var(--c-bg-2), black 11%);
-        --v3-picker-input-border: var(--c-ring-2);
-        --v3-picker-input-focus-border: var(--color-indigo-500);
-        --v3-group-image-filter: none;
-        --v3-picker-emoji-hover: transparent;
-
-    }
-
-    [data-theme="dark"] .v3-emoji-picker {
-        --v3-group-image-filter: invert(1) !important;
-    }
-
 
     .p-dialog-content {
         overflow-x: hidden !important;

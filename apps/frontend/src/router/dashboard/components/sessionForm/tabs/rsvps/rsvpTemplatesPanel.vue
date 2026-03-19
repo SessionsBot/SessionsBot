@@ -30,6 +30,11 @@
         { name: 'Party Leader', emoji: '👑', capacity: 1, required_roles: null },
 
     ]
+    function toggleTemplate(t: RsvpTemplate) {
+        if (selectedTemplates.value.has(t)) {
+            selectedTemplates.value.delete(t)
+        } else selectedTemplates.value.add(t)
+    }
     function selectTemplate(t: RsvpTemplate) {
         selectedTemplates.value?.add(t)
     }
@@ -90,10 +95,10 @@
                 class="w-[95%] m-3 mt-4 px-3 py-4 gap-2.5 bg-bg-1/80 rounded-md overflow-y-auto max-h-70 flex flex-col">
 
                 <!-- Template Item -->
-                <div v-for="t of templateOptions" class="flex items-center w-full h-fit flex-row flex-nowrap gap-2.5">
+                <div v-for="t of templateOptions" @click="toggleTemplate(t)"
+                    class="flex cursor-pointer items-center w-full h-fit flex-row flex-nowrap gap-2.5">
                     <!-- Checkbox -->
-                    <Checkbox binary
-                        @value-change="(s: boolean) => { if (s) { selectTemplate(t) } else { deselectTemplate(t) } }" />
+                    <Checkbox binary disabled :model-value="selectedTemplates?.has(t) ?? false" />
                     <!-- Template Data -->
                     <div
                         class="flex bg-text-1/7 pl-2 flex-row w-full h-fit grow flex-wrap flex-center p-1 gap-2 bg-bg-soft rounded-lg border border-ring-soft">

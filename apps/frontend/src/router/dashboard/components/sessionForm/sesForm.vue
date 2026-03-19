@@ -14,10 +14,9 @@
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import LoadingIcon from '@/components/icons/loadingIcon.vue';
-    import { datetime, RRule, rrulestr } from 'rrule';
+    import { datetime, RRule } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
-    import AnomalyScheduleAlert from './components/anomalyScheduleAlert.vue';
 
     // Services:
     const confirmService = useConfirm();
@@ -146,7 +145,9 @@
         rsvps: z.array(z.object({
             // 2nd Level - See RsvpPanel Schema
             name: z.string().normalize(),
-            emoji: z.nullish(z.emoji("Please enter a valid emoji.")).or(z.literal("")),
+            emoji: z.nullish(z.string()
+                .regex(/^(?:<(?:a)?:[A-Za-z0-9_]{2,32}:\d{17,20}>|\p{Extended_Pictographic}(?:\uFE0F)?)$/u, "Please enter a valid emoji.")
+                .or(z.literal(""))),
             capacity: z.number(),
             required_roles: z.array(z.string()).nullish()
         })).nullish(),
@@ -385,11 +386,12 @@
             `,
             icon: 'lucide:trash-2',
             accept: async () => {
-                submitState.value = 'failed'
+                submitState.value = 'loading'
                 const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`)
                 if (!success || error || status >= 300) {
                     console.error('Failed to Delete Session:', status, error)
                     // Send Errored Alert:
+                    submitState.value = 'failed'
                     notifier.send({
                         header: ' Failed!',
                         content: `We couldn't delete that session.. if this issue persists please <b class="extrabold">get in contact with Bot Support!</b>`,
@@ -716,9 +718,9 @@
                         <!-- Abort/Delete Session - Button -->
                         <Button unstyled @click="abortForm()" :disabled="submitState != 'idle'"
                             class="p-0.5 hover:bg-red-400/50 active:scale-95 cursor-pointer transition-all rounded-lg"
-                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState == 'loading' }">
-                            <XIcon v-if="submitState == 'idle'" class="p-px text-text-1/70" />
-                            <LoadingIcon v-else class="size-5" />
+                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState != 'idle' }">
+                            <LoadingIcon v-if="submitState == 'loading'" class="size-5" />
+                            <XIcon v-else class="p-px text-text-1/70" />
                         </Button>
                     </section>
 

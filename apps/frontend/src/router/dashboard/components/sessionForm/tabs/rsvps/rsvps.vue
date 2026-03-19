@@ -1,12 +1,9 @@
 <script lang="ts" setup>
     import { BaselineIcon, Clock10Icon, Clock8Icon, ClockIcon, Edit3Icon, FileQuestionMarkIcon, LinkIcon, LockIcon, PlusIcon, TextInitialIcon, Users2Icon } from 'lucide-vue-next';
-    import { DateTime } from 'luxon';
-    import z, { safeParse } from 'zod'
     import type { NewSessions_FieldNames } from '../../sesForm.vue';
     import RsvpPanel from './rsvpFormPanel.vue';
     import RsvpTemplatesPanel from './rsvpTemplatesPanel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { useToast } from 'vue-toastification';
     import { SubscriptionLevel } from '@sessionsbot/shared';
     import { externalUrls } from '@/stores/nav';
 
@@ -21,6 +18,7 @@
     // Services:
     const dashboard = useDashboardStore();
 
+    const guildEmojis = computed(() => dashboard.guildData.emojis.state);
 
     // Subscription - Limits:
     const guildSubscription = computed(() => dashboard.guildData.subscription?.state || SubscriptionLevel.FREE)
@@ -48,7 +46,6 @@
     watch(rsvpsEnabled, (enabled) => {
         if (enabled) {
             if (!rsvps.value) {
-                console.log('fixed rsvp array!')
                 rsvps.value = []
             }
         }
@@ -93,6 +90,10 @@
     // Rsvp template Dialog Panel:
     const rsvpTemplatesDialogVisible = ref(false);
 
+    // Custom Emoji Displays:
+    const customEmoji = (v: string) => guildEmojis?.value?.find(e => e?.value == v)
+
+
 
 </script>
 
@@ -131,9 +132,17 @@
                             class="gap-1.25 p-1.25 w-fit flex flex-nowrap flex-col justify-between items-center bg-white/5 ring-ring ring-2 rounded-md">
 
                             <!-- RSVP Data -->
-                            <div class="bg-white/5 p-1 px-1.75 rounded-md flex gap-0 flex-col items-center">
-                                <p class="text-wrap text-center font-semibold">{{ emoji }} {{ name }}</p>
-                                <div class="h-[3px] w-[90%] mx-2 my-0.5 bg-zinc-400/70 rounded-full" />
+                            <div class="bg-white/5 p-1 px-1.75 min-w-18 rounded-md flex gap-0 flex-col items-center">
+                                <!-- Emoji Display -->
+                                <p v-if="!customEmoji(emoji)">
+                                    {{ emoji }}
+                                </p>
+                                <img title="Custom Emoji" v-else :src="customEmoji(emoji)?.url || '/discord-grey.png'"
+                                    class="size-5 aspect-square">
+                                <!-- Title -->
+                                <p class="text-wrap text-center font-semibold">{{ name }}</p>
+                                <div class="h-[3px] w-[90%] mx-2 my-0.5 bg-ring-soft/70 rounded-full" />
+                                <!-- Capacity -->
                                 <span class="flex flex-row gap-1 items-center justify-center">
                                     <Users2Icon :size="15" />
                                     <p class="text-sm"> {{ capacity }} </p>
@@ -189,7 +198,6 @@
                         </Button>
                     </a>
 
-                    {{ rsvps }}
                 </div>
 
 
