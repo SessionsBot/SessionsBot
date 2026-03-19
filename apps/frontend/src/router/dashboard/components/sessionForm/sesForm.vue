@@ -529,14 +529,23 @@
 
 
             // Compute - Next Post UTC:
-            const nextAfterDT = formAction.value == 'edit'
-                ? DateTime.fromISO(String(dashboard.sessionForm.editPayload?.last_post_utc), { zone: 'utc' })
-                : DateTime.now().setZone(data.timeZone).startOf('day').toUTC()
+            const postAfterDT = () => {
+                // Editing - Post from last post date:
+                if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                    return DateTime.fromISO(dashboard.sessionForm.editPayload?.last_post_utc, { zone: 'utc' })
+                }
+                // New - Post From Start of Day of Session Start -- MINUS 1 day if "day before" post
+                if (data.postDay == 'Day before') {
+                    return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
+                } else {
+                    return startInZone?.startOf('day')?.toUTC()
+                }
+            }
             const nextPostUTC = getSchedulesNextPostUTC({
                 startsAtUtc: startUtc,
                 postOffsetMs: getPostOffsetMs(),
                 RRule: newRRule?.toString(),
-                afterDate: nextAfterDT?.isValid ? nextAfterDT : DateTime.utc()
+                afterDate: postAfterDT()
             })
 
             // Compute - Last Post UTC:

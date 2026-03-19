@@ -89,7 +89,7 @@ export function getSchedulesNextPostUTC(opts: {
     if (!opts.RRule) {
         // No Recurrence - Return First (and last) POST Date:
         const postTime = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
-        return postTime
+        return (postTime >= afterDate) ? postTime : null;
     }
     // Get Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })
@@ -100,7 +100,7 @@ export function getSchedulesNextPostUTC(opts: {
     let cursor = searchAfterInZone
     while (true) {
         // Find NEXT Schedule Start Date:
-        const nextJsDate = rule.after(cursor?.toJSDate())
+        const nextJsDate = rule.after(cursor?.toJSDate(), true)
         if (!nextJsDate) return null
         const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
         if (!nextStartDT) return null
