@@ -46,7 +46,7 @@
 
 
 <template>
-    <div class="flex justify-center items-center min-w-fit pt-10">
+    <div class="flex justify-center items-center w-full min-w-fit pt-10">
 
         <!-- Current Sessions Card -->
         <section class="upcoming-sessions-card">
@@ -118,7 +118,7 @@
 
 
     .upcoming-sessions-card {
-        @apply bg-bg-2 w-[90%] max-w-140 h-fit ring-ring-soft ring-2 rounded-md flex flex-col items-center justify-center content-center flex-wrap;
+        @apply bg-bg-2 w-[93%] max-w-140 h-fit ring-ring-soft ring-2 rounded-md flex flex-col items-center justify-center content-center flex-wrap;
 
         .card-header {
             @apply bg-bg-4/20 border-b-2 border-ring-soft flex w-full gap-8 p-3 justify-between items-center content-center flex-row;
