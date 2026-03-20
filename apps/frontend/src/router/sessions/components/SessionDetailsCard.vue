@@ -5,6 +5,8 @@
     import { processVariableText, type Database, type FullSessionData } from '@sessionsbot/shared'
     import { DateTime } from 'luxon'
     import RsvpDetailsList from './RsvpDetailsList.vue';
+    import AddToCalendarPopover from './AddToCalendarPopover.vue';
+    import type { PopoverMethods } from 'primevue';
 
     // Incoming Props:
     const props = defineProps<{
@@ -66,6 +68,10 @@
         })
         return html
     })
+
+
+    // Add to Calendar - Popover:
+    const addToCalPopover = ref<PopoverMethods>()
 
 </script>
 
@@ -203,7 +209,7 @@
             </span>
 
             <!-- Add to Calendar -->
-            <Button unstyled title="Add to Calendar"
+            <Button @click="addToCalPopover?.show" unstyled title="Add to Calendar"
                 class="button-base bg-text-1/5 border border-ring-soft px-1 hover:bg-text-1/10 active:scale-95">
                 <Iconify icon="solar:calendar-add-bold" size="18" class="size-5! opacity-70" />
                 <p class="text-sm font-semibold opacity-75">
@@ -211,6 +217,12 @@
                 </p>
             </Button>
         </span>
+
+
+        <!-- Add to calendar - Popover -->
+        <Popover unstyled ref="addToCalPopover" class="p-2" :pt="{ arrow: {} }">
+            <AddToCalendarPopover :eventData="s" />
+        </Popover>
 
 
     </div>

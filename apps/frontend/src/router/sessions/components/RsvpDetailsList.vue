@@ -30,12 +30,13 @@
 
         <!-- Rsvp Item -->
         <div v-for="r in rsvps"
-            class="flex flex-row items-center justify-between w-full p-2 gap-2 rounded-md border hover:border-ring-soft/80 hover:bg-bg/10 border-ring-soft/50 bg-black/5">
+            class="flex flex-row items-center justify-between w-full p-2 gap-2 rounded-md border hover:border-ring-soft/80 border-ring-soft/50 bg-black/10">
             <!-- Name & Emoji -->
             <span class="flex flex-row items-center flex-wrap gap-2">
                 <!-- Emoji -->
                 <span v-if="r.emoji">
-                    <img v-if="RegExp_DiscordEmojiId.test(r?.emoji)" class="aspect-square size-4.5 rounded-md"
+                    <img title="Custom Emoji" v-if="RegExp_DiscordEmojiId.test(r?.emoji)"
+                        class="aspect-square size-4.5 rounded-md"
                         :src="guildEmojis?.find(e => e?.value == r?.emoji)?.url || '/discord-grey.png'" />
                     <p v-else>
                         {{ r?.emoji }}

@@ -73,7 +73,7 @@
         </div>
 
         <!-- Main Content - Wrap -->
-        <div class="w-full flex-center flex-col gap-4.5 min-h-[87vh] p-5 text-center overflow-x-auto">
+        <div class="w-full flex-center flex-col gap-4.5 min-h-[87vh] p-5 my-5 text-center overflow-x-auto">
             <!-- Sign In For More Details - Card -->
             <Transition name="zoom">
                 <SignInCard

@@ -48,7 +48,7 @@ const useDashboardStore = defineStore('dashboard', () => {
             onError(e) { console.error('[DASHBOARD DATA]: Guild Channels - Fetch Error!', e) }
         }),
 
-        /** Guild Data - Channels */
+        /** Guild Data - Roles */
         roles: useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
             ..._defaultAsyncStateOptions,
             onError(e) { console.error('[DASHBOARD DATA]: Guild Roles - Fetch Error!', e) }
