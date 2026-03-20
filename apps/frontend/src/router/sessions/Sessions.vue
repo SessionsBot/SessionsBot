@@ -5,6 +5,7 @@
     import z from 'zod';
     import SessionDetailsCard from './components/SessionDetailsCard.vue';
     import ErrorFetchingCard from './components/ErrorFetchingCard.vue';
+    import SignInCard from './components/SignInCard.vue';
 
 
     // Services:
@@ -16,6 +17,9 @@
     const rawId = computed(() => route.params?.sessionId as string)
     const sessionIdInvalid = ref(false)
 
+    // Auth - Sign In Alert:
+    const signInAlertDismissed = ref(false)
+
     const sessionData = useAsyncState(async (id: string) => {
         if (!id) throw new Error('No Session ID for data fetch provided!')
         const { data, error } = await supabase.from('sessions')
@@ -24,13 +28,10 @@
             .single()
         if (error) throw error
         else return data
-    }, null, {
+    }, undefined, {
         immediate: false,
         onError(e) {
             console.error(`[SESSION DATA]: Failed to fetch!`, e)
-        },
-        onSuccess(data) {
-            console.info(`[Session Data]: Fetched!`, data)
         },
     })
     const s = computed(() => sessionData.state.value)
@@ -42,7 +43,6 @@
             const validation = z.uuid().safeParse(rawId.value)
             if (validation.success) {
                 // Valid Session Id - Attempt Fetch:
-                console.info('fetching', validation.data)
                 sessionData.executeImmediate(validation.data)
             } else {
                 // Invalid Id Format:
@@ -73,7 +73,15 @@
         </div>
 
         <!-- Main Content - Wrap -->
-        <div class="w-full flex-center h-full min-h-[87vh] p-5 pt-7 text-center overflow-x-auto">
+        <div class="w-full flex-center flex-col gap-4.5 min-h-[87vh] p-5 text-center overflow-x-auto">
+            <!-- Sign In For More Details - Card -->
+            <Transition name="zoom">
+                <SignInCard
+                    v-if="auth.authReady && sessionData.isReady.value && !sessionData.isLoading.value && !signInAlertDismissed && !auth.signedIn"
+                    v-model:dismissed="signInAlertDismissed" />
+            </Transition>
+
+            <!-- Main Content - Cards -->
             <Transition name="zoom" mode="out-in">
 
 
@@ -120,10 +128,11 @@
                 <!-- Session - Data View - Card -->
                 <SessionDetailsCard v-else :session="s" />
 
+
+
             </Transition>
+
         </div>
-
-
 
         <SiteFooter class="py-4" />
 

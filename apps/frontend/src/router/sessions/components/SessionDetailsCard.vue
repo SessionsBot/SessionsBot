@@ -4,10 +4,11 @@
     import { toHTML } from '@odiffey/discord-markdown'
     import { processVariableText, type Database, type FullSessionData } from '@sessionsbot/shared'
     import { DateTime } from 'luxon'
+    import RsvpDetailsList from './RsvpDetailsList.vue';
 
     // Incoming Props:
     const props = defineProps<{
-        session: Database['public']['Tables']['sessions']['Row'] | FullSessionData | null
+        session: FullSessionData | undefined
     }>()
     // Session Prop - Shorthand
     const s = computed(() => props.session)
@@ -150,17 +151,13 @@
                 <p> RSVPs </p>
             </span>
             <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 flex flex-center">
-
-                <Button v-if="!auth.signedIn" title="Sign into account" @click="auth.signIn($route.fullPath)" unstyled
-                    class="button-base button-primary active:scale-95 py-0.5 my-1">
-                    <DiscordIcon class="scale-90 opacity-80" />
-                    Sign in to view
-                </Button>
-
-                <p v-else class="opacity-55 italic text-xs py-12">
-                    (rsvps here)
-                </p>
-
+                <span v-if="!auth.signedIn" class="flex-center gap-1">
+                    <Iconify icon="mdi:eye-off-outline" size="16" class="opacity-65" />
+                    <p v-if="!auth.signedIn" class="italic text-sm py-1 opacity-55">
+                        Sign in to view...
+                    </p>
+                </span>
+                <RsvpDetailsList v-else :rsvps="s?.session_rsvp_slots ?? []" />
             </span>
         </div>
 
@@ -171,42 +168,49 @@
                 <DiscordIcon class="scale-90" />
                 <p> Server </p>
             </span>
-            <span class="ml-2 bg-bg-3 rounded-md p-2 px-1.5 flex flex-center flex-row flex-wrap gap-1">
-                <img :src="guildIdentity?.iconUrl ? String(guildIdentity?.iconUrl) : '/discord-grey.png'"
-                    class="size-6.25 bg-bg-3/30 rounded-md border-2 border-ring-soft" />
+            <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 flex flex-center flex-row flex-wrap gap-1">
+                <span v-if="!auth.signedIn" class="flex-center gap-1">
+                    <Iconify icon="mdi:eye-off-outline" size="16" class="opacity-65" />
+                    <p v-if="!auth.signedIn" class="italic text-sm py-1 opacity-55">
+                        Sign in to view...
+                    </p>
+                </span>
+                <span v-else class="flex-center flex-row gap-1 py-0.75">
+                    <img :src="guildIdentity?.iconUrl ? String(guildIdentity?.iconUrl) : '/discord-grey.png'"
+                        class="size-6.25 bg-bg-3/30 rounded-md border-2 border-ring-soft" />
+                    <p> {{ guildIdentity?.name || 'Unknown Server?' }} </p>
+                </span>
 
-                <p> {{ guildIdentity?.name || 'Unknown Server?' }} </p>
             </span>
         </div>
 
 
         <!-- Actions -->
+        <span class="flex-center flex-col w-full gap-2 py-2.5">
+            <!-- Open In Sever - If Applicable -->
+            <span class="flex flex-center w-full" v-if="selfIdentity?.guilds?.all?.find(g => g?.id == s?.guild_id)">
+                <a v-if="auth.signedIn && auth.identity?.guilds.all.find(g => g?.id == s?.guild_id)"
+                    :href="`https://discord.com/channels/${s?.guild_id}/${s?.thread_id ?? s?.channel_id}/${s?.panel_id}`"
+                    target="_blank">
+                    <Button unstyled
+                        class="button-base bg-text-1/5 border border-ring-soft px-1 mt-1 hover:bg-text-1/10 active:scale-95">
+                        <DiscordIcon class="size-5 opacity-70" />
+                        <p class="text-sm font-semibold opacity-75">
+                            View in Discord
+                        </p>
+                    </Button>
+                </a>
+            </span>
 
-        <!-- Open In Sever - If Applicable -->
-        <span class="mt-2.5 flex flex-center w-full" v-if="selfIdentity?.guilds?.all?.find(g => g?.id == s?.guild_id)">
-            <a v-if="auth.signedIn && auth.identity?.guilds.all.find(g => g?.id == s?.guild_id)"
-                :href="`https://discord.com/channels/${s?.guild_id}/${s?.thread_id ?? s?.channel_id}/${s?.panel_id}`"
-                target="_blank">
-                <Button unstyled
-                    class="button-base bg-text-1/5 border border-ring-soft px-1 mt-1 hover:bg-text-1/10 active:scale-95">
-                    <DiscordIcon class="size-5 opacity-70" />
-                    <p class="text-sm font-semibold opacity-75">
-                        View in Discord
-                    </p>
-                </Button>
-            </a>
+            <!-- Add to Calendar -->
+            <Button unstyled title="Add to Calendar"
+                class="button-base bg-text-1/5 border border-ring-soft px-1 hover:bg-text-1/10 active:scale-95">
+                <Iconify icon="solar:calendar-add-bold" size="18" class="size-5! opacity-70" />
+                <p class="text-sm font-semibold opacity-75">
+                    Add to Calendar
+                </p>
+            </Button>
         </span>
-
-        <!-- Add to Calendar -->
-        <Button unstyled
-            class="button-base bg-text-1/5 border border-ring-soft px-1 mt-1 hover:bg-text-1/10 active:scale-95">
-            <Iconify icon="solar:calendar-add-bold" size="18" class="size-5! opacity-70" />
-            <p class="text-sm font-semibold opacity-75">
-                Add to Calendar
-            </p>
-        </Button>
-
-
 
 
     </div>
