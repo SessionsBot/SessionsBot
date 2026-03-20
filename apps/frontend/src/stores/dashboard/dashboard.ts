@@ -1,6 +1,6 @@
 import { discordSnowflakeSchema, SubscriptionLimits, type API_DiscordGuildIdentity, type API_DiscordUserIdentity, type API_SessionTemplateBodyInterface, type APIResponseValue } from "@sessionsbot/shared";
 import { defineStore } from "pinia";
-import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildEmojis, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates, fetchMigratingTemplates } from "./dashboard.api";
+import { fetchGuildAuditLog, fetchGuildChannels, fetchGuildData, fetchGuildEmojis, fetchGuildRoles, fetchGuildSessions, fetchGuildStats, fetchGuildSubscription, fetchGuildTemplates, fetchMigratingTemplates } from "./guildData.api";
 import { useAuthStore } from "../auth";
 import { DateTime } from "luxon";
 import { API } from "@/utils/api";
@@ -8,12 +8,18 @@ import { z } from 'zod'
 import router from "@/router/router";
 import useNotifier from "../notifier";
 import LimitReachedAlert from "@/components/notifier/limitReachedAlert.vue";
-import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from "@supabase/supabase-js";
-import { supabase } from "@/utils/supabase";
 import { useRealtimeUpdates } from "./realtime.api";
 
 export type DashboardTabName = 'Sessions' | 'Calendar' | 'Notifications' | 'AuditLog' | 'Preferences';
 
+// Default options for guild data fetching:
+const _defaultAsyncStateOptions = {
+    immediate: false,
+    resetOnExecute: false,
+} as const
+
+
+// Dashboard Store:
 const useDashboardStore = defineStore('dashboard', () => {
     /** Private Variables */
     const auth = useAuthStore()
@@ -26,76 +32,66 @@ const useDashboardStore = defineStore('dashboard', () => {
     const guildData = {
         /** Guild Data - Preferences / Guild Row */
         guild: useAsyncState(() => fetchGuildData(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Row (Preferences) - Fetch Error!', e) }
         }),
 
         /** Guild Data - Guild Stats */
         guildStats: useAsyncState(() => fetchGuildStats(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD DATA/PREFERENCES] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Stats - Fetch Error!', e) }
         }),
 
         /** Guild Data - Channels */
         channels: useAsyncState(() => fetchGuildChannels(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD CHANNELS] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Channels - Fetch Error!', e) }
         }),
 
         /** Guild Data - Channels */
         roles: useAsyncState(() => fetchGuildRoles(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD ROLES] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Roles - Fetch Error!', e) }
         }),
 
         /** Guild Data - Emojis */
         emojis: useAsyncState(() => fetchGuildEmojis(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD Emojis] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Emojis - Fetch Error!', e) }
         }),
 
         /** Guild Data - Subscription */
         subscription: useAsyncState(() => fetchGuildSubscription(guildId.value, authKey.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD SUBSCRIPTION] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Subscription - Fetch Error!', e) }
         }),
 
         /** Guild Data - Session Templates */
         sessionTemplates: useAsyncState(() => fetchGuildTemplates(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD TEMPLATES] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Session Templates - Fetch Error!', e) }
         }),
 
         /** Guild Data - Sessions */
         sessions: useAsyncState(() => fetchGuildSessions(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD SESSIONS] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Guild Sessions - Fetch Error!', e) }
         }),
 
         /** Guild Data - Audit Logs */
         auditLog: useAsyncState(() => fetchGuildAuditLog(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD AUDIT LOG] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: Audit Log(s) - Fetch Error!', e) }
         }),
 
-        /** Guild Data - Migrating Templates *(temporary)* */
+        /** Guild Data - Migrating Templates *(@temporary)* */
         migratingTemplates: useAsyncState(() => fetchMigratingTemplates(guildId.value), undefined, {
-            immediate: false,
-            resetOnExecute: false,
-            onError(e) { console.error('[GUILD MIGRATING TEMPLATES] - Fetch Error:', e) },
+            ..._defaultAsyncStateOptions,
+            onError(e) { console.error('[DASHBOARD DATA]: MIGRATING TEMPLATES - Fetch Error!', e) }
         })
     }
 
-    /** Guild Data - From Auth User - **`UNTRUSTED`** */
+    /** Guild Data - From Auth **`IDENTITY`** */
     const userGuildData = computed(() => auth.identity?.guilds?.manageable.find(g => g.id == guildId.value))
 
     /** Selected Guild Data Fetch States - **NESTED** */
@@ -112,20 +108,23 @@ const useDashboardStore = defineStore('dashboard', () => {
         })
     }
 
+    /** **Util:** Refreshes a specified set of `guildData` 
+     * @note This does *NOT* trigger dashboard loading UI(s)
+     * @see {@link guildData} */
     async function refetchData(data: keyof typeof guildData) {
         await guildData[data].execute();
     }
 
     /** Saved Selection - Choice Class */
     const saveGuildChoice = {
-        saveKey: 'SGC_Dashboard',
+        saveKey: 'SB_Dashboard_Guild',
         /** Gets and returns any saved guild selection's id or null. */
         get() {
-            return sessionStorage.getItem(this.saveKey)
+            return localStorage.getItem(this.saveKey)
         },
         /** Assigns a new saved guild selection by id. */
         set(guildId: string) {
-            return sessionStorage.setItem(this.saveKey, guildId)
+            return localStorage.setItem(this.saveKey, guildId)
         },
         /** Assigns the selected dashboard guild to the saved choice, if any. */
         assign() {
@@ -134,10 +133,9 @@ const useDashboardStore = defineStore('dashboard', () => {
         },
         /** Removes any saved selected dashboard guild. */
         clear() {
-            return sessionStorage.removeItem(this.saveKey)
+            return localStorage.removeItem(this.saveKey)
         }
     }
-
 
     /** Navigation - Nested States/Methods */
     const nav = reactive({
@@ -376,6 +374,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         // Confirm selected Guild Id is within user's Manageable Guilds:
         const isManageable = auth.identity?.guilds?.manageable?.some(g => g.id == id)
         if (!isManageable) {
+            // Unaccessible Guild Alert:
             useNotifier().send({
                 header: 'Cannot Access Server!',
                 icon: 'material-symbols:lock',
@@ -406,6 +405,7 @@ const useDashboardStore = defineStore('dashboard', () => {
         // Check For Errors - Initial Fetch State:
         const hasErrors = Object.values(guildData).some(s => s.error.value != null)
         guildDataState.initialFetchOk.value = !hasErrors
+        if (hasErrors) return
 
         // Subscribe to Changes:
         await guildRealtimeUpdates.subscribe()

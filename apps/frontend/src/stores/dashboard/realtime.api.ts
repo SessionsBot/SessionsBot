@@ -3,8 +3,6 @@ import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from "@supabase/supab
 import { useAuthStore } from "../auth";
 import useDashboardStore from "./dashboard";
 
-type DashboardStore = ReturnType<typeof useDashboardStore>
-
 export const useRealtimeUpdates = () => {
     const auth = useAuthStore();
     const store = useDashboardStore();
@@ -17,7 +15,11 @@ export const useRealtimeUpdates = () => {
         try {
             // Prepare
             if (!store.guildId) return console.warn(`[Realtime Updates]: FAILED to subscribe - NO GUILD ID!`)
-            if (updateChannel.value) { await supabase.removeChannel(updateChannel.value); updateChannel.value = undefined; }
+            if (updateChannel.value) {
+                // Clear existing
+                await supabase.removeChannel(updateChannel.value)
+                updateChannel.value = undefined
+            }
 
             // Set Realtime Auth:
             if (!auth.authReady) return console.warn('[Realtime Updates]: FAILED to subscribe - AUTH NOT READY!')
@@ -42,7 +44,6 @@ export const useRealtimeUpdates = () => {
                         store.guildData.guild.state = newRow as any;
                     }
                 )
-
                 // Guild Stats:
                 .on('postgres_changes',
                     {
@@ -57,7 +58,6 @@ export const useRealtimeUpdates = () => {
                         store.guildData.guildStats.state = newRow as any;
                     }
                 )
-
                 // Session Templates:
                 .on('postgres_changes',
                     {
@@ -85,7 +85,6 @@ export const useRealtimeUpdates = () => {
                         store.guildData.sessionTemplates.state = guildTemplates
                     }
                 )
-
                 // Sessions:
                 .on('postgres_changes',
                     {
@@ -113,7 +112,6 @@ export const useRealtimeUpdates = () => {
                         store.guildData.sessions.state = guildSessions
                     }
                 )
-
                 // Audit Logs:
                 .on('postgres_changes',
                     {
@@ -132,31 +130,53 @@ export const useRealtimeUpdates = () => {
                         store.guildData.auditLog.state = auditLogs
                     }
                 )
-
                 // Subscribe
                 .subscribe(async (s, err) => {
-                    // Debug
-                    if (debugRealtime) {
-                        if (s == REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
-                            console.info('[Realtime Updates]: ✅ SUBSCRIBED!')
-                        } else if (s == REALTIME_SUBSCRIBE_STATES.CLOSED) {
-                            console.info('[Realtime Updates]: 🗑️ UNSUBSCRIBED!')
-                        } else {
-                            console.warn(`[Realtime Error]: ❌ FAILED to Subscribe! - ${s}`, ...[err ? { error: err } : null].filter(Boolean))
-                        }
+                    // Handle Status:
+                    if (s == REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+                        if (debugRealtime) console.info('[Realtime Updates]: ✅ SUBSCRIBED!')
+                        retryRealtimeAttempts.value = 0
+                    } else if (s == REALTIME_SUBSCRIBE_STATES.CLOSED) {
+                        if (debugRealtime) console.info('[Realtime Updates]: 🗑️ UNSUBSCRIBED!')
+                    } else {
+                        console.warn(`[Realtime Error]: ❌ FAILED to Subscribe! - ${s}`, ...[err ? { error: err } : null].filter(Boolean))
                     }
+
                     // Timed Out? - Try Again:
                     if (s == 'TIMED_OUT' || s == 'CHANNEL_ERROR') {
-                        console.info('[Realtime Updates]: Attempting to re-subscribe after timeout/error!')
-
-                        if (retryRealtimeAttempts.value >= 3) return console.error(`[Realtime Error]: FAILED to Subscribe AFTER 3 RETRY ATTEMPTS!`, { status: s, error: err })
+                        if (retryRealtimeAttempts.value >= 3) return console.error(`[Realtime Error]: FAILED to Subscribe - AFTER 3 ATTEMPTS!`, { status: s, error: err })
                         else {
+                            // RETRY - Subscribe to channel:
                             retryRealtimeAttempts.value += 1;
-                            await supabase.removeAllChannels()
+                            console.info(`[Realtime Updates]: Attempting to re-subscribe after timeout/error! - Retry ${retryRealtimeAttempts.value}`)
+                            if (updateChannel.value) {
+                                await supabase.realtime.removeChannel(updateChannel.value)
+                                updateChannel.value = undefined;
+                            }
+                            await new Promise(res => setTimeout(res, 1000 * retryRealtimeAttempts.value))
                             await subscribe()
                         }
                     }
                 })
+
+            // Add window close event:
+            window.addEventListener('beforeunload', async () => {
+                if (updateChannel.value)
+                    await unsubscribe()
+            })
+
+            // Add window visibility event:
+            document.addEventListener('visibilitychange', async () => {
+                if (document.hidden && updateChannel.value) {
+                    console.info('[Realtime Updates]: Tab hidden - unsubscribing!')
+                    await unsubscribe()
+                } else {
+                    if (store?.guildId && !updateChannel.value && auth?.signedIn && auth?.authReady) {
+                        console.log('[Realtime Updates]: Tab visible - re-subscribing!')
+                        await subscribe()
+                    }
+                }
+            })
 
         } catch (err) {
             // Log Failure:

@@ -11,7 +11,7 @@
     import { API } from '@/utils/api';
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
-    import { fetchGuildData } from '@/stores/dashboard/dashboard.api';
+    import { fetchGuildData } from '@/stores/dashboard/guildData.api';
     import { fa } from 'zod/v4/locales';
 
     // Services:
