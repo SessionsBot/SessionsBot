@@ -127,11 +127,6 @@
     });
 
 
-    // ON UNMOUNT - Unselect Guild:
-    onUnmounted(() => {
-        dashboard.guildId = null
-    })
-
 </script>
 
 
