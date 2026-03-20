@@ -61,7 +61,7 @@
 
 
 <template>
-    <div class="dashboard-tab-view">
+    <div class="dashboard-tab-view pr-0!">
 
         <!-- Title -->
         <div class="w-full flex items-center justify-start flex-row gap-0">
@@ -86,76 +86,78 @@
         </p>
 
 
+        <div class="flex w-full overflow-x-auto pb-2 pr-4 self-center">
+            <!-- Audit Log - Table -->
+            <div class="auditLogTable">
 
-        <!-- Audit Log - Table -->
-        <div class="auditLogTable">
-
-            <!-- Header Row -->
-            <div class="font-bold uppercase grid grid-cols-3 w-full!">
-                <p class="heading-cell rounded-tl-md">
-                    Date
-                </p>
-
-                <p class="heading-cell ">
-                    Action
-                </p>
-
-                <p class="heading-cell rounded-tr-md">
-                    User
-                </p>
-
-            </div>
-
-            <!-- Content Row(s) -->
-            <div title="View Details" v-for="e of shownEvents"
-                class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
-                @click="eventDetailsModal.openDetails(e as any)">
-                <!-- Date -->
-                <p class="content-cell ">
-                    {{ DateTime.fromISO(e.created_at).toFormat('M/d/yy - h:mm a') }}
-                </p>
-
-                <!-- Event -->
-                <div class="content-cell">
-                    <!-- @vue-expect-error -->
-                    <EventLabel :event="e.event_type" />
-                </div>
-
-                <!-- User -->
-                <div class="content-cell min-h-17!">
-                    <UserLabel :userId="e.user_id" />
-                </div>
-
-            </div>
-
-            <!-- Footer / No Events -->
-            <div v-if="!shownEvents?.length"
-                class="flex flex-center flex-col flex-wrap gap-1 font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center text-text-1/40">
-
-                <p class="uppercase mt-1 text-xs">
-                    No Events Found!
-                </p>
-                <div class="bg-ring-soft/80 h-0.75 w-12 rounded-full " />
-                <p class="text-xs italic px-3 font-semibold">
-                    This is where (after the bor or users) perform actions, you'll be able to view the history here.
-                </p>
-            </div>
-            <div v-else class="flex flex-center flex-wrap py-2 px-5 gap-2 bg-text-3/10 ring-ring-soft ring">
-
-                <Button v-if="shownCount + batchSize <= auditEvents.length" @click="showMore" unstyled
-                    class="button-base button-secondary gap-1 py-0.5 px-1.25 text-text-1/90">
-                    <Iconify icon="tabler:calendar-down" size="16" />
-                    <p class="font-bold text-sm pr-0.5">
-                        Load More
+                <!-- Header Row -->
+                <div class="font-bold uppercase grid grid-cols-3 w-full!">
+                    <p class="heading-cell rounded-tl-md">
+                        Date
                     </p>
-                </Button>
 
-                <p v-else class="font-extrabold uppercase text-xs text-text-1/40">
-                    End of Events...
-                </p>
+                    <p class="heading-cell ">
+                        Action
+                    </p>
+
+                    <p class="heading-cell rounded-tr-md">
+                        User
+                    </p>
+
+                </div>
+
+                <!-- Content Row(s) -->
+                <div title="View Details" v-for="e of shownEvents"
+                    class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
+                    @click="eventDetailsModal.openDetails(e as any)">
+                    <!-- Date -->
+                    <p class="content-cell ">
+                        {{ DateTime.fromISO(e.created_at).toFormat('M/d/yy - h:mm a') }}
+                    </p>
+
+                    <!-- Event -->
+                    <div class="content-cell">
+                        <!-- @vue-expect-error -->
+                        <EventLabel :event="e.event_type" />
+                    </div>
+
+                    <!-- User -->
+                    <div class="content-cell min-h-17!">
+                        <UserLabel :userId="e.user_id" />
+                    </div>
+
+                </div>
+
+                <!-- Footer / No Events -->
+                <div v-if="!shownEvents?.length"
+                    class="flex flex-center flex-col flex-wrap gap-1 font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center text-text-1/40">
+
+                    <p class="uppercase mt-1 text-xs">
+                        No Events Found!
+                    </p>
+                    <div class="bg-ring-soft/80 h-0.75 w-12 rounded-full " />
+                    <p class="text-xs italic px-3 font-semibold">
+                        This is where (after the bor or users) perform actions, you'll be able to view the history here.
+                    </p>
+                </div>
+                <div v-else class="flex flex-center flex-wrap py-2 px-5 gap-2 bg-text-3/10 ring-ring-soft ring">
+
+                    <Button v-if="shownCount + batchSize <= auditEvents.length" @click="showMore" unstyled
+                        class="button-base button-secondary gap-1 py-0.5 px-1.25 text-text-1/90">
+                        <Iconify icon="tabler:calendar-down" size="16" />
+                        <p class="font-bold text-sm pr-0.5">
+                            Load More
+                        </p>
+                    </Button>
+
+                    <p v-else class="font-extrabold uppercase text-xs text-text-1/40">
+                        End of Events...
+                    </p>
+
+                </div>
+
 
             </div>
-
 
         </div>
 
@@ -174,7 +176,7 @@
     @reference "@/styles/main.css";
 
     .auditLogTable {
-        @apply mt-5 mx-3 max-w-195 min-w-80 sm:min-w-120 !max-h-fit block bg-bg-1 ring-ring-soft ring-2 rounded-md overflow-clip;
+        @apply mt-5 mx-3 max-w-195 min-w-80 sm:min-w-120 !max-h-fit block bg-bg-1 border-ring-soft border-2 rounded-md overflow-clip;
 
         *.heading-cell {
             @apply w-full text-center font-extrabold p-2 bg-text-1/15 ring-1 ring-ring-soft;
