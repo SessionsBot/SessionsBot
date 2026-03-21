@@ -7,22 +7,23 @@ import verifyToken from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
 import { AuthError } from "./authErrTypes.js";
 import { fetchUserDiscordData, updateAuthUser } from "./authUtils.js";
+import { URLS } from "apps/backend/src/utils/core/urls.js";
+import { ENVIRONMENT_TYPE } from "apps/backend/src/utils/environment.js";
 
 // ! BEFORE PRODUCTION:
 // - Switch over development tokens/keys/vars/etc.
-const CLIENT_ID = process.env["DEV_CLIENT_ID"];
-const CLIENT_SECRET = process.env["DEV_CLIENT_SECRET"];
+const CLIENT_ID = ENVIRONMENT_TYPE == 'production'
+    ? process.env?.['DISCORD_CLIENT_ID']
+    : process.env?.["DEV_CLIENT_ID"];
+const CLIENT_SECRET = ENVIRONMENT_TYPE == 'production'
+    ? process.env?.['DISCORD_CLIENT_SECRET']
+    : process.env?.["DEV_CLIENT_SECRET"];
 const REDIRECT_URI = "https://api.sessionsbot.fyi/auth/discord-callback";
 
 const stringTimestamp = () => DateTime.now().setZone('America/Chicago').toFormat('f');
 const createLog = useLogger();
 
 const authRouter = express.Router({ mergeParams: true });
-const frontendRedirects = {
-    // ! BEFORE PRODUCTION:
-    // authFailure: 'https://sessionsbot.fyi/sign-in?discordOauthError=true',
-    authFailure: "http://localhost:5173/sign-in?discordOauthError=true",
-};
 
 
 // Sign In Endpoint - REDIRECT - Initial Sign In w/ Discord:
@@ -74,7 +75,9 @@ authRouter.get("/discord-callback", async (req, res) => {
             email: user.email,
             options: {
                 // ! BEFORE PRODUCTION - SWITCH TO FRONTEND URL:
-                redirectTo: "http://localhost:5173/",
+                redirectTo: ENVIRONMENT_TYPE == 'production'
+                    ? URLS.website
+                    : "http://localhost:5173/",
             },
         });
         if (linkErr || !linkData?.properties?.action_link) throw new AuthError('generateLink', { context: { linkData, linkErr } });
@@ -86,18 +89,17 @@ authRouter.get("/discord-callback", async (req, res) => {
     } catch (err) {
         // Log & Redirect to failed sign in page:
         if (err instanceof AuthError) {
-            createLog.for('Auth').error(`Auth FAILED - ${err.errorType} - See Details!`, { err, timestamp: stringTimestamp() })
-            return res.redirect(frontendRedirects.authFailure + err.queryPath);
+            createLog.for('Auth').error(`Auth FAILED - ${err?.errorType} - See Details!`, { err, timestamp: stringTimestamp() })
+            return res.redirect(URLS.website + `/sign-in?error=${err?.errorType}`);
         } else {
             createLog.for('Auth').error(`Auth FAILED - UNKNOWN ERROR - See Details!`, { err, timestamp: stringTimestamp() })
-            return res.redirect(frontendRedirects.authFailure + '&errorType=unknown');
+            return res.redirect(URLS.website + `/sign-in?error=internal-unknown`);
         }
     }
 });
 
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
-// @depreciated (?) - may no longer be needed with self identity endpoint - but was nice to "quietly extend session"
 authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
     try {
         // 1. Get Data/User from Req:

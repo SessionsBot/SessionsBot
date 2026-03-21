@@ -3,7 +3,7 @@ import { ENVIRONMENT_TYPE } from "../environment"
 const WEBSITE =
     ENVIRONMENT_TYPE === "production"
         ? "https://sessionsbot.fyi"
-        : "http://localhost:5173"
+        : "https://v2.sessionsbot.fyi"
 
 const DOCUMENTATION = "https://docs.sessionsbot.fyi"
 
