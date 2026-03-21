@@ -81,7 +81,9 @@ export default defineConfig({
                 dateStyle: 'short',
             },
             text: 'Last Updated'
-        }
+        },
+
+
     },
 
     head: [
