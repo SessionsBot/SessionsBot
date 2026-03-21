@@ -7,6 +7,8 @@
     import RsvpDetailsList from './RsvpDetailsList.vue';
     import AddToCalendarPopover from './AddToCalendarPopover.vue';
     import type { PopoverMethods } from 'primevue';
+    import { externalUrls } from '@/stores/nav';
+    import { ExternalLinkIcon } from 'lucide-vue-next';
 
     // Incoming Props:
     const props = defineProps<{
@@ -216,6 +218,14 @@
                     Add to Calendar
                 </p>
             </Button>
+
+
+            <!-- Secondary - Invite the Bot -->
+            <a :href="externalUrls.inviteBot"
+                class="text-xs opacity-55 hover:opacity-75 hover:underline transition-all flex-center flex-row  mt-1.5 gap-1">
+                Invite the Bot
+                <Iconify icon="gridicons:external" size="12" />
+            </a>
         </span>
 
 

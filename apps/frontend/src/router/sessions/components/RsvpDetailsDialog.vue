@@ -15,6 +15,10 @@
     // Services:
     const dashboard = useDashboardStore();
 
+    const hasRoleData = computed(() =>
+        dashboard.guildId == r.value?.guild_id
+        && dashboard.guildData.roles.state != null
+    )
     const resolveRoleName = (roleId: string) => {
         return dashboard.guildData.roles?.state?.find(r => r?.id == roleId)
     }
@@ -49,7 +53,7 @@
                     <!-- Emoji -->
                     <div class="text-lg" v-if="r?.emoji">
                         <!-- Custom -->
-                        <img v-if="RegExp_DiscordEmojiId.test(r?.emoji)" class="size-5 rounded"
+                        <img title="Custom Emoji" v-if="RegExp_DiscordEmojiId.test(r?.emoji)" class="size-5 rounded"
                             :src="dashboard.guildData.emojis?.state?.find((e) => e.value == r?.emoji)?.url || '/discord-grey.png'" />
                         <!-- Native -->
                         <p v-else>
@@ -77,9 +81,10 @@
                     <RsvpUserCard v-if="r?.session_rsvps?.length" v-for="user in r?.session_rsvps"
                         :userId="user?.user_id" />
                     <!-- No Users -->
-                    <span class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
+                    <span v-if="!r?.roles_required?.length" `
+                        class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
                         <!-- None Required -->
-                        <p v-if="!r?.roles_required?.length" class="opacity-75 text-xs/snug">
+                        <p class="opacity-75 text-xs/snug">
                             No User Assigned
                         </p>
                     </span>
@@ -109,8 +114,11 @@
                 </span>
                 <span
                     class="w-fit self-start ml-2.75 font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
-                    <p v-for="role in r?.roles_required" class="opacity-75 text-xs/snug">
+                    <p v-if="hasRoleData" v-for="role in r?.roles_required" class="opacity-75 text-xs/snug">
                         - {{ resolveRoleName(role)?.name ?? `<${role}>` }}
+                    </p>
+                    <p v-else class="opacity-75 text-xs/snug">
+                        {{ r?.roles_required?.length ?? 0 }} Roles Required
                     </p>
                     <!-- None Required -->
                     <p v-if="!r?.roles_required?.length" class="opacity-75 text-xs/snug">
