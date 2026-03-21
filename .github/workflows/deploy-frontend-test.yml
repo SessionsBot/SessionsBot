@@ -1,4 +1,4 @@
-name: Deploy Site
+name: Deploy Test
 
 on:
     # Runs on new push with tag: "v*"
