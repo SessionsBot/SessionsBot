@@ -39,7 +39,10 @@ export default {
         })
         // Add watermark - if needed
         if (subscription.limits.SHOW_WATERMARK) {
-            rsp.components.push(defaultFooterText({ lightFont: true, showHelpLink: true }))
+            rsp.components.push(
+                new SeparatorBuilder(),
+                defaultFooterText({ lightFont: true, showHelpLink: true })
+            )
         }
         // Send Response:
         await i.reply({

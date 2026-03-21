@@ -150,7 +150,7 @@ const useAnalyticsStore = defineStore('analytics', () => {
 // Initialize Sentry:
 export async function initializeSentry(app: App) {
     const envMode = import.meta.env.MODE;
-    // if (envMode == 'development') return console.warn('(i) Sentry NOT initialized in development environments...')
+    if (envMode == 'development') return console.warn('(i) Sentry NOT initialized in development environments...')
     Sentry.init({
         app,
         dsn: "https://DX4e7boeLWD2emwP1hYmFko7@s2166264.eu-fsn-3.betterstackdata.com/777",

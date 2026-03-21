@@ -57,8 +57,8 @@
             const fieldSchema = localFormSchema.shape?.[name];
             const validateResult = safeParse(fieldSchema, value);
             if (!validateResult.success) {
-                const errs = treeifyError(validateResult.error).errors;
-                localForm.value.invalidFields.set(name, errs);
+                const errs = treeifyError(validateResult.error)?.errors;
+                if (errs) localForm.value.invalidFields.set(name, errs);
             } else {
                 localForm.value.invalidFields.delete(name);
             }
@@ -151,8 +151,8 @@
 
         } else {
             // Errors Found - Add to Invalid MSGs:
-            const { properties } = treeifyError(validate.error);
-            for (const [fieldName, fieldErrs] of Object.entries(properties as any)) {
+            const errs = treeifyError(validate.error)?.properties;
+            for (const [fieldName, fieldErrs] of Object.entries(errs as any)) {
                 const errs = fieldErrs as any;
                 localForm.value.invalidFields.set(fieldName as any, errs?.errors as any)
 
@@ -207,7 +207,9 @@
 
         <!-- INPUT: Recurrence Toggle -->
         <div class="flex gap-1 mb-1 flex-wrap flex-row w-full items-center justify-start">
-            <ToggleSwitch input-id="recurrenceEnabled" v-model="recurrenceEnabled" class="scale-85" />
+            <ToggleSwitch input-id="recurrenceEnabled"
+                @value-change="(v) => { if (!v) invalidFields.delete('recurrence') }" v-model="recurrenceEnabled"
+                class="scale-85" />
             <label for="recurrenceEnabled" class="block gap-0.25 flex-row items-center">
                 <p class="inline!"> Repeating Session </p>
             </label>

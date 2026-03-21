@@ -81,41 +81,36 @@ export type Database = {
       }
       entitlements: {
         Row: {
-          created_at: string | null
+          created_at: string
           ends_at: string | null
-          guild_id: string | null
+          guild_id: string
           id: string
+          is_active: boolean
+          is_test: boolean
           sku_id: string
           starts_at: string | null
-          status: Database["public"]["Enums"]["Entitlement Status"]
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           ends_at?: string | null
-          guild_id?: string | null
+          guild_id: string
           id: string
+          is_active: boolean
+          is_test: boolean
           sku_id: string
           starts_at?: string | null
-          status: Database["public"]["Enums"]["Entitlement Status"]
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           ends_at?: string | null
-          guild_id?: string | null
+          guild_id?: string
           id?: string
+          is_active?: boolean
+          is_test?: boolean
           sku_id?: string
           starts_at?: string | null
-          status?: Database["public"]["Enums"]["Entitlement Status"]
         }
-        Relationships: [
-          {
-            foreignKeyName: "entitlements_guild_id_fkey"
-            columns: ["guild_id"]
-            isOneToOne: false
-            referencedRelation: "guilds"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       guild_stats: {
         Row: {
@@ -178,6 +173,89 @@ export type Database = {
           thread_message_title?: string
         }
         Relationships: []
+      }
+      migrating_templates: {
+        Row: {
+          channel_id: string
+          created_at: string
+          description: string | null
+          duration_ms: number | null
+          enabled: boolean
+          expires_at_utc: string | null
+          failure_count: number
+          guild_id: string
+          id: string
+          last_fail_at: string | null
+          last_post_utc: string | null
+          mention_roles: string[] | null
+          native_events: boolean
+          next_post_utc: string | null
+          post_before_ms: number
+          post_in_thread: boolean
+          rrule: string | null
+          rsvps: Json | null
+          starts_at_utc: string
+          time_zone: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          description?: string | null
+          duration_ms?: number | null
+          enabled?: boolean
+          expires_at_utc?: string | null
+          failure_count?: number
+          guild_id: string
+          id?: string
+          last_fail_at?: string | null
+          last_post_utc?: string | null
+          mention_roles?: string[] | null
+          native_events?: boolean
+          next_post_utc?: string | null
+          post_before_ms: number
+          post_in_thread?: boolean
+          rrule?: string | null
+          rsvps?: Json | null
+          starts_at_utc: string
+          time_zone: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          description?: string | null
+          duration_ms?: number | null
+          enabled?: boolean
+          expires_at_utc?: string | null
+          failure_count?: number
+          guild_id?: string
+          id?: string
+          last_fail_at?: string | null
+          last_post_utc?: string | null
+          mention_roles?: string[] | null
+          native_events?: boolean
+          next_post_utc?: string | null
+          post_before_ms?: number
+          post_in_thread?: boolean
+          rrule?: string | null
+          rsvps?: Json | null
+          starts_at_utc?: string
+          time_zone?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migrating_templates_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -296,13 +374,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "session_rsvps_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["discord_id"]
           },
         ]
       }
@@ -474,10 +545,11 @@ export type Database = {
         Args: { template_ids: string[] }
         Returns: undefined
       }
+      is_public_guild: { Args: { gid: string }; Returns: boolean }
+      user_can_manage_guild: { Args: { p_guild_id: string }; Returns: boolean }
     }
     Enums: {
       "Deletion Request Status": "pending" | "processing" | "completed"
-      "Entitlement Status": "ACTIVE" | "EXPIRED" | "CANCELED"
       "Session Status": "scheduled" | "delayed" | "canceled"
     }
     CompositeTypes: {
@@ -607,7 +679,6 @@ export const Constants = {
   public: {
     Enums: {
       "Deletion Request Status": ["pending", "processing", "completed"],
-      "Entitlement Status": ["ACTIVE", "EXPIRED", "CANCELED"],
       "Session Status": ["scheduled", "delayed", "canceled"],
     },
   },

@@ -15,20 +15,21 @@
         <div class="mx-auto max-w-5xl text-center">
             <p
                 class="mb-5 inline-flex rounded-full border border-ring-soft/70 bg-violet-600/10 px-4 py-1 text-sm text-text-1/80 dark:text-violet-200">
-                Discord Events, simplified
+                Made for Discord
             </p>
             <div class="h-fit w-full flex grow flex-center mb-4 mt-2">
                 <img src="/logo.png"
                     class="aspect-square z-2! opacity-85 self-center size-26 rounded-xl shadow-md shadow-black/20 border border-ring-soft" />
             </div>
             <h1 class="text-balance text-4xl font-extrabold leading-tight sm:text-6xl">
-                Organize Discord events effortlessly.
+                Customizable Discord Events
             </h1>
+            <p class="text-balance text-2xl sm:text-3xl font-bold">
+                Simplified
+            </p>
             <span class="mx-auto mt-6 max-w-3xl text-lg text-text-2/80 dark:text-violet-100/85 sm:text-xl">
-                Schedule sessions <p class="inline opacity-60 text-xs">(events)</p>, manage RSVPs, and keep your
-                community organized
-                with automated
-                session panels.
+                Schedule events <p class="inline opacity-60 text-xs">(aka sessions)</p>, manage rsvps, and keep your
+                community organized with automated session panels.
             </span>
 
             <div class="mt-10 flex flex-wrap items-center justify-center gap-3">

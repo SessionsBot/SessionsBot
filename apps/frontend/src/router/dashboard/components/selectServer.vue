@@ -10,7 +10,7 @@
     const dashboard = useDashboardStore();
 
     // User Guilds
-    const guildsWSession = computed(() => auth.userData?.guilds.manageable.filter(g => g.hasSessionsBot));
+    const guildsWSession = computed(() => auth.identity?.guilds.manageable.filter(g => g.hasSessionsBot));
 
     // Saved Guild Choice In Future:
     const checkboxDT: CheckboxDesignTokens = {
@@ -66,7 +66,7 @@
     <div class="flex justify-center items-center w-full! flex-1">
         <!-- Select Server - Authenticated -->
         <section
-            class="flex flex-col justify-center items-center bg-bg-2 ring-2 ring-ring-3 w-full m-10 max-w-150 rounded-sm"
+            class="flex flex-col justify-center items-center bg-bg-2 ring-2 ring-ring-soft w-full m-10 max-w-150 rounded-sm"
             v-if="auth.signedIn">
 
             <!-- Ready to Go - Server Selection -->
@@ -74,16 +74,16 @@
                 <p class="font-black text-2xl p-5 pb-0"> Select a Server: </p>
                 <p class="p-5 pt-0 opacity-70"> Ready to go, already has Sessions Bot.</p>
                 <div
-                    class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-bg-1/15 border-y-2 border-ring-3">
+                    class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-bg-1/15 border-y-2 border-ring-soft">
                     <!-- Guilds List -->
                     <span
                         class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
                         <!-- Guild Button - Select -->
                         <Button v-for="guild of guildsWSession" :title="guild.name"
                             @click="selectReadyServer(guild?.id)" unstyled
-                            class="bg-text-soft/50 hover:bg-text-soft/35 ring-2 ring-ring-3 hover:ring-brand-1 grow cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
+                            class="bg-text-soft/50 flex-1 grow hover:bg-text-soft/35 ring-2 ring-ring-4 hover:ring-brand-2 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
                             <img :src="guild?.icon" class="size-11 bg-text-1/50 rounded-full ring-2 ring-ring-3" />
-                            <p class="font-semibold"> {{ guild.name }} </p>
+                            <p class="font-semibold truncate"> {{ guild.name }} </p>
                         </Button>
                     </span>
 
@@ -158,7 +158,7 @@
         <section v-else>
 
             <div
-                class="bg-bg-2 ring-2 ring-ring-3 max-w-75 p-5 rounded-md text-text-1/70 flex items-center justify-center flex-col">
+                class="bg-bg-2 ring-2 ring-ring-soft max-w-75 p-5 rounded-md text-text-1/70 flex items-center justify-center flex-col">
                 <ProgressSpinner stroke-width="5" class="size-12!" />
 
                 <span v-if="showStillLoadingCard" class="flex items-center justify-center flex-col">

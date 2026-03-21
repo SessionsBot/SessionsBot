@@ -67,7 +67,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
                         if (!slotAssignees?.length) {
                             return `> No RSVPs`
                         } else {
-                            return `> <@${slotAssignees.map(a => a.user_id).join(`\n> > <@`) + '>'}`
+                            return `> <@${slotAssignees.map(a => a.user_id).join(`>\n > <@`) + '>'}`
                         }
                     }
                     const emojiLabel = () => {
@@ -128,10 +128,11 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
         // Util: Get Roles Mentions - Footer:
         const getFooter = () => {
             let r = [];
+            if (showWatermark || s?.mention_roles?.length) {
+                r.push(new SeparatorBuilder())
+            }
             if (showWatermark) {
-                r.push(
-                    defaultFooterText()
-                )
+                r.push(defaultFooterText({ lightFont: true }))
             }
             if (s?.mention_roles?.length) {
                 r.push(
@@ -152,7 +153,6 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
                 new SeparatorBuilder(),
                 ...getRSVPsSections(),
                 ...getActionButtons(),
-                new SeparatorBuilder(),
                 ...getFooter()
             ]
         })
@@ -187,7 +187,7 @@ export async function updateExistingSessionPanel(session: FullSessionData, water
         if (isBotPermissionError(error)) {
             await sendPermissionAlert(session?.guild_id)
             // Log & Return Error:
-            createLog.for('Bot').info(`Perms - Failed to update an existing session panel message! - Guild: ${session?.guild_id}`, { error, guildId: session?.guild_id })
+            createLog.for('Permissions').info(`Failed to update an existing session panel message! - Guild: ${session?.guild_id}`, { error, guildId: session?.guild_id })
             return { success: false, message: 'Perms - Failed to update an existing session panel message!' }
         }
         // Log & Return Error:
@@ -207,7 +207,8 @@ export function buildSessionThreadStartMsg(title: string, description: string, a
         ]
     })
     if (watermark) r.components.push(
-        defaultFooterText()
+        new SeparatorBuilder(),
+        defaultFooterText({ lightFont: true })
     )
     return r
 }

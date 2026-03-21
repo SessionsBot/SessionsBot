@@ -1,3 +1,3 @@
 export * from './apiResponse.js'
-export * from './discord.js'
+export * from './discordIdentities.js'
 export * from './dataDeletions.js'

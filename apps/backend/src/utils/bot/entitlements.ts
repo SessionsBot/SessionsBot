@@ -1,7 +1,9 @@
-import { RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
+import { Entitlement, RESTGetAPIEntitlementsQuery, RESTGetAPIEntitlementsResult, Routes } from "discord.js";
 import core from "../core/core";
 import { useLogger } from "../logs/logtail";
 import { SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
+import { supabase } from "../database/supabase";
+import { DateTime } from "luxon";
 
 const createLog = useLogger();
 
@@ -43,4 +45,29 @@ export async function getGuildSubscriptionFromId(guildId: string) {
         else if (ownedSKUs.includes(SubscriptionSKUs.PREMIUM)) return SubscriptionLevel.PREMIUM;
         else return SubscriptionLevel.FREE;
     }
+}
+
+
+/** Used from Bot Client `Events` to sync entitlement changes to database. */
+export async function updateEntitlementToDatabase(e: Entitlement) {
+
+    try {
+        // Make Db Req:
+        const { error } = await supabase.from('entitlements').upsert({
+            id: e.id,
+            sku_id: e.skuId,
+            guild_id: e?.guildId,
+            is_active: e?.isActive(),
+            is_test: e?.isTest(),
+            starts_at: DateTime.fromJSDate(e?.startsAt, { zone: 'utc' }).toISO(),
+            ends_at: DateTime.fromJSDate(e?.endsAt, { zone: 'utc' }).toISO()
+        })
+        if (error) throw error
+        else return { success: true }
+    } catch (err) {
+        // Log Error:
+        createLog.for('Database').error(`Failed to update an ENTITLEMENT within database!`, { guildId: e?.guildId, err })
+        return { success: false }
+    }
+
 }

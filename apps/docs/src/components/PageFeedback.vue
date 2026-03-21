@@ -194,7 +194,7 @@
                         <div class="action-row">
 
                             <!-- Support Chat -->
-                            <a href="https://discord.gg/49gNbwA8t6" target="_blank" class="action-button">
+                            <a href="https://discord.gg/rkSdTMbq5p" target="_blank" class="action-button">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="relative top-px" width="18" height="18"
                                     viewBox="0 0 24 24">
                                     <path fill="currentColor" fill-rule="evenodd"

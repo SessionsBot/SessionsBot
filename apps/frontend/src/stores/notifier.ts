@@ -193,7 +193,7 @@ const useNotifier = defineStore('notifier', () => {
 
         // Add Default Actions if NONE are provided & NOT disabled:
         if (notificationOpts?.actions != false && !notificationOpts?.actions?.length) {
-            if (notificationOpts.level == 'error', notificationOpts.level == 'warn') {
+            if (notificationOpts.level == 'error' || notificationOpts.level == 'warn') {
                 // Add Default - Error Actions
                 notificationOpts.actions = [
                     {

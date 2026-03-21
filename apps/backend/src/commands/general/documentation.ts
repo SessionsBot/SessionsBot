@@ -25,7 +25,7 @@ export default {
             const responseMsg = new ContainerBuilder({
                 accent_color: core.colors.getOxColor('purple'),
                 components: <any>[
-                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')}  Read the Bot Documentation \n> This is a great resource to **learn about Sessions Bot** and how to use it's core features! \n> -# **Experiencing Issues?** Use ${core.commands.getLinkString('support')} for help!` }),
+                    new TextDisplayBuilder({ content: `### ${core.emojis.string('link')}  Read the Bot Documentation \n> This is a great resource to **learn about Sessions Bot** and how to use it's core features! \n> -# **Experiencing Issues?** Use ${core.commands.string('support')} for help!` }),
                     new SeparatorBuilder(),
                     new ActionRowBuilder({
                         components: [
@@ -45,7 +45,7 @@ export default {
             if (subscription.limits.SHOW_WATERMARK) {
                 responseMsg.components.push(
                     new SeparatorBuilder(),
-                    defaultFooterText({ showHelpLink: true })
+                    defaultFooterText({ showHelpLink: true, lightFont: true })
                 )
             }
 
@@ -57,7 +57,10 @@ export default {
 
         } catch (err) {
             // Check for Bot Permission Error:
-            if (isBotPermissionError(err)) sendPermissionAlert(i.guildId)
+            if (isBotPermissionError(err)) {
+                createLog.for('Permissions').warn(`The /documentation command failed during an interaction - due to permissions`, { userId: i?.user?.id, interactionId: i?.id, guildId: i?.guildId })
+                return sendPermissionAlert(i.guildId)
+            }
             // Log failure
             createLog.for('Bot').warn(`The /documentation command failed during an interaction...`, {
                 interaction: {

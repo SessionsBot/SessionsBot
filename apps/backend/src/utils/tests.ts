@@ -1,23 +1,14 @@
 import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
-import discordLog from "./logs/discord.js";
-import { initializeTemplateCreationScheduler } from "./database/schedules/templateCreations.js";
-import sendWithFallback from "./bot/messages/sendWithFallback.js";
-import { defaultFooterText, genericErrorMsg } from "./bot/messages/basic.js";
-import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder } from "discord.js";
-import { URLS } from "./core/urls.js";
-import { increaseGuildStat } from "./database/manager/statsManager.js";
-import { initializeDataDeletionSchedule } from "./database/schedules/automaticDeletions.js";
-import { sendSessionPostFailedFromErrorAlert, sendSessionPostFailedFromPerms } from "./bot/permissions/failedToSendSessionPanel.js";
-import dbManager from "./database/manager/dbManager.js";
-import { sendPermissionAlert } from "./bot/permissions/permissionsDenied.js";
+import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder, MessageFlags } from "discord.js";
+import { clearMigrationTests, testMigrator } from "./migration/migrator.js";
+import { sendUpgradeAlert } from "./migration/alerts.js";
 
 
 const createLog = useLogger();
 const guildId = process.env["GUILD_ID_DEVELOPMENT"];
 const userId = '252949527143645185'
-const channelId = '1430465764619714590'
 
 
 export default {
@@ -29,8 +20,12 @@ export default {
                 const { botClient: bot, colors } = core
                 // Test here..\
 
-                // const r = await dbManager.sessions.cancel(guildId, '76907ba3-55a0-4f4c-a308-9d28637e2046', userId)
-                // console.info('Result', r)
+                // console.log(await sendUpgradeAlert('start', guildId))
+                // console.log(await sendUpgradeAlert('completed', guildId))
+
+                // await clearMigrationTests()
+
+                // await testMigrator()
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

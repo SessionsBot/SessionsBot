@@ -55,7 +55,7 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
 
         } else {
             // INVALID - Req Body - Return Error(s)
-            const input_errors = z.treeifyError(validatedBody.error).properties
+            const input_errors = z.treeifyError(validatedBody.error)?.properties
             return new reply(res).failure({
                 message: 'Invalid request body! - See input_errors',
                 input_errors,

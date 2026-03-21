@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+    import { externalUrls } from '@/stores/nav';
     import type { MaybeElementRef } from '@vueuse/core';
     import { HelpCircleIcon } from 'lucide-vue-next';
 
@@ -25,7 +26,7 @@
             // If already active (on mobile), allow link to be followed
             isActive.value = false;
             // Let the link work
-            let dest = 'https://docs.sessionsbot.fyi'
+            let dest = externalUrls.documentation
             if (props.docPath) {
                 dest = dest + props.docPath;
             }

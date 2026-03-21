@@ -41,6 +41,8 @@
     }
     const baseText = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, autem tempore! Itaque quos architecto provident recusandae sapiente consequatur quo excepturi fugit corporis maxime nam id voluptatem, accusantium quia commodi veniam facere eos sunt consequuntur, ut reiciendis inventore similique at! Alias."
     const randomText = (min = 5, max?: number) => {
+        const randomEmpty = (Math.random() > 0.5)
+        if (randomEmpty) return null
         const fullLength = baseText.length;
         const randomStart = Math.max(Math.abs(Math.random() * fullLength), min)
         const randomEnd = Math.max(Math.min(Math.floor((Math.random() * fullLength) + randomStart), fullLength), (randomStart + 10))
@@ -86,16 +88,15 @@
                 <span class="notification-header">
 
                     <!-- Header & Icon -->
-                    <span class="header-wrap">
+                    <span class="header-wrap" :class="{ 'one-lined': !data.content }">
                         <span v-if="data.icon != false">
                             <!-- Default Icons -->
                             <span v-if="!data.icon" :class="data?.classes?.headerIcon">
-                                <Iconify v-if="data.level == 'upgrade'" :icon="'tabler:diamond'"
-                                    class="header-icon relative bottom-px" />
+                                <Iconify v-if="data.level == 'upgrade'" :icon="'tabler:diamond'" class="header-icon" />
                                 <Iconify v-else-if="data.level == 'success'" :icon="'ix:success'" class="header-icon" />
                                 <Iconify v-else-if="data.level == 'error'" :icon="'ix:error'" class="header-icon" />
-                                <Iconify v-else-if="data.level == 'warn'" :icon="'pajamas:warning'" :size="18"
-                                    class="pl-0.5 px-px mt-0.25 header-icon" />
+                                <Iconify v-else-if="data.level == 'warn'" :icon="'pajamas:warning'" :size="20"
+                                    class="px-0.5 header-icon" />
                                 <Iconify v-else :icon="'mynaui:info-square'" class="header-icon" />
                             </span>
 
@@ -233,10 +234,18 @@
 
         .header-wrap {
             @apply flex gap-1.25 items-start justify-center w-fit;
+
+            &.one-lined {
+                @apply !items-center;
+
+                .header-icon {
+                    @apply pt-0;
+                }
+            }
         }
 
         .header-icon {
-            @apply pt-0.5
+            @apply aspect-square pt-0.5
         }
     }
 

@@ -13,7 +13,6 @@
 
     // Util Fn: Open Ses Form - Re-Enable Schedule:
     async function startReEnableSch(sch: typeof dashboard.sessionForm.editPayload) {
-        console.info('Starting re-enable sch form...')
         dashboard.sessionForm.editPayload = sch
         await nextTick()
         dashboard.sessionForm.actionMode = 're-enable';
@@ -51,11 +50,14 @@
             </div>
 
             <!-- Desc -->
-            <p class="bg-blue-500/0 p-2.5 text-sm opacity-70">
-                This is likely due to the bot trying to post a session to a channel/guild it doesn't have the right
-                access
-                or permissions to.
-                See the <a class="text-link hover:underline" :href="externalUrls.documentation"
+            <p class="bg-blue-500/0 p-2.5 pb-1 text-sm opacity-70">
+                This is likely due to the bot trying to post a session to a <b>channel/guild it doesn't have the right
+                    access
+                    or permissions to</b>.
+            </p>
+
+            <p class="opacity-65 text-xs w-full p-2.5 pt-0">
+                - See the <a class="text-link hover:underline" :href="externalUrls.documentation"
                     target="_blank">documentation</a> for more.
             </p>
 

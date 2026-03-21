@@ -57,7 +57,7 @@ export default defineConfig({
         ],
 
         socialLinks: [
-            { icon: 'discord', link: 'https://discord.gg/dKp5HZPjCg' },
+            { icon: 'discord', link: 'https://discord.gg/mMqpJEDy9u' },
             { icon: 'github', link: 'https://github.com/SessionsBot/SessionsBot' }
         ],
 
@@ -81,7 +81,9 @@ export default defineConfig({
                 dateStyle: 'short',
             },
             text: 'Last Updated'
-        }
+        },
+
+
     },
 
     head: [

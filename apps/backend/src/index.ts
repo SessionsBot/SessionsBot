@@ -5,12 +5,11 @@ import fs from "fs";
 import path from "node:path";
 import { ENVIRONMENT_TYPE } from './utils/environment.js';
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { Collection } from "discord.js";
-import { ExtendedClient } from './utils/types/extendedClient.js';
-import { initializeTemplateCreationScheduler } from './utils/database/schedules/templateCreations.js';
+import { Client, Collection } from "discord.js";
+import { initializeTemplateCreationScheduler } from './utils/schedules/templateCreations.js';
 import ready from './events/ready.js';
 
-const client = new ExtendedClient({
+const client = new Client({
 	intents: ['Guilds', 'GuildMessages', 'DirectMessages']
 });
 
@@ -80,9 +79,9 @@ for (const filePath of eventFiles) {
 	};
 	const { default: event } = await import(pathToFileURL(filePath).href);
 	if (event?.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+		client.once(event?.name, (...args) => event?.execute(...args));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+		client.on(event?.name, (...args) => event?.execute(...args));
 	}
 }
 

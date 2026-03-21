@@ -4,6 +4,7 @@ export default {
     Guilds: { name: 'Guilds', emoji: '👥' },
     Api: { name: 'API', emoji: '🌐' },
     Bot: { name: 'Bot', emoji: '🤖' },
+    Permissions: { name: 'Permissions', emoji: '🔒' },
     Database: { name: 'Database', emoji: '📦' },
     Entitlements: { name: 'Entitlements', emoji: '🛍️' },
     Schedule: { name: 'Schedule', emoji: '🔁' },

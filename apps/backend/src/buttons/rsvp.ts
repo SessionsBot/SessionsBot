@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonData, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
@@ -7,10 +7,11 @@ import { URLS } from "../utils/core/urls";
 import dbManager from "../utils/database/manager";
 
 
-export default {
+export default <ButtonData>{
     data: {
         customId: 'rsvp'
     },
+    cooldown: 5,
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const [_, rsvpId, sessionId] = i.customId.split(':');
@@ -44,7 +45,7 @@ export default {
                     components: <any>[
                         new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to RSVP` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records you are **already RSVPed** within this session! \n**Session Title**: \n> \`${sessionData?.title}\` \n**RSVP Title**: \n> \`${currentSlot?.title}\` \n-# If you wish to modify your current upcoming RSVP assignments use the ${core.commands.getLinkString('my-rsvps')} command.` }),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> According to our records you are **already RSVPed** within this session! \n**Session Title**: \n> \`${sessionData?.title}\` \n**RSVP Title**: \n> \`${currentSlot?.title}\` \n-# If you wish to modify your current upcoming RSVP assignments use the ${core.commands.string('my-rsvps')} command.` }),
                         new SeparatorBuilder(),
                         new ActionRowBuilder({
                             components: [
@@ -190,7 +191,10 @@ export default {
 
         // If SHOW WATERMARK - Add to Response:
         if (guildSubscription.limits.SHOW_WATERMARK) {
-            responseContent.components.push(defaultFooterText({ showHelpLink: true }))
+            responseContent.components.push(
+                new SeparatorBuilder(),
+                defaultFooterText({ lightFont: true })
+            )
         }
 
         return await i.editReply({

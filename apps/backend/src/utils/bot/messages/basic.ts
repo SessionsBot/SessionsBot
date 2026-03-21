@@ -5,11 +5,16 @@ import { URLS } from "../../core/urls.js"
 /** Returns a basic/generic error ContainerBuilder() from provided inputs. */
 export const genericErrorMsg = ({
     title = '⚠️ Uh oh! An error occurred..',
-    reasonDesc = 'Unknown Error! if this persists, contact support!'
+    reasonDesc = `Unknown Error - If this issue persists, contact [Bot Support](${URLS.support_chat})!`
 }: {
-    /** The title text to provide in the error message. */
+    /** The title text to provide in the error message. 
+     * @note Auto applies `###`(Heading 3) to text 
+     * @default- "⚠️ Uh oh! An error occurred.." */
     title?: string
-    /** The description text to provide in the error message. */
+    /** The description text to provide in the error message.
+     * @note Has leading `**Description**:` line
+     * @note Auto applies `>`(blockquote) to FIRST LINE
+     * @default- "Unknown Error - If this issue persists, contact \[Bot Support](link)!" */
     reasonDesc: string
 }
 ) => {
@@ -61,3 +66,16 @@ export const defaultFooterText = (opts:
 ) => {
     return new TextDisplayBuilder({ content: `${opts.lightFont ? '-# ' : ''}${core.emojis.string('logo')} Powered by [Sessions Bot](${URLS.website}) ${opts.showHelpLink ? ` |  [Need Help?](${URLS.site_links.support})` : ''} ${opts.appendText?.trim()?.length ? opts.appendText : ``}` })
 }
+
+
+/** Cooldown - Please Wait Msg/Alert */
+export const cooldownAlertMsg = (type: 'Button' | 'Command', remainingSecs: number) => new ContainerBuilder({
+    accent_color: core.colors.getOxColor('warning'),
+    components: <any>[
+        new TextDisplayBuilder({ content: `## ${core.emojis.string('warning')} Please Slow Down!` }),
+        new SeparatorBuilder(),
+        new TextDisplayBuilder({ content: `> It appears you've already used this ${type?.toLocaleLowerCase()} *very recently*, try to allow more time in between each request!` }),
+        new SeparatorBuilder(),
+        new TextDisplayBuilder({ content: `**Remaining Cooldown**: \`${remainingSecs} secs\`` })
+    ]
+})

@@ -49,7 +49,7 @@ authRouter.get("/discord-callback", async (req, res) => {
                 grant_type: "authorization_code",
                 code: code,
                 redirect_uri: REDIRECT_URI,
-                scope: "identify guilds, email",
+                scope: "identify guilds email",
             }),
             { headers: { "Content-Type": "application/x-www-form-urlencoded", } }
         );
@@ -97,6 +97,7 @@ authRouter.get("/discord-callback", async (req, res) => {
 
 
 // Discord Data Refresh Endpoint - "Silent" Discord auth/data refresh:
+// @depreciated (?) - may no longer be needed with self identity endpoint - but was nice to "quietly extend session"
 authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
     try {
         // 1. Get Data/User from Req:
@@ -138,16 +139,9 @@ authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
         if (saveResult instanceof AuthError) throw saveResult;
         const { user, profile } = saveResult;
 
-        // 7. Create MagicLink - Extract new JWT for user:
-        const { error: magicLinkERR, data: { properties: { hashed_token } } } = await supabase.auth.admin.generateLink({
-            type: 'magiclink',
-            email: user.email,
-        })
-        if (magicLinkERR || !hashed_token) throw new AuthError('generateLink', { err: magicLinkERR });
-
-        // 8. Return Success - Fresh Token:
+        // 7. Return Success:
         createLog.for('Auth').info(`${userData?.username} Refreshed Auth Data! - ${triggerType}`, { user: userData, userId: userData?.id, timestamp: stringTimestamp() })
-        return new reply(res).success({ fresh_token: hashed_token });
+        return new reply(res).success(null);
 
     } catch (err) {
         // Log & Return - Refresh Error:

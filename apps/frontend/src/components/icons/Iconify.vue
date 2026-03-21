@@ -17,11 +17,11 @@
 
 
 <template>
-    <keep-alive>
-        <iconify-icon :height="size || 24" :width="size || 24" loading="eager"
-            class="flex items-center justify-center w-fit! h-fit! aspect-square" :class="props?.class"
-            :icon="props.icon || 'mingcute:question-fill'" />
-    </keep-alive>
+    <!-- <keep-alive> -->
+    <iconify-icon :height="size || 24" :width="size || 24" loading="eager"
+        class="flex items-center justify-center w-fit! h-fit! aspect-square" :class="props?.class"
+        :icon="props.icon || 'mingcute:question-fill'" />
+    <!-- </keep-alive> -->
 </template>
 
 

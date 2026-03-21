@@ -11,15 +11,19 @@ import { requiredBotPermsStrings } from "../../../../../utils/bot/permissions/re
 import { getGuildEntitlementsFromId } from "../../../../../utils/bot/entitlements.js";
 import guildPreferencesRouter from "./preferences.js";
 import sessionRouter from "./sessions/sessions.js";
+import migratingRouter from "./migrating.js";
+import { HttpStatusCode } from "axios";
 
 const guildsRouter = express.Router({ mergeParams: true });
 const createLog = useLogger();
 
 // GET/FETCH - Guild Channels:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/channels
 guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
-        const guildId = req.params['guildId'];
+        const guildId = req.params['guildId']?.toString()
+        if (!guildId) return new reply(res).failure(`Bad Request - Missing "guildId" parameter!`, HttpStatusCode.BadRequest)
         // Fetch guild channels:
         const guildFetch = await core.botClient.guilds.fetch(String(guildId));
         const channelFetch = await guildFetch.channels.fetch();
@@ -37,17 +41,19 @@ guildsRouter.get('/:guildId/channels', verifyToken, verifyGuildMember(true), asy
     } catch (err) {
         // Log & Return Error:
         const guildId = String(req?.params?.guildId)
-        createLog.for('Api').error(`Failed to fetch guild channels! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.id, guildId });
+        createLog.for('Api').error(`Failed to fetch guild channels! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.discord_id, guildId });
         return new reply(res).failure(err, 500)
     }
 });
 
 
 // GET/FETCH - Guild Roles:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/roles
 guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
-        const guildId = req.params['guildId'];
+        const guildId = req.params['guildId']?.toString()
+        if (!guildId) return new reply(res).failure(`Bad Request - Missing "guildId" parameter!`, HttpStatusCode.BadRequest)
         // Fetch guild roles:
         const guildFetch = await core.botClient.guilds.fetch(String(guildId));
         const guildRoles = await guildFetch.roles.fetch();
@@ -56,17 +62,48 @@ guildsRouter.get('/:guildId/roles', verifyToken, verifyGuildMember(true), async 
     } catch (err) {
         // Log & Return Error:
         const guildId = String(req?.params?.guildId)
-        createLog.for('Api').error(`Failed to fetch guild roles! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.id, guildId });
+        createLog.for('Api').error(`Failed to fetch guild roles! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.discord_id, guildId });
+        return new reply(res).failure(err, 500)
+    }
+});
+
+
+// GET/FETCH - Guild Custom Emojis:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/emojis
+guildsRouter.get('/:guildId/emojis', verifyToken, verifyGuildMember(true), async (req, res) => {
+    try {
+        // Parse req:
+        const guildId = req.params['guildId']?.toString()
+        if (!guildId) return new reply(res).failure(`Bad Request - Missing "guildId" parameter!`, HttpStatusCode.BadRequest)
+        // Fetch guild roles:
+        const guildFetch = await core.botClient.guilds.fetch(guildId);
+        const guildEmojis = await guildFetch.emojis.fetch();
+        const filtered = guildEmojis.filter(e => e.available)
+            .map(e => ({
+                name: e.name,
+                animated: e.animated,
+                id: e.id,
+                url: e.imageURL({ size: 256 }),
+                value: `<${e?.animated ? 'a' : ''}:${e?.name}:${e?.id}>`
+            }))
+        // Return result data:
+        return new reply(res).success(filtered)
+    } catch (err) {
+        // Log & Return Error:
+        const guildId = String(req?.params?.guildId)
+        createLog.for('Api').error(`Failed to fetch guild emojis! - Guild: ${guildId}`, { err, userId: req?.auth?.profile?.discord_id, guildId });
         return new reply(res).failure(err, 500)
     }
 });
 
 
 // GET/FETCH - Guild Subscription:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/subscription
 guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse req:
-        const guildId = req.params['guildId'];
+        const guildId = req.params['guildId']?.toString()
+        if (!guildId) return new reply(res).failure(`Bad Request - Missing "guildId" parameter!`, HttpStatusCode.BadRequest)
 
         // Fetch Guild Entitlements from Id:
         const entitlements = await getGuildEntitlementsFromId(String(guildId))
@@ -85,7 +122,7 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true),
     } catch (err) {
         // Log & Return Error:
         const guildId = String(req?.params?.guildId)
-        createLog.for('Api').error(`Failed to fetch guild subscription!`, { err, userId: req?.auth?.profile?.id, guildId });
+        createLog.for('Api').error(`Failed to fetch guild subscription!`, { err, userId: req?.auth?.profile?.discord_id, guildId });
         return new reply(res).failure(err, 500)
     }
 })
@@ -95,6 +132,9 @@ guildsRouter.get('/:guildId/subscription', verifyToken, verifyGuildMember(true),
 guildsRouter.use(`/:guildId/sessions`, sessionRouter);
 guildsRouter.use(`/:guildId/sessions/templates`, sessionTemplatesRouter);
 guildsRouter.use('/:guildId/preferences', guildPreferencesRouter)
+
+// Migrating Templates - Endpoints:
+guildsRouter.use(`/:guildId/migrating`, migratingRouter)
 
 
 // Export Router:

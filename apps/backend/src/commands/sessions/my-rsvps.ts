@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, CommandData, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import { Database, getSubscriptionFromInteraction, Result, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
@@ -6,12 +6,13 @@ import core from "../../utils/core/core";
 import { defaultFooterText } from "../../utils/bot/messages/basic";
 
 
-export default {
+export default <CommandData>{
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('my-rsvps')
         .setDescription('View your current RSVP assignments for any upcoming sessions.')
     ,
+    cooldown: 7,
     // Command Execution:
     execute: async (i: CommandInteraction) => {
         try {
@@ -76,7 +77,7 @@ export default {
 
             // FREE PLAN - Add Watermark:
             if (guildSubscription.limits.SHOW_WATERMARK) {
-                msgBuild.components.push(defaultFooterText())
+                msgBuild.components.push(defaultFooterText({ lightFont: true }))
             }
 
             // Send My Sessions Response:

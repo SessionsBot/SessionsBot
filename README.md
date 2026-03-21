@@ -85,7 +85,7 @@ If you're interested in helping out, feel free to:
 - ⭐ Star the repo(s)
 - 🐛 Submit issues or feature requests
 - 🔧 Open pull requests
-- 💬 Join our [Discord Server](https://discord.gg/dKp5HZPjCg)
+- 💬 Join our [Discord Server](https://discord.gg/mMqpJEDy9u)
 
 ---
 

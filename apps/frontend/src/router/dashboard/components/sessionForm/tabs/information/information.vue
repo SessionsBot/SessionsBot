@@ -8,13 +8,14 @@
     import InputTitle from '../../labels/inputTitle.vue';
     import InputErrors from '../../labels/inputErrors.vue';
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
+    import type useDashboardStore from '@/stores/dashboard/dashboard';
 
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
         validateField: (name: NewSessions_FieldNames) => void,
         validateFields: (fields: NewSessions_FieldNames[]) => void
-        formAction: 'edit' | 'new' | 're-enable'
+        formAction: ReturnType<typeof useDashboardStore>['sessionForm']['actionMode']
     }>();
     const { invalidFields, validateField, validateFields } = props;
 
@@ -137,7 +138,7 @@
                     auto-option-focus />
                 <!-- Local Zone - Button -->
                 <Button title="Local Time Zone" v-if="!timeZone" @click="selectLocalTimeZone()" unstyled
-                    class="absolute! right-12 bottom-2.5 z-99! h-6 button-base opacity-65 hover:opacity-80 aspect-square">
+                    class="absolute! right-12 top-9.25 z-99! h-6 button-base opacity-65 hover:opacity-80 aspect-square">
                     <Iconify icon="lsicon:location-filled" size="18" />
                 </Button>
             </span>

@@ -49,6 +49,7 @@ export const sessionManager = {
                 supabase.from('guilds')
                     .select('*, sessions(*, session_rsvp_slots(*, session_rsvps(*)))')
                     .eq('id', guildId)
+                    .eq('sessions.id', sessionId)
                     .single(),
                 getGuildSubscriptionFromId(guildId)
             ])
@@ -93,7 +94,7 @@ export const sessionManager = {
             })
 
             // Return Success:
-            return new SessionSuccess(session)
+            return new SessionSuccess(updatedSession)
 
         } catch (err) {
             // Log & Return Failure:

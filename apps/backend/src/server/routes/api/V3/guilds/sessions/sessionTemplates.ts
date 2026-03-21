@@ -12,11 +12,12 @@ import { createAuditLog } from '../../../../../../utils/database/auditLog';
 const createLog = useLogger();
 
 // Create Router:
-// path: `API_ROOT/api/guilds/:guildId/sessions/templates`;
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates
 const sessionTemplatesRouter = express.Router({ mergeParams: true });
 
 
 // POST - Create New Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/
 sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
@@ -24,7 +25,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
         const result = API_SessionTemplateBodySchema.safeParse(bodyData)
         if (!result.success) {
             // Return Failure:
-            const { properties: invalidFields } = z.treeifyError(result.error)
+            const invalidFields = z.treeifyError(result.error)?.properties
             return new reply(res).failure({ reason: "Invalid Inputs!", invalidFields }, HttpStatusCode.BadRequest);
         } else {
             // Valid - Save/Create Session Template:
@@ -33,14 +34,14 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
             const { data: newSession, error: saveError } = await supabase.from('session_templates').insert(sessionData).select('*').single()
             if (saveError || !newSession) {
                 // Return Failure:
-                createLog.for('Api').error('Failed to Save - New Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.id });
+                createLog.for('Api').error('Failed to Save - New Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.discord_id });
                 return new reply(res).failure({ reason: "Failed to Save - New Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
                 createAuditLog({
                     event: AuditEvent.ScheduleCreated,
                     guild: newSession.guild_id,
-                    user: req?.auth?.user?.user_metadata?.id,
+                    user: req?.auth?.profile?.discord_id,
                     meta: {
                         template_id: newSession.id
                     }
@@ -52,7 +53,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const errTxt = `Failed to create/save a new session template!`;
         createLog.for('Api').error(errTxt, { err, body: req.body, guildId, userId });
         return new reply(res).failure(errTxt);
@@ -61,6 +62,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
 
 
 // PATCH - Edit Existing Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/
 sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
@@ -68,7 +70,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
         const result = API_SessionTemplateBodySchema.safeParse(bodyData)
         if (!result.success) {
             // Return Failure:
-            const { properties: invalidFields } = z.treeifyError(result.error)
+            const invalidFields = z.treeifyError(result.error)?.properties
             return new reply(res).failure({ reason: "Invalid Inputs!", invalidFields }, HttpStatusCode.BadRequest);
         } else {
             // Valid - Find/Edit Session Template:
@@ -81,14 +83,14 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
 
             if (saveError || !ExtSession) {
                 // Return Failure:
-                createLog.for('Api').error('Failed to Edit - Existing Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.id });
+                createLog.for('Api').error('Failed to Edit - Existing Session Template', { data: sessionData, saveError, guildId: sessionData?.guild_id, userId: req?.auth?.profile?.discord_id });
                 return new reply(res).failure({ reason: "Failed to Edit - Existing Session Template", details: saveError }, HttpStatusCode.BadRequest);
             } else {
                 // Succeeded - Return Success:
                 createAuditLog({
                     event: AuditEvent.ScheduleEdited,
                     guild: ExtSession.guild_id,
-                    user: req?.auth?.user?.user_metadata?.id,
+                    user: req?.auth?.profile?.discord_id,
                     meta: {
                         template_id: ExtSession.id
                     }
@@ -100,7 +102,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const templateId = String(req?.params?.templateId)
         const errTxt = `Failed to edit existing session template!`;
         createLog.for('Api').error(errTxt, { err, body: req?.body, templateId, userId, guildId });
@@ -110,6 +112,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
 
 
 // DELETE - Delete Existing Template:
+// URL: https://api.sessionsbot.fyi/guilds/:guildId/sessions/templates/:templateId
 sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(true), async (req, res) => {
     try {
         // Parse/Read/Validate Request:
@@ -130,7 +133,7 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(tru
         createAuditLog({
             event: AuditEvent.ScheduleDeleted,
             guild: data.guild_id,
-            user: req?.auth?.user?.user_metadata?.id,
+            user: req?.auth?.profile?.discord_id,
             meta: {
                 template_id: data.id
             }
@@ -141,7 +144,7 @@ sessionTemplatesRouter.delete(`/:templateId`, verifyToken, verifyGuildMember(tru
     } catch (err) {
         // Log & Return Err:
         const guildId = String(req.params?.guildId)
-        const userId = req?.auth?.profile?.id
+        const userId = req?.auth?.profile?.discord_id
         const templateId = String(req?.params?.templateId)
         const errTxt = `Failed to delete existing session template!`;
         createLog.for('Api').error(errTxt, { err, templateId, guildId, userId });

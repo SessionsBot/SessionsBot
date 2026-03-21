@@ -1,4 +1,4 @@
-import { ButtonStyle, ComponentType, ContainerBuilder, Events, Guild, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, EventData, Events, Guild, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { useLogger } from "../utils/logs/logtail";
 import core from "../utils/core/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
@@ -14,24 +14,27 @@ const createLog = useLogger();
 
 
 /** Event - New guild added Sessions Bot */
-export default {
+export default <EventData>{
     name: Events.GuildCreate,
     async execute(guild: Guild) {
         // Log new guild added:
         createLog.for('Guilds').info(`➕ GUILD ADDED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
         discordLog.events.guildAdded(guild);
+
+        // Add Guild to database:
+        const result = await dbManager.guilds.add(guild);
+
+        if (!result.success) {
+            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result, guildId: guild?.id })
+        }
+
+        // Create Audit Log for Guild:
         createAuditLog({
             event: AuditEvent.BotAdded,
             guild: guild.id,
             user: core.botClient?.user?.id || null,
             meta: undefined
         })
-
-        // Add Guild to database:
-        const result = await dbManager.guilds.add(guild);
-        if (!result.success) {
-            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result, guildId: guild?.id })
-        }
 
         // Build/Send Welcome Message:
         const welcomeMsg = new ContainerBuilder({
@@ -93,6 +96,7 @@ export default {
                 defaultFooterText({ appendText: `| @here` })
             ]
         })
+
         const send = await sendWithFallback(guild.id, welcomeMsg);
         if (!send.success) {
             createLog.for('Bot').warn(`Failed to send "Welcome Message" for new guild! - ${guild.id}`, { sendResult: send, guildId: guild?.id });

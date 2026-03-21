@@ -1,201 +1,169 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, PermissionFlagsBits, SelectMenuOptionBuilder, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, TextDisplayBuilder, TextDisplayComponent } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonInteraction, ButtonStyle, ChatInputCommandInteraction, CommandData, ComponentType, ContainerBuilder, LabelBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, TextDisplayBuilder, TextInputStyle } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
-import { getTimeZones } from '@vvo/tzdb'
 import { parseDate } from "chrono-node";
 import { defaultFooterText, genericErrorMsg } from "../../utils/bot/messages/basic";
-import { getSubscriptionFromInteraction } from "@sessionsbot/shared";
-import dbManager from "../../utils/database/manager";
+import { AuditEvent, FullSessionData, getSubscriptionFromInteraction } from "@sessionsbot/shared";
+import { URLS } from "../../utils/core/urls";
+import { useLogger } from "../../utils/logs/logtail";
+import { updateExistingSessionPanel } from "../../utils/bot/messages/sessionPanels";
+import { createAuditLog } from "../../utils/database/auditLog";
 
-export default {
+const createLog = useLogger()
+
+export default <CommandData>{
     // Command Definition:
     data: new SlashCommandBuilder()
         .setName('delay')
         .setDescription(`Delay a session that has not yet started but has been posted.`)
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-        .addStringOption(
-            new SlashCommandStringOption()
-                .setAutocomplete(true)
-                .setName('session')
-                .setDescription('Select the session you wish to cancel.')
-                .setRequired(true)
-        )
-        .addStringOption(
-            new SlashCommandStringOption()
-                .setName('delay-time')
-                .setDescription('The amount of time to delay session start by. (e.g. "in 2 hours","5 mins","12 pm")')
-                .setRequired(true)
-                .setMaxLength(100)
-        )
-        .addStringOption(
-            new SlashCommandStringOption()
-                .setName('reason')
-                .setDescription('The reason why this session is being delayed.')
-                .setRequired(false)
-                .setMaxLength(100)
-        )
     ,
-
-    // Command Autocomplete:
-    autocomplete: async (i: AutocompleteInteraction) => {
-        // Get current text input:
-        const focused = i.options.getFocused()
-        // Get current sessions for guild:
-        const { data, error } = await supabase.from('sessions')
-            .select('id, time_zone, title, duration_ms, starts_at_utc')
-            .eq('guild_id', i.guildId)
-            .neq('status', 'canceled')
-            .order('starts_at_utc', { ascending: false, nullsFirst: false })
-            .limit(25)
-        if (error || !data) return i.respond([]);
-        // Filter - Cancelable:
-        const cancelableSessions = data.filter(s => {
-            const startBase = DateTime.fromISO(s.starts_at_utc)
-            // If past start - Cannot Delay:
-            if (startBase < DateTime.utc()) return false
-            else return true
-        }).map(s => {
-            // Get Timezone Abbreviation:
-            const sessionZone = getTimeZones().find(tz => tz.name == s.time_zone)
-            return {
-                name: (s.title + ' - ') + DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone }).toFormat(`M/d t`) + ` ${sessionZone?.abbreviation ?? ''}`,
-                value: s.id
-            }
-        })
-        // Filter by User Input - Title Search:
-        const filtered = cancelableSessions
-            .filter(s =>
-                s.name.toLowerCase().includes(focused.toLowerCase())
-            )
-            .slice(0, 25)
-        // Send back options:
-        await i.respond(filtered)
-    },
-
+    // Command Cooldown:
+    cooldown: 10,
     // Command Execution:
     execute: async (i: ChatInputCommandInteraction) => {
 
         // Defer Reply:
         await i.deferReply({ flags: MessageFlags.Ephemeral })
 
-        // Parse Cmd Options:
-        const selectedSessionId = i.options.getString('session', true)
-        const delayReasoning = i.options.getString('reason', false)
-        const delayTime = i.options.getString('delay-time', false)
-
         // Guild Subscription:
         const subscription = getSubscriptionFromInteraction(i)
 
-
-        // Get "Full Session Data":
-        const { data: dbData, error: dbDataErr } = await supabase.from('guilds')
-            .select(`*, sessions!inner(*, session_rsvp_slots(*, session_rsvps(*)))`)
+        // Get Guild Data - Active/Recently Posted Sessions:
+        const { data: guild, error: guildError } = await supabase
+            .from('guilds')
+            .select('*')
             .eq('id', i.guildId)
-            .eq('sessions.id', selectedSessionId)
-            .maybeSingle()
-        const sessionData = dbData.sessions?.[0]
-        if (dbDataErr) throw dbDataErr; // Sends default failure msg
-        if (!dbData || !sessionData) {
-            return i.editReply({
-                components: [genericErrorMsg({
-                    title: 'Failed to find Session!',
-                    reasonDesc: `Unfortunately we couldn't find the session you're trying to delay... If this issue persist please get in contact with Bot Support!`
-                }),],
-                flags: MessageFlags.IsComponentsV2
-            })
-        }
-        const panelUrl = `https://discord.com/channels/${i?.guildId}/${sessionData?.thread_id ?? sessionData?.channel_id}/${sessionData?.panel_id}`;
+            .single()
+
+        const { data: delayableSessions, error: sessionsError } = await supabase
+            .from('sessions')
+            .select(`*, session_rsvp_slots(*, session_rsvps(*))`)
+            .eq('guild_id', i.guildId)
+            .neq('status', 'canceled')
+            .gt('starts_at_utc', DateTime.utc().toISO())
+            .order('starts_at_utc', { ascending: false })
+            .limit(25)
+        if (guildError || sessionsError || !guild) throw { guildError, sessionsError, guildId: i?.guildId }; // Sends default failure msg
 
 
-        // Parse Delay:
-        const startTimeInZone = DateTime.fromISO(sessionData?.starts_at_utc, { zone: sessionData?.time_zone })
-        const startRef = startTimeInZone?.toJSDate()
-        const parsed = parseDate(delayTime, startRef, { forwardDate: true })
-        if (!parsed) return i.editReply({
-            components: [genericErrorMsg({
-                title: `${core.emojis.string('warning')}  Invalid Delay Time!`,
-                reasonDesc: `**It seems you've entered an invalid time amount to delay this sessions start time by.** \n> Examples: \`30 mins\`, \`2 hours\`, \`5:30 pm\`, etc. \n-# Use the ${core.commands.getLinkString('delay')} command to try again.`
-            })],
-            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
-        })
-        const parsedDT = DateTime.fromJSDate(parsed)
-
-        // Check for Past New Date - Not Allowed:
-        if (parsedDT <= startTimeInZone || parsedDT <= DateTime.utc()) {
-            return i.editReply({
-                components: [genericErrorMsg({
-                    title: `${core.emojis.string('warning')}  Invalid Delay Time!`,
-                    reasonDesc: `The new start time must be **after the current session start time** and in the future! \n-# Use the ${core.commands.getLinkString('delay')} command to try again.`
-                })],
-                flags: MessageFlags.IsComponentsV2
-            })
-        }
-
-        // Send Response - Ask for Confirmation:
-        const initResponse = await i.editReply({
-            components: [
-                new ContainerBuilder({
-                    accent_color: core.colors.getOxColor('success'),
+        // Send No Available Sessions Message:
+        if (!delayableSessions?.length) {
+            return i?.editReply({
+                flags: MessageFlags.IsComponentsV2,
+                components: [new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('blue'),
                     components: <any>[
-                        new TextDisplayBuilder({ content: `## ${core.emojis.string('help')}  Confirm - Delay Session` }),
+                        new TextDisplayBuilder({ content: `### ${core.emojis.string('info')} No Delayable Sessions Found...` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `**Session Name:** \n> [${sessionData?.title}](${panelUrl}) \n**Original Start:** \n> <t:${startTimeInZone?.toUnixInteger()}:f> \n**New Start:** \n> <t:${parsedDT?.toUnixInteger()}:f>` }),
+                        new TextDisplayBuilder({ content: `**Details:**\n> It appears you don't have any recently posted \`Sessions\` available to be delayed!` }),
                         new SeparatorBuilder(),
-                        new ActionRowBuilder({
-                            components: [
-                                new ButtonBuilder({
-                                    style: ButtonStyle.Secondary,
-                                    label: 'Cancel',
-                                    emoji: { id: core.emojis.ids.fail },
-                                    custom_id: 'DELAY_CANCEL'
-                                }),
-                                new ButtonBuilder({
-                                    style: ButtonStyle.Success,
-                                    label: 'Confirm',
-                                    emoji: { id: core.emojis.ids.success },
-                                    custom_id: 'DELAY_CONFIRM'
-                                })
-                            ]
-                        })
+                        new TextDisplayBuilder({ content: `-# **TIP:** Create a new session/event on your [Bot Dashboard](${URLS.site_links.dashboard}). \n-# [Need Help?](${URLS.support_chat})` })
                     ]
-                })
-            ],
-            flags: MessageFlags.IsComponentsV2
+                })]
+            })
+        }
+
+        // Send Session Selection Message:
+        const sessionOptions = delayableSessions?.map(s => {
+            const startInZone = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
+            return <APISelectMenuOption>{
+                label: `${s.title} - ${startInZone?.toFormat(`M/d/y t`) ?? '?'} ${startInZone?.offsetNameShort ?? ''}`,
+                value: s.id,
+            }
+        })
+        const choiceMsg = await i?.editReply({
+            flags: MessageFlags.IsComponentsV2,
+            components: [new ContainerBuilder({
+                accent_color: core.colors.getOxColor('warning'),
+                components: <any>[
+                    new TextDisplayBuilder({ content: `## ${core.emojis.string('help')}  Delay Session - Selection:` }),
+                    new SeparatorBuilder(),
+                    new TextDisplayBuilder({ content: `Select a posted session to delay: \n> -# Trying to modify a session schedule? Visit your [Bot Dashboard](${URLS.site_links.dashboard}).` }),
+                    new ActionRowBuilder({
+                        components: [
+                            new StringSelectMenuBuilder({
+                                custom_id: 'delay-session-selected',
+                                placeholder: 'Select a session...',
+                                options: [...sessionOptions]
+                            })
+                        ]
+                    })
+                ]
+            })]
         })
 
-
-        // Set/Start Interaction Collector:
-        const collector = initResponse.createMessageComponentCollector({
-            idle: 20_000,
-            filter: (c) => c.user.id == i.user.id,
-            componentType: ComponentType.Button,
+        // Await Response / Selection:
+        const collector = choiceMsg.createMessageComponentCollector({
+            filter: (n) => (i.user?.id == n.user.id),
+            idle: 60_000,
         })
 
-        collector.on('collect', async (ni) => {
+        let selectedId: string | undefined = undefined;
+        let sessionData: typeof delayableSessions[number] | undefined = undefined;
+        let delayInMins: number | undefined = undefined;
 
-            if (ni.customId == 'DELAY_CONFIRM') {
-                // Attempt Delay:
-                const result = await dbManager.sessions.delay(i.guildId, sessionData.id, parsedDT.toUTC(), i.user.id, delayReasoning)
-                if (result.success) {
-                    // Send Success Message:
-                    await ni.update({
-                        components: <any>[
+        // On Collector Response:
+        collector.on('collect', async (ni: StringSelectMenuInteraction | ButtonInteraction) => {
+            try {
+
+                const customId = ni?.customId
+
+                // Defer update:
+                if (customId != 'delay-time:custom') {
+                    await ni?.deferUpdate()
+                }
+
+                // Selected Session to Delay - Sent Delay Time Options:
+                if (customId == 'delay-session-selected' && ni.isStringSelectMenu()) {
+                    selectedId = ni.values?.[0]
+                    sessionData = delayableSessions?.find(s => s?.id == selectedId)
+                    if (!selectedId || !sessionData) {
+                        collector.stop('errored')
+                        return i?.editReply({
+                            components: [genericErrorMsg({
+                                reasonDesc: `Failed to find selected session? If this issue persists, please get in contact bot support!`
+                            })]
+                        })
+                    }
+                    // Send Delay Time Selection Msg:
+                    const currentStartInZone = DateTime.fromISO(sessionData?.starts_at_utc, { zone: sessionData?.time_zone })
+                    await i?.editReply({
+                        components: [
                             new ContainerBuilder({
-                                accent_color: core.colors.getOxColor('success'),
+                                accent_color: core.colors.getOxColor('warning'),
                                 components: <any>[
-                                    new TextDisplayBuilder({ content: `## ${core.emojis.string('success')}  Delay Session - Confirmed` }),
+                                    new TextDisplayBuilder({ content: `## ${core.emojis.string('help')} Session - Delay Amount:` }),
                                     new SeparatorBuilder(),
-                                    new TextDisplayBuilder({ content: `**Title:** \n> ${result.sessionData?.title} \n**New Start:** \n> <t:${DateTime.fromISO(result.sessionData?.starts_at_utc, { zone: 'utc' })?.toUnixInteger()}:f> ` }),
-                                    new TextDisplayBuilder({ content: `-# To delay a different session use the ${core.commands.getLinkString('delay')} command!` }),
+                                    new TextDisplayBuilder({ content: `**Session Selected:** \n> ${sessionData?.title} \n**Current Start:** \n> ${currentStartInZone?.isValid ? `<t:${currentStartInZone?.toUnixInteger()}:f>` : 'UNKNOWN?'}` }),
                                     new SeparatorBuilder(),
+                                    new TextDisplayBuilder({ content: `**Select a Delay Amount:**` }),
                                     new ActionRowBuilder({
                                         components: [
                                             new ButtonBuilder({
-                                                style: ButtonStyle.Link,
-                                                label: 'View Session',
-                                                emoji: { id: core.emojis.ids.eye },
-                                                url: panelUrl
+                                                customId: 'delay-time:10',
+                                                style: ButtonStyle.Secondary,
+                                                label: '10 mins',
+                                                emoji: { id: core.emojis.ids.clock }
+                                            }),
+                                            new ButtonBuilder({
+                                                customId: 'delay-time:30',
+                                                style: ButtonStyle.Secondary,
+                                                label: '30 mins',
+                                                emoji: { id: core.emojis.ids.clock }
+                                            }),
+                                            new ButtonBuilder({
+                                                customId: 'delay-time:60',
+                                                style: ButtonStyle.Secondary,
+                                                label: '1 hour',
+                                                emoji: { id: core.emojis.ids.clock }
+                                            }),
+                                            new ButtonBuilder({
+                                                customId: 'delay-time:custom',
+                                                style: ButtonStyle.Secondary,
+                                                label: 'Custom',
+                                                emoji: { id: core.emojis.ids.star }
                                             })
                                         ]
                                     })
@@ -203,55 +171,286 @@ export default {
                             })
                         ]
                     })
-                    collector.stop('confirmed')
-                } else throw { message: 'Failed to delay session from cmd interaction', result }
+                }
 
-            } else {
-                // Send Canceled Message:
-                await ni.update({
-                    components: <any>[
-                        new ContainerBuilder({
-                            accent_color: core.colors.getOxColor('error'),
-                            components: <any>[
-                                new TextDisplayBuilder({ content: `## ${core.emojis.string('fail')}  Delay Session - Canceled` }),
-                                new SeparatorBuilder(),
-                                new TextDisplayBuilder({ content: `**Details:** \n> This interaction has been canceled!` }),
-                                new SeparatorBuilder(),
-                                new TextDisplayBuilder({ content: `-# To delay a different session use the ${core.commands.getLinkString('delay')} command!` }),
+                // Selected Session Delay Time Option - Confirm/Modal:
+                else if (customId?.includes(`delay-time`)) {
+                    const ctx = customId?.split(`delay-time:`)?.[1]
+                    const currentStartInZone = DateTime.fromISO(sessionData?.starts_at_utc, { zone: sessionData?.time_zone })
+                    // Rejecting Delay Time:
+                    if (ctx == 'cancel') {
+                        collector.stop('canceled')
+                        return await i?.editReply({
+                            components: [new ContainerBuilder({
+                                accent_color: core.colors.getOxColor('warning'),
+                                components: <any>[
+                                    new TextDisplayBuilder({ content: `### ${core.emojis.string('fail')}  Rejected Delay Time` }),
+                                    new SeparatorBuilder(),
+                                    new TextDisplayBuilder({ content: `> If you'd like to still delay a session, restart this interaction with the ${core.commands.string('delay')} command.` }),
+                                    new SeparatorBuilder(),
+                                    new TextDisplayBuilder({ content: `-# [Need Help?](${URLS.support_chat})` }),
+                                ]
+                            })]
+                        })
+                    }
+                    // Confirming Delay Time:
+                    else if (ctx == 'confirm') {
+                        try {
+                            const newStartInZone = currentStartInZone?.plus({ minutes: delayInMins })
+                            const panelUrl = `https://discord.com/channels/${i?.guildId}/${sessionData?.thread_id ?? sessionData?.channel_id}/${sessionData?.panel_id}`;
+
+                            // Save New Session Start to DB:
+                            const { error } = await supabase.from('sessions').update({
+                                id: sessionData?.id,
+                                status: 'delayed',
+                                starts_at_utc: newStartInZone?.toUTC()?.toISO()
+                            }).eq('id', sessionData?.id)
+                            if (error) throw error
+                            // Update Session Panel:
+                            const fullSessionData = <FullSessionData>{
+                                ...sessionData,
+                                status: 'delayed',
+                                starts_at_utc: newStartInZone?.toUTC()?.toISO()
+                            }
+                            const updateMsg = await updateExistingSessionPanel(fullSessionData, subscription?.limits?.SHOW_WATERMARK, guild?.accent_color, guild?.calendar_button)
+                            if (!updateMsg.success) throw { msg: `Failed updating sessions panel from /delay interaction!`, updateMsg }
+
+                            // Create Audit Log:
+                            createAuditLog({
+                                event: AuditEvent.SessionDelayed,
+                                guild: i?.guildId,
+                                user: i?.user?.id,
+                                meta: {
+                                    session_id: sessionData?.id,
+                                    reason: null
+                                }
+                            })
+
+                            // Send Success Alert:
+                            await i?.editReply({
+                                components: <any>[new ContainerBuilder({
+                                    accent_color: core.colors.getOxColor('success'),
+                                    components: <any>[
+                                        new TextDisplayBuilder({ content: `## ${core.emojis.string('success')}  Success - Session Delayed` }),
+                                        new SeparatorBuilder(),
+                                        new TextDisplayBuilder({ content: `**Session Title:**\n> ${sessionData?.title ?? '?'} \n**New Start:**\n> <t:${newStartInZone?.toUnixInteger()}:f>` }),
+                                        new SeparatorBuilder(),
+                                        new ActionRowBuilder({
+                                            components: [
+                                                new ButtonBuilder({
+                                                    style: ButtonStyle.Link,
+                                                    label: 'View Session',
+                                                    emoji: { id: core.emojis.ids.eye },
+                                                    url: panelUrl
+                                                })
+                                            ]
+                                        }),
+                                        ...[subscription?.limits?.SHOW_WATERMARK ? [
+                                            new SeparatorBuilder(),
+                                            defaultFooterText({ lightFont: true })
+                                        ] : []].flat()
+                                    ]
+                                })]
+                            })
+                            return collector.stop('succeeded!')
+                        } catch (error) {
+                            // Error - Confirmed/Saving new session start date to db/update:
+                            collector.stop('errored')
+                            createLog.for('Bot').error('FAILED to save/update a confirm session delayed start time!', { userId: i?.user?.id, guildId: i?.guildId, error })
+                            throw error
+                        }
+                    }
+                    // Delay by set minuet:
+                    else if (['10', '30', '60'].includes(ctx)) {
+                        delayInMins = Number(ctx)
+                        // Send Confirmation - New Start Date:
+                        await i?.editReply({
+                            components: [new ContainerBuilder({
+                                accent_color: core.colors.getOxColor('warning'),
+                                components: <any>[
+                                    new TextDisplayBuilder({ content: `## ${core.emojis.string('help')} Session Delay Time - Confirm` }),
+                                    new SeparatorBuilder(),
+                                    new TextDisplayBuilder({ content: `**Details:**\n> Please confirm the session's new start time! \n**Session Title:**\n> ${sessionData?.title} \n**Original Start:**\n> <t:${currentStartInZone?.toUnixInteger()}:f> \n**New Start:**\n> <t:${currentStartInZone?.plus({ minutes: delayInMins ?? 0 })?.toUnixInteger()}:f>` }),
+                                    new ActionRowBuilder({
+                                        components: [
+                                            new ButtonBuilder({
+                                                label: `Cancel`,
+                                                emoji: { id: core.emojis.ids.fail },
+                                                customId: 'delay-time:cancel',
+                                                style: ButtonStyle.Secondary
+                                            }),
+                                            new ButtonBuilder({
+                                                label: `Confirm`,
+                                                emoji: { id: core.emojis.ids.success },
+                                                customId: 'delay-time:confirm',
+                                                style: ButtonStyle.Secondary
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })]
+                        })
+                    }
+                    // Custom Delay Time Interactions:
+                    else if (ctx == 'custom') {
+                        // Build & Send Modal:
+                        const customModal = new ModalBuilder({
+                            title: 'Delay Time - Custom',
+                            customId: 'delay-time:custom',
+                            components: [
+                                {
+                                    type: ComponentType.TextDisplay,
+                                    content: '**Enter either:**\n>>> - A `Date` to delay the session start to *(must be in future).* \n- A `Time Amount` to delay the sessions start time from.'
+                                },
+                                new LabelBuilder({
+                                    label: 'Delay Time or Date',
+                                    component: {
+                                        type: ComponentType.TextInput,
+                                        custom_id: 'custom-input',
+                                        style: TextInputStyle.Short,
+                                        placeholder: `Ex: "11/11 4pm", "5 pm", "45 mins", etc.`
+                                    }
+                                })
                             ]
                         })
-                    ]
+                        try {
+                            // Show & Await Modal Submission:
+                            await ni.showModal(customModal)
+                            const modalSubmit = await ni.awaitModalSubmit({
+                                time: 60_000
+                            }).catch((err) => {
+                                if (err?.code === 'InteractionCollectorError') return;
+                                throw err;
+                            });
+                            if (!modalSubmit || !modalSubmit?.fields) {
+                                collector.stop('modal-fail')
+                                return await i.editReply({
+                                    components: [genericErrorMsg({
+                                        reasonDesc: `Failed to receive "Custom Time" modal submission! \nStart the interaction over with the ${core.commands.string('delay')} command.`
+                                    })]
+                                })
+                            }
+                            collector.resetTimer({})
+                            // Process Modal Submission:
+                            await modalSubmit.deferUpdate().catch((e) => { })
+                            const field = modalSubmit.fields.fields.get('custom-input')
+                            const inputTime = field.type == ComponentType.TextInput ? field.value : 'null';
+
+                            // Parse Input Delay:
+                            const parsed = parseDate(inputTime, currentStartInZone?.toJSDate(), { forwardDate: true })
+                            if (!parsed) return await i.editReply({
+                                components: [genericErrorMsg({
+                                    title: `${core.emojis.string('warning')}  Invalid Delay Time!`,
+                                    reasonDesc: `**It seems you've entered an invalid time amount to delay this sessions start time by.** \n> Examples: \`30 mins\`, \`2 hours\`, \`11/11 at 5 pm\`, etc. \n-# Use the ${core.commands.string('delay')} command to try again.`
+                                })],
+                                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+                            })
+                            const parsedDT = DateTime.fromJSDate(parsed)
+
+                            // Check for Past New Date - Not Allowed:
+                            if (parsedDT <= currentStartInZone) {
+                                collector.stop('invalid-input')
+                                return await i.editReply({
+                                    components: [genericErrorMsg({
+                                        title: `${core.emojis.string('warning')}  Invalid Delay Time!`,
+                                        reasonDesc: `The new start time must be **after the current session start time**! \n**Current Start Date:**:\n> <t:${currentStartInZone?.toUnixInteger()}:f> \n-# Use the ${core.commands.string('delay')} command to try again.`
+                                    })],
+                                    flags: MessageFlags.IsComponentsV2
+                                })
+                            }
+
+                            // Calc - Delay in Mins from ParsedDT:
+                            const mins = parsedDT.diff(currentStartInZone, 'minutes')?.minutes
+                            delayInMins = mins ?? 0
+
+                            // Send Confirmation - New Start Date:
+                            await i?.editReply({
+                                components: [new ContainerBuilder({
+                                    accent_color: core.colors.getOxColor('warning'),
+                                    components: <any>[
+                                        new TextDisplayBuilder({ content: `## ${core.emojis.string('help')} Session Delay Time - Confirm` }),
+                                        new SeparatorBuilder(),
+                                        new TextDisplayBuilder({ content: `**Details:**\n> Please confirm the session's new start time! \n**Session Title:**\n> ${sessionData?.title} \n**Original Start:**\n> <t:${currentStartInZone?.toUnixInteger()}:f> \n**New Start:**\n> <t:${parsedDT?.toUnixInteger()}:f>` }),
+                                        new ActionRowBuilder({
+                                            components: [
+                                                new ButtonBuilder({
+                                                    label: `Cancel`,
+                                                    emoji: { id: core.emojis.ids.fail },
+                                                    customId: 'delay-time:cancel',
+                                                    style: ButtonStyle.Secondary
+                                                }),
+                                                new ButtonBuilder({
+                                                    label: `Confirm`,
+                                                    emoji: { id: core.emojis.ids.success },
+                                                    customId: 'delay-time:confirm',
+                                                    style: ButtonStyle.Secondary
+                                                })
+                                            ]
+                                        })
+                                    ]
+                                })]
+                            })
+
+
+                        } catch (err) {
+                            // Modal Send/Submit Error - Log & Return:
+                            collector.stop('modal-fail')
+                            createLog.for('Bot').warn('Failed to receive/handle modal submission for /delay cmd!', { err, userId: i?.user?.id, guildId: i?.guildId })
+                            return
+                        }
+
+                    }
+                }
+
+                // Aborting Interaction - Cleanup:
+                else if (customId == 'delay-session-cleanup') {
+                    try {
+                        await i?.deleteReply()
+                    } catch (e) { }
+                }
+
+            } catch (err) {
+                createLog.for('Bot').error(`Delay /cmd interaction (collector) failed!`, { err, userId: i?.user?.id, guildId: i?.guildId });
+                collector.stop('errored');
+                const errMsg = genericErrorMsg({
+                    reasonDesc: `The ${core.commands.string('delay')} command interaction has failed! If this issue persists, please get in contact with [bot support](${URLS.support_chat}).`
                 })
-                collector.stop('canceled')
+                if (i?.replied || i?.deferred) {
+                    await i?.followUp({
+                        components: [errMsg],
+                        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2
+                    })
+                } else {
+                    await i.editReply({
+                        components: [errMsg],
+                        flags: MessageFlags.IsComponentsV2
+                    })
+                }
             }
         })
 
 
 
-        // Collector Timeout:
-        collector.on('end', async (ei, r) => {
-            if (r != 'idle') return;
-            if (i.replied || i.reply)
-                await i.editReply({
-                    components: [
-                        new ContainerBuilder({
-                            accent_color: core.colors.getOxColor('error'),
+        // On Collector End/Timeout:
+        collector.on('end', async (is, r) => {
+            try {
+                if (r == 'idle') {
+                    // Send timed out alert:
+                    return await i?.editReply({
+                        components: [new ContainerBuilder({
+                            accent_color: core.colors.getOxColor('warning'),
                             components: <any>[
-                                new TextDisplayBuilder({ content: `### ${core.emojis.string('timeout')}  Interaction Timed Out!` }),
+                                new TextDisplayBuilder({ content: `## ${core.emojis.string('timeout')}  Interaction Timed Out! - ${core.commands.string('/delay')}` }),
                                 new SeparatorBuilder(),
-                                new TextDisplayBuilder({ content: `**Details:** \n> You'll have to start this interaction over again to continue...` }),
-                                new SeparatorBuilder(),
-                                new TextDisplayBuilder({ content: `-# To try again use the ${core.commands.getLinkString('delay')} command.` }),
-                                ...(subscription.limits.SHOW_WATERMARK ? [
-                                    defaultFooterText({ showHelpLink: true, lightFont: true })
-                                ] : []),
+                                new TextDisplayBuilder({ content: `**Details:** \n> Unfortunately, you ran out of time to respond to this interaction... you can try again by using the ${core.commands.string('/delay')} command!` })
                             ]
-                        })
-                    ]
-                })
+                        })]
+                    })
+                }
+            } catch (err) {
+                return createLog.for('Bot').warn('Failed to notify of collector ended - /update cmd interaction', { userId: i?.user?.id, guildId: i?.guildId, err, end_reason: r })
+            }
         })
-
-
     }
 
 }

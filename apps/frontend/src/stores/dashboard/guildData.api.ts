@@ -36,6 +36,28 @@ export async function fetchGuildRoles(guildId: string | null, accessToken: strin
 }
 
 
+// Guild Emojis:
+export async function fetchGuildEmojis(guildId: string | null, accessToken: string | undefined) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - Missing "guildId".` })
+    if (!accessToken) return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - Missing "accessToken".` })
+    // Make API Request:
+    const { data: apiResult } = await API.get<APIResponseValue<{
+        name: string;
+        animated: boolean;
+        id: string;
+        url: string;
+        value: string;
+    }[]>>(`/guilds/${guildId}/emojis`)
+    // Return Result:
+    if (apiResult?.success) {
+        return apiResult.data;
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Emojis - API ERROR`, response: apiResult })
+    }
+}
+
+
 // Guild Subscription:
 export async function fetchGuildSubscription(guildId: string | null, accessToken: string | undefined) {
     // Confirm Inputs:
@@ -118,6 +140,7 @@ export async function fetchGuildSessions(guildId: string | null) {
     const { data, error } = await supabase.from('sessions')
         .select('*')
         .eq('guild_id', guildId)
+        .order('starts_at_utc', { ascending: false })
     // Return Result:
     if (!error) {
         return data
@@ -135,10 +158,28 @@ export async function fetchGuildAuditLog(guildId: string | null) {
     const { data, error } = await supabase.from('audit_logs')
         .select('*')
         .eq('guild_id', guildId)
+        .order('created_at', { ascending: false })
     // Return Result:
     if (!error) {
         return data
     } else {
         return Promise.reject({ message: `[!] Failed to Fetch - Guild Audit Log - DB ERROR`, error })
+    }
+}
+
+
+// @temporary - Migrating Templates:
+export async function fetchMigratingTemplates(guildId: string | null) {
+    // Confirm Inputs:
+    if (!guildId) return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - Missing "guildId".` })
+    // Make API Request:
+    const { data, error } = await supabase.from('migrating_templates')
+        .select('*')
+        .eq('guild_id', guildId)
+    // Return Result:
+    if (!error) {
+        return data
+    } else {
+        return Promise.reject({ message: `[!] Failed to Fetch - Guild Templates - DB ERROR`, error })
     }
 }

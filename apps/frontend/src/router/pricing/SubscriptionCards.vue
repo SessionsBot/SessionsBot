@@ -17,7 +17,7 @@
             description: 'Available for all to enjoy, at absolutely no cost!',
             price: 0,
             features: [
-                `Schedule up to ${limits.FREE.MAX_SCHEDULES} active sessions.`,
+                `Schedule up to ${limits.FREE.MAX_SCHEDULES} repeating sessions.`,
                 `Configure a max of ${limits.FREE.MAX_RSVP_SLOTS} RSVP slots per session.`,
                 `Track bot actions and user engagement with your bot's audit logs.`,
                 'Post to a specified channel for EACH session.',
@@ -28,7 +28,7 @@
             description: 'Great for medium-large servers, ready to get scheduling!',
             price: 3.99,
             features: [
-                `Schedule up to ${limits.PREMIUM.MAX_SCHEDULES} active sessions.`,
+                `Schedule up to ${limits.PREMIUM.MAX_SCHEDULES} repeating sessions.`,
                 `Configure a max of ${limits.PREMIUM.MAX_RSVP_SLOTS} RSVP slots per session.`,
                 `Mention roles, users, channels, etc. within your Session Panel posts.`,
                 'All features from FREE Plan.',
@@ -39,7 +39,7 @@
             description: 'Best for largest servers, looking to get the most from Sessions Bot!',
             price: 7.99,
             features: [
-                'Schedule ∞ active sessions.',
+                'Schedule ∞ repeating sessions.',
                 'Configure a max of 10 RSVP slots per session.',
                 `Customize the name and start message of new Session Threads.`,
                 'All features from PREMIUM Plan.',

@@ -1,17 +1,19 @@
 import { supabase } from "@/utils/supabase";
 import { defineStore } from "pinia";
-import type { Session } from "@supabase/supabase-js";
+import type { AuthResponse, Session } from "@supabase/supabase-js";
 import axios from "axios";
 import { DateTime } from "luxon";
 import type { ResyncResult } from "./authTypes";
-import type { APIResponseValue, AppUser, AppUserMetadata } from "@sessionsbot/shared";
+import type { APIResponseValue, AppUser, AppUserAppData, API_DiscordSelfIdentity } from "@sessionsbot/shared";
 import router from "@/router/router";
 import * as Sentry from '@sentry/vue'
 import { safeGTag } from "../analytics";
-import { API } from "@/utils/api";
+import { API, apiUrl } from "@/utils/api";
+import { identity } from "@vueuse/core";
+import useNotifier from "../notifier";
 
 /** Debug Auth - Boolean 🏁 */
-const debugAuth = false;
+const debugAuth = true;
 
 /****REACTIVE PINIA STORE** - Auth */
 export const useAuthStore = defineStore('auth', {
@@ -19,7 +21,7 @@ export const useAuthStore = defineStore('auth', {
         authReady: false,
         signedIn: false,
         user: <AppUser | undefined>undefined,
-        userData: <AppUserMetadata | undefined>undefined,
+        identity: <API_DiscordSelfIdentity | undefined>undefined,
         session: <Session | undefined>undefined,
         refreshStatus: <'idle' | 'busy' | 'succeeded' | 'failed'>'idle',
         redirectAfterAuth: {
@@ -49,7 +51,6 @@ export const useAuthStore = defineStore('auth', {
             // Clear Store State:
             this.signedIn = false;
             this.user = undefined;
-            this.userData = undefined;
             this.session = undefined;
             this.refreshStatus = 'idle';
             this.redirectAfterAuth.clear();
@@ -58,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
             if (error) console.error('[👤] - FAILED TO SIGN OUT', error);
         },
 
-        async resyncDiscordData(authToken: string, triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult<any>> {
+        async resyncDiscordData(triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult> {
             const refreshCooldownInMins = 2;
             try {
                 // Check/set cooldown
@@ -67,56 +68,77 @@ export const useAuthStore = defineStore('auth', {
                     return {
                         success: false,
                         data: { reason: 'BUSY', message: 'Already refreshing.. please wait!' }
-                    }
+                    } as const
                 } else this.refreshStatus = 'busy';
 
                 // Check for recent refresh
                 if (this.user?.app_metadata?.last_synced) {
                     // Get last sync date:
-                    const lastSyncDate = DateTime.fromISO(this.user.app_metadata?.last_synced);
+                    const lastSyncDate = DateTime.fromISO(this.user?.app_metadata?.last_synced);
                     const minsFromLastSync = Math.abs(lastSyncDate?.diffNow('minutes')?.minutes || 0);
-                    const remainingWaitMins = Math.floor(refreshCooldownInMins - minsFromLastSync) >= 1 ? Math.floor(refreshCooldownInMins - minsFromLastSync) + ' mins' : Math.floor((refreshCooldownInMins - minsFromLastSync) * 60) + ' secs';
-                    if (minsFromLastSync < refreshCooldownInMins) { // within past 15 mins - not allowed:
+                    const remainingWaitString = Math.floor(refreshCooldownInMins - minsFromLastSync) >= 1 ? Math.floor(refreshCooldownInMins - minsFromLastSync) + ' mins' : Math.floor((refreshCooldownInMins - minsFromLastSync) * 60) + ' secs';
+                    if (minsFromLastSync < refreshCooldownInMins) { // within cooldown - not allowed:
                         this.refreshStatus = 'failed';
                         // COOLDOWN - Return
                         return {
                             success: false,
-                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least ${refreshCooldownInMins} minuets before each refresh. (Remaining: ${remainingWaitMins})` }
-                        };
+                            data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least ${refreshCooldownInMins} minuets before each refresh. (Remaining: ${remainingWaitString})` }
+                        } as const;
                     };
                 } else throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };
 
 
                 // Get/fetch user auth token:
-                if (!authToken) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
+                if (!this.session?.access_token) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
-                const { status, data: { data: { fresh_token } } } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
+                const { status, data } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
                     headers: {
                         ['trigger-type']: triggerType
-                    }
+                    },
+                    timeout: 10_000,
+                    timeoutErrorMessage: 'API Timeout! - Refresh Auth Endpoint FAILED to respond within 10 secs...'
                 });
 
-                // Handle request response - Fetch new user data:
-                if (fresh_token) {
-                    await supabase.auth.setSession({
-                        access_token: fresh_token,
-                        refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || 'null'
-                    });
-                    await supabase.auth.refreshSession();
+                if (status < 299) {
+                    // API Success - Attempt to Refresh Auth Token (Supabase):
+                    const attempt1: AuthResponse | 'timed_out' = await Promise.race([
+                        supabase.auth.refreshSession(),
+                        new Promise<'timed_out'>(r => setTimeout(() => {
+                            r('timed_out')
+                        }, 5_000))
+                    ])
+                    if (debugAuth) console.info('Refresh Session Result:', attempt1)
+                    if (attempt1 != 'timed_out' && attempt1?.error) {
+                        console.warn('Auth Session Refresh -- FAILED!', { result: attempt1 })
+                        throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt1 }
+                    } else if (attempt1 == 'timed_out') {
+                        // Try to refresh auth - Attempt 2:
+                        const attempt2: AuthResponse | 'timed_out' = await Promise.race([
+                            supabase.auth.refreshSession(),
+                            new Promise<'timed_out'>(r => setTimeout(() => {
+                                r('timed_out')
+                            }, 5_000))
+                        ])
+                        if (attempt2 != 'timed_out' && attempt2?.error) {
+                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt2 }
+                        } else if (attempt2 == 'timed_out') {
+                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh client supabase auth session (2 attempts) after API success!', attempt: attempt2 }
+                        }
+                    }
+                    // Log & Return Refresh Success:
                     this.refreshStatus = 'succeeded';
                     console.info('✅ - REFRESHED AUTH SESSION!');
-
-                    // Return Success
                     return {
                         success: true,
                         data: {
                             triggerType
                         }
-                    }
+                    } as const
 
-                } else throw { reason: "REFRESH ERROR", message: 'Failed to re-sync Discord data - You\'ll have to sign back in, Sorry! Redirecting you now....' };
+                } else throw { reason: "REFRESH ERROR", message: 'Failed to refresh auth session from API - You\'ll have to sign back in... Sorry! Redirecting you now....', result: data, status };
+
 
             } catch (err: any) {
 
@@ -126,7 +148,9 @@ export const useAuthStore = defineStore('auth', {
 
                 // Redirect new sign in after wait:
                 setTimeout(() => {
-                    this.signIn();
+                    console.info(`(i) Prompting fresh sign in due to failed auth refresh!`)
+                    const route = useRoute()
+                    this.signIn(route?.fullPath);
                 }, 1_000);
 
                 // Return Failure:
@@ -136,7 +160,7 @@ export const useAuthStore = defineStore('auth', {
                         reason: err?.reason || 'REFRESH ERROR',
                         message: err?.message || `Failed to refresh account data, you'll have to sign back in! (redirecting you now...)`
                     }
-                }
+                } as const
 
             } finally {
                 // Reset refresh busy flag:
@@ -152,44 +176,91 @@ export const useAuthStore = defineStore('auth', {
  * - Handles auth events and keeps user in `useAuthStore()` up to date. */
 export const watchAuth = async () => {
     const store = useAuthStore();
+    const notifier = useNotifier();
+
+    // Util: Fetch Discord Identity:
+    async function fetchSelfIdentity(token: string | undefined) {
+        try {
+            // Confirm Token:
+            if (!token) throw 'No token provided to fetch identity!'
+            // Make API Request:
+            const result = await axios.get<APIResponseValue>(apiUrl + '/discord/identity/@me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                validateStatus: (s) => true
+            })
+            // Handle Response:
+            if (!result.data?.success) {
+                // Identity Fetch Failed:
+                console.error(`[👤 Auth]: Failed to fetch SELF Discord IDENTITY!`, { api_result: result })
+                throw { message: 'API Result Failure', api_result: result }
+            } else {
+                store.identity = result.data.data as any;
+                if (debugAuth) console.info(`[👤 Auth]: Fetched Discord Identity - @me`, store.identity)
+
+                // Update Sentry User w/ Identity:
+                Sentry.setUser({
+                    id: store.identity?.id,
+                    username: store.identity?.username
+                })
+
+                store.authReady = true;
+            }
+        } catch (err) {
+            console.error(`[AUTH 👤]: Failed to fetch self user Discord identity!`, err)
+            // store.signOut()
+            // Send Alert:
+            notifier.send({
+                level: 'error',
+                duration: 15_000,
+                icon: 'tdesign:user-error-1-filled',
+                header: `Failed to load account identity!`,
+                content: 'It seems we ran into an authentication error! <br><span class="mt-0.5 text-xs opacity-65"> <b>TIP:</b> Try refreshing the page or signing out and back in.</span>'
+            })
+        }
+    }
+
     // Watch for auth events:
     supabase.auth.onAuthStateChange(async (event, session) => {
         // Get current auth user 
         const user = session?.user;
         // Update auth store:
-        store.authReady = true;
         store.signedIn = user ? true : false;
         store.user = user as any;
         store.session = session as any;
-        store.userData = user?.user_metadata as any;
 
         // G-Tag id:
         const gTagId = import.meta.env.VITE_GTAG_ID
 
         // If Initial Session (first sign in):
         if (event == 'INITIAL_SESSION') {
+            // If signed in:
+            if (session?.access_token) {
+                // If redirect path (after auth) found:
+                const redirectPath = store.redirectAfterAuth.get();
+                if (redirectPath) {
+                    router.push(redirectPath);
+                    store.redirectAfterAuth.clear();
+                }
 
-            // Update G-Tag "user_id" Config:
-            if (debugAuth) { console.log('updating', gTagId, user?.id) }
-            safeGTag('config', gTagId, {
-                'user_id': user?.id || null
-            })
-            // Send G-Tag "login" Event:
-            safeGTag('event', 'login', {
-                'method': 'Discord'
-            })
+                // Fetch Identity Data
+                await fetchSelfIdentity(session?.access_token)
 
-            // Update Sentry User:
-            Sentry.setUser({
-                id: store.userData?.id,
-                username: store.userData?.username
-            })
+                // Set gTag Config:
+                safeGTag('config', gTagId, {
+                    'user_id': user?.id || null
+                })
+                // Send G-Tag "login" Event:
+                safeGTag('event', 'login', {
+                    'method': 'Discord'
+                })
 
-            // If redirect path (after auth) found:
-            const redirectPath = store.redirectAfterAuth.get();
-            if (redirectPath) {
-                router.push(redirectPath);
-                store.redirectAfterAuth.clear();
+
+
+            } else {
+                // Mark Auth Ready:
+                store.authReady = true
             }
         }
 
@@ -201,11 +272,24 @@ export const watchAuth = async () => {
                 'user_id': null
             })
             Sentry.setUser(null)
+            store.identity = undefined
+        }
+
+        // On Refresh - Update Identity:
+        if (event == 'TOKEN_REFRESHED') {
+            console.info('Refreshing Self Discord Identity...')
+            //  Re-Fetch Identity Data:
+            await fetchSelfIdentity(session?.access_token)
+        }
+
+        // Reset Identity
+        if (!session) {
+            store.identity = undefined
         }
 
         // Debug:
         if (debugAuth) {
-            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, userData: store.userData })
+            console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, identity: store.identity })
         }
 
         // Check for outdated Discord Data:
@@ -219,13 +303,28 @@ export const watchAuth = async () => {
                     // last discord data sync >= 24 hours ago
                     console.info(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
                     // auto refresh acc data:
-                    const result = await store.resyncDiscordData(session?.access_token, 'AUTOMATIC');
+                    const result = await store.resyncDiscordData('AUTOMATIC');
                     if (result.success) safeGTag('event', 'auth_refresh', {
                         trigger_type: result.data?.triggerType
                     })
                 }
-            } else return console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
+            } else console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
         }
+    })
+
+    // Auth Ready - Timed Out Alert:
+    await new Promise((r) => {
+        setTimeout(() => {
+            if (!store.authReady) {
+                notifier.send({
+                    level: 'error',
+                    header: 'Failed to load Account!',
+                    icon: 'mdi:user',
+                    duration: false,
+                    content: `It appears we're having trouble initiating our account system.. please refresh this page and try again, or else get in contact with our Support Team!`
+                })
+            }
+        }, 10_000);
     })
 }

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonData, ButtonInteraction, ButtonStyle, ContainerBuilder, MessageFlags, SeparatorBuilder, TextChannel, TextDisplayBuilder } from "discord.js";
 import { getSubscriptionFromInteraction, AuditEvent } from "@sessionsbot/shared";
 import core from "../utils/core/core";
 import { defaultFooterText, genericErrorMsg } from "../utils/bot/messages/basic";
@@ -6,10 +6,11 @@ import { DateTime } from "luxon";
 import dbManager from "../utils/database/manager";
 import { URLS } from "../utils/core/urls";
 
-export default {
+export default <ButtonData>{
     data: {
         customId: 'unRsvp'
     },
+    cooldown: 5,
     execute: async (i: ButtonInteraction) => {
         // Vars:
         const [_, rsvpId, sessionId] = i.customId.split(':');
@@ -41,7 +42,7 @@ export default {
                     components: <any>[
                         new TextDisplayBuilder({ content: `## ${core.emojis.string('user_fail')}  Failed to Remove RSVP` }),
                         new SeparatorBuilder(),
-                        new TextDisplayBuilder({ content: `**Reason**: \n> You are **NOT assigned as an RSVP** within this session! Therefore we cannot remove you as one... \n**Session Title**: \n> \`${sessionData?.title}\` \n**Help**: \n> Use the ${core.commands.getLinkString('my-rsvps')} command to view your currently assigned RSVP slots.\n-# Experiencing issues? Chat with [Bot Support](${URLS.support_chat})!` }),
+                        new TextDisplayBuilder({ content: `**Reason**: \n> You are **NOT assigned as an RSVP** within this session! Therefore we cannot remove you as one... \n**Session Title**: \n> \`${sessionData?.title}\` \n**Help**: \n> Use the ${core.commands.string('my-rsvps')} command to view your currently assigned RSVP slots.\n-# Experiencing issues? Chat with [Bot Support](${URLS.support_chat})!` }),
                         new SeparatorBuilder(),
                         new ActionRowBuilder({
                             components: [
@@ -95,7 +96,10 @@ export default {
 
         // If SHOW WATERMARK - Add to Response:
         if (guildSubscription.limits.SHOW_WATERMARK) {
-            responseContent.components.push(defaultFooterText({ showHelpLink: true }))
+            responseContent.components.push(
+                new SeparatorBuilder,
+                defaultFooterText({ lightFont: true })
+            )
         }
 
         return await i.editReply({

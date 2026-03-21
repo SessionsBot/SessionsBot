@@ -10,7 +10,7 @@
     const features = [
         {
             key: 'max_schedules',
-            title: 'Maximum Active Schedules',
+            title: 'Maximum Repeating Schedules',
             values: {
                 FREE: limits.FREE.MAX_SCHEDULES,
                 PREMIUM: limits.PREMIUM.MAX_SCHEDULES,

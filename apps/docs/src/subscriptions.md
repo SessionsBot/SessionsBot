@@ -9,7 +9,14 @@ Sessions Bot is **free to use for anybody**, however some limited <u>exclusive f
 - Enterprise
 
 ## Competitive Limits
-Compared to our largest competitors we offer higher limits for things like active schedules and customization.
+Compared to most of our largest competitors we offer higher limits for things like active schedules and customization across free and paid plans.
+> To view specific limit quotas by plan view our [Pricing](https://sessionsbot.fyi/pricing) page.
+
+## Exclusive Features
+By subscribing to a paid bot plan, you gain access to exclusive features! Some of these features may include but are not limited to:
+- Restrict RSVP Slots by certain Discord Roles
+- Customize the start message for `Thread Mode`
+- Store data in the cloud <span class="opacity-55 text-xs">(dashboard)</span> for longer
 > To view specific limit quotas by plan view our [Pricing](https://sessionsbot.fyi/pricing) page.
 
 ## Purchasing & Refunds

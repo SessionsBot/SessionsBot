@@ -58,7 +58,7 @@
                 @click="dashboard.nav.expanded = !dashboard.nav.expanded"
                 class="size-8 aspect-square rounded-md text-text-1 hover:bg-zinc-600/50 active:scale-95 cursor-pointer transition-all flex items-center justify-center">
                 <iconify-icon icon="proicons:panel-right-expand" height="29" width="29"
-                    class="transition-all rotate-180" :class="{ 'rotate-0!': navExpanded }" />
+                    class="transition-[ease,1.5s]! rotate-z-180" :class="{ 'rotate-z-0!': navExpanded }" />
             </Button>
         </div>
 
@@ -72,8 +72,8 @@
                 <template #default="{ togglePopOver }">
 
                     <Button unstyled @click="togglePopOver"
-                        class="bg-white/5 hover:bg-text-1/10 mx-2.5! ring-2 ring-ring-soft hover:ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
-                        :class="{ 'aspect-square': !navExpanded }">
+                        class="bg-white/5 w-[92%] hover:bg-text-1/10 mx-2.5! ring-2 ring-ring-soft hover:ring-ring-2 hover:ring-ring-1 cursor-pointer rounded-md gap-2 p-1.75 h-9 flex flex-row items-center justify-start transition-all overflow-clip"
+                        :class="{ 'aspect-square! w-fit!': !navExpanded }">
 
                         <img class="h-[95%]! aspect-square! rounded-full ring-2 ring-ring-1"
                             :src="userGuildData?.icon || DiscordLogo" />

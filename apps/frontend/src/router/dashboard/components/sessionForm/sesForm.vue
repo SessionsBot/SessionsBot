@@ -13,8 +13,8 @@
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import LoadingIcon from '@/components/icons/LoadingIcon.vue';
-    import { datetime, RRule, rrulestr } from 'rrule';
+    import LoadingIcon from '@/components/icons/loadingIcon.vue';
+    import { datetime, RRule } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
 
@@ -82,7 +82,7 @@
 
     /** Form Value Defaults - Factory Fn */
     function createFormDefaults() {
-        return {
+        return <Record<NewSessions_FieldNames, any>>{
             title: '',
             description: '',
             url: '',
@@ -111,7 +111,7 @@
 
     /** Form Resolver Schema */
     const formSchema = z.object({
-        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').normalize(),
+        title: z.string('Please enter a valid title.').trim().min(1, 'Title must have at least 1 character.').max(32, 'Title cannot exceed 32 characters.').normalize(),
         description: z.string('Please enter a valid description.').trim().max(225, 'Description cannot exceed 225 characters.').normalize().refine(s => {
             if (subscription.value?.limits?.ALLOW_MENTION_ROLES != true) {
                 // Check for any native discord mentions in string:
@@ -145,7 +145,9 @@
         rsvps: z.array(z.object({
             // 2nd Level - See RsvpPanel Schema
             name: z.string().normalize(),
-            emoji: z.nullish(z.emoji("Please enter a valid emoji.")).or(z.literal("")),
+            emoji: z.nullish(z.string()
+                .regex(/^(?:<(?:a)?:[A-Za-z0-9_]{2,32}:\d{17,20}>|\p{Extended_Pictographic}(?:\uFE0F)?)$/u, "Please enter a valid emoji.")
+                .or(z.literal(""))),
             capacity: z.number(),
             required_roles: z.array(z.string()).nullish()
         })).nullish(),
@@ -170,7 +172,7 @@
             `Post Time must occur before or at event Start Time if posting "Day of".`
         ),
         postDay: z.literal(['Day before', 'Day of'], 'Please select an option.'),
-        mention_roles: z.nullish(z.array(z.string('Please select valid Discord roles.').min(17, 'Invalid Discord role id selected.'))),
+        mention_roles: z.nullish(z.array(z.string('Please select valid Discord roles.').min(17, 'Invalid Discord role id selected.')).max(5, 'You can only select a maximum of 5 mention roles!')),
         postInThread: z.boolean(),
         nativeEvents: z.boolean(),
 
@@ -214,7 +216,7 @@
         const fieldValue = formValues.value[name];
         const result = safeParse(fieldSchema, fieldValue);
         if (!result.success) {
-            const { errors: errs } = treeifyError(result.error);
+            const errs = treeifyError(result.error)?.errors;
             invalidFields.value?.set(name, errs);
         } else {
             invalidFields.value?.delete(name);
@@ -346,6 +348,9 @@
 
         // Open Form:
         sessionsFormVisible.value = true;
+
+        // Validate Form:
+        validateFields(Array.from(Object.keys(formValues.value)) as any)
     }
 
     /** Starts/Creates a "Duplicate" from an Editing Session */
@@ -381,11 +386,12 @@
             `,
             icon: 'lucide:trash-2',
             accept: async () => {
-                submitState.value = 'failed'
+                submitState.value = 'loading'
                 const { data: { error, success }, status } = await API.delete<APIResponseValue>(`/guilds/${guildId.value}/sessions/templates/${editingId.value}`)
                 if (!success || error || status >= 300) {
                     console.error('Failed to Delete Session:', status, error)
                     // Send Errored Alert:
+                    submitState.value = 'failed'
                     notifier.send({
                         header: ' Failed!',
                         content: `We couldn't delete that session.. if this issue persists please <b class="extrabold">get in contact with Bot Support!</b>`,
@@ -442,7 +448,7 @@
             const result = formSchema.safeParse(formValues.value);
             if (!result.success) {
                 // Invalid Submission - Errors Found:
-                const { properties } = treeifyError(result.error);
+                const properties = treeifyError(result.error)?.properties;
                 for (const [fieldName, errData] of Object.entries(properties as any)) {
                     //@ts-expect-error
                     invalidFields.value.set(fieldName, errData?.errors)
@@ -523,14 +529,23 @@
 
 
             // Compute - Next Post UTC:
-            const nextAfterDT = formAction.value == 'edit'
-                ? DateTime.fromISO(String(dashboard.sessionForm.editPayload?.last_post_utc), { zone: 'utc' })
-                : DateTime.now().setZone(data.timeZone).startOf('day').toUTC()
+            const postAfterDT = () => {
+                // Editing - Post from last post date:
+                if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
+                    return DateTime.fromISO(dashboard.sessionForm.editPayload?.last_post_utc, { zone: 'utc' })
+                }
+                // New - Post From Start of Day of Session Start -- MINUS 1 day if "day before" post
+                if (data.postDay == 'Day before') {
+                    return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
+                } else {
+                    return startInZone?.startOf('day')?.toUTC()
+                }
+            }
             const nextPostUTC = getSchedulesNextPostUTC({
                 startsAtUtc: startUtc,
                 postOffsetMs: getPostOffsetMs(),
                 RRule: newRRule?.toString(),
-                afterDate: nextAfterDT?.isValid ? nextAfterDT : DateTime.utc()
+                afterDate: postAfterDT()
             })
 
             // Compute - Last Post UTC:
@@ -602,6 +617,16 @@
 
             };
 
+            // DETECT - Anomaly Sessions (no rrule / first & last post already occurred):
+            if ((!nextPostUTC || nextPostUTC < DateTime.utc()) && !newRRule) {
+                const confirmed = await new Promise<boolean>(r => confirmService.require({
+                    group: 'anomaly-schedule-confirm',
+                    accept: () => { r(true) },
+                    reject: () => { r(false) }
+                }))
+                if (!confirmed) return
+            }
+
             // Send API Request for Create/Edit Schedule:
             if (formAction.value == 'new') {
                 // Create New Session - Send Request
@@ -626,6 +651,19 @@
                 } else throw r;
             }
 
+            // Process MIGRATING TEMPLATE Submissions:
+            if (formAction.value == 're-enable-migrating') {
+                bodyData.data.id = editingId.value;
+                const r = await API.patch<APIResponseValue>(`/guilds/${guildId.value}/migrating/schedules`, bodyData)
+                if (r.status < 300) {
+                    // Success! - Reset Form
+                    resetFrom();
+                    // Close Form
+                    sessionsFormVisible.value = false;
+                    dashboard.refetchData('migratingTemplates')
+                } else throw r;
+            }
+
 
             // Mark Submit Un-Busy:
             submitState.value = 'idle';
@@ -636,13 +674,17 @@
         } catch (err) {
             // Failed Session Form Submission
             console.error('Session Form - SUBMIT ERROR', err)
+            notifier.send({
+                level: 'error',
+                header: 'Failed Submission',
+                content: `It seems like there was an issue submitting the form. Confirm you're inputs and try again!`
+            })
         } finally {
             setTimeout(() => {
                 submitState.value = 'idle'
             }, 1_500)
         }
     }
-
 
     // Exported Types:
     export type NewSession_ValueTypes = z.infer<typeof formSchema>;
@@ -676,7 +718,7 @@
                             <p class="font-bold text-lg"> Edit Schedule </p>
                         </span>
                         <!-- Re Enable Schedule - Title -->
-                        <span v-if="formAction == 're-enable'"
+                        <span v-if="formAction == 're-enable' || formAction == 're-enable-migrating'"
                             class="flex flex-row gap-1.25 items-center content-center">
                             <Iconify icon="mynaui:tool" />
                             <p class="font-bold text-lg"> Re-Enable Schedule </p>
@@ -685,9 +727,9 @@
                         <!-- Abort/Delete Session - Button -->
                         <Button unstyled @click="abortForm()" :disabled="submitState != 'idle'"
                             class="p-0.5 hover:bg-red-400/50 active:scale-95 cursor-pointer transition-all rounded-lg"
-                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState == 'loading' }">
-                            <XIcon v-if="submitState == 'idle'" class="p-px text-text-1/70" />
-                            <LoadingIcon v-else class="size-5" />
+                            :class="{ 'bg-transparent! opacity-30! scale-100! cursor-progress!': submitState != 'idle' }">
+                            <LoadingIcon v-if="submitState == 'loading'" class="size-5" />
+                            <XIcon v-else class="p-px text-text-1/70" />
                         </Button>
                     </section>
 
@@ -786,7 +828,8 @@
                                     <Layers2Icon :size="20" />
                                 </Button>
 
-                                <Button unstyled title="Delete" @click="startDeletionPrompt"
+                                <Button v-if="formAction != 're-enable-migrating'" unstyled title="Delete"
+                                    @click="startDeletionPrompt"
                                     class="aspect-square p-1 bg-[color-mix(in_oklab,var(--c-bg-3),black_10%)] hover:bg-red-400/50 cursor-pointer rounded-md active:bg-red-400/50 active:scale-95 transition-all">
                                     <Trash2Icon :size="20" />
                                 </Button>

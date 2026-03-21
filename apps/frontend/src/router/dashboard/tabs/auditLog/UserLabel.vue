@@ -14,7 +14,7 @@
 
     const userIdentity = computedAsync(async () => {
         if (props.userId == 'BOT') return null
-        else return await dashboard.discordIdentities.get(props.userId)
+        else return await dashboard.discordIdentities.user.get(props.userId)
     })
 
 </script>

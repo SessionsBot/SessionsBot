@@ -1,11 +1,10 @@
 .env 
-node_modules/
+node_modules
 private*
 *.private*
 *.tsbuildinfo
 
 
-apps/backend/src/*/migration
-
 apps/**/cache
+apps/**/node_modules
 **/dist

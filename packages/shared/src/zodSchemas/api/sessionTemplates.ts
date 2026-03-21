@@ -1,10 +1,10 @@
-import type { Database } from "@sessionsbot/shared";
+import { discordSnowflakeSchema, type Database } from "@sessionsbot/shared";
 import * as z from "zod";
 
 /** **API/Database Validation Schema** - Sessions Templates Table Row */
 type fields = keyof Database['public']['Tables']['session_templates']['Row'];
 export const API_SessionTemplateBodySchema = z.object({
-    guild_id: z.string(),
+    guild_id: discordSnowflakeSchema,
     id: z.nullish(z.string()),
     title: z.string(),
     description: z.nullish(z.string()),
@@ -14,7 +14,7 @@ export const API_SessionTemplateBodySchema = z.object({
     time_zone: z.string(),
     rsvps: z.nullish(z.json()),
     rrule: z.nullish(z.string()),
-    channel_id: z.string(),
+    channel_id: discordSnowflakeSchema,
     post_before_ms: z.number(),
     post_in_thread: z.boolean(),
     native_events: z.boolean(),

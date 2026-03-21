@@ -45,11 +45,11 @@
 
     // Auth store and data:
     const auth = useAuthStore()
-    const { user, userData } = storeToRefs(auth);
+    const { user, identity } = storeToRefs(auth);
 
     // Owned Guild(s) Options:
     const userOwnedGuilds = computed(() => {
-        const manageableGuilds = auth.userData?.guilds.manageable;
+        const manageableGuilds = auth.identity?.guilds.manageable;
         return manageableGuilds?.filter(g => g.isOwner && g.hasSessionsBot)?.map((g) => {
             return {
                 name: g.name,

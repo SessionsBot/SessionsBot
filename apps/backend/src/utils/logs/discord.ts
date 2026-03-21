@@ -23,6 +23,29 @@ const logChannels = {
 const defaultGuildIcon = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/198142ac-f410-423a-bf0b-34c9cb5d9609/dbtif5j-60306864-d6b7-44b6-a9ff-65e8adcfb911.png/v1/fit/w_128,h_128,q_70,strp/discord_metro_icon_by_destuert_dbtif5j-375w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NTEyIiwicGF0aCI6Ii9mLzE5ODE0MmFjLWY0MTAtNDIzYS1iZjBiLTM0YzljYjVkOTYwOS9kYnRpZjVqLTYwMzA2ODY0LWQ2YjctNDRiNi1hOWZmLTY1ZThhZGNmYjkxMS5wbmciLCJ3aWR0aCI6Ijw9NTEyIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.1Fi0jR0YCIK_seYmEuy6R_LyBrJM4K6HOPXAtsf-3yQ';
 
 
+// Util - Entitlement Log(s) - Cooldowns
+const useEntitlementLogCooldowns = () => {
+    const cooldowns = new Map<string, number>();
+
+    const saveCooldown = (guildId: string, timeoutSecs: number) => {
+        const endCooldownAt = DateTime.utc().plus({ seconds: timeoutSecs }).toUnixInteger()
+        setTimeout(() => cooldowns.delete(guildId), timeoutSecs)
+    }
+
+    const hasCooldown = (guildId: string) => {
+        const endsAt = cooldowns.get(guildId)
+        if (!endsAt) return false
+        else return DateTime.fromSeconds(endsAt) >= DateTime.local()
+    }
+
+    return {
+        saveCooldown,
+        hasCooldown
+    }
+}
+const entitlementCooldowns = useEntitlementLogCooldowns()
+
+
 // Util - Send Log Message to Log Channel:
 async function sendLogMessage(msg: ContainerBuilder, channel: string) {
     try {
@@ -148,6 +171,11 @@ export default {
         /** Logs an entitlement after its initial creation. */
         entitlementCreated: async (entitlement: Entitlement) => {
             try {
+                // Check / Apply Cooldown:
+                if (entitlementCooldowns.hasCooldown(entitlement?.guildId)) return
+                else entitlementCooldowns.saveCooldown(entitlement?.guildId, 5)
+
+                // Send Msg:
                 const { botClient: bot, storeSKUs, colors: { getOxColor } } = core;
                 const skuInfo: Partial<SKU> = storeSKUs[entitlement.skuId] || null;
                 const owner = entitlement.isGuildSubscription()
@@ -192,13 +220,18 @@ export default {
         /** Logs an entitlement after its updated or deleted. */
         entitlementUpdated: async (entitlement: Entitlement) => {
             try {
+                // Check / Apply Cooldown:
+                if (entitlementCooldowns.hasCooldown(entitlement?.guildId)) return
+                else entitlementCooldowns.saveCooldown(entitlement?.guildId, 5)
+
+                // Send Msg:
                 const { botClient: bot, storeSKUs, colors: { getOxColor } } = core;
                 const skuInfo: Partial<SKU> = storeSKUs[entitlement.skuId] || null;
                 const status = entitlement.isActive() ? 'ACTIVE' : 'INACTIVE';
                 const expiresAt = () => {
                     if (entitlement.isTest()) return '`TEST`'
                     if (!entitlement.isActive()) return '`EXPIRED`'
-                    if (entitlement.endsTimestamp) return `<t:${DateTime.fromMillis(entitlement.endsTimestamp).toSeconds()}:F>`
+                    if (entitlement.endsTimestamp) return `<t:${DateTime.fromMillis(entitlement.endsTimestamp).toUnixInteger()}:F>`
                     else return '`NO EXPIRATION`'
                 }
                 const owner = entitlement.isGuildSubscription()
