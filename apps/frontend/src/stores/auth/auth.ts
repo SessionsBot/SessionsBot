@@ -85,11 +85,11 @@ export const useAuthStore = defineStore('auth', {
                             data: { reason: 'COOLDOWN', message: `Sorry! You have to wait at least ${refreshCooldownInMins} minuets before each refresh. (Remaining: ${remainingWaitString})` }
                         } as const;
                     };
-                } else throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };
+                } else // throw { reason: 'NO SYNC DATE', message: 'Failed to find previous data sync date!' };
 
 
-                // Get/fetch user auth token:
-                if (!this.session?.access_token) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
+                    // Get/fetch user auth token:
+                    if (!this.session?.access_token) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
 
                 // Make refresh request:
                 const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
@@ -103,37 +103,18 @@ export const useAuthStore = defineStore('auth', {
 
                 if (status < 299) {
                     // API Success - Attempt to Refresh Auth Token (Supabase):
-                    const attempt1: AuthResponse | 'timed_out' = await Promise.race([
-                        supabase.auth.refreshSession(),
-                        new Promise<'timed_out'>(r => setTimeout(() => {
-                            r('timed_out')
-                        }, 5_000))
-                    ])
-                    if (debugAuth) console.info('Refresh Session Result:', attempt1)
-                    if (attempt1 != 'timed_out' && attempt1?.error) {
-                        console.warn('Auth Session Refresh -- FAILED!', { result: attempt1 })
-                        throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt1 }
-                    } else if (attempt1 == 'timed_out') {
-                        // Try to refresh auth - Attempt 2:
-                        const attempt2: AuthResponse | 'timed_out' = await Promise.race([
-                            supabase.auth.refreshSession(),
-                            new Promise<'timed_out'>(r => setTimeout(() => {
-                                r('timed_out')
-                            }, 5_000))
-                        ])
-                        if (attempt2 != 'timed_out' && attempt2?.error) {
-                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh current auth session after API success!', attempt: attempt2 }
-                        } else if (attempt2 == 'timed_out') {
-                            throw { reason: "REFRESH ERROR", message: 'Failed to refresh client supabase auth session (2 attempts) after API success!', attempt: attempt2 }
-                        }
-                    }
+
+                    // Attempt Supabase Token Refresh:
+                    const { data, error } = await supabase.auth.refreshSession()
+                    if (error) throw { message: 'Supabase auth refresh call - Errored!', error }
+
                     // Log & Return Refresh Success:
                     this.refreshStatus = 'succeeded';
                     console.info('✅ - REFRESHED AUTH SESSION!');
                     return {
                         success: true,
                         data: {
-                            triggerType
+                            triggerType,
                         }
                     } as const
 
@@ -144,13 +125,20 @@ export const useAuthStore = defineStore('auth', {
 
                 // Failed Discord Refresh:
                 this.refreshStatus = 'failed';
-                console.error('[❌👤]{REFRESH AUTH}: FAILED - See details', err);
+                console.error('[❌👤]{REFRESH AUTH}: FAILED', err);
 
                 // Redirect new sign in after wait:
                 setTimeout(() => {
-                    console.info(`(i) Prompting fresh sign in due to failed auth refresh!`)
                     const route = useRoute()
-                    this.signIn(route?.fullPath);
+                    // Check if last sign in is older than 5 days:
+                    const lastSyncISO = this.user?.app_metadata?.last_synced
+                    const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
+                    if (lastSyncDate?.isValid && (Math.abs(lastSyncDate.diffNow('day')?.days ?? 0 > 5))) {
+                        // Force a fresh sign in:
+                        console.info(`(i) Prompting fresh sign in due to failed auth refresh and expiring discord token!`)
+                        this.signIn(route?.fullPath);
+                    }
+
                 }, 1_000);
 
                 // Return Failure:
@@ -256,7 +244,25 @@ export const watchAuth = async () => {
                     'method': 'Discord'
                 })
 
+                // Check for outdated Discord Data:
+                if (store.signedIn && user) {
+                    // Get last synced w/ Discord Date:
+                    const lastSyncISO = user.app_metadata?.last_synced;
+                    const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
+                    if (lastSyncDate && lastSyncDate.isValid) {
+                        const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 3 // 3 days
+                        if (expiredData && store.refreshStatus == 'idle') {
+                            // last discord data sync >= 24 hours ago
+                            console.info(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
+                            // auto refresh acc data:
+                            const result = await store.resyncDiscordData('AUTOMATIC');
+                            if (result.success) safeGTag('event', 'auth_refresh', {
+                                trigger_type: result.data?.triggerType
+                            })
+                        }
+                    } else console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
+                }
 
             } else {
                 // Mark Auth Ready:
@@ -277,7 +283,6 @@ export const watchAuth = async () => {
 
         // On Refresh - Update Identity:
         if (event == 'TOKEN_REFRESHED') {
-            console.info('Refreshing Self Discord Identity...')
             //  Re-Fetch Identity Data:
             await fetchSelfIdentity(session?.access_token)
         }
@@ -292,25 +297,7 @@ export const watchAuth = async () => {
             console.info(`[👤]{Auth Event} - ${event}`, { signedIn: store.signedIn, user: store.user, identity: store.identity })
         }
 
-        // Check for outdated Discord Data:
-        if (store.signedIn && user) {
-            // Get last synced w/ Discord Date:
-            const lastSyncISO = user.app_metadata?.last_synced;
-            const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
-            if (lastSyncDate && lastSyncDate.isValid) {
-                const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 24;
-                if (expiredData && store.refreshStatus == 'idle') {
-                    // last discord data sync >= 24 hours ago
-                    console.info(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);
-                    // auto refresh acc data:
-                    const result = await store.resyncDiscordData('AUTOMATIC');
-                    if (result.success) safeGTag('event', 'auth_refresh', {
-                        trigger_type: result.data?.triggerType
-                    })
-                }
-            } else console.warn(`[❌] Auth couldn't find the "Last Discord Sync" date.. (for automatic discord data sync)`);
 
-        }
     })
 
     // Auth Ready - Timed Out Alert:

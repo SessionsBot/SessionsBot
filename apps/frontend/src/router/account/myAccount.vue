@@ -4,12 +4,31 @@
     import SignInCard from "./signInCard.vue";
     import DeleteData from "./deleteData.vue";
     import AccountPanel from "./AccountPanel.vue";
+    import useNotifier from "@/stores/notifier";
 
-
+    // Services:
     const auth = useAuthStore();
+    const route = useRoute()
 
     // Account Deletion Visibility:
     const deleteDataDialogVisible = ref<boolean>(false);
+
+    // Detect FAILED AUTH ATTEMPT Query:
+    const queryError = computed(() => Object.entries(route.query).find(([k, v]) => k?.toLowerCase()?.includes('error')))
+
+    // On Page Mount:
+    onMounted(() => {
+        if (queryError.value) {
+            // Send Alert
+            const notifier = useNotifier()
+            notifier.send({
+                level: 'error',
+                header: `Failed to Sign In!`,
+                content: `Please try again! If this issue persists, feel free to contact our Support Team!`,
+                duration: 10
+            })
+        }
+    })
 
 </script>
 
