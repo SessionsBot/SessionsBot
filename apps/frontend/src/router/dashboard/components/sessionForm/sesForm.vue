@@ -216,7 +216,7 @@
         const fieldValue = formValues.value[name];
         const result = safeParse(fieldSchema, fieldValue);
         if (!result.success) {
-            const { errors: errs } = treeifyError(result.error);
+            const errs = treeifyError(result.error)?.errors;
             invalidFields.value?.set(name, errs);
         } else {
             invalidFields.value?.delete(name);
@@ -448,7 +448,7 @@
             const result = formSchema.safeParse(formValues.value);
             if (!result.success) {
                 // Invalid Submission - Errors Found:
-                const { properties } = treeifyError(result.error);
+                const properties = treeifyError(result.error)?.properties;
                 for (const [fieldName, errData] of Object.entries(properties as any)) {
                     //@ts-expect-error
                     invalidFields.value.set(fieldName, errData?.errors)

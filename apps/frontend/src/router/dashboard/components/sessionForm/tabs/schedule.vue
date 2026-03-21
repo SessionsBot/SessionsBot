@@ -57,8 +57,8 @@
             const fieldSchema = localFormSchema.shape?.[name];
             const validateResult = safeParse(fieldSchema, value);
             if (!validateResult.success) {
-                const errs = treeifyError(validateResult.error).errors;
-                localForm.value.invalidFields.set(name, errs);
+                const errs = treeifyError(validateResult.error)?.errors;
+                if (errs) localForm.value.invalidFields.set(name, errs);
             } else {
                 localForm.value.invalidFields.delete(name);
             }
@@ -151,8 +151,8 @@
 
         } else {
             // Errors Found - Add to Invalid MSGs:
-            const { properties } = treeifyError(validate.error);
-            for (const [fieldName, fieldErrs] of Object.entries(properties as any)) {
+            const errs = treeifyError(validate.error)?.properties;
+            for (const [fieldName, fieldErrs] of Object.entries(errs as any)) {
                 const errs = fieldErrs as any;
                 localForm.value.invalidFields.set(fieldName as any, errs?.errors as any)
 

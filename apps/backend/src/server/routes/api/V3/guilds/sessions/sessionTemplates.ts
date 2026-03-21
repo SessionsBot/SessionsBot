@@ -25,7 +25,7 @@ sessionTemplatesRouter.post(`/`, verifyToken, verifyGuildMember(true), async (re
         const result = API_SessionTemplateBodySchema.safeParse(bodyData)
         if (!result.success) {
             // Return Failure:
-            const { properties: invalidFields } = z.treeifyError(result.error)
+            const invalidFields = z.treeifyError(result.error)?.properties
             return new reply(res).failure({ reason: "Invalid Inputs!", invalidFields }, HttpStatusCode.BadRequest);
         } else {
             // Valid - Save/Create Session Template:
@@ -70,7 +70,7 @@ sessionTemplatesRouter.patch(`/`, verifyToken, verifyGuildMember(true), async (r
         const result = API_SessionTemplateBodySchema.safeParse(bodyData)
         if (!result.success) {
             // Return Failure:
-            const { properties: invalidFields } = z.treeifyError(result.error)
+            const invalidFields = z.treeifyError(result.error)?.properties
             return new reply(res).failure({ reason: "Invalid Inputs!", invalidFields }, HttpStatusCode.BadRequest);
         } else {
             // Valid - Find/Edit Session Template:
