@@ -127,22 +127,22 @@
 
         <!-- DESKTOP TABLE -->
         <div
-            class="hidden bg-text-soft md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 border-2 border-ring-soft rounded-md overflow-hidden">
+            class="hidden bg-bg-2 md:grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-0.5 border-2 border-ring-soft rounded-md overflow-hidden">
 
             <!-- Header -->
-            <div class="bg-bg-3 p-3 flex flex-row items-center gap-0.75">
+            <div class="bg-bg-1/70 p-3 flex flex-row items-center gap-0.75 border-bg-1">
                 <StarIcon :size="18" class="w-fit! aspect-square! fill-amber-400/60" />
                 <p class="font-bold"> Feature </p>
             </div>
-            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-1/70 p-3 flex flex-row items-center justify-center gap-0.75">
                 <Iconify icon="tabler:free-rights" class="opacity-80" />
                 <p class="font-bold"> Free </p>
             </div>
-            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-1/70 p-3 flex flex-row items-center justify-center gap-0.75">
                 <DiamondIcon class="size-5.5 fill-sky-700/50" />
                 <p class="font-bold"> Premium </p>
             </div>
-            <div class="bg-bg-3 p-3 flex flex-row items-center justify-center gap-0.75">
+            <div class="bg-bg-1/70 p-3 flex flex-row items-center justify-center gap-0.75">
                 <DiamondIcon class="size-5.5 fill-purple-700/50" />
                 <p class="font-bold"> Enterprise </p>
             </div>
@@ -150,12 +150,12 @@
 
             <!-- Rows -->
             <template v-for="feature in features" :key="feature.key">
-                <div class="bg-bg-3 p-3 font-semibold text-text-1/80">
+                <div class="bg-bg-soft p-3 font-semibold text-text-1/80">
                     {{ feature.title }}
                 </div>
 
                 <div v-for="plan in plans" :key="feature.key + plan"
-                    class=" bg-bg-soft p-3 flex items-center justify-center">
+                    class=" bg-bg-3/65 p-3 flex items-center justify-center">
                     <FeatureValue :value="feature.values[plan]" />
                 </div>
             </template>

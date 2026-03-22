@@ -29,7 +29,7 @@
                 </Button>
             </a>
             <!-- DIRECT - Discord Shop Link -->
-            <a :href="externalUrls.discordStore" target="_blank">
+            <a :href="externalUrls.discordStore" target="_blank" class="my-2 mt-3">
                 <Button unstyled class="action-button bg-brand-1/80 hover:bg-brand-1/65 active:bg-brand-1/50">
                     <ShopIcon />
                     View Discord Shop

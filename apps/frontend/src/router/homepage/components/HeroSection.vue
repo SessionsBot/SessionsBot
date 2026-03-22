@@ -19,7 +19,7 @@
             </p>
             <div class="h-fit w-full flex grow flex-center mb-4 mt-2">
                 <img src="/logo.png"
-                    class="aspect-square z-2! opacity-85 self-center size-26 rounded-xl shadow-md shadow-black/20 border border-ring-soft" />
+                    class="aspect-square z-2! opacity-85 self-center size-26 sm:size-35 rounded-xl shadow-md shadow-black/20 border border-ring-soft" />
             </div>
             <h1 class="text-balance text-4xl font-extrabold leading-tight sm:text-6xl">
                 Customizable Discord Events
@@ -28,7 +28,7 @@
                 Simplified
             </p>
             <span class="mx-auto mt-6 max-w-3xl text-lg text-text-2/80 dark:text-violet-100/85 sm:text-xl">
-                Schedule events <p class="inline opacity-60 text-xs">(aka sessions)</p>, manage rsvps, and keep your
+                Schedule sessions, manage rsvps, and keep your
                 community organized with automated session panels.
             </span>
 
@@ -51,7 +51,7 @@
             <div class="flex flex-center w-full p-3.5">
                 <a :href="externalUrls.documentation" target="_blank" rel="noopener noreferrer">
                     <Button unstyled
-                        class="button-base px-6.5 py-2.5 text-sm font-semibold rounded-xl border border-ring-soft hover:border-brand-2/50 transition-all hover:bg-bg-3/50 hover:-translate-y-0.5">
+                        class="button-base px-6.5 py-2.5 text-sm font-semibold rounded-xl border border-ring-soft hover:border-brand-2/50 transition-all hover:bg-bg-3/30 hover:-translate-y-0.5">
                         <Iconify icon="mdi:paper-outline" :size="18" class="opacity-80" />
                         View Docs
                     </Button>

@@ -3,6 +3,7 @@
     import LandingSection from './LandingSection.vue'
     import FeaturesTable from './FeaturesTable.vue';
     import SubscriptionCards from './SubscriptionCards.vue';
+    import PricingInformationCards from './PricingInformationCards.vue';
 
 
     // Services:
@@ -27,7 +28,7 @@
 
 
         <!-- Subscription Plans - Cards -->
-        <div class="flex flex-col items-center justify-center gap-4 max-w-220 w-full">
+        <div class="flex mt-7 flex-col items-center justify-center gap-4 max-w-270 w-full">
             <!-- Subheading -->
             <div class="w-full px-4">
                 <p class="text-sm font-black uppercase">
@@ -41,7 +42,7 @@
 
 
         <!-- Features List - Table -->
-        <div class="flex flex-col items-center justify-center gap-4 max-w-270 w-full">
+        <div class="flex mt-7 flex-col items-center justify-center gap-4 max-w-270 w-full">
             <!-- Subheading -->
             <div class="w-full px-4">
                 <p class="text-sm font-black uppercase">
@@ -50,6 +51,20 @@
             </div>
 
             <FeaturesTable />
+
+        </div>
+
+
+        <!-- Information -->
+        <div class="flex mt-7 flex-col items-center justify-center gap-4 max-w-270 w-full">
+            <!-- Subheading -->
+            <div class="w-full px-4">
+                <p class="text-sm font-black uppercase">
+                    Information:
+                </p>
+            </div>
+
+            <PricingInformationCards />
 
         </div>
 

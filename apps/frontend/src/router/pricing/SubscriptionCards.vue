@@ -95,7 +95,7 @@
                         {{ feat }}
                     </p>
                     <div v-if="i != plan.features?.length - 1"
-                        class="absolute bottom-0.5 w-[85%] h-0.75 bg-ring-4/40  rounded-full" />
+                        class="absolute -bottom-[3px] w-[85%] h-0.75 bg-ring-4/40  rounded-full" />
                 </div>
             </div>
 
