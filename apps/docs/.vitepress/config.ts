@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     srcDir: "src",
+    outDir: 'dist',
 
     title: "Sessions Bot - Docs",
     description: "An informational guide for all things Sessions Bot!",
