@@ -3,9 +3,9 @@
 
     // All Required Bot Perms:
     const allRequiredPerms = [
-        'Create Private Threads', 'Create Public Threads', `Embed Links`, `Manage Channels`,
-        `Manage Messages`, `Manage Threads`, `Mention Everyone`, `Read Message History`, `Send Messages`,
-        `Send Messages in Threads`, `View Channels`
+        `Attach Files`, `Create Events`, 'Create Private Threads', 'Create Public Threads', `Embed Links`,
+        `Manage Channels`, `Manage Events`, `Manage Messages`, `Manage Threads`, `Mention Everyone`,
+        `Read Message History`, `Send Messages`, `Send Messages in Threads`, `View Channels`
     ]
 
     // Checked Permissions List:

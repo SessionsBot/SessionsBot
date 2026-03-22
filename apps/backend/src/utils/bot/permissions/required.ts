@@ -2,9 +2,12 @@ import { PermissionFlagsBits, PermissionsString } from "discord.js"
 
 /** Full array of every Permission Flag Bit/BigInt that must be granted to SessionsBot within guilds/channels. */
 export const requiredBotPermsInts = [
+    PermissionFlagsBits.AttachFiles,
+    PermissionFlagsBits.CreateEvents,
     PermissionFlagsBits.CreatePrivateThreads,
     PermissionFlagsBits.CreatePublicThreads,
     PermissionFlagsBits.EmbedLinks,
+    PermissionFlagsBits.ManageEvents,
     PermissionFlagsBits.ManageChannels,
     PermissionFlagsBits.ManageMessages,
     PermissionFlagsBits.ManageThreads,
@@ -15,11 +18,10 @@ export const requiredBotPermsInts = [
     PermissionFlagsBits.ViewChannel
 ] as const;
 
-requiredBotPermsInts.length
 
 /** Full array of every permission string that must be granted to SessionsBot within guilds/channels. */
 export const requiredBotPermsStrings: PermissionsString[] = [
-    "CreatePrivateThreads", "CreatePublicThreads", "EmbedLinks", "ManageChannels",
-    "ManageMessages", "ManageThreads", "MentionEveryone", "ReadMessageHistory",
+    "AttachFiles", "CreateEvents", "CreatePrivateThreads", "CreatePublicThreads", "EmbedLinks", "ManageEvents",
+    "ManageChannels", "ManageMessages", "ManageThreads", "MentionEveryone", "ReadMessageHistory",
     "SendMessages", "SendMessagesInThreads", "ViewChannel"
-];
+] as const
