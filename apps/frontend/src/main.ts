@@ -17,7 +17,6 @@ import './styles/main.css'
 import './styles/animations.css'
 import 'primeicons/primeicons.css'
 import "vue-toastification/dist/index.css";
-import 'iconify-icon'
 import { initializeSentry } from './stores/analytics';
 
 

@@ -1,4 +1,3 @@
-import { IconifyIconComponent, type IconifyIcon } from "iconify-icon";
 import { Info } from "lucide-vue-next";
 import { POSITION } from "vue-toastification";
 import type { PluginOptions } from "vue-toastification/dist/types/types";

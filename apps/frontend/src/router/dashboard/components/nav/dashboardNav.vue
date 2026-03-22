@@ -3,6 +3,7 @@
     import ServerDetails from './serverDetails.vue';
     import { HelpCircle } from 'lucide-vue-next';
     import DiscordLogo from '/discord-grey.png'
+    import { Icon } from '@iconify/vue'
 
 
     // Services:
@@ -57,8 +58,8 @@
             <Button :title="navExpanded ? 'Fold Nav' : 'Expand Nav'" unstyled
                 @click="dashboard.nav.expanded = !dashboard.nav.expanded"
                 class="size-8 aspect-square rounded-md text-text-1 hover:bg-zinc-600/50 active:scale-95 cursor-pointer transition-all flex items-center justify-center">
-                <iconify-icon icon="proicons:panel-right-expand" height="29" width="29"
-                    class="transition-[ease,1.5s]! rotate-z-180" :class="{ 'rotate-z-0!': navExpanded }" />
+                <Iconify icon="proicons:panel-right-expand" size="29" class="transition-[ease,1.5s]! rotate-z-180"
+                    :class="{ 'rotate-z-0!': navExpanded }" />
             </Button>
         </div>
 

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-    import { KeepAlive } from 'vue';
+    import { Icon } from '@iconify/vue';
+    import { KeepAlive, type ClassValue } from 'vue';
 
 
     // Props
@@ -7,21 +8,19 @@
         icon?: string
         /** Pixel size of the icon. @default_ 24px */
         size?: number | string,
-        /** Pixel size of the stroke width. @default_ 2px */
-        strokeWidth?: number
         /** Class name(s) to apply to the icon itself */
-        class?: string
+        class?: ClassValue
+
+        // /** Pixel size of the stroke width. @default_ 2px */
+        // strokeWidth?: number
     }>()
 
 </script>
 
 
 <template>
-    <!-- <keep-alive> -->
-    <iconify-icon :height="size || 24" :width="size || 24" loading="eager"
-        class="flex items-center justify-center w-fit! h-fit! aspect-square" :class="props?.class"
-        :icon="props.icon || 'mingcute:question-fill'" />
-    <!-- </keep-alive> -->
+    <icon :icon="String(props?.icon)" :class="props?.class" :width="props.size || 24" :height="props.size || 24"
+        class="align-middle" />
 </template>
 
 

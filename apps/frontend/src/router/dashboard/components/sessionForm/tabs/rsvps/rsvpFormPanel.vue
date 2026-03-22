@@ -275,7 +275,7 @@
                         level: 'upgrade', header: 'Premium Feature!', content: `Your current subscription plan doesn't include this feature. <br><span class='
                         text-xs opacity-50'>Consider upgrading today! </span>` })"
                         class="absolute bg-brand-1/7 cursor-pointer flex items-center justify-start flex-row gap-1 p-3 z-100 inset-0 transition-all text-text-1/50 rounded-md">
-                        <iconify-icon icon="tabler:diamond" class="scale-120" />
+                        <Iconify icon="tabler:diamond" class="scale-120" />
                         <p class=" font-black"> Premium Feature </p>
                     </div>
 

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 
+    import { Icon } from '@iconify/vue';
     import type { FullSessionData } from '@sessionsbot/shared';
     import { google, ics, outlook, outlookMobile, yahoo, type CalendarEvent } from 'calendar-link';
     import { DateTime } from 'luxon';
@@ -98,7 +99,7 @@
         <!-- Calendar Option -->
         <Button v-for="cal in calendarOptions" unstyled @click="cal?.action"
             class="button-base gap-1 justify-start! w-full! borer border-2 border-ring-soft/70 hover:border-ring-soft p-2">
-            <iconify-icon :icon="cal?.icon" size="20" class="opacity-70"
+            <Iconify :icon="cal?.icon" size="20" class="opacity-70"
                 :class="{ 'invert!': cal.icon?.includes('apple') && colorMode == 'dark' }" />
             <p class="text-sm">
                 {{ cal?.title }}

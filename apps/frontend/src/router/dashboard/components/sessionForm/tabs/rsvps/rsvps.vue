@@ -193,7 +193,7 @@
                     <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
                         <Button v-if="(rsvps?.length ?? 0) >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                             class="bg-brand-1/50 py-0.75 px-2.25 pl-1.25 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-brand-1/60 flex items-center flex-row">
-                            <iconify-icon icon="tabler:diamond" width="19" height="19"></iconify-icon>
+                            <Iconify icon="tabler:diamond" width="19" height="19" />
                             <p class="text-sm"> Upgrade Bot </p>
                         </Button>
                     </a>

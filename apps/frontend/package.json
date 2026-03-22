@@ -28,7 +28,6 @@
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.13.2",
     "calendar-link": "^2.11.0",
-    "iconify-icon": "^3.0.2",
     "lucide-vue-next": "^0.548.0",
     "luxon": "^3.7.2",
     "motion-v": "^1.7.4",
@@ -45,6 +44,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.30.0",
+    "@iconify/vue": "^5.0.0",
     "@primevue/auto-import-resolver": "^4.4.1",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.18.11",
