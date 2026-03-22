@@ -3,6 +3,7 @@
     import { ArrowBigDown } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import SessionCard from './SessionCard.vue';
+    import CardPaginator from '../../Paginator.vue';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -16,9 +17,9 @@
         return DateTime.fromISO(a.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(b.starts_at_utc)?.toUnixInteger()
     }));
 
+    // Paginator:
+    const paginatorStartIndex = ref(0)
 
-    // Sessions Paginator:
-    const sPageIndexStart = ref<number>();
 
     // Watch - Highlighted Session Id - Correct Page:
     watch(() => dashboard.nav.highlightedSessionId, (id) => {
@@ -30,8 +31,8 @@
             if (s_index === -1 || !s_index) return console.warn('Failed to find session by id to highlight!')
             const pageStart = Math.floor(s_index / 5) * 5
 
-            // Switch paginator page
-            sPageIndexStart.value = pageStart
+            // Switch paginator page (by start index):
+            paginatorStartIndex.value = pageStart
 
         } else return
     })
@@ -85,8 +86,8 @@
             <div class="w-full flex flex-col gap-2 items-center justify-center pt-2 p-4 min-h-15 ">
 
                 <SessionCard v-if="guildSessions?.length"
-                    v-for="s in guildSessions.slice(sPageIndexStart ?? 0, ((sPageIndexStart ?? 0) + 5))" :session="s"
-                    :key="s.id" />
+                    v-for="s in guildSessions.slice(paginatorStartIndex ?? 0, ((paginatorStartIndex ?? 0) + 5))"
+                    :session="s" :key="s.id" />
 
                 <!-- No Schedules - Card -->
                 <div v-if="!guildSessions?.length">
@@ -106,38 +107,9 @@
 
             </div>
             <!-- Sessions Paginator -->
-            <Paginator v-model:first="sPageIndexStart" v-if="guildSessions?.length"
-                :total-records="guildSessions.length" :rows="5" :always-show="false" class="paginator">
-                <template
-                    #container="{ page, pageCount, prevPageCallback, nextPageCallback, lastPageCallback, firstPageCallback, }">
-                    <div class="flex-center gap-2 w-full flex-wrap p-2">
-                        <!-- First -->
-                        <Button @click="firstPageCallback" :disabled="page == 0" unstyled
-                            class="button-base aspect-square p-1 rounded hidden sm:flex">
-                            <Iconify icon="mingcute:arrows-left-line" />
-                        </Button>
-                        <!-- Previous -->
-                        <Button @click="prevPageCallback" :disabled="page == 0" unstyled
-                            class="button-base aspect-square p-1 rounded">
-                            <Iconify icon="mingcute:left-line" />
-                        </Button>
-                        <p class="opacity-75">
-                            Page {{ page + 1 }} of {{ pageCount }}
-                        </p>
-                        <!-- Next -->
-                        <Button @click="nextPageCallback" :disabled="(page + 1) == pageCount" unstyled
-                            class="button-base aspect-square p-1 rounded">
-                            <Iconify icon="mingcute:right-line" />
-                        </Button>
-                        <!-- Final -->
-                        <Button @click="lastPageCallback" :disabled="(page + 1) == pageCount" unstyled
-                            class="button-base aspect-square p-1 rounded hidden sm:flex">
-                            <Iconify icon="mingcute:arrows-right-line" />
-                        </Button>
-                    </div>
-
-                </template>
-            </Paginator>
+            <CardPaginator ref="sessionsPaginatorRef" v-if="guildSessions?.length"
+                v-model:page-index-start="paginatorStartIndex" :total-records="guildSessions?.length ?? 0"
+                :page-size="5" :always-show="false" />
 
         </section>
 

@@ -3,7 +3,7 @@
     import { CalendarClockIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import TemplateCard from './ScheduleCard.vue';
-
+    import CardPaginator from '../../Paginator.vue';
 
     // Services:
     const dashboard = useDashboardStore();
@@ -25,7 +25,9 @@
 
 
     // All Templates/Schedules Paginator:
-    const tPageIndexStart = ref<number>(0)
+    const paginatorIndexStart = ref(0)
+
+
 
     // Watch - Highlighted Template/Schedule Id - Correct Page:
     watch(() => dashboard.nav.highlightedTemplateId, (id) => {
@@ -36,8 +38,9 @@
             if (t_index === -1 || !t_index) return console.warn('Failed to find template by id to highlight!')
             const pageStart = Math.floor(t_index / 5) * 5
 
-            // Switch paginator page
-            tPageIndexStart.value = pageStart
+            // Switch paginator page (by index):
+            paginatorIndexStart.value = pageStart
+
         } else return
     }, { immediate: true, flush: "sync" })
 
@@ -82,7 +85,8 @@
             </div>
             <!-- All Schedules - List -->
             <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap">
-                <TemplateCard v-for="t in guildTemplates?.slice(tPageIndexStart ?? 0, ((tPageIndexStart ?? 0) + 5))"
+                <TemplateCard
+                    v-for="t in guildTemplates?.slice(paginatorIndexStart ?? 0, ((paginatorIndexStart ?? 0) + 5))"
                     :template="t" :key="t.id" />
 
                 <!-- No Schedules - Card -->
@@ -102,9 +106,8 @@
                 </div>
             </span>
             <!-- All Schedules - Paginator -->
-            <Paginator v-model:first="tPageIndexStart" v-if="guildTemplates?.length"
-                :total-records="guildTemplates?.length" :rows="5" :always-show="false" class="paginator">
-            </Paginator>
+            <CardPaginator v-model:page-index-start="paginatorIndexStart" :always-show="false" :page-size="5"
+                :total-records="guildTemplates?.length ?? 0" />
 
         </section>
 

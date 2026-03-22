@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-    import CurrentSessions from './cards/recentSessions/CurrentSessions.vue';
-    import ActiveTemplates from './cards/activeSchedules/ActiveSchedules.vue';
+    import CurrentSessions from './components/cards/recentSessions/CurrentSessions.vue';
+    import ActiveTemplates from './components/cards/activeSchedules/ActiveSchedules.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import DisabledTemplateAlert from './cards/DisabledTemplateAlert.vue';
-    import StatCard from './cards/StatCard.vue';
-    import MigratingTemplates from './cards/migratingTemplates.vue';
+    import DisabledTemplateAlert from './components/cards/DisabledTemplateAlert.vue';
+    import StatCard from './components/cards/StatCard.vue';
+    import MigratingTemplates from './components/cards/migratingTemplates.vue';
 
     // services:
     const dashboard = useDashboardStore();

@@ -126,6 +126,11 @@
 
     });
 
+    // On UNMOUNT:
+    onUnmounted(() => {
+        dashboard.nav.currentTab = 'Sessions'
+    })
+
 
 </script>
 
