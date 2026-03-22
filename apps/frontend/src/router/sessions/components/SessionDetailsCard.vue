@@ -153,7 +153,7 @@
         </div>
 
         <!-- RSVPS -->
-        <div class="flex w-full flex-col gap-1">
+        <div v-if="s?.session_rsvp_slots?.length" class="flex w-full flex-col gap-1">
             <span class="flex items-center gap-px">
                 <Iconify icon="mdi:user-check" class="opacity-80" size="20" />
                 <p> RSVPs </p>
@@ -165,7 +165,7 @@
                         Sign in to view...
                     </p>
                 </span>
-                <RsvpDetailsList v-else :rsvps="s?.session_rsvp_slots ?? []" />
+                <RsvpDetailsList :rsvps="s?.session_rsvp_slots ?? []" />
             </span>
         </div>
 
