@@ -20,6 +20,7 @@
                 name: 'FAQs',
                 icon: 'wpf:faq',
                 tags: ['frequently, asked, questions,'],
+                classes: { icon: 'mr-1' },
                 hrefLink: externalUrls.documentation
             },
             {
@@ -164,8 +165,8 @@
             <Button unstyled v-for="r in filteredResources" :key="r?.name" :class="r?.classes?.root"
                 class="bg-bg-3 relative w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring-soft hover:ring-ring-2/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
                 <!-- Icon -->
-                <Iconify v-if="typeof r.icon == 'string'" class="p-2" :class="r?.classes?.icon" :icon="r.icon"
-                    :size="22" />
+                <Iconify v-if="typeof r.icon == 'string'" class="min-w-fit! size-5! ml-1.25" :class="r?.classes?.icon"
+                    :icon="r.icon" :size="22" />
                 <component v-else :is="r.icon" :class="r?.classes?.icon" />
                 <!-- Title -->
                 <div class="flex grow items-center justify-center pl-0 p-1 pr-2 flex-col">
