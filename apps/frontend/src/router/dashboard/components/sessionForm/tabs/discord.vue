@@ -86,7 +86,7 @@
             <!-- Selection Input -->
             <div class="gap-3 p-1 px-0 w-full h-fit flex flex-wrap justify-start items-center content-center">
 
-                <Button class="postDayBtn" v-for="opt in ['Day of', 'Day before']" unstyled :title="opt"
+                <Button class="postDayBtn" v-for="opt in ['Day of', 'Day before']" :key="opt" unstyled :title="opt"
                     :class="{ 'bg-brand-1/80! border-text-1!': postDay == opt }" @click="setPostDay(opt)">
                     <p class="text-sm font-medium p-1"> {{ opt }} </p>
                 </Button>

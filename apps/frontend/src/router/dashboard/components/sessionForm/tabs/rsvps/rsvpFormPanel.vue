@@ -201,7 +201,7 @@
                 <InputTitle fieldTitle="Title" :icon="BaselineIcon" required />
                 <inputText name="name" fluid v-model="RsvpFormValues.name" />
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
-                    v-for="err in $form?.name?.errors || []">
+                    v-for="(err, i) in $form?.name?.errors || []" :key="err?.message + '-' + i">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
                     </p>
@@ -221,7 +221,7 @@
                         :src="guildEmojis?.find(e => e?.value == RsvpFormValues.emoji)?.url || '/discord-grey.png'" />
                 </div>
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
-                    v-for="err in $form?.emoji?.errors || []">
+                    v-for="(err, i) in $form?.emoji?.errors || []" :key="err?.message + '-' + i">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
                     </p>
@@ -253,7 +253,7 @@
                     :class="{ 'border-red-400!': $form?.capacity?.invalid }" />
 
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2"
-                    v-for="err in $form?.capacity?.errors || []">
+                    v-for="(err, i) in $form?.capacity?.errors || []" :key="err?.message + '-' + i">
                     <p class="text-sm! pl-0.5" v-html="err?.message || 'Invalid Input'">
                     </p>
                 </Message>
@@ -284,7 +284,7 @@
 
 
                 <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                    v-for="err in $form?.required_roles?.errors || []">
+                    v-for="(err, i) in $form?.required_roles?.errors || []" :key="err?.message + '-' + i">
                     <p class="text-sm! pl-0.5">
                         {{ err?.message || 'Invalid Input!' }}
                     </p>

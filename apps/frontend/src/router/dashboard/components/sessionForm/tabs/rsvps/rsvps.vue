@@ -129,6 +129,7 @@
 
                         <!-- RSVP Item Card -->
                         <div v-for="[id, { name, emoji, capacity, required_roles }] in rsvps?.entries()"
+                            :key="`rsvp-${name}-${id}`"
                             class="gap-1.25 p-1.25 w-fit flex flex-nowrap flex-col justify-between items-center bg-white/5 ring-ring ring-2 rounded-md">
 
                             <!-- RSVP Data -->

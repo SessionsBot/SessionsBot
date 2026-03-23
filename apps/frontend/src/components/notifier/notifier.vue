@@ -3,6 +3,7 @@
     import useNotifier from '@/stores/notifier';
     import { XIcon } from 'lucide-vue-next';
     import { storeToRefs } from 'pinia';
+    import { title } from 'process';
 
 
     // Services:
@@ -130,7 +131,7 @@
                 <span class="notification-action-row" v-if="data?.actions && data?.actions?.length">
 
                     <!-- Defined Action Buttons: -->
-                    <Button v-for="{ button, onClick } in data.actions" @click="(e) => {
+                    <Button v-for="{ button, onClick } in data.actions" :key="`action-btn-${button?.title}`" @click="(e) => {
                         let ctx = { close: () => notifier.hide(msgId) };
                         if (onClick) onClick(e, ctx)
                     }" :class="button.class" unstyled class="action-button">

@@ -222,7 +222,7 @@
                     <!-- Invalid - Msg(s) -->
                     <div v-if="formErrors.has('deleteAccountData')"
                         class="p-1 pl-0.5 pt-1.25 pb-0 gap-1 w-full flex flex-col items-center justify-center content-center flex-wrap">
-                        <p v-for="err in formErrors?.get('deleteAccountData')"
+                        <p v-for="err in formErrors?.get('deleteAccountData')" :key="err"
                             class="text-xs w-full font-bold text-start text-invalid-1">
                             {{ err }}
                         </p>
@@ -282,7 +282,7 @@
                         <!-- Invalid - Msg(s) -->
                         <div v-if="formErrors.has('deletionGuildId')"
                             class="p-1 pl-0.5 pt-1.25 pb-0 gap-1 w-full flex flex-col items-center justify-center content-center flex-wrap">
-                            <p v-for="err in formErrors?.get('deletionGuildId')"
+                            <p v-for="err in formErrors?.get('deletionGuildId')" :key="err"
                                 class="text-xs w-full font-bold text-start text-invalid-1">
                                 {{ err }}
                             </p>

@@ -129,7 +129,7 @@
 
         <!-- Errors -->
         <div class="errors" v-if="inputErrors?.length">
-            <p v-for="err of inputErrors">
+            <p v-for="err of inputErrors" :key="err">
                 - {{ err || 'Invalid Input!' }}
             </p>
         </div>

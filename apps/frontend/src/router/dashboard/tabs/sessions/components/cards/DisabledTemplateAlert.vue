@@ -119,7 +119,7 @@
                     </p>
                 </span>
 
-                <div v-for="t in disabledTemplates"
+                <div v-for="t in disabledTemplates" :key="t?.id"
                     class="p-2.5 bg-bg-4/30 rounded-md border border-ring-soft hover:border-ring-3! transition-all flex items-center justify-between flex-wrap gap-2">
                     <!-- Title & Last Fail -->
                     <span>

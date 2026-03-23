@@ -174,7 +174,8 @@
                         <InputLabel title="New Start Time" icon-name="mdi:text" required />
                         <DatePicker name="newStartDate" size="small" show-time hour-format="12"
                             :min-date="sessionStartLocal?.toJSDate()" placeholder="Select a Date..." :maxlength="100" />
-                        <p v-for="err in $form?.newStartDate?.errors" class="text-xs font-semibold p-1 text-invalid-1">
+                        <p v-for="(err, i) in $form?.newStartDate?.errors" :key="`${err?.message}-${i}`"
+                            class="text-xs font-semibold p-1 text-invalid-1">
                             - {{ String(err?.message) }}
                         </p>
                     </div>
@@ -184,7 +185,7 @@
                     <div class="w-full flex flex-col gap-0.5">
                         <InputLabel title="Reason" icon-name="mdi:text" show-optional />
                         <InputText name="reason" size="small" placeholder="No longer needed..." :maxlength="100" />
-                        <p v-for="err in $form?.reason?.errors"
+                        <p v-for="(err, i) in $form?.reason?.errors" :key="`${err?.message}-${i}`"
                             class="text-xs font-semibold p-1 text-invalid-1 text-wrap">
                             {{ String(err?.message) }}
                         </p>

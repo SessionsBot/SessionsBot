@@ -93,7 +93,8 @@
             </label>
             <Select placeholder="Mention Type" name="mentionType" v-model="mentionTypeSelected" size="small"
                 :options="Array.from(mentionOptions)" fluid />
-            <p v-for="err in $form.mentionType?.errors" class="w-full px-1.5 text-red-400 text-xs font-semibold">
+            <p v-for="(err, i) in $form.mentionType?.errors" :key="`${err?.message}-${i}`"
+                class="w-full px-1.5 text-red-400 text-xs font-semibold">
                 - {{ err?.message }}
             </p>
         </span>
@@ -104,7 +105,8 @@
                 <p class="font-semibold text-xs"> {{ mentionTypeSelected || 'Mention' }} ID </p>
             </label>
             <InputText placeholder="123456789123456789" type="text" size="small" name="mentionValue" fluid />
-            <p v-for="err in $form.mentionValue?.errors" class="w-full px-1.5 text-red-400 text-xs font-semibold">
+            <p v-for="(err, i) in $form.mentionValue?.errors" :key="`${err?.message}-${i}`"
+                class="w-full px-1.5 text-red-400 text-xs font-semibold">
                 - {{ err?.message }}
             </p>
         </span>

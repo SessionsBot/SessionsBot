@@ -28,7 +28,7 @@
 
 <template>
     <Dialog :visible class="border-2! border-ring-soft! w-[90%] max-w-95! overflow-auto" modal block-scroll>
-        <template #container="{ }">
+        <template #container>
             <!-- header -->
             <div class="flex flex-row items-center justify-between gap-2 p-2 border-b-2 border-ring-soft">
                 <span class="flex-center gap-1">
@@ -79,9 +79,9 @@
                 <span class="flex gap-1 flex-wrap mr-0.75 ml-2.75">
                     <!-- Users Card(s) -->
                     <RsvpUserCard v-if="r?.session_rsvps?.length" v-for="user in r?.session_rsvps"
-                        :userId="user?.user_id" />
+                        :key="'user_' + user?.id" :userId="user?.user_id" />
                     <!-- No Users -->
-                    <span v-if="!r?.roles_required?.length" `
+                    <span v-if="!r?.roles_required?.length"
                         class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
                         <!-- None Required -->
                         <p class="opacity-75 text-xs/snug">
@@ -114,7 +114,8 @@
                 </span>
                 <span
                     class="w-fit self-start ml-2.75 font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
-                    <p v-if="hasRoleData" v-for="role in r?.roles_required" class="opacity-75 text-xs/snug">
+                    <p v-if="hasRoleData" v-for="role in r?.roles_required" :key="'role_' + role"
+                        class="opacity-75 text-xs/snug">
                         - {{ resolveRoleName(role)?.name ?? `<${role}>` }}
                     </p>
                     <p v-else class="opacity-75 text-xs/snug">

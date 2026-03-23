@@ -233,7 +233,7 @@
                         @value-change="(v) => { validateLocalField('frequency', v); clearWeekdays(); localForm.formValues.interval = 1; }"
                         :invalid="localForm.invalidFields.has('frequency')" />
                     <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                        v-for="err in localForm.invalidFields.get('frequency') || []">
+                        v-for="err in localForm.invalidFields.get('frequency') || []" :key="err">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
                         </p>
@@ -251,7 +251,7 @@
 
                     </InputNumber>
                     <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                        v-for="err in localForm.invalidFields.get('interval') || []">
+                        v-for="err in localForm.invalidFields.get('interval') || []" :key="err">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
                         </p>
@@ -275,7 +275,7 @@
                             { value: 'FR', name: 'Friday' },
                             { value: 'SA', name: 'Saturday' },
                             { value: 'SU', name: 'Sunday' },
-                        ]" unstyled :title="value.toString()"
+                        ]" :key="name" unstyled :title="value.toString()"
                             :class="{ 'bg-brand-1/70! border-text-1!': weekdaysSelected.has(value as any) }"
                             @click="toggleWeekday(value as any)">
                             <p class="text-sm font-medium"> {{ name }} </p>
@@ -283,7 +283,7 @@
 
                     </div>
                     <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                        v-for="err in localForm.invalidFields.get('weekdays') || []">
+                        v-for="err in localForm.invalidFields.get('weekdays') || []" :key="err">
                         <p class="text-sm! pl-0.5">
                             {{ err || 'Invalid Input!' }}
                         </p>
@@ -311,7 +311,7 @@
                             @value-change="(v) => validateLocalField('endRepeatDate', v)"
                             :invalid="localForm.invalidFields.has('endRepeatDate')" />
                         <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                            v-for="err in localForm.invalidFields.get('endRepeatDate') || []">
+                            v-for="err in localForm.invalidFields.get('endRepeatDate') || []" :key="err">
                             <p class="text-sm! pl-0.5">
                                 {{ err || 'Invalid Input!' }}
                             </p>
@@ -343,7 +343,7 @@
                             :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }" />
 
                         <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                            v-for="err in localForm.invalidFields.get('endRepeatCount') || []">
+                            v-for="err in localForm.invalidFields.get('endRepeatCount') || []" :key="err">
                             <p class="text-sm! pl-0.5">
                                 {{ err || 'Invalid Input!' }}
                             </p>
