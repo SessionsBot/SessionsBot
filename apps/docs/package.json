@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "vitepress": "^2.0.0-alpha.16"
+    "vitepress": "^2.0.0-alpha.16",
+    "wrangler": "^4.76.0"
   },
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@sessionsbot/shared": "*",
