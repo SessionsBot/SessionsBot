@@ -78,8 +78,8 @@
 
                 <span class="flex gap-1 flex-wrap mr-0.75 ml-2.75">
                     <!-- Users Card(s) -->
-                    <RsvpUserCard v-if="r?.session_rsvps?.length" v-for="user in r?.session_rsvps" :key="'user_' + user"
-                        :userId="user?.user_id" />
+                    <RsvpUserCard v-if="r?.session_rsvps?.length" v-for="user in r?.session_rsvps"
+                        :key="'user_' + user?.id" :userId="user?.user_id" />
                     <!-- No Users -->
                     <span v-if="!r?.roles_required?.length"
                         class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
