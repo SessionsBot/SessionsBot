@@ -15,7 +15,6 @@ declare module 'vue' {
     AccordionContent: typeof import('primevue/accordioncontent')['default']
     AccordionHeader: typeof import('primevue/accordionheader')['default']
     AccordionPanel: typeof import('primevue/accordionpanel')['default']
-    AccordionTab: typeof import('primevue/accordiontab')['default']
     AutoComplete: typeof import('primevue/autocomplete')['default']
     Button: typeof import('primevue/button')['default']
     ChatIcon: typeof import('./../components/icons/ChatIcon.vue')['default']

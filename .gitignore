@@ -1,10 +1,13 @@
+# dev environment files
 .env 
-node_modules
 private*
 *.private*
 *.tsbuildinfo
 
-
-apps/**/cache
-apps/**/node_modules
+# app build and cache
+node_modules
+**/cache
 **/dist
+
+# wrangler files
+.wrangler
