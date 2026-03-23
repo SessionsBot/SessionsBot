@@ -142,7 +142,7 @@
 
 
                     <!-- List Migrating Templates -->
-                    <div v-for="sch in migratingTemplates"
+                    <div v-for="sch in migratingTemplates" :key="sch?.id"
                         class="flex items-center flex-row flex-wrap gap-2 px-2.5 rounded-lg border-2 border-ring-soft hover:border-ring-2 w-full bg-text-1/5">
 
                         <span class="flex flex-center gap-2 p-2 grow">

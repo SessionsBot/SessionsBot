@@ -140,7 +140,7 @@
                 <Transition name="autocomplete-slide" mode="out-in">
                     <div v-if="autoCompleteVisible"
                         class="gap-1 p-1 z-3 absolute top-[calc(100%+4px)] bg-bg-3 -left-0.5 w-[calc(100%+4px)] h-fit max-h-20 overflow-y-auto flex flex-col items-center justify-start border-ring-4 border-2 rounded-lg transition-all">
-                        <button v-if="autoCompleteOptions.length" v-for="o in autoCompleteOptions"
+                        <button v-if="autoCompleteOptions.length" v-for="o in autoCompleteOptions" :key="o"
                             @click="() => { autoCompleteVisible = false; searchValue = o }"
                             class="w-full text-left p-1 hover:bg-text-1/7 active:bg-text-1/4 rounded cursor-pointer transition-all">
                             <p class="text-xs font-medium w-full p-0.5 opacity-80 truncate"> {{ o }} </p>
@@ -161,7 +161,7 @@
         <div class="resources-results-wrap">
 
             <!-- Resource Button(s) -->
-            <Button unstyled v-for="r in filteredResources" :class="r?.classes?.root"
+            <Button unstyled v-for="r in filteredResources" :key="r?.name" :class="r?.classes?.root"
                 class="bg-bg-3 relative w-fit min-h-fit! flex items-center flex-row gap-0 rounded-md ring-2 ring-ring-soft hover:ring-ring-2/70 hover:scale-103 active:scale-95 overflow-clip cursor-pointer transition-all">
                 <!-- Icon -->
                 <Iconify v-if="typeof r.icon == 'string'" class="p-2" :class="r?.classes?.icon" :icon="r.icon"

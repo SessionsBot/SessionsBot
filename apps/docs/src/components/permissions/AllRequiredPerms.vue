@@ -52,7 +52,7 @@
     <!-- Required Permissions List -->
     <span
         class="flex! justify-center! items-center! space-y-0! gap-5! p-4 rounded-md bg-(--vp-c-bg-2) max-w-full max-h-fit flex-wrap">
-        <p class="perm-label" v-for="perm in allRequiredPerms" @click="toggleChecked(perm)"
+        <p class="perm-label" v-for="perm in allRequiredPerms" :key="`perm_${perm}" @click="toggleChecked(perm)"
             :class="{ 'checked': checked.has(perm) }">
             {{ perm }}
         </p>

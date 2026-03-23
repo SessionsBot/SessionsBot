@@ -87,7 +87,7 @@
             <span class="w-full p-3 pt-2 flex flex-col gap-2 items-center justify-center flex-wrap">
                 <TemplateCard
                     v-for="t in guildTemplates?.slice(paginatorIndexStart ?? 0, ((paginatorIndexStart ?? 0) + 5))"
-                    :template="t" :key="t.id" />
+                    :template="t" :key="t?.id" />
 
                 <!-- No Schedules - Card -->
                 <div v-if="!guildTemplates?.length">

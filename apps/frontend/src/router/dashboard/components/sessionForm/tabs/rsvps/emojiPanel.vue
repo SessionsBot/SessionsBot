@@ -95,7 +95,7 @@
                 <div class="w-full h-px bg-text-2 my-1.5" />
 
                 <!-- Custom Emojis List -->
-                <Button v-if="filteredCustomEmojis?.length" v-for="e in filteredCustomEmojis" unstyled
+                <Button v-if="filteredCustomEmojis?.length" v-for="e in filteredCustomEmojis" :key="e?.value" unstyled
                     @click="$emit('selectCustomEmoji', e?.value)"
                     class="flex cursor-pointer items-center w-full flex-row gap-1 hover:bg-text-1/7 transition-all p-0.5 rounded">
                     <img class="size-7 aspect-square" :src="e?.url" />

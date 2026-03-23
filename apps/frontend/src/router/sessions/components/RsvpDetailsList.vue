@@ -29,7 +29,7 @@
     <div class="flex flex-col gap-1.5 justify-center items-center w-full">
 
         <!-- Rsvp Item -->
-        <div v-for="r in rsvps"
+        <div v-for="r in rsvps" :key="r?.id"
             class="flex flex-row items-center justify-between w-full p-2 gap-2 rounded-md border hover:border-ring-soft/80 border-ring-soft/50 bg-black/10">
             <!-- Name & Emoji -->
             <span class="flex flex-row items-center flex-wrap gap-2">
