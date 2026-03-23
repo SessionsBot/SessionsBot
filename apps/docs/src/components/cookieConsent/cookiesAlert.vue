@@ -146,7 +146,7 @@
             <div class="dialog-content">
 
                 <!-- Cookie Option(s) -->
-                <div v-for="opt of form_options" :key="`cookie-opt_${opt?.title}" class="option-wrap">
+                <div v-for="opt of form_options" :key="`cookie-opt_${opt?.title}`" class="option-wrap">
 
                     <!-- Title & Checkbox -->
                     <span @click="() => { if (!opt.required) { opt.allowed = !opt.allowed } }"
