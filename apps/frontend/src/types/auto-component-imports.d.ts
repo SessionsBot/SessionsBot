@@ -37,7 +37,6 @@ declare module 'vue' {
     MultiButton: typeof import('./../components/MultiButton.vue')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     Notifier: typeof import('./../components/notifier/notifier.vue')['default']
-    Paginator: typeof import('primevue/paginator')['default']
     Popover: typeof import('primevue/popover')['default']
     ProgressSpinner: typeof import('primevue/progressspinner')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

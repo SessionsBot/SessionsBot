@@ -2,7 +2,6 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import type { APIResponseValue, Database } from '@sessionsbot/shared';
     import { CheckIcon, XIcon } from 'lucide-vue-next';
-    import InputLabel from '../../../../../../../components/inputLabel.vue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
     import { zodResolver } from '@primevue/forms/resolvers/zod';
     import z, { iso } from 'zod'

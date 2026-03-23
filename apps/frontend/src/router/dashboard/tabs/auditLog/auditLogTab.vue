@@ -5,6 +5,7 @@
     import EventLabel from './EventLabel.vue';
     import EventDetailsDialog from './EventDetailsDialog.vue';
     import UserLabel from './UserLabel.vue';
+    import Paginator from './Paginator.vue';
 
 
     // Services:
@@ -30,6 +31,9 @@
     function showMore() {
         shownCount.value += batchSize
     }
+
+    // Paginator:
+    const paginatorStartIndex = ref(0)
 
 
 
@@ -110,7 +114,8 @@
                     </div>
 
                     <!-- Content Row(s) -->
-                    <div title="View Details" v-for="e of shownEvents"
+                    <div title="View Details"
+                        v-for="e of auditEvents?.slice(paginatorStartIndex ?? 0, (paginatorStartIndex ?? 0) + 20)"
                         class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
                         @click="eventDetailsModal.openDetails(e as any)">
                         <!-- Date -->
@@ -131,7 +136,7 @@
 
                     </div>
 
-                    <!-- Footer / No Events -->
+                    <!-- No Events - Footer -->
                     <div v-if="!shownEvents?.length"
                         class="flex flex-center flex-col flex-wrap gap-1 font-black ring-ring-soft bg-text-3/10 ring w-full py-2 text-center text-text-1/40">
 
@@ -144,20 +149,10 @@
                             here.
                         </p>
                     </div>
+                    <!-- Paginator - Footer -->
                     <div v-else class="flex flex-center flex-wrap py-2 px-5 gap-2 bg-text-3/10 ring-ring-soft ring">
-
-                        <Button v-if="shownCount + batchSize <= auditEvents.length" @click="showMore" unstyled
-                            class="button-base button-secondary gap-1 py-0.5 px-1.25 text-text-1/90">
-                            <Iconify icon="tabler:calendar-down" size="16" />
-                            <p class="font-bold text-sm pr-0.5">
-                                Load More
-                            </p>
-                        </Button>
-
-                        <p v-else class="font-extrabold uppercase text-xs text-text-1/40">
-                            End of Events...
-                        </p>
-
+                        <Paginator v-model:page-index-start="paginatorStartIndex" :page-size="20" :always-show="true"
+                            :total-records="auditEvents?.length ?? 0" />
                     </div>
 
 

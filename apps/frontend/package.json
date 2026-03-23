@@ -8,11 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "npm run build-only && wrangler dev",
-    "build-only": "vite build",
+    "preview": "npm run build && wrangler dev",
+    "build": "vite build",
     "type-check": "vue-tsc --build",
-    "deploy": "npm run build-only && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@floating-ui/vue": "^1.1.10",

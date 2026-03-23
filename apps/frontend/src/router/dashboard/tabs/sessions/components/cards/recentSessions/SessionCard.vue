@@ -7,8 +7,6 @@
     import useNotifier from '@/stores/notifier';
     import { useConfirm } from 'primevue';
     import type { MultiButtonAction } from '@/components/MultiButton.vue';
-    import { CheckIcon, XIcon } from 'lucide-vue-next';
-    import InputLabel from '../../../../../../components/inputLabel.vue';
     import ActionDialog from './sessionDialog/sessionActionDialog.vue';
 
     // Incoming Props:
