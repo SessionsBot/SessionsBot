@@ -1,75 +1,12 @@
 {
   "$schema": "https://unpkg.com/release-it@19/schema/release-it.json",
-  "hooks": {},
-  "plugins": {
-    "@release-it/conventional-changelog": {
-      "preset": {
-        "name": "conventionalcommits",
-        "types": [
-          {
-            "type": "feat",
-            "section": "⚡️ Features"
-          },
-          {
-            "type": "fix",
-            "section": "🐞 Bug Fixes"
-          },
-          {
-            "type": "chore",
-            "section": "🧹 Chores"
-          },
-          {
-            "type": "docs",
-            "section": "📄 Documentation"
-          },
-          {
-            "type": "style",
-            "section": "🎨 Styling"
-          },
-          {
-            "type": "refactor",
-            "section": "♻️ Refactoring"
-          },
-          {
-            "type": "perf",
-            "section": "📈 Performance"
-          },
-          {
-            "type": "test",
-            "section": "🧪 Tests"
-          }
-        ]
-      },
-      "infile": "CHANGELOG.md",
-      "ignoreRecommendedBump": true
-    }
-  },
+  "extends": "../../release-it.base.json",
   "git": {
-    "changelog": "git log --pretty=format:\"* %s (%h)\" ${from}...${to}",
-    "requireCleanWorkingDir": true,
-    "requireBranch": "main",
     "tagName": "frontend@v${version}",
     "tagAnnotation": "Release - frontend@v${version}",
     "commitMessage": "Release - frontend@v${version}"
   },
   "github": {
-    "release": true,
-    "releaseName": "frontend@v${version}",
-    "releaseNotes": {
-      "commit": "* ${commit.subject} (${sha}){ - thanks @${author.login}!}",
-      "excludeMatches": [
-        "br4dyb"
-      ]
-    },
-    "preRelease": true,
-    "makeLatest": true,
-    "comments": {
-      "submit": true,
-      "issue": ":rocket: _This issue has been resolved in v${version}. See [${releaseName}](${releaseUrl}) for release notes._",
-      "pr": ":rocket: _This pull request is included in v${version}. See [${releaseName}](${releaseUrl}) for release notes._"
-    }
-  },
-  "npm": {
-    "publish": false
+    "releaseName": "frontend@v${version}"
   }
 }
