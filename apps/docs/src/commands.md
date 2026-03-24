@@ -43,7 +43,7 @@ Prompts and redirects the user to the documentation resources for Sessions Bot *
 
 ### `/my-rsvps`
 
-Shows the user an interactive message containing their current RSVP assignments to sessions in the <u>future</u>.
+Shows the user an interactive message containing their current RSVP assignments for sessions in the <u>future</u>.
 ::: tip ⓘ Note:
 > This is how you can **review and remove** yourself from any RSVP assignments you've made.
 :::
@@ -51,7 +51,7 @@ Shows the user an interactive message containing their current RSVP assignments 
 
 ### `/new-session`
 
-Prompts and redirects the user to the [Bot Dashboard](https://sessionsbot.fyi/dashboard) and automatically opens the new session form to easily get started with created a new `Session Schedule`.
+Prompts and redirects the user to the [Bot Dashboard](https://sessionsbot.fyi/dashboard) and automatically opens the new session form to easily get started with creating a new `session`.
 
 
 ### `/support`
@@ -61,7 +61,7 @@ Prompts the user with useful support resources for Sessions Bot and it's related
 
 
 ### `/update`
-Allows users to update a `Session Panel` that has recently been posted.
+Allows users to update a [`Session Panel`](/sessions#session-panels) that has recently been posted.
 > Options:
 > - `session`
 > <br>The session to update.

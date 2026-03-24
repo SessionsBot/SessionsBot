@@ -1,6 +1,6 @@
 # Sessions
 
-Sessions Bot revolves around the `Session Schedules` you create for the bot to the post to your server as `Session Panels`. <span class="opacity-50 text-xs">(for each of the schedules occurrences)</span>
+Sessions Bot revolves around the `Sessions` you schedule for the bot to the post to your server as `Session Panels`. <span class="opacity-50 text-xs">(for each of the session's scheduled occurrences)</span>
 
 ## Schedules
 

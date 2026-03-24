@@ -14,6 +14,7 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
+    "@iconify/vue": "^5.0.0",
     "@sessionsbot/shared": "*",
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/core": "^14.2.1",
