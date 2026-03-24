@@ -137,7 +137,7 @@
             <ToggleSwitch input-id="postInThread" v-model="postInThread" class="scale-85"
                 @value-change="(val) => validateField('postInThread')" />
             <label for="postInThread" class="gap-0.25 flex-row items-center">
-                <p class="inline!"> Post in Thread </p>
+                <p class="inline!"> Thread Mode </p>
             </label>
         </div>
 

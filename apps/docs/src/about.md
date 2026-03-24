@@ -1,30 +1,58 @@
 # About Sessions Bot
 
-Sessions Bot is a _Discord Application_ developed to help servers manage collaborative sessions/events between their members.
+Sessions Bot is a _Discord Application_ designed to help communities organize, manage, and share collaborative sessions/events with ease.
 
 
 
-### What are `Sessions`?
+### What are [`Sessions`](/sessions)? {what-are-sessions}
 
-> `Session` = `Event` <span class="italic opacity-60 text-xs">(or any calendar occurrence)</span>
+> `Session` = `Event` <span class="italic opacity-60 text-xs">(or any scheduled activity)</span>
 
-Sessions can be for whatever you need them to be! Each session represents a calendar event customized to your liking with the available options.
+A **Session** represents a single scheduled event within your server. Whether it's a game night, study group, meeting, or recurring activity, Sessions give you a flexible way to organize and manage participation.
 
+
+### Why Sessions Bot?
+
+Managing events in Discord can quickly become messy — messages get buried, reactions are inconsistent, and there’s no clear structure.
+
+Sessions Bot solves this by providing:
+- Structured event creation and management
+- Built-in RSVP systems with clear limits
+- Automated posting and scheduling
+- A centralized way to track participation
+
+> Instead of juggling messages and reactions, everything is handled in a clean, consistent system.
+
+
+
+### Who is this for?
+
+Sessions Bot is designed for any community that regularly organizes events, including:
+
+- Gaming servers hosting scheduled sessions or raids
+- Study groups and educational communities
+- Content creators running community events
+- Teams or groups coordinating recurring meetups
+
+> If your server relies on organizing people at specific times, Sessions Bot is built for you.
 
 
 ### Highly Customizable
 
-Within the core features of Sessions Bot we made sure to provide lots of unique customization options to provide enough use cases for everybody!
+Sessions Bot is built to support a wide range of use cases by offering flexible and powerful configuration options.
 
 > Some of these options include:
 >
-> - Session Repeat Intervals (daily, weekly, yearly)
-> - RSVP Slots per Session (use templates or customize)
-> - Pre-determined post time & channel (for Session Signup Panels)
+> - Session repeat intervals (daily, weekly, yearly)
+> - RSVP slot limits and templates
+> - Scheduled posting time and channel (for signup panels)
+> - <span class="text-sm bg-(--vp-c-gray-soft)/50 p-1 rounded"> See more: [Sessions](/sessions#options) </span>
+
 
 
 ### Free to Use
 
-Sessions Bot is available for use at <u>absolutely no cost</u>! We provide competitive free usage limits compared to our competitors. 
-> We also provide paid access to some exclusive features.<br>
-> <span class="text-sm bg-(--vp-c-gray-soft)/50 p-0.75 rounded"> See more: [Subscriptions](/subscriptions) </span>
+Sessions Bot is available at <u>no cost</u>, with generous free limits designed to support all communities.
+
+> Additional premium features are available for advanced use cases.<br>
+> <span class="text-sm bg-(--vp-c-gray-soft)/50 p-1 rounded"> See more: [Subscriptions](/subscriptions) </span>

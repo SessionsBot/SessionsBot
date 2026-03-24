@@ -12,7 +12,7 @@ export default defineConfig({
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Getting Started', link: '/getting-started' },
-
+            { text: 'Bot Dashboard', link: 'https://sessionsbot.fyi/dashboard' },
         ],
 
 
@@ -20,10 +20,10 @@ export default defineConfig({
 
         sidebar: [
             {
-                collapsed: true,
+                collapsed: false,
                 text: 'Information',
                 items: [
-                    { text: 'About Sessions Bot', link: '/about' },
+                    { text: 'About', link: '/about' },
                     { text: 'Getting Started', link: '/getting-started' },
                     { text: 'Bot Permissions', link: '/bot-permissions' },
                     { text: 'Subscriptions', link: '/subscriptions' },
@@ -36,19 +36,7 @@ export default defineConfig({
                 items: [
 
                     { text: 'Commands', link: '/commands' },
-                    {
-                        text: 'Sessions', base: '/sessions', target: '/sessions', items: [
-                            {
-                                text: 'Creating Sessions', link: '#schedules'
-                            },
-                            {
-                                text: 'Session Options', link: '#options'
-                            },
-                            {
-                                text: 'RSVP System', link: '#rsvps'
-                            }
-                        ]
-                    },
+                    { text: 'Sessions', link: '/sessions' },
                     { text: 'Preferences', link: '/preferences' },
 
                 ],
