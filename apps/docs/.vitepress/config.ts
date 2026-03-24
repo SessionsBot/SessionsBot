@@ -21,6 +21,7 @@ export default defineConfig({
 
         ],
 
+
         logo: '/logo.png',
 
         sidebar: [
@@ -85,7 +86,10 @@ export default defineConfig({
         },
 
 
+
     },
+
+    cleanUrls: true,
 
     head: [
         // Google Analytics:
