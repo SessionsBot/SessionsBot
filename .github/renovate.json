@@ -28,6 +28,27 @@
                 "major"
             ],
             "enabled": false
+        },
+        {
+            "description": "Disable replacement updates",
+            "matchUpdateTypes": [
+                "replacement"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "Allow specific replacement updates",
+            "matchPackageNames": [
+                "eslint",
+                "vite",
+                "vue",
+                "discord.js",
+                "@discordjs/*"
+            ],
+            "matchUpdateTypes": [
+                "replacement"
+            ],
+            "enabled": true
         }
     ],
     "schedule": [
