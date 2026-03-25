@@ -3,20 +3,27 @@
     "extends": [
         "config:base"
     ],
-    "dependencyDashboard": false,
+    "dependencyDashboard": true,
     "rangeStrategy": "bump",
     "packageRules": [
         {
-            "description": "ONLY allow minor + patch updates",
+            "description": "Auto-merge safe patch updates",
             "matchUpdateTypes": [
-                "minor",
                 "patch"
             ],
-            "groupName": "dependencies",
-            "groupSlug": "dependencies"
+            "groupName": "patch dependencies",
+            "automerge": true
         },
         {
-            "description": "Completely ignore major updates",
+            "description": "Group minor updates (manual review)",
+            "matchUpdateTypes": [
+                "minor"
+            ],
+            "groupName": "minor dependencies",
+            "automerge": false
+        },
+        {
+            "description": "Disable major updates",
             "matchUpdateTypes": [
                 "major"
             ],
@@ -25,5 +32,6 @@
     ],
     "schedule": [
         "before 6am on monday"
-    ]
+    ],
+    "prCreation": "not-pending"
 }
