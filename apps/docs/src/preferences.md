@@ -8,6 +8,8 @@ import { Icon } from '@iconify/vue';
 Sessions Bot allows for various "server-wide" customizations for you to alter certain bot features to your liking.
 
 ### Accent Color
+<div class="text-(--vp-c-brand-2)! bg-(--vp-c-default-soft)! p-1! mt-2! w-fit rounded! text-xs! block!"> <Icon icon="tabler:diamond" class="inline! left-px" /> Premium Feature
+</div>
 
 The hex color code to use within various bot messages sent from Sessions Bot.
 > Please note, this accent color is not used within **all** bot messages.
@@ -28,12 +30,12 @@ Weather or not your sessions can be accessible from the web without a user signe
 
 ### Add to Calendar Button
 
-Weather or not to include an "Add to calendar" button within your Session Panels.
+Weather or not to include an "Add to Calendar" button within your [Session Panels](/sessions#session-panels).
 
-> **If enabled:** Includes the button with the session's timing section
+> **If enabled:** Includes the button with the session's timing section.
 
 
-> **If disabled:** Removes the button from all [session panel](/sessions#session-panels)s
+> **If disabled:** Removes the button from all session panels.
 
 
 
