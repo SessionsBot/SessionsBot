@@ -82,8 +82,7 @@
                     <RsvpUserCard v-if="r?.session_rsvps?.length" v-for="user in r?.session_rsvps"
                         :key="'user_' + user?.id" :userId="user?.user_id" />
                     <!-- No Users -->
-                    <span v-if="!r?.roles_required?.length"
-                        class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
+                    <span v-else class="font-bold italic bg-bg-3/70 border border-ring-soft p-1 px-1.5 rounded-md">
                         <!-- None Required -->
                         <p class="opacity-75 text-xs/snug">
                             No User Assigned
