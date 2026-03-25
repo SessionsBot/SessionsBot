@@ -27,7 +27,7 @@
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.13.2",
     "calendar-link": "^2.11.0",
-    "lucide-vue-next": "^0.548.0",
+    "lucide-vue-next": "^1.0.0",
     "luxon": "^3.7.2",
     "motion-v": "^1.7.4",
     "pinia": "^3.0.3",
