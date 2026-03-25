@@ -1,66 +1,153 @@
 # Sessions
 
-Sessions Bot revolves around the `Session Schedules` you create for the bot to the post to your server as `Session Panels`. <span class="opacity-50 text-xs">(for each of the schedules occurrences)</span>
-
-## Schedules
-
-Create a schedule for all of the sessions you want Sessions Bot to post to your server and manage RSVPs for <span class="opacity-50 text-xs">*(if configured)*</span>.
+Sessions Bot revolves around the `Sessions` you schedule, which are automatically posted to your server as [`Session Panels`](/sessions#signup-panels) <span class="opacity-50 text-xs">(for each scheduled occurrence)</span>. 
 
 
-::: tip ⓘ TIP
- You have to create a "schedule" for **one time sessions** as well as recurring sessions that repeat!
-:::
+
+### What are Sessions?
+
+> `Session` = `Event` <span class="italic opacity-60 text-xs">(or any scheduled activity)</span>
+
+A **Session** is a structured event that you configure once and let the bot handle from there.
+
+Each session includes details for:
+- **When** it happens (date, time, recurrence)
+- **Where** it’s posted (channel, optional url location)
+- **How users interact** (RSVPs, limits, roles, etc.)
+
+Once created, Sessions Bot will automatically post a [`Session Panel`](#session-panels) at the scheduled time(s), allowing members to view details and respond to [`RSVP`](#rsvps) slots.
+
+
+
+---
 
 ### Options
-We made sure to provide lots of ways to customize your Sessions/Schedules to match *many* use cases. Explore the options you can customize within your schedules below.
+
+We’ve provided a wide range of customization options so Sessions can adapt to many different use cases.
+
+Explore the available configuration options below.
+
+
 
 #### Title <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#title}
-> Session's title or name
+> The name of your session
+
+
+
 #### Description <span class="text-xs opacity-50"> *(optional)* </span> {#description}
-> Session's description
-> - **Supports [Discord Markdown](https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline)**
-> - **Premium Plans+** can mention roles, channels, users, etc. here!
-#### Location <span class="text-xs opacity-50"> *(optional)* </span> {#location}
-> Session's URL location 
-> - **If provided:** Adds a "Location" button to the `Session Panel`
-> - **Used for:** Native Discord Event location url
+> Additional details about your session  
+> - **Supports [Discord Markdown](https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline)**  
+> - **Premium Plans+** can mention roles, channels, users, etc.
+
+
+
+#### Url <span class="text-xs opacity-50"> *(optional)* </span> {#url}
+> A URL for where the session takes place  
+> - **If provided:** Adds a "Location" button to the `Session Panel`  
+> - **Used for:** Discord's native event location (if enabled)
+
+
+
 #### Start Date <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#start-date}
-> Session's Start Date
-> - **Once past:** Various actions are limited such as modifications to the session or it's RSVPs.
+> The date and time your session begins  
+> - **After this time:** Editing and RSVP changes may become limited
+
+
+
 #### End Date <span class="text-xs opacity-50"> *(optional)* </span> {#end-date}
-> Session's End Date
+> The date and time your session ends
+
+
+
 #### Time Zone <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#time-zone}
-> Session's Time Zone
-> - **Tip:** Cant find yours? <b>Search by city name!</b>
-> - **Used for:** Session's dates & recurrence
-#### Repeating Schedules <span class="text-xs opacity-50"> *(optional)* </span> {#repeats}
-> Configure your Session to repeat
-> - **Frequency:** Repeat daily, weekly, monthly, or yearly
-> - **Interval:** The interval to repeat at <br><span class="opacity-65 text-xs">(ex: interval of 2 = every 2 days, weeks, etc.)</span>
-> - **Weekdays:** The days of the week to repeat on
-> - **Max Repeat Count:** Maximum amount of repeats the session can have
-> - **Max Repeat Date:** Latest day the session can repeat on
+> The time zone used for scheduling  
+> - **Tip:** Can’t find yours? <b>Search by city name</b>  
+> - **Used for:** Dates, times, and repeat calculations
+
+
+
+#### Repeating Sessions <span class="text-xs opacity-50"> *(optional)* </span> {#repeats}
+> Configure your session to repeat automatically  
+> - **Frequency:** Daily, weekly, monthly, or yearly  
+> - **Interval:** How often it repeats  
+> <span class="opacity-65 text-xs">(ex: interval of 2 = every 2 days/weeks/etc.)</span>  
+> - **Weekdays:** Specific days of the week  
+> - **Max Repeat Count:** Limit total occurrences  
+> - **Max Repeat Date:** Set a final cutoff date  
+
+
+
 #### Post Channel <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#post-channel}
-> The Discord text channel to post your `SessionPanel` to
-> - **Tip:** Make sure the bot has all [required permissions](./bot-permissions) inside this channel!
-#### Post Time <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#post-time}
-> The time of day to post the `SessionPanel`
+> The channel where the `Session Panel` will be sent to  
+> - **Tip:** Confirm the bot has all [required permissions](./bot-permissions)
+
+
+
 #### Post Day <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#post-day}
-> Post the `SessionPanel` the "Day of" or "Day before" your session's start date
+> Which day to send the [`Session Panel`](#session-panels) 
+> - Relative to the session start date
+> - **Options:** Same day or the day before
+
+
+
+#### Post Time <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#post-time}
+> Time of day to send the [`Session Panel`](#session-panels)
+> - Relative to the session post date
+
+
+
 #### Mention Roles <span class="text-xs opacity-50 text-(--vp-c-purple-2)!"> Premium Feature </span> {#mention-roles}
-> The roles to mention within the `SessionPanel` post
-#### Post in Thread <span class="text-xs opacity-50"> *(optional)* </span> {#thread-mode}
-> Groups `SessionPanel`'s by day in selected time zone
-> - **AKA**: `ThreadMode`
+> Roles to notify when the [`Session Panel`](#session-panels) is sent
+
+
+
+#### Thread Mode <span class="text-xs opacity-50"> *(optional)* </span> {#thread-mode}
+> Automatically group [`Session Panels`](#session-panels) into threads by day <span class="text-xs opacity-80"> *(recommended)* </span>
+> - Helps reduce channel clutter for recurring sessions  
+> - Enterprise plans can modify the "start message" for thread mode, [see more](/preferences#thread-mode-start-message) here.
+
+
+
 #### Native Discord Events <span class="text-xs opacity-50"> *(optional)* </span> {#native-events}
-> Creates a `DiscordEvent` matching your `SessionPanel` for this session
-> - **NOTE**: Visible to **ALL** Members within your server
+> Creates a matching Discord event for your session  
+> - Includes basic details about your `Session`  
+> - Automatically generated cover image
+> - **Note:** Visible to all members in your server  
+
+
+
+## RSVPs
+
+RSVPs allow members to respond to a session and indicate their participation.
+
+Depending on your configuration, RSVPs can:
+- Limit the number of participants
+- Use predefined or custom slot types
+- Be restricted to certain roles <span class="opacity-55 text-xs">(premium feature)</span>
+
+Users can RSVP directly from the `Session Panel`, making it easy to join a session without extra commands.
+
+> To remove yourself from an assigned RSVP slot for an *upcoming session* use the [`/my-rsvps`](/commands#my-rsvps) command.
 
 
 
 ## Session Panels
-For each of your scheduled session
 
-## RSVPs
+A **Session Panel** is the message sent in your server that represents each scheduled session occurrence.
 
-this is where sessions rsvps details will be
+It includes:
+- Session title, description, and timing
+- RSVP options for members
+- Optional buttons (location, add to calendar, etc.)
+- Role mentions (if configured)
+
+This is the primary way your community interacts with your sessions.
+
+--- 
+View Examples of Session Panels below:
+
+<div class="w-45 h-75 rounded bg-neutral-500">
+Image Here
+</div>
+
+

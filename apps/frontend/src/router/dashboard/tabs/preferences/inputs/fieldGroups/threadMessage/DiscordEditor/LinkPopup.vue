@@ -49,7 +49,8 @@
                 <p class="font-semibold text-xs"> URL </p>
             </label>
             <InputText placeholder="https://sessionsbot.fyi" type="url" size="small" name="urlHref" fluid />
-            <p v-for="err in $form.urlHref?.errors" class="w-full px-1.5 text-red-400 text-xs font-semibold">
+            <p v-for="(err, i) in $form.urlHref?.errors" :key="`${err?.message}-${i}`"
+                class="w-full px-1.5 text-red-400 text-xs font-semibold">
                 - {{ err?.message }}
             </p>
         </span>
@@ -60,7 +61,8 @@
                 <p class="font-semibold text-xs"> Link Text </p>
             </label>
             <InputText placeholder="Sessions Bot" type="text" size="small" name="linkText" fluid />
-            <p v-for="err in $form.linkText?.errors" class="w-full px-1.5 text-red-400 text-xs font-semibold">
+            <p v-for="(err, i) in $form.linkText?.errors" :key="`${err?.message}-${i}`"
+                class="w-full px-1.5 text-red-400 text-xs font-semibold">
                 - {{ err?.message }}
             </p>
         </span>

@@ -78,7 +78,7 @@
 
         <!-- INPUT: Title -->
         <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': invalidFields.has('title') }">
-            <InputTitle fieldTitle="Title" required :icon="BaselineIcon" />
+            <InputTitle fieldTitle="Title" required :icon="BaselineIcon" :show-help="{ path: '#title' }" />
             <inputText name="title" fluid v-model="title" @focusout="validateField('title')"
                 :invalid="invalidFields.has('title')" />
             <InputErrors fieldName="title" :invalidFields />
@@ -88,14 +88,14 @@
         <!-- INPUT: Description -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('description') }">
-            <InputTitle fieldTitle="Description" :icon="TextInitialIcon" />
+            <InputTitle fieldTitle="Description" :icon="TextInitialIcon" :show-help="{ path: '#description' }" />
             <DiscordEditor v-model:text-input-value="description" @focus-out="validateField('description')" />
             <InputErrors fieldName="description" :invalidFields />
         </div>
 
         <!-- INPUT: url -->
         <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': invalidFields.has('url') }">
-            <InputTitle fieldTitle="Url" :icon="LinkIcon" :show-help="{ path: '/' }" />
+            <InputTitle fieldTitle="Url" :icon="LinkIcon" :show-help="{ path: '#url' }" />
             <inputText name="url" fluid v-model="url"
                 @focusin="() => { if (!url || url.trim() == '') { url = `https://` } }" @focusout="validateField('url')"
                 :invalid="invalidFields.has('url')" />
@@ -106,7 +106,7 @@
         <!-- INPUT: Start Time -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('startDate') }">
-            <InputTitle fieldTitle="Start Time" required :icon="ClockIcon" />
+            <InputTitle fieldTitle="Start Time" required :icon="ClockIcon" :show-help="{ path: '#start-date' }" />
             <DatePicker name="startDate" v-model="startDate" fluid date-format="m/d/y" class=" flex w-full"
                 :show-time="true" show-clear hour-format="12" :min-date="minSelectDate"
                 @value-change="validateFields(['startDate', 'endDate'])" :invalid="invalidFields.has('startDate')" />
@@ -117,7 +117,7 @@
         <!-- INPUT: End Time -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('endDate') }">
-            <InputTitle fieldTitle="End Time" :icon="Clock8Icon" />
+            <InputTitle fieldTitle="End Time" :icon="Clock8Icon" :show-help="{ path: '#end-date' }" />
             <DatePicker name="endDate" v-model="endDate" fluid date-format="m/d/y" class="w-full flex "
                 :show-time="true" show-clear hour-format="12" :min-date="startDate || minSelectDate"
                 @value-change="validateFields(['startDate', 'endDate'])" :invalid="invalidFields.has('endDate')" />
@@ -128,7 +128,7 @@
         <!-- INPUT: Time Zone -->
         <div class="flex relative flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('timeZone') }">
-            <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '/' }" />
+            <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '#time-zone' }" />
 
             <!-- Input Area - Wrapper -->
             <span class="w-full h-fit flex flex-col gap-2 items-center">

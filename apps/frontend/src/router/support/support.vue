@@ -4,7 +4,22 @@
 
     import LandingSection from './LandingSection.vue';
     import StatusBadge from '../../components/StatusBadge.vue';
+    import Faqs from './faqs/Faqs.vue';
+    import type { MaybeElementRef } from '@vueuse/core';
 
+    // Services:
+    const scroll = useScroll(window)
+
+    const faqsSectionRef = ref<HTMLDivElement>()
+    function scrollToFaqs() {
+        console.info('scrolling')
+        if (faqsSectionRef.value) {
+            faqsSectionRef.value.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            })
+        }
+    }
 
 </script>
 
@@ -27,7 +42,7 @@
             </p>
         </div>
         <!-- Main Resource Cards -->
-        <span class="w-full p-5 pb-0 gap-5 flex-center items-start flex-wrap">
+        <span class="w-full p-5 pb-2 gap-5 flex-center items-start flex-wrap">
 
 
             <!-- General Questions - FAQ -->
@@ -46,7 +61,8 @@
                     to check that out!
                 </p>
                 <div class="w-[80%] rounded-full h-0.75 bg-bg-4" />
-                <Button unstyled class="button-base font-bold mt-1 px-2 py-0.5 button-secondary active:scale-95">
+                <Button @click="scrollToFaqs()" unstyled
+                    class="button-base font-bold mt-1 px-2 py-0.5 button-secondary active:scale-95">
                     <Iconify icon="wpf:faq" size="18" class="mr-0.5" />
                     View FAQs
                 </Button>
@@ -104,7 +120,7 @@
 
 
         <!-- Status Area -->
-        <div class="w-full w-full p-5 pb-1 flex flex-col items-start justify-start max-w-250">
+        <div class="w-full w-full p-5 pb-2 flex flex-col items-start justify-start max-w-250">
             <p class="font-bold text-lg">
                 - System Status
             </p>
@@ -113,6 +129,25 @@
             </p>
 
             <StatusBadge class="pt-4 self-center" />
+
+        </div>
+
+
+        <!-- FaQs -->
+        <div ref="faqsSectionRef" class="w-full p-5 pb-2 flex flex-col items-start justify-start max-w-250">
+            <p class="font-bold text-lg">
+                - Frequently Asked Questions
+            </p>
+            <p class="opacity-65 text-sm">
+                Feel free to take a look through our most commonly asked support questions.
+            </p>
+
+            <!-- Questions List -->
+            <span class="w-full p-5 flex-center overflow-auto">
+
+                <Faqs />
+
+            </span>
 
         </div>
 
@@ -126,6 +161,8 @@
             </div>
 
         </span>
+
+
 
 
         <SiteFooter />

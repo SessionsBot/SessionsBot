@@ -4,22 +4,17 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-    srcDir: "src",
-    outDir: 'dist',
-
     title: "Sessions Bot - Docs",
     description: "An informational guide for all things Sessions Bot!",
-
-    // For GitHub Pages URL Base:
-    // base: '/SessionsBot/',
 
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Getting Started', link: '/getting-started' },
-
+            { text: 'Bot Dashboard', link: 'https://sessionsbot.fyi/dashboard' },
         ],
+
 
         logo: '/logo.png',
 
@@ -28,7 +23,7 @@ export default defineConfig({
                 collapsed: false,
                 text: 'Information',
                 items: [
-                    { text: 'About Sessions Bot', link: '/about' },
+                    { text: 'About', link: '/about' },
                     { text: 'Getting Started', link: '/getting-started' },
                     { text: 'Bot Permissions', link: '/bot-permissions' },
                     { text: 'Subscriptions', link: '/subscriptions' },
@@ -41,16 +36,7 @@ export default defineConfig({
                 items: [
 
                     { text: 'Commands', link: '/commands' },
-                    {
-                        text: 'Sessions', link: '#', base: '/sessions', items: [
-                            {
-                                text: 'Schedules', link: '#schedules',
-                            },
-                            {
-                                text: 'RSVPS', link: '#rsvps'
-                            }
-                        ]
-                    },
+                    { text: 'Sessions', link: '/sessions' },
                     { text: 'Preferences', link: '/preferences' },
 
                 ],
@@ -63,7 +49,7 @@ export default defineConfig({
         ],
 
         footer: {
-            copyright: `© ${new Date().getFullYear()} - Sessions Bot`,
+            copyright: `© ${new Date().getFullYear()} - Sessions Bot <br> <a href="https://sessionsbot.fyi/support" target="_blank" class="text-xs no-underline! hover:underline! opacity-80 hover:opacity-100 transition-all">Need Help?</a>`,
             message: 'Thanks for using Sessions Bot!'
         },
 
@@ -74,7 +60,10 @@ export default defineConfig({
         externalLinkIcon: true,
 
         editLink: {
-            text: 'Suggest an Edit'
+            text: 'Suggest an Edit',
+            pattern(p) {
+                return `https://github.com/SessionsBot/SessionsBot/edit/main/apps/docs/src/${p?.relativePath}`
+            },
         },
 
         lastUpdated: {
@@ -84,8 +73,16 @@ export default defineConfig({
             text: 'Last Updated'
         },
 
-
+        outline: {
+            level: 'deep',
+        },
     },
+
+    srcDir: "src",
+    outDir: 'dist',
+    cleanUrls: true,
+
+
 
     head: [
         // Google Analytics:
@@ -123,7 +120,7 @@ export default defineConfig({
                 '@theme': fileURLToPath(new URL('./theme', import.meta.url)),
                 '@components': fileURLToPath(new URL('../src/components', import.meta.url))
             }
-        },
+        }
     }
 
 

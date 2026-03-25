@@ -14,7 +14,7 @@
 
 <template>
     <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-        v-for="err in invalidFields.get(fieldName) || []">
+        v-for="err in invalidFields.get(fieldName) || []" :key="err">
         <p class="text-sm! pl-0.5">
             {{ err || 'Invalid Input!' }}
         </p>

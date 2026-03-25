@@ -11,6 +11,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Accordion: typeof import('primevue/accordion')['default']
+    AccordionContent: typeof import('primevue/accordioncontent')['default']
+    AccordionHeader: typeof import('primevue/accordionheader')['default']
+    AccordionPanel: typeof import('primevue/accordionpanel')['default']
     AutoComplete: typeof import('primevue/autocomplete')['default']
     Button: typeof import('primevue/button')['default']
     ChatIcon: typeof import('./../components/icons/ChatIcon.vue')['default']
@@ -27,8 +31,9 @@ declare module 'vue' {
     DiscordIcon: typeof import('./../components/icons/DiscordIcon.vue')['default']
     DiscordIconOutlined: typeof import('./../components/icons/DiscordIconOutlined.vue')['default']
     Form: typeof import('@primevue/forms/form')['default']
+    HelpIconButton: typeof import('./../components/inputLabel/HelpIconButton.vue')['default']
     Iconify: typeof import('./../components/icons/Iconify.vue')['default']
-    InputLabel: typeof import('./../components/inputLabel.vue')['default']
+    InputLabel: typeof import('./../components/inputLabel/inputLabel.vue')['default']
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
     LimitReachedAlert: typeof import('./../components/notifier/limitReachedAlert.vue')['default']

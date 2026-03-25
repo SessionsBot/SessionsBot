@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-    import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
-    import InputLabel from '../../../../../../components/inputLabel.vue';
+    import InputLabel from '@/components/inputLabel/inputLabel.vue';
 
 
     // Props
@@ -25,7 +24,7 @@
     <!-- Input - Public Sessions -->
     <span class="input-group">
         <!-- Label -->
-        <InputLabel title="Public Sessions" iconName="material-symbols:lock" docPath="/" />
+        <InputLabel title="Public Sessions" iconName="material-symbols:lock" docPath="/preferences#public-sessions" />
 
         <!-- Input -->
         <div class="input">

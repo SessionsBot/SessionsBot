@@ -103,7 +103,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  min-height: 100vh; /* Full screen height */
+  min-height: 100dvh; /* Full screen height */
 }
 
 .scroll-hide {

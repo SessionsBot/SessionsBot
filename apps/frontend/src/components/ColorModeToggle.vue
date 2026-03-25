@@ -48,7 +48,6 @@
                 'translate-x-6 text-orange-500': (colorMode == 'light' || colorMode == 'auto')
             }">
             <!-- SUN Icon -->
-
             <svg v-if="colorMode == 'auto' || colorMode == 'light'" xmlns="http://www.w3.org/2000/svg" width="24"
                 height="24" viewBox="0 0 24 24">
                 <path fill="currentColor"

@@ -24,7 +24,7 @@
     }
 
     const href = computed(() => {
-        let dest = externalUrls.documentation + '/sessions'
+        let dest = externalUrls.documentation
         if (props.docPath) dest += props.docPath
         return dest
     })

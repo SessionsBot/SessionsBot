@@ -116,7 +116,7 @@
                     <!-- Content Row(s) -->
                     <div title="View Details"
                         v-for="e of auditEvents?.slice(paginatorStartIndex ?? 0, (paginatorStartIndex ?? 0) + 20)"
-                        class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
+                        :key="e?.id" class="content-row group odd:bg-text-1/5 even:bg-text-1/10"
                         @click="eventDetailsModal.openDetails(e as any)">
                         <!-- Date -->
                         <p class="content-cell ">

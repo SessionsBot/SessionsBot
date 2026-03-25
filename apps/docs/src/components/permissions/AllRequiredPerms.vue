@@ -22,41 +22,42 @@
 
 
 <template>
+
+    <!-- Required Permissions List -->
+    <span
+        class="flex! justify-center! items-center! space-y-0! gap-5! p-4 rounded-md bg-(--vp-c-bg-2) max-w-full max-h-fit flex-wrap">
+        <p class="perm-label" v-for="perm in allRequiredPerms" :key="`perm_${perm}`" @click="toggleChecked(perm)"
+            :class="{ 'checked': checked.has(perm) }">
+            {{ perm }}
+        </p>
+    </span>
     <!-- Actions -->
-    <div class="bg-black/0 m-0! w-full flex items-center justify-start">
+    <div class="bg-black/0 mt-3! w-full flex items-center justify-center">
         <button
-            class="hover:bg-(--vp-c-default-3)/50 active:bg-(--vp-c-default-3)/75 transition-all p-0! px-0.5! pr-1! border-(--vp-c-default-2) border rounded-md py-0.75 flex flex-row gap-1 items-center justify-center">
+            class="hover:bg-(--vp-c-default-3)/50 active:bg-(--vp-c-default-3)/75 transition-all p-0! px-0.5! pr-1.5! border-(--vp-c-default-2) border rounded-md py-0! flex flex-row gap-1 items-center justify-center">
             <Transition name="fade" mode="out-in" type="animation">
-                <span v-if="checked.size != allRequiredPerms.length" @click="checked = new Set(allRequiredPerms)"
+                <span v-if="!checked?.size" @click="checked = new Set(allRequiredPerms)"
                     class="flex flex-row gap-px items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                         <path fill="currentColor"
                             d="m9.55 15.15l8.475-8.475q.3-.3.7-.3t.7.3t.3.713t-.3.712l-9.175 9.2q-.3.3-.7.3t-.7-.3L4.55 13q-.3-.3-.288-.712t.313-.713t.713-.3t.712.3z" />
                     </svg>
-                    <p class="text-xs opacity-70 m-0! font-semibold!">
+                    <p class="text-[10px] opacity-70 m-0! font-semibold!">
                         Select All
                     </p>
                 </span>
                 <span v-else @click="checked.clear()" class="flex flex-row gap-px items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
                         <path fill="currentColor"
                             d="M6.225 4.811a1 1 0 0 0-1.414 1.414L10.586 12L4.81 17.775a1 1 0 1 0 1.414 1.414L12 13.414l5.775 5.775a1 1 0 0 0 1.414-1.414L13.414 12l5.775-5.775a1 1 0 0 0-1.414-1.414L12 10.586z" />
                     </svg>
-                    <p class="text-xs opacity-70 m-0! font-semibold!">
+                    <p class="text-[10px] opacity-70 m-0! font-semibold!">
                         Deselect All
                     </p>
                 </span>
             </Transition>
         </button>
     </div>
-    <!-- Required Permissions List -->
-    <span
-        class="flex! justify-center! items-center! space-y-0! gap-5! p-4 rounded-md bg-(--vp-c-bg-2) max-w-full max-h-fit flex-wrap">
-        <p class="perm-label" v-for="perm in allRequiredPerms" @click="toggleChecked(perm)"
-            :class="{ 'checked': checked.has(perm) }">
-            {{ perm }}
-        </p>
-    </span>
 </template>
 
 

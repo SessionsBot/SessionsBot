@@ -82,8 +82,9 @@
             class="bg-bg-3 z-3 border-2 border-ring-soft p-1 flex flex-col gap-0.5 rounded-md w-fit absolute">
 
             <!-- Dropdown Action -->
-            <Button unstyled v-for="a in props.actions" @click="(e) => { if (a?.fn) a.fn(e); showDropdown = false; }"
-                :class="a?.classes?.root" :disabled="a?.disabled"
+            <Button unstyled v-for="(a, i) in props.actions" :key="`button-action_${a?.label ?? i}`"
+                @click="(e) => { if (a?.fn) a.fn(e); showDropdown = false; }" :class="a?.classes?.root"
+                :disabled="a?.disabled"
                 class="flex relative h-full flex-row items-center justify-start button-secondary bg-bg-1/0 button-base rounded! active:scale-x-97 disabled:scale-100!">
                 <Iconify v-if="a?.icon" class="mx-px opacity-80" :class="a?.classes?.icon" :icon="a?.icon" :size="18" />
                 <p v-if="a?.label" class="pr-1 font-semibold text-sm"> {{ a?.label }} </p>

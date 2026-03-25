@@ -97,7 +97,7 @@
         </p>
 
         <!-- Calendar Option -->
-        <Button v-for="cal in calendarOptions" unstyled @click="cal?.action"
+        <Button v-for="cal in calendarOptions" unstyled @click="cal?.action" :key="cal?.title"
             class="button-base gap-1 justify-start! w-full! borer border-2 border-ring-soft/70 hover:border-ring-soft p-2">
             <Iconify :icon="cal?.icon" size="20" class="opacity-70"
                 :class="{ 'invert!': cal.icon?.includes('apple') && colorMode == 'dark' }" />

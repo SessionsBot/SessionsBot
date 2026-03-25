@@ -39,7 +39,7 @@
 
     <transition name="navSlide">
         <nav v-if="nav.navVisible"
-            class="dark:bg-black/25 text-white border-x-2 border-white/5 backdrop-blur-md gap-0 w-fit min-w-58 flex flex-col justify-start items-center content-center text-center fixed top-0 right-0 h-screen overflow-x-clip drop-shadow-2xl drop-shadow-black/50 z-20">
+            class="dark:bg-black/25 text-white border-x-2 border-text-1/5 backdrop-blur-md gap-0 w-fit min-w-58 flex grow flex-col justify-start items-center content-center text-center fixed top-0 right-0 bottom-0 h-dvh overflow-x-clip drop-shadow-2xl drop-shadow-black/50 z-20">
 
             <!-- Nav Header -->
             <section
