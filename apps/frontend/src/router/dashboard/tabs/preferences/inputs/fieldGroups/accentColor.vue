@@ -2,7 +2,7 @@
     import z from 'zod';
     import { RegExp_HexColorCode, type SubscriptionLevelType } from '@sessionsbot/shared';
     import type { PopoverMethods } from 'primevue';
-    import InputLabel from '../../../../../../components/inputLabel.vue';
+    import InputLabel from '@/components/inputLabel/inputLabel.vue';
     import useNotifier from '@/stores/notifier';
 
 
@@ -90,7 +90,8 @@
     <span class="input-group">
 
         <!-- Label -->
-        <InputLabel title="Accent Color" icon-name="mdi:color" :premium-type="'PREMIUM'" :doc-path="undefined" />
+        <InputLabel title="Accent Color" icon-name="mdi:color" :premium-type="'PREMIUM'"
+            doc-path="/preferences#accent-color" />
 
 
         <!-- Input -->

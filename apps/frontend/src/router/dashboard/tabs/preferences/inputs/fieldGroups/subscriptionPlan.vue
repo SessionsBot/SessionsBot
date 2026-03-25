@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import InputLabel from '../../../../../../components/inputLabel.vue';
+    import InputLabel from '@/components/inputLabel/inputLabel.vue';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { ExternalLinkIcon } from 'lucide-vue-next';
 

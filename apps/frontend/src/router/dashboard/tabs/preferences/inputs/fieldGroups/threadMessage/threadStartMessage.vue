@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import InputLabel from '../../../../../../../components/inputLabel.vue';
+    import InputLabel from '@/components/inputLabel/inputLabel.vue';
     import type { PreferenceFormFields } from '../../../preferencesTab.vue';
     import useNotifier from '@/stores/notifier';
     import { XIcon } from 'lucide-vue-next';
@@ -139,7 +139,7 @@
     <span class="input-group">
         <!-- Label -->
         <InputLabel title="Thread Start Message" icon-name="tabler:message-2-filled" :premium-type="'ENTERPRISE'"
-            :doc-path="'/'" />
+            :doc-path="'/preferences#thread-mode-start-message'" />
 
         <!-- Display (Simulated) Inputs -->
         <div @click="editDialog.attemptEdit()" class="w-full flex flex-col gap-1.5 p-0.5 flex-wrap group/di">

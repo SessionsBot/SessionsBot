@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-    import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
-    import InputLabel from '../../../../../../components/inputLabel.vue';
+    import InputLabel from '@/components/inputLabel/inputLabel.vue';
 
 
     // Props
@@ -25,7 +24,8 @@
     <!-- Input - Public Sessions -->
     <span class="input-group">
         <!-- Label -->
-        <InputLabel title="Add to Calendar Button" icon-name="fa6-solid:calendar-plus" :doc-path="undefined" />
+        <InputLabel title="Add to Calendar Button" icon-name="fa6-solid:calendar-plus"
+            docPath="/preferences#add-to-calendar-button" />
 
 
         <!-- Input -->

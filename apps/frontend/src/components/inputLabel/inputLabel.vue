@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-    import InfoHelpButton from '@/router/dashboard/components/sessionForm/labels/infoHelpButton.vue';
 
     // Props 
     const props = defineProps<{
@@ -37,7 +36,7 @@
         </span>
 
         <!-- Help / Docs Info Button -->
-        <InfoHelpButton v-if="props.docPath" :doc-path="props.docPath" />
+        <HelpIconButton v-if="props.docPath" :doc-path="props.docPath" />
     </div>
 
 </template>
