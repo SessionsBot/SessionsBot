@@ -1,32 +1,28 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:recommended"
+        "config:base"
     ],
-    "dependencyDashboard": true,
-    "dependencyDashboardApproval": false,
+    "dependencyDashboard": false,
     "rangeStrategy": "bump",
     "packageRules": [
         {
-            "description": "Group all minor and patch updates into one PR",
+            "description": "ONLY allow minor + patch updates",
             "matchUpdateTypes": [
                 "minor",
                 "patch"
             ],
-            "groupName": "all dependencies (non-major)",
-            "groupSlug": "all-non-major",
-            "automerge": true
+            "groupName": "dependencies",
+            "groupSlug": "dependencies"
         },
         {
-            "description": "Disable automerge for majors",
+            "description": "Completely ignore major updates",
             "matchUpdateTypes": [
                 "major"
             ],
-            "automerge": false
+            "enabled": false
         }
     ],
-    "separateMajorMinor": false,
-    "separateMultipleMajor": true,
     "schedule": [
         "before 6am on monday"
     ]
