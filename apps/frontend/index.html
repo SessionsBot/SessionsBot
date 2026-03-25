@@ -4,7 +4,8 @@
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
     <title>Sessions Bot</title>
 
     <!-- Google Analytics - Consent Defaults -->
@@ -12,6 +13,7 @@
       // Define dataLayer and gtag fn.
       window.dataLayer = window.dataLayer || [];
       function gtag() { dataLayer.push(arguments); }
+      // Set Consent to "Denied" for Default
       gtag('consent', 'default', {
         'ad_storage': 'denied',
         'ad_user_data': 'denied',
