@@ -41,6 +41,6 @@
     "@types/luxon": "^3.7.1",
     "release-it": "^19.0.5",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.0"
   }
 }
