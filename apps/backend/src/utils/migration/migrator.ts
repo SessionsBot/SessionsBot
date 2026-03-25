@@ -8,7 +8,7 @@ import { APIGuild, Client, REST, Routes } from "discord.js";
 
 const { RRule, datetime } = rrulePkg
 
-const debugAll = false
+const debugAll = true
 
 const save_guild_ids = ['593097033368338435']
 const delete_guild_ids = ['1420496963782053910', '593097033368338435']
@@ -45,8 +45,6 @@ export async function testMigrator() {
 
     // For Each Guild:
     for (const guildDoc of guilds) {
-
-        if (!save_guild_ids?.includes(guildDoc?.id)) continue
 
         // Guild Vars:
         const guildData = guildDoc?.data()
@@ -195,41 +193,42 @@ export async function testMigrator() {
 
 
         // Actually Save - Test Guilds:
-        if (save_guild_ids?.includes(guildDoc?.id)) {
+        // Skip non test guilds:
+        if (!save_guild_ids?.includes(guildDoc?.id)) continue
 
-            // Use Prod Bot Client
-            const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-            const guild: APIGuild = await rest.get(
-                Routes.guild(guildDoc?.id)
-            ) as any;
+        // Use Prod Bot Client
+        const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-            console.log(`fetched guild FROM PROD CLIENT! --- ${guild?.name}`)
+        const guild: APIGuild = await rest.get(
+            Routes.guild(guildDoc?.id)
+        ) as any;
 
-            // Save Test Guild Row:
-            const { data: guildData, error: guildERR } = await supabase.from('guilds').upsert({
-                ...newGuildSave,
-                name: guild?.name,
-                owner_id: guild?.owner_id
-            }).single()
-            if (guildERR) console.warn('FAILED SAVING TEST GUILD', guildERR)
+        console.log(`fetched guild FROM PROD CLIENT! --- ${guild?.name}`)
 
-            // Save Test Guild Stats Row
-            const { data: guildStatsData, error: guildStatsERR } = await supabase.from('guild_stats').upsert({
-                guild_id: newGuildSave?.id
-            }).single()
-            if (guildERR) console.warn('FAILED SAVING TEST GUILD STATS', guildStatsERR)
+        // Save Test Guild Row:
+        const { data: saveData, error: guildERR } = await supabase.from('guilds').upsert({
+            ...newGuildSave,
+            name: guild?.name,
+            owner_id: guild?.owner_id
+        }).single()
+        if (guildERR) console.warn('FAILED SAVING TEST GUILD', guildERR)
 
-            // Save Test Guild Migrating Tempalte Rows:
-            const { data: templatesData, error: templatesERR } = await supabase.from('migrating_templates')
-                .insert([
-                    ...migratingTemplates
-                ])
-                .select()
-            if (templatesERR) console.warn('FAILED SAVING TEST GUILD TEMPLATES', templatesERR)
+        // Save Test Guild Stats Row
+        const { data: guildStatsData, error: guildStatsERR } = await supabase.from('guild_stats').upsert({
+            guild_id: newGuildSave?.id
+        }).single()
+        if (guildERR) console.warn('FAILED SAVING TEST GUILD STATS', guildStatsERR)
 
-            console.info('Test Saves Completed!')
-        }
+        // Save Test Guild Migrating Tempalte Rows:
+        const { data: templatesData, error: templatesERR } = await supabase.from('migrating_templates')
+            .insert([
+                ...migratingTemplates
+            ])
+            .select()
+        if (templatesERR) console.warn('FAILED SAVING TEST GUILD TEMPLATES', templatesERR)
+
+        console.info('(i) Test Saves Completed!')
 
     }
 
@@ -238,9 +237,10 @@ export async function testMigrator() {
 
 
 export async function clearMigrationTests() {
-    const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
-        .in('guild_id', delete_guild_ids)
-    console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })
+    // const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
+    //     .in('guild_id', delete_guild_ids)
+    // console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })
+    // Delete guild rows:
     const { error: gErr, count: gCnt } = await supabase.from('guilds').delete({ count: "exact" })
         .in('id', delete_guild_ids)
     console.info(`Cleaned up "guilds":`, { count: gCnt, error: gErr })

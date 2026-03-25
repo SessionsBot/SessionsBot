@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import core from "../../../../../utils/core/core";
+import { URLS } from "apps/backend/src/utils/core/urls";
 
 
 export const rootDomainHtml = () => {
@@ -10,7 +11,7 @@ export const rootDomainHtml = () => {
     <!DOCTYPE html>
     <html>
     <head>
-        <meta http-equiv="refresh" content="10;url=https://sessionsbot.fyi" />
+        <meta http-equiv="refresh" content="10;url=${URLS.site_links.dashboard}" />
         <title>Sessions Bot - API</title>
         <style>
             body {

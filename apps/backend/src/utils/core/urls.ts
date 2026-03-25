@@ -5,7 +5,11 @@ const WEBSITE =
         ? "https://sessionsbot.fyi"
         : "https://v2.sessionsbot.fyi"
 
-const DOCUMENTATION = "https://docs.sessionsbot.fyi"
+const DOCUMENTATION =
+    ENVIRONMENT_TYPE === "production"
+        ? "https://docs.sessionsbot.fyi"
+        : "https://v2.docs.sessionsbot.fyi"
+
 
 export const URLS = {
     website: WEBSITE,
@@ -23,7 +27,7 @@ export const URLS = {
     documentation: DOCUMENTATION,
 
     doc_links: {
-        bot_permissions: DOCUMENTATION
+        bot_permissions: DOCUMENTATION + '/bot-permissions'
     },
 
     invite_bot: {

@@ -82,7 +82,7 @@ export default <EventData>{
                 new SeparatorBuilder(),
                 new SectionBuilder({
                     components: <any>[
-                        new TextDisplayBuilder({ content: `### ${core.emojis.string('star')} Ready to Get Started? \n> **View your [Bot Dashboard](https://sessionsbot.fyi/dashboard) via our web app** to get started creating your first sessions. 😊` }),
+                        new TextDisplayBuilder({ content: `### ${core.emojis.string('star')} Ready to Get Started? \n> **View your [Bot Dashboard](${URLS.site_links.dashboard}) via our web app** to get started creating your first sessions. 😊` }),
                     ],
                     accessory: {
                         type: ComponentType.Button,
