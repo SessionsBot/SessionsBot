@@ -6,6 +6,7 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { SubscriptionLevel } from '@sessionsbot/shared';
     import { externalUrls } from '@/stores/nav';
+    import InfoHelpButton from '../../labels/infoHelpButton.vue';
 
 
     // Incoming Props:
@@ -105,6 +106,7 @@
         <div class="flex flex-wrap flex-row gap-1 mb-1 w-full items-center justify-start">
             <ToggleSwitch input-id="rsvpsEnabled" v-model="rsvpsEnabled" class="scale-85" />
             <label for="rsvpsEnabled"> Enable RSVPs / Sign Up </label>
+            <InfoHelpButton class="self-center ml-auto" doc-path="#rsvps" />
         </div>
 
 

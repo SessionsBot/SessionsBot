@@ -6,6 +6,7 @@
     import type { AppUserGuilds } from '@sessionsbot/shared';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import useNotifier from '@/stores/notifier';
+    import InfoHelpButton from '../labels/infoHelpButton.vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -71,7 +72,8 @@
         <!-- INPUT: Post Channel -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('channelId') }">
-            <InputTitle fieldTitle="Post Channel" required :icon="BaselineIcon" />
+            <InputTitle fieldTitle="Post Channel" required :icon="BaselineIcon"
+                :show-help="{ path: '#post-channel' }" />
             <Select v-model="channelId" @value-change="(val) => validateField('channelId')" fluid
                 :options="selectChannelOpts" option-group-label="name" option-group-children="items"
                 :option-label="(opt) => opt?.name" :option-value="(opt) => opt?.id" />
@@ -82,7 +84,7 @@
         <!-- INPUT: Post Day -->
         <div class="flex flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('postDay') }">
-            <InputTitle fieldTitle="Post Day" required :icon="CalendarArrowUpIcon" />
+            <InputTitle fieldTitle="Post Day" required :icon="CalendarArrowUpIcon" :show-help="{ path: '#post-day' }" />
             <!-- Selection Input -->
             <div class="gap-3 p-1 px-0 w-full h-fit flex flex-wrap justify-start items-center content-center">
 
@@ -99,7 +101,7 @@
         <!-- INPUT: Post Time -->
         <div class="flex  flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('postTime') }">
-            <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" />
+            <InputTitle fieldTitle="Post Time" required :icon="ClockArrowUpIcon" :show-help="{ path: '#post-time' }" />
             <DatePicker input-id="postTime" time-only fluid class="w-full!" :step-minute="5" hour-format="12"
                 @value-change="() => { validateFields(['postTime', 'startDate']) }" v-model="postTime" />
             <InputErrors fieldName="postTime" :invalidFields />
@@ -109,7 +111,8 @@
         <!-- INPUT: Mention Roles -->
         <div class="flex relative flex-col gap-1 w-full items-start"
             :class="{ 'text-invalid-1!': invalidFields.has('mention_roles') }">
-            <InputTitle fieldTitle="Mention Roles" :icon="BellIcon" premium-type="PREMIUM" :show-help="{ path: '/' }" />
+            <InputTitle fieldTitle="Mention Roles" :icon="BellIcon" premium-type="PREMIUM"
+                :show-help="{ path: '#mention-roles' }" />
             <!-- Input Area - Wrap -->
             <span class="w-full relative flex">
                 <MultiSelect :disabled="!mentionRolesAllowed" v-model="mentionRoles"
@@ -139,6 +142,7 @@
             <label for="postInThread" class="gap-0.25 flex-row items-center">
                 <p class="inline!"> Thread Mode </p>
             </label>
+            <InfoHelpButton doc-path="#thread-mode" class="ml-auto self-center" />
         </div>
 
         <!-- INPUT: Native Events -->
@@ -148,6 +152,7 @@
             <label for="nativeEvents" class="gap-0.25 flex-row items-center">
                 <p class="inline!"> Native Discord Events </p>
             </label>
+            <InfoHelpButton doc-path="#native-events" class="ml-auto self-center" />
         </div>
 
     </main>

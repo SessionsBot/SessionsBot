@@ -8,6 +8,7 @@
     import { DateTime } from 'luxon';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import { rruleDateToLuxon } from '@sessionsbot/shared';
+    import InfoHelpButton from '../labels/infoHelpButton.vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -213,6 +214,7 @@
             <label for="recurrenceEnabled" class="block gap-0.25 flex-row items-center">
                 <p class="inline!"> Repeating Session </p>
             </label>
+            <InfoHelpButton :doc-path="'#repeats'" class="self-center ml-auto" />
         </div>
 
         <!-- Recurrence/Schedule Form Area -->

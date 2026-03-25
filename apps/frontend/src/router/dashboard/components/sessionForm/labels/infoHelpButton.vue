@@ -1,6 +1,5 @@
 <script lang="ts" setup>
     import { externalUrls } from '@/stores/nav';
-    import type { MaybeElementRef } from '@vueuse/core';
     import { HelpCircleIcon } from 'lucide-vue-next';
 
     const props = defineProps<{
@@ -8,52 +7,45 @@
         docPath: string
     }>()
 
-    const elmRef = ref<MaybeElementRef>()
-    const isActive = ref<boolean>(false)
+    const isActive = ref(false)
 
-    function toggle() {
-        isActive.value = !isActive.value;
-    }
-    function show() {
-        isActive.value = true;
-    }
-    function hide() {
-        isActive.value = false;
-    }
+    const canHover = window.matchMedia('(hover: hover)').matches
 
     function handleClick(e: MouseEvent) {
-        if (isActive.value) {
-            // If already active (on mobile), allow link to be followed
-            isActive.value = false;
-            // Let the link work
-            let dest = externalUrls.documentation
-            if (props.docPath) {
-                dest = dest + props.docPath;
-            }
-            window.open(dest, '_blank')
+        if (canHover) return // desktop: let link behave normally
+
+        if (!isActive.value) {
+            e.preventDefault()
+            isActive.value = true
         } else {
-            // On first tap, just show extra content, prevent navigation
-            e.preventDefault();
-            isActive.value = true;
+            isActive.value = false
+            // allow navigation
         }
     }
+
+    const href = computed(() => {
+        let dest = externalUrls.documentation?.replace('docs', 'v2.docs') + '/sessions'
+        if (props.docPath) dest += props.docPath
+        return dest
+    })
+
 
 </script>
 
 
 <template>
 
-    <div ref="elmRef" @mouseenter="show" @mouseleave="hide" @touchstart.prevent="toggle" @click="handleClick"
+    <a :href="href" target="_blank" ref="elmRef" @mouseenter="isActive = true" @mouseleave="isActive = false"
+        @click="handleClick"
         class="flex extra-content overflow-clip flex-nowrap p-0.5 py-0.25 gap-0.75 justify-center items-center cursor-pointer rounded-full transition-[0.4s] active:bg-zinc-800 ring-ring"
         :class="{ 'bg-bg-3 ring-2': isActive }">
         <Transition name="slide-in">
-            <p v-if="isActive" class="text-[11px]/tight pl-1 font-medium  text-nowrap relative ">
+            <p v-if="isActive" class="text-[11px]/tight pl-1 font-medium text-nowrap">
                 Learn more
             </p>
         </Transition>
         <HelpCircleIcon :class="{ 'rounded-full opacity-85': isActive }" class="opacity-70 transition-all" :size="15" />
-
-    </div>
+    </a>
 
 
 </template>

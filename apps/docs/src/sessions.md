@@ -41,7 +41,7 @@ Explore the available configuration options below.
 
 
 
-#### Location <span class="text-xs opacity-50"> *(optional)* </span> {#location}
+#### Url <span class="text-xs opacity-50"> *(optional)* </span> {#url}
 > A URL for where the session takes place  
 > - **If provided:** Adds a "Location" button to the `Session Panel`  
 > - **Used for:** Discord's native event location (if enabled)
@@ -66,7 +66,7 @@ Explore the available configuration options below.
 
 
 
-#### Repeating Schedules <span class="text-xs opacity-50"> *(optional)* </span> {#repeats}
+#### Repeating Sessions <span class="text-xs opacity-50"> *(optional)* </span> {#repeats}
 > Configure your session to repeat automatically  
 > - **Frequency:** Daily, weekly, monthly, or yearly  
 > - **Interval:** How often it repeats  
@@ -77,7 +77,7 @@ Explore the available configuration options below.
 
 
 
-#### Channel <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#channel}
+#### Post Channel <span class="text-xs opacity-50 text-(--vp-c-danger-1)"> *(required)* </span> {#post-channel}
 > The channel where the `Session Panel` will be sent to  
 > - **Tip:** Confirm the bot has all [required permissions](./bot-permissions)
 

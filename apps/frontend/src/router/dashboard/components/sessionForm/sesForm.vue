@@ -7,7 +7,6 @@
     import DiscordTab from './tabs/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
-    import { useAuthStore } from '@/stores/auth';
     import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
@@ -20,7 +19,6 @@
 
     // Services:
     const confirmService = useConfirm();
-    const auth = useAuthStore();
     const dashboard = useDashboardStore();
     const notifier = useNotifier();
 
