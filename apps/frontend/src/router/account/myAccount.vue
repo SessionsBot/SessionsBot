@@ -40,8 +40,22 @@
 
             <Transition name="zoom" mode="out-in">
 
+                <!-- Loading AUTH Card -->
+                <div v-if="!auth.authReady"
+                    class="flex-center flex-col gap-2 p-4 rounded-md bg-bg-soft border-2 border-ring-soft">
+
+                    <ProgressSpinner />
+
+                    <p class="font-semibold text-xl">
+                        Loading Account...
+                    </p>
+                    <p class="text-xs italic opacity-60">
+                        Please wait while we fetch your account data!
+                    </p>
+                </div>
+
                 <!-- Main Account Panel -->
-                <AccountPanel v-if="auth.signedIn" v-model:deleteDataDialogVisible="deleteDataDialogVisible" />
+                <AccountPanel v-else-if="auth.signedIn" v-model:deleteDataDialogVisible="deleteDataDialogVisible" />
 
                 <!-- Sign In - No Account Panel -->
                 <SignInCard v-else />

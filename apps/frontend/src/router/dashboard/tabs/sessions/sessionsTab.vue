@@ -55,15 +55,6 @@
             <!-- Disbanded Schedule(s) - Alert -->
             <DisabledTemplateAlert v-if="guildTemplates?.some(t => !t.enabled)" />
 
-            <!-- Col Wrap -->
-            <Transition name="fade">
-                <div v-if="dashboard.guildData.migratingTemplates?.state?.length"
-                    class="flex flex-center w-full flex-wrap">
-                    <!-- Migrating Templates - Alert/Card -->
-                    <MigratingTemplates />
-                </div>
-            </Transition>
-
             <!-- Guild Stats - Bar Section -->
             <span class="w-full mt-7 flex gap-5 flex-wrap items-center justify-center">
 
@@ -81,6 +72,16 @@
                     :classes="{ iconContainer: 'bg-yellow-600/70!' }" iconName="fluent:calendar-sync-16-regular" />
 
             </span>
+
+
+            <!-- Migrating Templates Wrap -->
+            <Transition name="fade">
+                <div v-if="dashboard.guildData.migratingTemplates?.state?.length"
+                    class="flex flex-center w-full flex-wrap mt-10">
+                    <!-- Migrating Templates - Alert/Card -->
+                    <MigratingTemplates />
+                </div>
+            </Transition>
 
             <!-- Current Sessions Card -->
             <CurrentSessions />
