@@ -475,7 +475,7 @@ async function executeTemplateCreationSchedule() {
                 const postLimit = pLimit(3)
                 await Promise.all(
                     [...postChannels.entries()].map(([id, templates]) =>
-                        postLimit(() => processPostChannel(id, templates))
+                        postLimit(async () => await processPostChannel(id, templates))
                     )
                 )
 
@@ -495,7 +495,7 @@ async function executeTemplateCreationSchedule() {
         // Process UP TO 5 Guilds Overdue Templates at a time:
         const guildLimit = pLimit(5)
         await Promise.all(
-            overdueGuilds.map(g => guildLimit(() => processGuild(g)))
+            overdueGuilds.map(g => guildLimit(async () => await processGuild(g)))
         )
 
         if (debugSchedule) console.info(`[✅] Template Creation Schedule - Completed at ${DateTime.now().toFormat('F')}`)
