@@ -11,7 +11,7 @@ const { RRule, datetime } = rrulePkg
 
 const createLog = useLogger();
 
-const debugAll = true
+const debugAll = false
 
 const save_guild_ids = ['593097033368338435']
 const delete_guild_ids = ['1420496963782053910', '593097033368338435']
@@ -193,7 +193,7 @@ export async function runMigrator() {
 
                 migratingTemplates.push(newTemplateSave)
 
-                if (debugAll) console.info(`--- Guild Sch - ${guildDoc?.id} --- ${sch?.sessionTitle}`, 'DB Save: \n', newTemplateSave,)
+                if (debugAll) console.info(`--- Guild Session -- ${guildDoc?.id} -- ${sch?.sessionTitle} --- DB Save: \n`, newTemplateSave,)
 
             }
         }
@@ -266,11 +266,8 @@ export async function runMigrator() {
 
 
 export async function clearMigrationTests() {
-    // const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
-    //     .in('guild_id', delete_guild_ids)
-    // console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })
     // Delete guild rows:
     const { error: gErr, count: gCnt } = await supabase.from('guilds').delete({ count: "exact" })
         .in('id', delete_guild_ids)
-    console.info(`Cleaned up "guilds":`, { count: gCnt, error: gErr })
+    console.info(`Cleaned up "migrating guilds":`, { count: gCnt, error: gErr })
 }
