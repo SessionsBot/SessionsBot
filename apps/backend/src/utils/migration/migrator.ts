@@ -5,10 +5,13 @@ import rrulePkg from "rrule";
 import { supabase } from "../database/supabase";
 import core from "../core/core";
 import { APIGuild, Client, REST, Routes } from "discord.js";
+import { useLogger } from "../logs/logtail";
 
 const { RRule, datetime } = rrulePkg
 
-const debugAll = false
+const createLog = useLogger();
+
+const debugAll = true
 
 const save_guild_ids = ['593097033368338435']
 const delete_guild_ids = ['1420496963782053910', '593097033368338435']
@@ -22,9 +25,11 @@ interface RSVP_DATA {
     required_roles: string[] | null
 }
 
-export async function testMigrator() {
+export async function runMigrator() {
+    // ALL GUILD FROM FB:
     const guilds = (await firestore.collection('guilds').get()).docs
 
+    // DEBUG:
     const guildsWithTemplates = guilds.filter(g => {
         const data = g.data();
         const templates: any[] = data.sessionSchedules
@@ -32,25 +37,27 @@ export async function testMigrator() {
             return true
         } else return false
     })
-
     const guildsWithTemplatesAndRoles = guildsWithTemplates.filter((t) => {
         const data = t?.data()
         return data.sessionSchedules?.some((t) => t?.roles?.length > 1) ?? false
     })
-
     console.info(`(i) - Total Guilds in Firebase:`, guilds?.length)
     console.info(`(i) - Total Guilds WITH TEMPLATES:`, guildsWithTemplates?.length)
     console.info(`(i) - Total Guilds WITH TEMPLATES & ROLES:`, guildsWithTemplatesAndRoles?.length)
 
+    const failedGuildIds = new Set<string>()
+    const succeededGuildIds = new Set<string>()
 
-    // For Each Guild:
+    // For Each FB Guild:
     for (const guildDoc of guilds) {
-
-        if (!save_guild_ids?.includes(guildDoc?.id)) continue
 
         // Guild Vars:
         const guildData = guildDoc?.data()
-        if (!guildData) { console.warn('No data for guild doc:', guildDoc?.id); continue }
+        if (!guildData) {
+            console.warn('No data for guild doc?:', guildDoc?.id);
+            failedGuildIds.add(guildDoc?.id)
+            continue
+        }
 
         // Guild Time Zone:
         const guildTimeZone: string = guildData?.timeZone
@@ -186,7 +193,7 @@ export async function testMigrator() {
 
                 migratingTemplates.push(newTemplateSave)
 
-                if (debugAll) console.info(`--- Guild Sch - ${guildDoc?.id} --- ${sch?.sessionTitle}`, 'Firebase: \n', sch, 'DB Save: \n', newTemplateSave,)
+                if (debugAll) console.info(`--- Guild Sch - ${guildDoc?.id} --- ${sch?.sessionTitle}`, 'DB Save: \n', newTemplateSave,)
 
             }
         }
@@ -195,52 +202,74 @@ export async function testMigrator() {
 
 
         // Actually Save - Test Guilds:
-        if (save_guild_ids?.includes(guildDoc?.id)) {
-
-            // Use Prod Bot Client
-            const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
-
-            const guild: APIGuild = await rest.get(
-                Routes.guild(guildDoc?.id)
-            ) as any;
-
-            console.log(`fetched guild FROM PROD CLIENT! --- ${guild?.name}`)
-
-            // Save Test Guild Row:
-            const { data: guildData, error: guildERR } = await supabase.from('guilds').upsert({
-                ...newGuildSave,
-                name: guild?.name,
-                owner_id: guild?.owner_id
-            }).single()
-            if (guildERR) console.warn('FAILED SAVING TEST GUILD', guildERR)
-
-            // Save Test Guild Stats Row
-            const { data: guildStatsData, error: guildStatsERR } = await supabase.from('guild_stats').upsert({
-                guild_id: newGuildSave?.id
-            }).single()
-            if (guildERR) console.warn('FAILED SAVING TEST GUILD STATS', guildStatsERR)
-
-            // Save Test Guild Migrating Tempalte Rows:
-            const { data: templatesData, error: templatesERR } = await supabase.from('migrating_templates')
-                .insert([
-                    ...migratingTemplates
-                ])
-                .select()
-            if (templatesERR) console.warn('FAILED SAVING TEST GUILD TEMPLATES', templatesERR)
-
-            console.info('Test Saves Completed!')
+        // Skip non test guilds:
+        if (!save_guild_ids?.includes(guildDoc?.id)) {
+            failedGuildIds.add(guildDoc?.id)
+            continue
         }
+
+
+        // Use Prod Bot Client
+        const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
+        // Fetch Guild:
+        const guild: APIGuild = await rest.get(
+            Routes.guild(guildDoc?.id)
+        ) as any;
+
+
+        // Save Guild Row:
+        const { error: guildERR } = await supabase.from('guilds').upsert({
+            ...newGuildSave,
+            name: guild?.name,
+            owner_id: guild?.owner_id
+        })
+        if (guildERR) {
+            createLog.for('Database').error(`[MIGRATIONS]: Failed to save GUILD ROW`, { guildId: guildDoc?.id, err: guildERR })
+            failedGuildIds.add(guildDoc?.id)
+            continue
+        }
+
+        // Save Guild Stats Row
+        const { error: guildStatsERR } = await supabase.from('guild_stats').upsert({
+            guild_id: newGuildSave?.id
+        })
+        if (guildStatsERR) {
+            createLog.for('Database').error(`[MIGRATIONS]: Failed to save GUILD STATS ROW`, { guildId: guildDoc?.id, err: guildStatsERR })
+            failedGuildIds.add(guildDoc?.id)
+            continue
+        }
+
+        // Save Test Guild Migrating Template Rows:
+        const { data: templatesData, error: templatesERR } = await supabase.from('migrating_templates')
+            .insert([
+                ...migratingTemplates
+            ])
+            .select()
+        if (templatesERR) {
+            createLog.for('Database').error(`[MIGRATIONS]: Failed to save TEMPLATE ROW(S)!`, { guildId: guildDoc?.id, err: templatesERR })
+            failedGuildIds.add(guildDoc?.id)
+            continue
+        }
+
+        // Succeeded Guild:
+        succeededGuildIds.add(guildDoc?.id)
 
     }
 
+    // Return Results
+    return {
+        succeeded: [...succeededGuildIds?.values()],
+        failed: [...failedGuildIds?.values()]
+    } as const
 
 }
 
 
 export async function clearMigrationTests() {
-    const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
-        .in('guild_id', delete_guild_ids)
-    console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })
+    // const { error: tErr, count: tCnt } = await supabase.from('migrating_templates').delete({ count: "exact" })
+    //     .in('guild_id', delete_guild_ids)
+    // console.info(`Cleaned up "migrating_templates":`, { count: tCnt, error: tErr })
+    // Delete guild rows:
     const { error: gErr, count: gCnt } = await supabase.from('guilds').delete({ count: "exact" })
         .in('id', delete_guild_ids)
     console.info(`Cleaned up "guilds":`, { count: gCnt, error: gErr })

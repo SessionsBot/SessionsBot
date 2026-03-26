@@ -6,6 +6,7 @@ import { safeParse, url } from "zod";
 import { defaultFooterText } from "./basic";
 import { useLogger } from "../../logs/logtail";
 import { isBotPermissionError, sendPermissionAlert } from "../permissions/permissionsDenied";
+import { URLS } from "../../core/urls";
 
 const createLog = useLogger();
 
@@ -114,7 +115,7 @@ export async function buildSessionPanelMsg(session: FullSessionData, showWaterma
                 emoji: { name: 'eye', id: core.emojis.ids.eye },
                 label: 'View Online',
                 style: ButtonStyle.Link,
-                url: `https://sessionsbot.fyi/sessions/${s.id}`
+                url: `${URLS.website}/sessions/${s.id}`
             }))
             // Return Full Action Row:
             return [

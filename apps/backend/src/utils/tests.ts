@@ -2,7 +2,7 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import { ButtonBuilder, ButtonStyle, ComponentType, SeparatorBuilder, ActionRowBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder, MessageFlags } from "discord.js";
-import { clearMigrationTests, testMigrator } from "./migration/migrator.js";
+import { clearMigrationTests, runMigrator } from "./migration/migrator.js";
 import { sendUpgradeAlert } from "./migration/alerts.js";
 
 
@@ -25,7 +25,9 @@ export default {
 
                 // await clearMigrationTests()
 
-                // await testMigrator()
+                // const result = await runMigrator()
+
+                // console.info('Migrator Results: \n', result)
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');

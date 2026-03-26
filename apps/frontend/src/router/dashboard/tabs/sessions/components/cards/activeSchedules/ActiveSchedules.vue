@@ -59,7 +59,7 @@
                 <!-- Card Title -->
                 <div class="flex flex-row items-center justify-center gap-1 p-0.5 font-bold">
                     <CalendarClockIcon class="size-4.5 sm:size-5.5" />
-                    <h1 class="sm:text-lg"> Schedules </h1>
+                    <h1 class="sm:text-lg"> Upcoming </h1>
                 </div>
 
 
@@ -80,7 +80,7 @@
                 </svg>
 
                 <p>
-                    Active Schedules:
+                    Posting Next:
                 </p>
             </div>
             <!-- All Schedules - List -->
@@ -92,16 +92,16 @@
                 <!-- No Schedules - Card -->
                 <div v-if="!guildTemplates?.length">
                     <p class="text-bold text-text-1">
-                        No Schedules!
+                        Nothing Scheduled!
                     </p>
                     <p class="text-text-3 px-1 text-sm">
-                        Start utilizing Sessions Bot and configure your first session schedule..
+                        Start utilizing Sessions Bot and schedule your first session..
                         <br>
                     </p>
                     <Button unstyled @click="dashboard.sessionForm.createNew()"
                         class="button-base mt-2.25 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
                         <Iconify icon="mdi:plus" size="21" />
-                        <p class="text-sm"> Create Schedule </p>
+                        <p class="text-sm"> Create Session </p>
                     </Button>
                 </div>
             </span>

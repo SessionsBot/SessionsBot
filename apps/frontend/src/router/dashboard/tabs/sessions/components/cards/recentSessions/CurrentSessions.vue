@@ -9,13 +9,16 @@
     const dashboard = useDashboardStore();
 
     // Active Guild Sessions - From Start of Today in Sessions Selected Zone
-    const guildSessions = computed(() => dashboard.guildData.sessions.state?.filter(s => {
-        // Filter out sessions that started in a previous day:
-        const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
-        return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
-    }).sort((a, b) => {
-        return DateTime.fromISO(a.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(b.starts_at_utc)?.toUnixInteger()
-    }));
+    const guildSessions = computed(() => dashboard.guildData.sessions.state
+        // ?.filter(s => {
+        //     // Filter out sessions that started in a previous day:
+        //     const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
+        //     return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
+        // })
+        ?.sort((a, b) => {
+            return DateTime.fromISO(b.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(a.starts_at_utc)?.toUnixInteger()
+        })
+        ?.splice(0, 50));
 
     // Paginator:
     const paginatorStartIndex = ref(0)
@@ -95,13 +98,13 @@
                         No Sessions Yet!
                     </p>
                     <p class="text-text-3 text-sm px-1">
-                        Start utilizing Sessions Bot and configure your first schedule.. once you've done so wait for
+                        Start utilizing Sessions Bot and configure your first session.. once you've done so wait for
                         your sessions to be posted!
                     </p>
                     <Button unstyled @click="dashboard.sessionForm.createNew()"
                         class="button-base mt-2.25 active:scale-95 pr-1.5 gap-0 font-semibold bg-brand-1/90 hover:bg-brand-1/75">
                         <Iconify icon="mdi:plus" size="21" />
-                        <p class="text-sm"> Create Schedule </p>
+                        <p class="text-sm"> Create Session </p>
                     </Button>
                 </div>
 

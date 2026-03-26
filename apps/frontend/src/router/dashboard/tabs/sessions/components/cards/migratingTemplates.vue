@@ -2,12 +2,10 @@
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import useNotifier from '@/stores/notifier';
     import { API } from '@/utils/api';
-    import { supabase } from '@/utils/supabase';
-    import { API_SessionTemplateBodySchema, MigratingTemplates_DeletionDate, type Database } from '@sessionsbot/shared';
+    import { MigratingTemplates_DeletionDate } from '@sessionsbot/shared';
     import { XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import { useConfirm } from 'primevue';
-    import { success, treeifyError } from 'zod';
 
 
     // Services:
@@ -28,11 +26,11 @@
     }
 
 
-    // Util Fn: Start Deletion Prompt for Miggrating Schedule (id):
+    // Util Fn: Start Deletion Prompt for Migrating Schedule (id):
     function startDeletionPrompt(id: string) {
         confirm.require({
             header: `Are you sure?`,
-            message: `<span class="w-full block! text-center">You're about to <b>permanently delete</b> this "migrating schedule"! <br> <span class="text-sm font-bold underline text-invalid-1">This action cannot be undone!</span></span>`,
+            message: `<span class="w-full block! text-center">You're about to <b>permanently delete</b> this "migrating session"! <br> <span class="text-sm font-bold underline text-invalid-1">This action cannot be undone!</span></span>`,
             async accept() {
                 const r = await API.delete(`/guilds/${dashboard.guildId}/migrating/schedules`, {
                     data: [id] // body?
@@ -41,7 +39,7 @@
                     return notifier.send({
                         duration: 15_000,
                         header: 'Failed to Delete!',
-                        content: 'It seems like we ran into an issue when deleting that schedule! If this issue persists please contact bot support..',
+                        content: 'It seems like we ran into an issue when deleting that session! If this issue persists please contact bot support..',
                         level: 'error'
                     })
                 } else {
@@ -50,26 +48,13 @@
                     return notifier.send({
                         duration: 3_000,
                         icon: 'iconamoon:trash',
-                        header: 'Schedule Deleted',
+                        header: 'Session Deleted',
                         level: 'success'
                     })
                 }
-                console.info('API Delete Result', r.status, r.data)
-                console.info('accepted', id)
-            },
-            reject() {
-                console.info('rejected', id)
-            },
+            }
         })
     }
-
-    // Watch Dialog - Opened:
-    // watch(migrationDialogVisible, (v) => {
-    //     if (!v) {
-    //         // Reset Selected Ids:
-
-    //     }
-    // })
 
 </script>
 
@@ -88,15 +73,15 @@
         <div class="flex flex-wrap gap-1 justify-start items-center">
             <Iconify icon="mdi:bird" class="opacity-80" size="22" />
             <p class="font-bold text-lg">
-                Migrating Templates
+                Migrating Sessions
             </p>
         </div>
         <div class="h-1 w-15 bg-bg-4 rounded-full" />
         <p class="text-sm">
-            Re-enable your <b>previously configured Schedules</b> from Sessions Bot V1!
+            Re-enable your <b>previously configured Sessions/Events</b> from Sessions Bot V1!
         </p>
         <p class="text-sm opacity-65">
-            Instantly take advantage of Sessions Bot's new features with your old schedules!
+            Instantly take advantage of Sessions Bot's new features with your previous configurations!
         </p>
         <p class="opacity-65 text-xs">
             <b class="underline">Auto Deletes: <i> {{ MigratingTemplates_DeletionDate.toFormat('M/d/y') }} </i></b>
@@ -107,7 +92,7 @@
             class="button-base button-primary mt-1 pl-1 pr-1 py-0.5">
             <Iconify icon="mdi:check" size="18" />
             <p class="text-sm font-bold">
-                Confirm V1 Schedules
+                Confirm V1 Sessions
             </p>
         </Button>
 
@@ -123,7 +108,7 @@
                         <span class="flex items-center justify-start flex-row grow gap-1 pt-0.5 pr-4">
                             <Iconify icon="mdi:bird" size="22" />
                             <p class="font-bold text-lg">
-                                Migrating Schedules
+                                Migrating Sessions
                             </p>
                         </span>
                         <Button @click="migrationDialogVisible = false" unstyled
@@ -133,7 +118,7 @@
                     </span>
                     <!-- Bottom Row -->
                     <span class="text-xs opacity-65 p-1 mt-0.5">
-                        - Confirm each one of your previously configured schedules to use with the new release of
+                        - Confirm each one of your previously configured sessions to use with the new release of
                         Sessions Bot!
                     </span>
                 </div>

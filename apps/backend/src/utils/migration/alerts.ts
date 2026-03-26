@@ -40,7 +40,7 @@ export const upgradeStartingMessage = (ownerId: string) => new ContainerBuilder(
             }
         }),
         new SeparatorBuilder(),
-        new TextDisplayBuilder({ content: `-# Thanks for using <@${core.botClient.user.id}>'s Pre-Release Version 💜!  --  @here <@${ownerId}>` })
+        new TextDisplayBuilder({ content: `-# Thanks for using <@${core.botClient.user.id}>'s Pre-Release Version 💜!  --  @here` })
     ]
 })
 
