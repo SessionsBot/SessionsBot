@@ -9,13 +9,16 @@
     const dashboard = useDashboardStore();
 
     // Active Guild Sessions - From Start of Today in Sessions Selected Zone
-    const guildSessions = computed(() => dashboard.guildData.sessions.state?.filter(s => {
-        // Filter out sessions that started in a previous day:
-        const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
-        return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
-    }).sort((a, b) => {
-        return DateTime.fromISO(a.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(b.starts_at_utc)?.toUnixInteger()
-    }));
+    const guildSessions = computed(() => dashboard.guildData.sessions.state
+        // ?.filter(s => {
+        //     // Filter out sessions that started in a previous day:
+        //     const startDate = DateTime.fromISO(s.starts_at_utc, { zone: s.time_zone })
+        //     return startDate >= DateTime.now().setZone(s.time_zone).startOf('day')
+        // })
+        ?.sort((a, b) => {
+            return DateTime.fromISO(b.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(a.starts_at_utc)?.toUnixInteger()
+        })
+        ?.splice(0, 50));
 
     // Paginator:
     const paginatorStartIndex = ref(0)
