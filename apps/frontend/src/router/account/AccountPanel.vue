@@ -201,7 +201,7 @@
 
 
             <!-- Extra Admin/Dev Resources -->
-            <span v-if="userAppRoles?.includes('xyz' as any)"
+            <span v-if="userAppRoles?.includes('admin')"
                 class="flex-center flex-col gap-1 p-2 mt-2 border-t-2 border-ring-soft">
 
                 <a @click="copyAccessToken" class="hover:underline cursor-pointer font-medium">
