@@ -37,7 +37,7 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
             // Save Request to Database:
             const { data, error } = await supabase.from('deletion_requests').insert({
                 user_id: userId,
-                status: 'processing',
+                status: 'pending',
                 delete_guild: validatedBody.data.deleteGuildData,
                 delete_user: validatedBody.data.deleteUserData,
                 guild_ids: validatedBody.data?.guildIds ?? null

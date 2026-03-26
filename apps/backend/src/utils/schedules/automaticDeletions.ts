@@ -5,6 +5,7 @@ import { SubscriptionLimits, SubscriptionSKUs } from '@sessionsbot/shared';
 import { useLogger } from '../logs/logtail';
 import { supabase } from '../database/supabase';
 import { DateTime } from 'luxon';
+import { RESTGetAPIEntitlementsQuery } from 'discord.js';
 
 const createLog = useLogger();
 
@@ -19,9 +20,9 @@ let autoDataDeletionCron: ScheduledTask = undefined;
  * @Performs Automatic data deletions across the database respecting guilds subscription plans and data retention allowances.
  * @Runs Everyday at 10:30 PM
 */
-export function initializeDataDeletionSchedule() {
+export async function initializeDataDeletionSchedule(runImmediately: boolean) {
     // Start & Assign Automatic Deletion Cron Schedule:
-    cron.schedule('30 22 * * *', async () => {
+    const sch = cron.schedule('30 22 * * *', async () => {
         try {
             // Debug & Vars:
             if (debug) createLog.for('Schedule').info(`[🗑 Auto Data Deletion]: Process started at ${DateTime.now().setZone('America/Chicago').toFormat('M/d t')}`)
@@ -242,4 +243,8 @@ export function initializeDataDeletionSchedule() {
         timezone: 'America/Chicago'
     })
 
+    // If runImmediately:
+    if (runImmediately) {
+        await sch.execute()
+    }
 }
