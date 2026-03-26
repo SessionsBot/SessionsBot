@@ -142,11 +142,11 @@ async function executeTemplateCreationSchedule() {
                         }
                         // If this channels templates will thread - Fetch all active once now:
                         if (channelTemplates.some(t => t.post_in_thread)) {
-                            await channel.threads.fetch()
+                            await channel.threads.fetchActive()
                         }
 
                         // Small DELAY Per Channel:
-                        await new Promise(res => setTimeout(res, 225))
+                        await new Promise(res => setTimeout(res, 125))
 
                         // For EACH OVERDUE TEMPLATE:
                         for (const t of channelTemplates) {
