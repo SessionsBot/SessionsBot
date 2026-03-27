@@ -83,37 +83,35 @@ export function getSchedulesNextPostUTC(opts: {
 
 }): DateTime | null {
 
+    // Get Search Dates:
     const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
-
+    const adjustedSearchFrom = afterDate?.plus({ millisecond: opts.postOffsetMs })
 
     if (!opts.RRule) {
         // No Recurrence - Return First (and last) POST Date:
         const postTime = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
         return (postTime >= afterDate) ? postTime : null;
     }
+
     // Get Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })
     const timeZone = rule.options.tzid ?? "UTC"
-    const searchAfterInZone = afterDate.setZone(timeZone)
 
-    // Confirm - Check if past "After Date":
-    let cursor = searchAfterInZone
-    while (true) {
-        // Find NEXT Schedule Start Date:
-        const nextJsDate = rule.after(cursor?.toJSDate(), true)
-        if (!nextJsDate) return null
-        const nextStartDT = rruleDateToLuxon(nextJsDate, timeZone)
-        if (!nextStartDT) return null
-        // Get Post Date - Subtract Post Offset:
-        const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
-        if (nextPostDT < searchAfterInZone) {
-            // Date TOO EARLY - Push up cursor:
-            cursor = rruleDateToLuxon(nextJsDate, timeZone)
-        } else {
-            return nextPostDT?.toUTC()
-        }
+    // Search for next start w/ adjusted search:
+    const nextStartJS = rule.after(adjustedSearchFrom?.setZone(timeZone)?.toJSDate(), true)
+    if (!nextStartJS) return null
+    const nextStartDT = rruleDateToLuxon(nextStartJS, timeZone)
+    if (!nextStartDT) return null
+
+    // Calculate next post date:
+    const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
+    if (nextPostDT < afterDate) {
+        // Date TOO EARLY - WARN - Return null:
+        console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'))
+        return null
+    } else {
+        return nextPostDT?.toUTC()
     }
-
 }
 
 
