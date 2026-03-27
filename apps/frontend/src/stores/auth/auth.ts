@@ -92,8 +92,7 @@ export const useAuthStore = defineStore('auth', {
                     if (!this.session?.access_token) throw { reason: 'NO TOKEN', message: 'Failed to re-sync Discord data! - No auth token provided..' };
 
                 // Make refresh request:
-                const refreshEndpoint = 'https://api.sessionsbot.fyi/auth/discord-refresh';
-                const { status, data } = await API.get<APIResponseValue<any>>(refreshEndpoint, {
+                const { status, data } = await API.get<APIResponseValue<any>>('/auth/discord-refresh', {
                     headers: {
                         ['trigger-type']: triggerType
                     },

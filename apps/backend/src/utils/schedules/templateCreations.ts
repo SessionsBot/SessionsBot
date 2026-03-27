@@ -324,7 +324,7 @@ async function executeTemplateCreationSchedule() {
 
                             // Native Discord Event - Create if Enabled:
                             let nativeEvent: GuildScheduledEvent | null = null;
-                            if (t.native_events) {
+                            if (t?.native_events) {
                                 // Events Enabled - Create
                                 const result = await createNativeEventForSession({
                                     session: fullSessionData,
