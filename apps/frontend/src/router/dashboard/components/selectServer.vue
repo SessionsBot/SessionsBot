@@ -138,8 +138,8 @@
                 <a :href="externalUrls.inviteBot">
                     <Button unstyled
                         class="px-2 mb-5 py-1.25 rounded-sm drop-shadow-md bg-text-soft hover:bg-brand-1/70 transition-all cursor-pointer flex flex-row gap-1.25 items-center justify-center">
-                        <i class="pi pi-discord drop-shadow-sm" />
-                        <p class="font-medium text-sm text-shadow-sm"> Invite the Bot </p>
+                        <Iconify icon="ic:baseline-discord" class="p-px size-5.5" />
+                        <p class="font-semibold text-sm text-shadow-sm"> Invite the Bot </p>
                     </Button>
                 </a>
                 <!-- No Sessions Bot Servers - Text -->

@@ -100,7 +100,7 @@
                         <!-- Invite Bot -->
                         <a :href="externalUrls.inviteBot" target="_blank">
                             <Button @click="closeNav()" class="nav-button relative" unstyled>
-                                <i class="pi pi-discord ml-0.5" />
+                                <Iconify icon="ic:baseline-discord" class="p-px" />
                                 <p class="">
                                     Invite Bot
                                 </p>
@@ -166,7 +166,7 @@
 
                         <!-- Sign In -->
                         <Button @click="auth.signIn()" v-if="!auth.signedIn" class="nav-button relative!" unstyled>
-                            <i class="pi pi-discord ml-0.5" />
+                            <Iconify icon="ic:baseline-discord" class="p-px" />
                             <p class="">Sign Into Account</p>
                             <ExternalLinkIcon :stroke-width="2.5" class="absolute right-1.5 size-3" />
                         </Button>

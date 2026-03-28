@@ -764,7 +764,7 @@
                         <!-- Discord Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'discord'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'discord', 'formTabBtn-invalid': invalidTabs.has('discord') }">
-                            <i class="pi pi-discord" />
+                            <Iconify icon="ic:baseline-discord" class="size-4.25 relative top-px" />
                             <p class="text-sm">Discord</p>
                         </Button>
 

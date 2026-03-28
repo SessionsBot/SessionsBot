@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { BaselineIcon, Clock8Icon, ClockIcon, Globe2Icon, LinkIcon, TextInitialIcon } from 'lucide-vue-next';
+    import { BaselineIcon, Clock8Icon, ClockIcon, Globe2Icon, LinkIcon, TextInitialIcon, XIcon } from 'lucide-vue-next';
     import { DateTime } from 'luxon';
     import z from 'zod'
     import type { NewSessions_FieldNames } from '../../sesForm.vue';
@@ -9,6 +9,7 @@
     import InputErrors from '../../labels/inputErrors.vue';
     import DiscordEditor from './DiscordEditor/DiscordEditor.vue';
     import type useDashboardStore from '@/stores/dashboard/dashboard';
+    import { Icon } from '@iconify/vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -79,7 +80,7 @@
         <!-- INPUT: Title -->
         <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': invalidFields.has('title') }">
             <InputTitle fieldTitle="Title" required :icon="BaselineIcon" :show-help="{ path: '#title' }" />
-            <inputText name="title" fluid v-model="title" @focusout="validateField('title')"
+            <inputText name="title" type="text" fluid v-model="title" @focusout="validateField('title')"
                 :invalid="invalidFields.has('title')" />
             <InputErrors fieldName="title" :invalidFields />
         </div>
@@ -96,9 +97,18 @@
         <!-- INPUT: url -->
         <div class="flex flex-col gap-1 w-full items-start" :class="{ 'text-invalid-1!': invalidFields.has('url') }">
             <InputTitle fieldTitle="Url" :icon="LinkIcon" :show-help="{ path: '#url' }" />
-            <inputText name="url" fluid v-model="url"
-                @focusin="() => { if (!url || url.trim() == '') { url = `https://` } }" @focusout="validateField('url')"
-                :invalid="invalidFields.has('url')" />
+            <!-- Input Wrap -->
+            <span class="relative flex w-full">
+                <inputText name="url" type="url" fluid v-model="url"
+                    @focusin="() => { if (!url || url.trim() == '') { url = `https://` } }"
+                    @focusout="validateField('url')" :invalid="invalidFields.has('url')" />
+                <button v-if="url?.length" @click="url = undefined; validateField('url')"
+                    class="button-base absolute top-1.75 right-2">
+                    <Icon icon="lucide:x" style="stroke-width: 1px;" class="size-5.25 opacity-85 mt-0.5" />
+                    <!-- <XIcon stroke-width="1.75" /> -->
+                </button>
+            </span>
+
             <InputErrors fieldName="url" :invalidFields />
         </div>
 
