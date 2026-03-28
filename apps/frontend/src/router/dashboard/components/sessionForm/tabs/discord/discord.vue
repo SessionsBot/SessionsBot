@@ -1,12 +1,12 @@
 <script lang="ts" setup>
     import { BaselineIcon, ClockArrowUpIcon, CalendarArrowUpIcon, BellIcon, ArrowUpCircleIcon } from 'lucide-vue-next';
-    import type { NewSessions_FieldNames } from '../sesForm.vue';
-    import InputTitle from '../labels/inputTitle.vue';
-    import InputErrors from '../labels/inputErrors.vue';
+    import type { NewSessions_FieldNames } from '../../sesForm.vue';
+    import InputTitle from '../../labels/inputTitle.vue';
+    import InputErrors from '../../labels/inputErrors.vue';
     import type { AppUserGuilds } from '@sessionsbot/shared';
     import useDashboardStore from '@/stores/dashboard/dashboard';
     import useNotifier from '@/stores/notifier';
-    import InfoHelpButton from '../labels/infoHelpButton.vue';
+    import InfoHelpButton from '../../labels/infoHelpButton.vue';
 
     // Incoming Props/Models:
     const props = defineProps<{
@@ -62,6 +62,12 @@
         postDay.value = opt;
         validateFields(['postDay', 'postTime']);
     }
+
+
+    // Session Panel Previewing:
+    const emits = defineEmits<{
+        'attemptPreview': []
+    }>()
 
 </script>
 
@@ -154,6 +160,31 @@
             </label>
             <InfoHelpButton doc-path="#native-events" class="ml-auto self-center" />
         </div>
+
+
+        <!-- Divider -->
+        <div class="rounded-full w-17 h-0.75 bg-bg-3" />
+
+
+        <!-- Preview Panel -- Button -->
+        <div class="flex flex-row gap-1 w-full items-start">
+            <span class="flex flex-row gap-2 items-center">
+                <Iconify icon="tabler:message-up" class="size-5" />
+                <p>
+                    Preview Session Panel
+                </p>
+            </span>
+            <InfoHelpButton doc-path="#session-panels" class="ml-auto self-center" />
+        </div>
+
+        <Button unstyled @click="$emit('attemptPreview')"
+            class="button-base active:scale-95 w-full border border-ring-soft hover:border-ring-2 bg-text-4/10 px-2 p-1 mr-auto ml-2 transition-all">
+            <Iconify icon="tabler:eye-share" class="size-4.25 relative bottom-px" />
+            <p class="font-bold text-sm">
+                View Preview
+            </p>
+        </Button>
+
 
     </main>
 </template>

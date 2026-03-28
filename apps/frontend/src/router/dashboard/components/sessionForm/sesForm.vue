@@ -4,7 +4,7 @@
     import InformationTab from './tabs/information/information.vue';
     import RsvpsTab from './tabs/rsvps/rsvps.vue';
     import ScheduleTab from './tabs/schedule.vue';
-    import DiscordTab from './tabs/discord.vue';
+    import DiscordTab from './tabs/discord/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
     import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, rruleDateToLuxon, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
@@ -16,6 +16,7 @@
     import { datetime, RRule } from 'rrule';
     import useNotifier from '@/stores/notifier';
     import { externalUrls } from '@/stores/nav';
+    import SessionPanelPreview from './tabs/discord/SessionPanelPreview.vue';
 
     // Services:
     const confirmService = useConfirm();
@@ -425,6 +426,34 @@
     }
 
 
+    // Session Panel Previewing:
+    const showSessionPanelPreview = ref<boolean>(false)
+    /** Attempt to view this sessions panel preview */
+    function attemptPanelPreview() {
+        // Validate Form:
+        const result = formSchema.safeParse(formValues.value);
+        if (!result.success) {
+            // Invalid Attempt - Errors Found:
+            const properties = treeifyError(result.error)?.properties;
+            // Set Errors:
+            for (const [fieldName, errData] of Object.entries(properties as any)) {
+                //@ts-expect-error
+                invalidFields.value.set(fieldName, errData?.errors)
+            };
+            // Notify Invalid Attempt:
+            return notifier.send({
+                level: 'warn',
+                header: 'Fix Invalid Fields',
+                icon: 'tabler:eye-share',
+                content: 'Before you can view this Session Panel preview you must correct any invalid fields.'
+            })
+        } else {
+            showSessionPanelPreview.value = true
+        }
+
+    }
+
+
     /** Form Submission Function */
     const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
     const debugSubmit = true;
@@ -798,7 +827,8 @@
                                     v-model:post-time="formValues.postTime" v-model:post-day="formValues.postDay"
                                     v-model:mention_roles="formValues.mention_roles"
                                     v-model:native-events="formValues.nativeEvents"
-                                    v-model:post-in-thread="formValues.postInThread" />
+                                    v-model:post-in-thread="formValues.postInThread"
+                                    @attempt-preview="attemptPanelPreview" />
                             </KeepAlive>
                         </Transition>
 
@@ -895,6 +925,10 @@
             </div>
         </template>
     </Dialog>
+
+
+    <!-- Session Panel Preview - Dialog -->
+    <SessionPanelPreview v-model:visible="showSessionPanelPreview" :session-data="formValues as any" />
 </template>
 
 
