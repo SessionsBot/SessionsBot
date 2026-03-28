@@ -212,6 +212,12 @@
             </section>
         </Transition>
 
+        <div v-if="invalidFields.get('rsvps')" class="w-full text-sm text-invalid-1 flex items-center gap-1 flex-col">
+            <p v-for="err in invalidFields.get('rsvps')">
+                {{ err }}
+            </p>
+        </div>
+
         <!-- Custom Rsvp Dialog Panel: -->
         <RsvpPanel ref="rsvpPanelRef" v-model:is-visible="rsvpDialogVisible" @add-rsvp="addNewRsvp"
             @edit-rsvp="editExistingRsvp" @delete-rsvp="deleteExistingRsvp" />
