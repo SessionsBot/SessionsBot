@@ -7,7 +7,7 @@
     import DiscordTab from './tabs/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
-    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, rruleDateToLuxon, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -428,7 +428,7 @@
     /** Form Submission Function */
     const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
     const debugSubmit = true;
-    const dryRun = false;
+    const dryRun = true;
     async function submitForm() {
         try {
             // Mark Submit Busy:
@@ -503,6 +503,7 @@
                 }
                 return Math.max((startUtc.toMillis() - postUtc.toMillis()), 0)
             }
+            const postOffsetMs = getPostOffsetMs()
 
 
             // RE BUILD CORRECT RRule:
@@ -528,20 +529,27 @@
 
             // Compute - Next Post UTC:
             const postAfterDT = () => {
-                // Editing - Post from last post date:
-                if (formAction.value == 'edit' && dashboard.sessionForm.editPayload?.last_post_utc) {
-                    return DateTime.fromISO(dashboard.sessionForm.editPayload?.last_post_utc, { zone: 'utc' })
+                // Editing - Post from last post date (if any) OR Now UTC:
+                if (formAction.value == 'edit') {
+                    const lastPostISO = dashboard.sessionForm.editPayload?.last_post_utc
+                    if (lastPostISO) {
+                        return DateTime.fromISO(lastPostISO, { zone: 'utc' })
+                    } else {
+                        return DateTime.utc()
+                    }
                 }
-                // New - Post From Start of Day of Session Start -- MINUS 1 day if "day before" post
+
+                // New - Post From Start OF DAY of Session Start -- MINUS 1 day if "day before" post
                 if (data.postDay == 'Day before') {
                     return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
                 } else {
                     return startInZone?.startOf('day')?.toUTC()
                 }
             }
+
             const nextPostUTC = getSchedulesNextPostUTC({
                 startsAtUtc: startUtc,
-                postOffsetMs: getPostOffsetMs(),
+                postOffsetMs: postOffsetMs,
                 RRule: newRRule?.toString(),
                 afterDate: postAfterDT()
             })
@@ -549,7 +557,7 @@
             // Compute - Last Post UTC:
             const lastPostUTC = getSchedulesLastPostUTC({
                 startsAtUtc: startUtc,
-                postOffsetMs: getPostOffsetMs(),
+                postOffsetMs: postOffsetMs,
                 RRule: newRRule?.toString()
             })
 
@@ -559,7 +567,7 @@
                     rrule: newRRule,
                     ruleString: newRRule?.toString(),
                     durationMs: getDurationMs(),
-                    postOffsetMs: getPostOffsetMs(),
+                    postOffsetMs: postOffsetMs,
                     rsvps: data.rsvps
                 })
                 console.log({
@@ -605,7 +613,7 @@
                     rsvps: data?.rsvps?.length ? data.rsvps : null,
                     rrule: newRRule ? newRRule.toString() : null,
                     channel_id: data.channelId,
-                    post_before_ms: getPostOffsetMs(),
+                    post_before_ms: postOffsetMs,
                     mention_roles: data?.mention_roles && subscription.value?.limits.ALLOW_MENTION_ROLES ? data?.mention_roles : null,
                     native_events: data.nativeEvents,
                     post_in_thread: data.postInThread,
