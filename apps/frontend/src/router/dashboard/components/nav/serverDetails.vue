@@ -47,7 +47,8 @@
 
 <template>
     <slot :togglePopOver="togglePopOver" />
-    <Popover class="server-details-popover" ref="switchServerPoRef">
+    <Popover unstyled class="mt-2 p-2 rounded bg-bg-soft border border-ring-soft!" ref="switchServerPoRef">
+
         <!-- Options List -->
         <ul class="options-list">
 
@@ -90,17 +91,11 @@
 <style scoped>
     @reference '@/styles/main.css';
 
-    .server-details-popover {
-        --p-popover-background: var(--c-bg-soft) !important;
-        --p-popover-border-color: var(--c-ring-soft) !important;
-        --p-popover-color: var(--c-text-1) !important;
-    }
-
     .options-list {
         @apply flex flex-col p-0 gap-2.25;
     }
 
     .option-button {
-        @apply bg-text-1/2 text-text-1/80 hover:bg-text-1/10 ring-1 hover:ring-ring-1 ring-ring-3 active:scale-98 w-full flex items-center justify-start p-1 gap-0.75 rounded-md transition-all font-bold cursor-pointer;
+        @apply bg-text-1/2 text-text-1/80 hover:bg-text-1/7 ring-1 hover:ring-ring-2 ring-ring-soft active:scale-98 w-full flex items-center justify-start p-1 gap-0.75 rounded-md transition-all font-bold cursor-pointer;
     }
 </style>
