@@ -18,7 +18,8 @@
         ?.sort((a, b) => {
             return DateTime.fromISO(b.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(a.starts_at_utc)?.toUnixInteger()
         })
-        ?.splice(0, 50));
+        ?.slice(0, 50)
+    );
 
     // Paginator:
     const paginatorStartIndex = ref(0)
@@ -38,7 +39,7 @@
             paginatorStartIndex.value = pageStart
 
         } else return
-    })
+    }, { immediate: true, flush: "sync" })
 
 
 </script>
