@@ -249,7 +249,7 @@ export const watchAuth = async () => {
                     const lastSyncISO = user.app_metadata?.last_synced;
                     const lastSyncDate = lastSyncISO ? DateTime.fromISO(lastSyncISO) : null;
                     if (lastSyncDate && lastSyncDate.isValid) {
-                        const expiredData = Math.abs(lastSyncDate.diffNow('hours').hours) > 3 // 3 days
+                        const expiredData = Math.abs(lastSyncDate.diffNow('days').days) > 3 // 3 days
                         if (expiredData && store.refreshStatus == 'idle') {
                             // last discord data sync >= 24 hours ago
                             console.info(`[🔁] - Discord Data is stale/expired(${lastSyncDate.setZone('America/Chicago').toFormat('f')}) - Starting a refresh...`);

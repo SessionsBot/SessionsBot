@@ -76,7 +76,7 @@ export function getSchedulesNextPostUTC(opts: {
     postOffsetMs: number,
     /** The RRule String representing this sessions schedule. */
     RRule: string | undefined | null,
-    /** Search for the next occurrence AFTER this date 
+    /** Search for the next post date AFTER this date 
      * @Default `DateTime.now()`
      * @TimeZone `UTC` */
     afterDate?: DateTime | undefined | null,
@@ -84,31 +84,44 @@ export function getSchedulesNextPostUTC(opts: {
 }): DateTime | null {
 
     // Get Search Dates:
+    const firstPostDate = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
     const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
     const adjustedSearchFrom = afterDate?.plus({ millisecond: opts.postOffsetMs })
 
+    // Before First Start - Return FIRST Post:
+    if (opts.startsAtUtc > DateTime.now()) {
+        return firstPostDate
+    }
+
+    // No Recurrence - Return First (and last) POST Date:
     if (!opts.RRule) {
-        // No Recurrence - Return First (and last) POST Date:
-        const postTime = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
-        return (postTime >= afterDate) ? postTime : null;
+        return (firstPostDate >= afterDate) ? firstPostDate : null;
     }
 
     // Get Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })
     const timeZone = rule.options.tzid ?? "UTC"
 
-    // Search for next start w/ adjusted search:
+
     const nextStartJS = rule.after(adjustedSearchFrom?.setZone(timeZone)?.toJSDate(), true)
     if (!nextStartJS) return null
     const nextStartDT = rruleDateToLuxon(nextStartJS, timeZone)
     if (!nextStartDT) return null
 
+
     // Calculate next post date:
     const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
     if (nextPostDT < afterDate) {
-        // Date TOO EARLY - WARN - Return null:
-        console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'))
-        return null
+        // Date TOO EARLY - Try Another Recurrence - or Return null:
+        const secondStartJS = rule.after(nextStartJS, false)
+        const secondStartDT = rruleDateToLuxon(secondStartJS, timeZone)
+        const secondPostDT = secondStartDT?.minus({ millisecond: opts.postOffsetMs })
+        if (secondPostDT < afterDate) {
+            console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'))
+            return null;
+        } else {
+            return secondPostDT?.toUTC()
+        }
     } else {
         return nextPostDT?.toUTC()
     }
