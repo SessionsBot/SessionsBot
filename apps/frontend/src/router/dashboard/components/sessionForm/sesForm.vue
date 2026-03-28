@@ -535,7 +535,8 @@
                     if (lastPostISO) {
                         return DateTime.fromISO(lastPostISO, { zone: 'utc' })
                     } else {
-                        return DateTime.utc()
+                        // return DateTime.utc()
+                        // use default post from dates if no previous posts
                     }
                 }
 
