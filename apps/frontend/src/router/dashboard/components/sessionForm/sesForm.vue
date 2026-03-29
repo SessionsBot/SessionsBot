@@ -445,7 +445,8 @@
                 level: 'warn',
                 header: 'Fix Invalid Fields',
                 icon: 'tabler:eye-share',
-                content: 'Before you can view this Session Panel preview you must correct any invalid fields.'
+                actions: false,
+                content: 'Before you can view this Session Panel preview you must <u>correct any invalid fields</u>!'
             })
         } else {
             showSessionPanelPreview.value = true
@@ -788,7 +789,7 @@
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'schedule'"
                             :class="{ 'formTabBtn-selected': tabSelected == 'schedule', 'formTabBtn-invalid': invalidTabs.has('schedule') }">
                             <CalendarCogIcon :size="17" class="noShrink" />
-                            <p class="text-sm">Scheduling</p>
+                            <p class="text-sm">Repeats</p>
                         </Button>
                         <!-- Discord Tab -->
                         <Button unstyled class="formTabBtn" @click="tabSelected = 'discord'"

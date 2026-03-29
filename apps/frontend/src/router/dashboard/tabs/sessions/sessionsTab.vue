@@ -59,16 +59,18 @@
             <span class="w-full mt-7 flex gap-5 flex-wrap items-center justify-center">
 
                 <!-- Total Sessions -->
-                <StatCard title="Sessions Created" :value="dashboard.guildData.guildStats.state?.sessions_created ?? 0"
+                <StatCard title="Sessions Created" value-caption="All Time"
+                    :value="dashboard.guildData.guildStats.state?.sessions_created ?? 0"
                     :classes="{ iconContainer: 'bg-emerald-600/70!' }" iconName="fluent:calendar-add-16-regular" />
 
 
                 <!-- Total RSVPs -->
-                <StatCard title="RSVPs Assigned" :value="dashboard.guildData.guildStats.state?.rsvps_assigned ?? 0"
+                <StatCard title="RSVPs Assigned" value-caption="All Time"
+                    :value="dashboard.guildData.guildStats.state?.rsvps_assigned ?? 0"
                     :classes="{ iconContainer: 'bg-sky-600/70!' }" iconName="fluent:calendar-checkmark-16-regular" />
 
                 <!-- Total Templates -->
-                <StatCard title="Active Schedules" :value="guildTemplates?.length ?? 0"
+                <StatCard title="Active Schedules" value-caption="Currently" :value="guildTemplates?.length ?? 0"
                     :classes="{ iconContainer: 'bg-yellow-600/70!' }" iconName="fluent:calendar-sync-16-regular" />
 
             </span>

@@ -200,7 +200,6 @@
 
                         <!-- Watermark -->
                         <div v-if="guildShowWatermark" class="w-full text-[13px] flex gap-0 flex-col text-xs/tight">
-
                             <span class="flex w-full flex-row items-center gap-1 mt-1 relative bottom-1">
                                 <img src="/logo.png" class="rounded size-4" />
                                 <span class="opacity-85"> Powered by <span class="text-link hover:underline">Sessions
@@ -215,12 +214,11 @@
                         </div>
 
                         <!-- Mention Roles -->
-                        <span class="w-full text-[13px] flex gap-1 flex-wrap text-xs/tight">
+                        <span v-if="s?.mention_roles?.length"
+                            class="w-full text-[13px] flex gap-1 flex-wrap text-xs/tight">
                             <span class="inline-flex flex-row items-center">
                                 <img src="@/assets/botEmojis/bell.png" class="rounded size-4" />
-                                <p>
-                                    :
-                                </p>
+                                <p> : </p>
                             </span>
 
                             <div class="inline">
