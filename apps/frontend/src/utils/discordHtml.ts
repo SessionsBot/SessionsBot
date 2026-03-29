@@ -1,5 +1,4 @@
 import { toHTML } from '@odiffey/discord-markdown'
-import { processVariableText } from '@sessionsbot/shared'
 import { DateTime } from 'luxon'
 
 export const getDiscordHtml = (raw: string) => {
