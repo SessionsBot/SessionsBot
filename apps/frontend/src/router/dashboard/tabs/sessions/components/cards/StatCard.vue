@@ -4,6 +4,7 @@
     const props = defineProps<{
         title: string,
         value: any,
+        valueCaption?: string,
         iconName: string,
         classes?: {
             iconContainer?: string
@@ -33,9 +34,14 @@
                 <Iconify :icon="props?.iconName" class="sm:hidden flex" />
             </div>
             <!-- Detail Area -->
-            <div class="p-1.5 w-fit! bg-red-500/0 flex flex-col gap-0 flex-1 grow items-start justify-center">
+            <div
+                class="p-1.5 w-fit! bg-red-500/0 flex gap-0 flex-1 sm:flex-col flex-wrap grow items-center justify-center">
                 <p class="sm:text-2xl text-xl font-extrabold">
                     {{ props.value ?? '%' }}
+                </p>
+                <p v-if="props?.valueCaption"
+                    class="uppercase text-[10px] font-black opacity-70 ml-1 mt-auto mb-1.25 sm:m-0!">
+                    {{ props?.valueCaption ?? 'Caption' }}
                 </p>
             </div>
         </div>

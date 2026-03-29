@@ -141,7 +141,7 @@
             <InputTitle fieldTitle="Time Zone" required :icon="Globe2Icon" :show-help="{ path: '#time-zone' }" />
 
             <!-- Input Area - Wrapper -->
-            <span class="w-full h-fit flex flex-col gap-2 items-center">
+            <span class="w-full h-fit flex flex-col gap-2 items-center group/p">
                 <AutoComplete class="w-full relative! z-10!" v-model="timeZone" @option-select="selectTimeZone"
                     :invalid="invalidFields.has('timeZone')" :suggestions="timeZoneSuggestions"
                     @complete="timeZoneSearch" forceSelection option-label="name" dropdown show-clear fluid
