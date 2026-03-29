@@ -54,6 +54,15 @@
         return c || fallback
     }
 
+    // Mention Role Names:
+    function resolveGuildRole(id: string) {
+        const roleData: { [key: string]: any } = dashboard.guildData.roles.state?.find(e => e.id == id)
+        return {
+            name: '@' + (roleData?.name || 'Role'),
+        }
+
+    }
+
 </script>
 
 
@@ -186,10 +195,11 @@
                             </Button>
                         </div>
 
+                        <div v-if="guildShowWatermark || s?.mention_roles?.length"
+                            class="w-[98%] h-0.25 my-2 bg-bg-3" />
+
                         <!-- Watermark -->
                         <div v-if="guildShowWatermark" class="w-full text-[13px] flex gap-0 flex-col text-xs/tight">
-
-                            <div class="w-[98%] h-0.25 my-2 bg-bg-3" />
 
                             <span class="flex w-full flex-row items-center gap-1 mt-1 relative bottom-1">
                                 <img src="/logo.png" class="rounded size-4" />
@@ -198,11 +208,29 @@
 
                             </span>
                             <a :href="externalUrls.discordStore" target="_blank"
-                                class="opacity-70 text-[11px] hover:underline">
+                                class="opacity-70 text-[11px] hover:underline mb-1">
                                 <Iconify icon="system-uicons:arrow-up" class="inline size-3 stroke-[2.5]" />Want to
                                 remove this? — Upgrade Subscription
                             </a>
                         </div>
+
+                        <!-- Mention Roles -->
+                        <span class="w-full text-[13px] flex gap-1 flex-wrap text-xs/tight">
+                            <span class="inline-flex flex-row items-center">
+                                <img src="@/assets/botEmojis/bell.png" class="rounded size-4" />
+                                <p>
+                                    :
+                                </p>
+                            </span>
+
+                            <div class="inline">
+                                <span v-for="r in s?.mention_roles ?? []" title="Mentioned Role"
+                                    class="px-0.75 py-0.25 inline rounded text-xs font-semibold cursor-pointer bg-link/45">
+                                    {{ resolveGuildRole(r)?.name }}
+                                </span>
+                            </div>
+
+                        </span>
 
 
                     </span>
