@@ -77,7 +77,7 @@
         const filteredResources = computed(() => {
             const q = searchValue.value
             return resources.filter(r => r.tags.some(t => t.includes(q)) || r.name.includes(q))
-                .splice(0, 5)
+                .slice(0, 5)
         })
 
         function showAutoComplete() {

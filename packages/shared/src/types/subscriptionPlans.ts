@@ -98,7 +98,13 @@ export const SubscriptionLimits: Record<SubscriptionPlanName, {
 
 /** Subscription Level Plans available through Sessions Bot for Discord */
 export const SubscriptionLevel: Record<SubscriptionPlanName, {
-    /** The numbered index representing this subscription level. */
+    /** The numbered index representing this subscription level. 
+     * @values ```
+     * FREE = 0
+     * PREMIUM = 1
+     * ENTERPRISE = 2
+     * ```
+    */
     level: number,
     /** Human readable string representing this subscription level. */
     title: string,

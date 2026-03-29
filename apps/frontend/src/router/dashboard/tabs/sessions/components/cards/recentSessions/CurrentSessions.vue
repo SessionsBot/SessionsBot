@@ -18,7 +18,8 @@
         ?.sort((a, b) => {
             return DateTime.fromISO(b.starts_at_utc)?.toUnixInteger() - DateTime.fromISO(a.starts_at_utc)?.toUnixInteger()
         })
-        ?.splice(0, 50));
+        ?.slice(0, 50)
+    );
 
     // Paginator:
     const paginatorStartIndex = ref(0)
@@ -38,14 +39,14 @@
             paginatorStartIndex.value = pageStart
 
         } else return
-    })
+    }, { immediate: true, flush: "sync" })
 
 
 </script>
 
 
 <template>
-    <div class="flex justify-center items-center w-full min-w-fit pt-10">
+    <div class="flex justify-center items-center w-full sm:w-fit min-w-fit pt-10">
 
         <!-- Current Sessions Card -->
         <section class="upcoming-sessions-card">

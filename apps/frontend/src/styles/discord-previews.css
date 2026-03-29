@@ -50,7 +50,7 @@
     }
 
     blockquote {
-        @apply pl-4 !bg-text-1/0 w-full !py-2 !mt-2.5 mb-1.5 px-1 relative font-semibold !text-text-1/80 rounded-md;
+        @apply pl-4 !bg-text-1/0 w-full !py-px !mt-2.5 mb-1.5 px-1 relative font-semibold !text-text-1/80 rounded-md;
 
         &::after {
             z-index: 1;
@@ -69,6 +69,6 @@
     }
 
     .d-timestamp {
-        @apply bg-black/15 px-1 py-0.5 rounded text-sm font-semibold break-all;
+        @apply bg-bg-3 px-1 py-0.5 rounded text-sm font-semibold break-all;
     }
 }

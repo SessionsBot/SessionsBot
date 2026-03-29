@@ -354,12 +354,17 @@
                 </Transition>
 
                 <!-- RRULE - Info Text -->
-                <div class="flex w-full gap-2 flex-wrap mb-2 flex-col items-start justify-center">
+                <div
+                    class="w-full p-1 gap-2 mb-2 flex-col flex-center items-start pl-2 flex-wrap bg-bg-soft border border-ring-soft rounded-md">
 
-                    <p class="opacity-50 w-full"> <span class="pi pi-info-circle relative top-[2px]" /> This
-                        session
-                        will repeat: </p>
-                    <p class="ml-1.5 mt-0.5 bg-yellow-500/45 text-sm px-2 py-0.5 rounded-md ring-2 ring-ring-2">
+                    <span class="flex-center flex-wrap flex-row opacity-50">
+                        <Iconify icon="mdi:info-outline" class="size-5.25 mr-1 opacity-75" />
+                        <p class="">
+                            This session will repeat:
+                        </p>
+                    </span>
+
+                    <p class="bg-yellow-500/45 mb-2 mx-2.25 text-sm px-2 p-0.75 rounded-md ring-2 ring-ring-2">
                         {{ RRuleText || 'Add more information to fields...' }}
                     </p>
 

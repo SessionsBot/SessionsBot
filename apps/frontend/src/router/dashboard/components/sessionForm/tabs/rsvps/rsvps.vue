@@ -190,10 +190,15 @@
                     <!-- Upgrade Btn -->
                     <span v-if="(rsvps?.length ?? 0) >= maxRsvpSlots"
                         class="text-text-1/40 mb-0 italic text-xs mx-5 text-center">
-                        Maximum allowed RSVP slots reached for your current subscription plan. Upgrade your bot
-                        to increase your limits!
+                        Maximum allowed RSVP slots reached for your current subscription plan.
+                        <span v-if="guildSubscription?.level != 2">
+                            Upgrade your bot
+                            to increase your limits!
+                        </span>
+
                     </span>
-                    <a :href="externalUrls.discordStore" target="_blank" title="Open Discord Store">
+                    <a v-if="guildSubscription?.level != 2" :href="externalUrls.discordStore" target="_blank"
+                        title="Open Discord Store">
                         <Button v-if="(rsvps?.length ?? 0) >= maxRsvpSlots" unstyled :disabled="!rsvpsEnabled"
                             class="bg-brand-1/50 py-0.75 px-2.25 pl-1.25 gap-px rounded-lg transition-all cursor-pointer font-medium hover:bg-brand-1/60 flex items-center flex-row">
                             <Iconify icon="tabler:diamond" width="19" height="19" />
@@ -206,6 +211,12 @@
 
             </section>
         </Transition>
+
+        <div v-if="invalidFields.get('rsvps')" class="w-full text-sm text-invalid-1 flex items-center gap-1 flex-col">
+            <p v-for="err in invalidFields.get('rsvps')">
+                {{ err }}
+            </p>
+        </div>
 
         <!-- Custom Rsvp Dialog Panel: -->
         <RsvpPanel ref="rsvpPanelRef" v-model:is-visible="rsvpDialogVisible" @add-rsvp="addNewRsvp"

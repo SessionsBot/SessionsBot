@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { z } from 'zod'
+    import { object, z } from 'zod'
     import { CheckIcon } from 'lucide-vue-next';
     import { API_GuildPreferencesDefaults, RegExp_HexColorCode, SubscriptionLevel, type APIResponseValue, type SubscriptionLevelType } from '@sessionsbot/shared';
     import PublicSessions from './inputs/fieldGroups/publicSessions.vue';
@@ -11,13 +11,13 @@
     import { API } from '@/utils/api';
     import { useAuthStore } from '@/stores/auth';
     import useNotifier from '@/stores/notifier';
-    import { fetchGuildData } from '@/stores/dashboard/guildData.api';
-    import { fa } from 'zod/v4/locales';
 
     // Services:
     const dashboard = useDashboardStore();
+    const notifier = useNotifier()
     const auth = useAuthStore();
     const subscription = computed(() => dashboard.guildData.subscription.state as SubscriptionLevelType)
+    const guildPrefData = computed(() => dashboard.guildData.guild.state)
 
     // Root Preference Form States & Methods:
     const usePreferencesForm = () => {
@@ -42,7 +42,14 @@
         type FieldName = keyof typeof values
 
         /** `Boolean` represent weather the form values have been modified since mount. */
-        const touched = ref(false)
+        const touched = computed(() => {
+            return Object.entries(values)
+                .some((f) => {
+                    const [valueName, valueLocal] = f as [FieldName, string | boolean]
+                    const dbSave = guildPrefData.value?.[valueName]
+                    return dbSave != valueLocal
+                })
+        })
 
         /** Current Form Input Errors - Map */
         const errors = ref<Map<FieldName, string[]>>(new Map());
@@ -97,9 +104,13 @@
                     if (result.data.success) {
                         console.info('API Success', result.data)
                         submitState.value = 'success'
-                        touched.value = false;
                         // dashboard.guildData.guild.state = await fetchGuildData(dashboard.guildId)
                         await dashboard.refetchData('guild')
+                        notifier.send({
+                            level: 'success',
+                            header: 'Preferences Saved',
+                            duration: 3
+                        })
                     } else throw { display_error: 'API Request - Failed - ' + `Error - ${result.status}` }
                 }
             } catch (err: any) {
@@ -141,7 +152,6 @@
 
     // Test  - Load Real Existing Prefs:
     onMounted(() => {
-        const guildPrefData = computed(() => dashboard.guildData.guild.state)
         // Apply Guild Preferences to Form:
         preferenceForm.values.accent_color = subscription?.value?.limits?.CUSTOM_ACCENT_COLOR
             ? guildPrefData.value?.accent_color ?? API_GuildPreferencesDefaults.accent_color
@@ -155,11 +165,6 @@
             ? guildPrefData.value?.thread_message_description ?? API_GuildPreferencesDefaults.thread_message_description
             : API_GuildPreferencesDefaults.thread_message_description;
 
-        // Watch form 'Dirty' state:
-        preferenceForm.touched.value = false;
-        watchOnce(preferenceForm.values, (v) => {
-            preferenceForm.touched.value = true;
-        })
     })
 
 </script>

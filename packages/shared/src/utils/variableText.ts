@@ -4,7 +4,9 @@ import { DateTime } from "luxon"
 export function processVariableText(text: string, opts?: { displayDate: DateTime }) {
 
     // Get/Parse Options:
-    const date = opts?.displayDate ?? DateTime.now();
+    const date = opts?.displayDate?.isValid
+        ? opts.displayDate
+        : DateTime.now();
 
     // String replace variable(s) - Map:
     const variableMap = {

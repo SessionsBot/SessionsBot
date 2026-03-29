@@ -1,7 +1,6 @@
 <script lang="ts" setup>
     import { useAuthStore } from '@/stores/auth';
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { toHTML } from '@odiffey/discord-markdown'
     import { processVariableText, type Database, type FullSessionData } from '@sessionsbot/shared'
     import { DateTime } from 'luxon'
     import RsvpDetailsList from './RsvpDetailsList.vue';
@@ -9,6 +8,7 @@
     import type { PopoverMethods } from 'primevue';
     import { externalUrls } from '@/stores/nav';
     import { ExternalLinkIcon } from 'lucide-vue-next';
+    import { getDiscordHtml } from '@/utils/discordHtml';
 
     // Incoming Props:
     const props = defineProps<{
@@ -40,35 +40,7 @@
         const raw = s.value?.description
         if (!raw) return null
         const processed = processVariableText(raw, { displayDate: startDateUTC.value.setZone(s?.value?.time_zone) })
-        const html = toHTML(processed, {
-            embed: true,
-            discordOnly: false,
-            discordCallback: {
-                role(node) { return `@Role` },
-                channel(node) { return `#Channel` },
-                user(node) { return `@User` },
-                slash(node) { return '/command' },
-                timestamp(node) {
-                    if (!isNaN(node.timestamp)) {
-                        if (node.style == 'R') {
-                            return DateTime.fromSeconds(Number(node.timestamp))?.toRelative() ?? "TIMESTAMP"
-                        }
-                        const styleToken = () => {
-                            if (node.style == 't') return 't'
-                            else if (node.style == 'T') return 'tt'
-                            else if (node.style == 'd') return 'D'
-                            else if (node.style == 'D') return 'DDD'
-                            else if (node.style == 'f') return `DDD 'at' t`
-                            else if (node.style == 'F') return `DDD 'at' t`
-                            else return 'f'
-                        }
-                        return DateTime.fromSeconds(Number(node.timestamp))?.toFormat(styleToken())
-                    } else return "TIMESTAMP"
-
-                }
-            }
-        })
-        return html
+        return getDiscordHtml(processed)
     })
 
 
