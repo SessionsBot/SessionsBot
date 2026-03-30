@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@theme {
+    --color-text-1: var(--vp-c-text-1);
+    --color-ring-soft: var(--vp-c-default-1);
+    --color-bg-3: var(--vp-c-default-1);
+}
+
 
 /* Custom Animations */
 .fade-enter-from,

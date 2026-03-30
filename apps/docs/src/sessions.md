@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import PanelPreview from '@components/PanelPreview.vue';
+
+</script>
+
 # Sessions
 
 Sessions Bot revolves around the `Sessions` you schedule, which are automatically posted to your server as [`Session Panels`](/sessions#signup-panels) <span class="opacity-50 text-xs">(for each scheduled occurrence)</span>. 
@@ -144,10 +149,8 @@ It includes:
 This is the primary way your community interacts with your sessions.
 
 --- 
-View Examples of Session Panels below:
+View an example Session Panel below:
 
-<div class="w-45 h-75 rounded bg-neutral-500">
-Image Here
-</div>
+<PanelPreview />
 
-
+> <span class="text-sm font-medium">The actual message sent to Discord may vary slightly!</span>
