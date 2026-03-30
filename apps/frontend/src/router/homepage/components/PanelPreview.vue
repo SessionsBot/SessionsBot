@@ -20,7 +20,7 @@
 
 <template>
   <section class="px-6 py-16 sm:py-20">
-    <div class="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
+    <div class="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-1">
       <div>
         <h2 class="text-3xl font-bold sm:text-4xl">Session panel preview</h2>
         <p class="mt-4 text-text-2/85">
