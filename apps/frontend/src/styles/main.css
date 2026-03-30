@@ -84,6 +84,15 @@
 }
 
 
+@utility scroll-hide {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
+
+
 
 /* App/Body Styles */
 html,
@@ -104,12 +113,4 @@ body {
   flex-direction: column;
   flex-wrap: wrap;
   min-height: 100dvh; /* Full screen height */
-}
-
-.scroll-hide {
-  overflow-y: scroll;
-  scrollbar-width: none; /* Firefox */
-}
-.scroll-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
 }

@@ -2,7 +2,7 @@
     import { MenuIcon, XIcon } from "lucide-vue-next";
     import { Button } from "primevue";
     import { ref } from "vue";
-    import SiteNav from "./siteNav.vue";
+    import SiteNav from "./nav/siteNav.vue";
     import { useNavStore } from "@/stores/nav";
 
     // Services:

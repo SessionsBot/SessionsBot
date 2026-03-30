@@ -41,6 +41,7 @@ declare module 'vue' {
     Message: typeof import('primevue/message')['default']
     MultiButton: typeof import('./../components/MultiButton.vue')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
+    NavButton: typeof import('./../components/nav/components/NavButton.vue')['default']
     Notifier: typeof import('./../components/notifier/notifier.vue')['default']
     Popover: typeof import('primevue/popover')['default']
     ProgressSpinner: typeof import('primevue/progressspinner')['default']
@@ -50,7 +51,7 @@ declare module 'vue' {
     ShopIcon: typeof import('./../components/icons/ShopIcon.vue')['default']
     SiteFooter: typeof import('./../components/siteFooter.vue')['default']
     SiteHeader: typeof import('./../components/siteHeader.vue')['default']
-    SiteNav: typeof import('./../components/siteNav.vue')['default']
+    SiteNav: typeof import('./../components/nav/siteNav.vue')['default']
     StatusBadge: typeof import('./../components/StatusBadge.vue')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
   }

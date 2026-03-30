@@ -48,6 +48,9 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async signOut() {
+            // Services:
+            const router = useRouter()
+            const notifier = useNotifier()
             // Clear Store State:
             this.signedIn = false;
             this.user = undefined;
@@ -56,7 +59,17 @@ export const useAuthStore = defineStore('auth', {
             this.redirectAfterAuth.clear();
             // Signout w/ Supabase
             const { error } = await supabase.auth.signOut()
-            if (error) console.error('[👤] - FAILED TO SIGN OUT', error);
+            if (error) {
+                // Send Error Alert:
+                notifier.send({
+                    level: 'error',
+                    header: 'Failed to Sign Out!',
+                    content: `Uh oh! We encountered an error while trying to sign you out, if this persists contact support!`
+                })
+            } else {
+                // Nav Home:
+                router.push('/')
+            }
         },
 
         async resyncDiscordData(triggerType = <'MANUAL' | 'AUTOMATIC'>'AUTOMATIC'): Promise<ResyncResult> {

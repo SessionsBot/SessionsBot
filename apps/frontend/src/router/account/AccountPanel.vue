@@ -187,7 +187,7 @@
         <footer class="bg-text-1/10 text-text-1/50 text-[11px] text-center w-full border-t-2 border-ring">
 
             <!-- Regular Resources -->
-            <span class="flex w-full justify-between items-center gap-4 p-2">
+            <span class="flex w-full justify-evenly items-center gap-4 p-2">
                 <p @click="showDataDelete = true" class="hover:underline cursor-pointer sm:w-fit w-full font-medium">
                     Data Deletion Requests
                 </p>
@@ -202,9 +202,9 @@
 
             <!-- Extra Admin/Dev Resources -->
             <span v-if="userAppRoles?.includes('admin')"
-                class="flex-center flex-col gap-1 p-2 mt-2 border-t-2 border-ring-soft">
+                class="flex justify-evenly flex-wrap gap-4 p-2 border-t-2 border-ring-soft">
 
-                <a @click="copyAccessToken" class="hover:underline cursor-pointer font-medium">
+                <a @click="copyAccessToken" class="hover:underline cursor-pointer font-medium ">
                     Copy Access Token
                 </a>
                 <a @click="console.log({ session: auth.session, user: auth.user })"

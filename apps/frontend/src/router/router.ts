@@ -83,7 +83,10 @@ const routes: RouterOptions['routes'] = [
         path: '/test',
         name: 'Testing',
         alias: ['/tests', '/testing', '/t'],
-        component: TestPage
+        component: TestPage,
+        beforeEnter() {
+            if (import.meta.env.PROD) { router.replace('/') }
+        }
     },
 
     // Not Found - 404:
@@ -103,7 +106,7 @@ const router = createRouter({
         if (savedPosition) {
             return savedPosition;
         }
-        return { top: 0, behavior: 'instant' };
+        return { top: 0, behavior: 'smooth' };
     }
 });
 
