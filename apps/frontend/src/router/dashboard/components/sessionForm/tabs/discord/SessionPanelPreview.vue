@@ -116,7 +116,7 @@
                             <div class="flex flex-col gap-px flex-wrap grow">
                                 <!-- Start Date -->
                                 <span class="flex items-center gap-1 w-full">
-                                    <img src="@/assets/botEmojis/clock.png" class="size-4.75" />
+                                    <img src="/assets/botEmojis/clock.png" class="size-4.75" />
                                     <p class="font-bold"> Starts at: </p>
                                 </span>
                                 <span
@@ -124,7 +124,7 @@
                                     class="discord-preview *:mt-1.5! *:pt-0!" />
                                 <!-- End Date -->
                                 <span v-if="endInZone" class="flex items-center gap-1 w-full">
-                                    <img src="@/assets/botEmojis/clock.png" class="size-4.75" />
+                                    <img src="/assets/botEmojis/clock.png" class="size-4.75" />
                                     <p class="font-bold"> Ends at: </p>
                                 </span>
                                 <span v-if="endInZone"
@@ -132,10 +132,10 @@
                                     class="discord-preview *:mt-1.5! *:pt-0!" />
                             </div>
                             <!-- Section Button -->
-                            <div class="flex w-fit h-full">
+                            <div class="flex w-fit min-w-fit! h-full">
                                 <Button v-if="guildCalendarButton" unstyled title="Add to Calendar"
                                     class="button-base px-3.25 py-1.25 rounded-lf border bg-text-1/5 border-ring-soft/30">
-                                    <img src="@/assets/botEmojis/calendar.png"
+                                    <img src="/assets/botEmojis/calendar.png"
                                         class="size-4.75 inline opacity-80 aspect-square" />
                                 </Button>
                             </div>
@@ -161,10 +161,10 @@
                                         class="discord-preview *:mt-0! *:pt-0! mt-1" />
                                 </div>
                                 <!-- RSVP Button -->
-                                <div class="flex w-fit h-full">
+                                <div class="flex w-fit min-w-fit! h-full">
                                     <Button unstyled title="RSVP"
                                         class="button-base px-3.25 py-1.25 rounded-lf border bg-text-1/5 border-ring-soft/30">
-                                        <img src="@/assets/botEmojis/user-success.png"
+                                        <img src="/assets/botEmojis/user-success.png"
                                             class="size-4.75 inline opacity-80 aspect-square" />
                                     </Button>
                                 </div>
@@ -178,7 +178,7 @@
                             <!-- Location -->
                             <Button v-if="s?.url" unstyled title="Location"
                                 class="button-base gap-1 px-2.5 py-1 rounded-lf border bg-text-1/5 border-ring-soft/30">
-                                <img src="@/assets/botEmojis/link.png"
+                                <img src="/assets/botEmojis/link.png"
                                     class="size-4.75 inline opacity-80 aspect-square" />
                                 <p class="font-semibold">
                                     Location
@@ -187,7 +187,7 @@
                             <!-- View Online -->
                             <Button v-if="guildPublicSessions" unstyled title="View Online"
                                 class="button-base gap-1 px-2.5 py-1 rounded-lf border bg-text-1/5 border-ring-soft/30">
-                                <img src="@/assets/botEmojis/eye.png"
+                                <img src="/assets/botEmojis/eye.png"
                                     class="size-4.75 inline opacity-80 aspect-square" />
                                 <p class="font-semibold">
                                     View Online
@@ -217,7 +217,7 @@
                         <span v-if="s?.mention_roles?.length"
                             class="w-full text-[13px] flex gap-1 flex-wrap text-xs/tight">
                             <span class="inline-flex flex-row items-center">
-                                <img src="@/assets/botEmojis/bell.png" class="rounded size-4" />
+                                <img src="/assets/botEmojis/bell.png" class="rounded size-4" />
                                 <p> : </p>
                             </span>
 

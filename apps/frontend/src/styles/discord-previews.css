@@ -65,7 +65,7 @@
 
     .d-mention,
     .d-slash {
-        @apply bg-link/50 hover:bg-link/65 px-0.75 py-0.25 rounded text-sm font-bold break-all cursor-pointer;
+        @apply bg-link/50 hover:bg-link/65 px-0.75 py-0.25 my-px rounded text-sm font-bold break-all cursor-pointer;
     }
 
     .d-timestamp {
