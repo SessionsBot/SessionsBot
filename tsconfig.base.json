@@ -6,6 +6,7 @@
         "target": "ES2022",
         "skipLibCheck": true,
         "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "moduleResolution": "bundler",
         "sourceMap": true,

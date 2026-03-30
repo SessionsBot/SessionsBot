@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import type { Database } from "../../types";
 
 // Env Safe - RRule Package Imports:
 import * as rrule from "rrule";
@@ -13,8 +12,6 @@ const resolved: RRuleExports = !!(rrule as any)?.default
     ? (rrule as any)?.default // Backend / Node / tsx
     : (rrule as any); // Frontend / Vite / ESM
 export const { RRule, rrulestr, datetime } = resolved;
-
-
 
 /** "Re-Maps" RSVP slot(s) `JSON` from database to a `typed array`.  */
 export function mapRsvps(rsvpJSON: any) {

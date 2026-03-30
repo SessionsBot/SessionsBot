@@ -1,3 +1,3 @@
-export * from './data/sessionTemplates'
+export * from './sessionTemplates'
 export * from './variableText'
 export * from './migration'
