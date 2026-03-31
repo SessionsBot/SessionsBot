@@ -560,21 +560,23 @@
             // Compute - Next Post UTC:
             const postAfterDT = () => {
                 // Editing - Post from last post date (if any) OR Now UTC:
-                if (formAction.value == 'edit') {
+                if (formAction.value != 'new') {
                     const lastPostISO = dashboard.sessionForm.editPayload?.last_post_utc
                     if (lastPostISO) {
                         return DateTime.fromISO(lastPostISO, { zone: 'utc' })
                     } else {
-                        // return DateTime.utc()
-                        // use default post from dates if no previous posts
+                        // Default - FROM Today's start of day
+                        const startOfToday = DateTime.utc().setZone(data.timeZone)?.startOf('day')?.toUTC()
+                        if (data.postDay == 'Day before') return startOfToday?.plus({ day: 1 })?.toUTC()
+                        else return startOfToday?.toUTC()
                     }
-                }
-
-                // New - Post From Start OF DAY of Session Start -- MINUS 1 day if "day before" post
-                if (data.postDay == 'Day before') {
-                    return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
                 } else {
-                    return startInZone?.startOf('day')?.toUTC()
+                    // New - Post From Start OF DAY of Session Start -- MINUS 1 day if "day before" post
+                    if (data.postDay == 'Day before') {
+                        return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
+                    } else {
+                        return startInZone?.startOf('day')?.toUTC()
+                    }
                 }
             }
 
@@ -594,14 +596,14 @@
 
             // If Debug Submission - Return Logs:
             if (debugSubmit) {
-                console.info({
+                console.info('Session Form Data', {
                     rrule: newRRule,
                     ruleString: newRRule?.toString(),
                     durationMs: getDurationMs(),
                     postOffsetMs: postOffsetMs,
                     rsvps: data.rsvps
                 })
-                console.log({
+                console.log('Session Form Dates', {
                     firstStart: {
                         utc: startInZone.toUTC().toFormat('F'),
                         local: startInZone.toFormat('F'),

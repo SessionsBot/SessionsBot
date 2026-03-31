@@ -114,7 +114,7 @@ export function getSchedulesNextPostUTC(opts: {
         const secondStartDT = rruleDateToLuxon(secondStartJS, timeZone)
         const secondPostDT = secondStartDT?.minus({ millisecond: opts.postOffsetMs })
         if (secondPostDT < afterDate) {
-            console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'))
+            console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'), { originalOptions: opts })
             return null;
         } else {
             return secondPostDT?.toUTC()
