@@ -1,7 +1,6 @@
 import { ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import core from "../core/core";
 import { URLS } from "../core/urls";
-import { DateTime } from "luxon";
 import { useLogger } from "../logs/logtail";
 import sendWithFallback from "../bot/messages/sendWithFallback";
 import { MigratingTemplates_DeletionDate } from "@sessionsbot/shared";

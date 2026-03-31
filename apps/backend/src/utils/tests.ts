@@ -2,6 +2,8 @@ import core from "./core/core.js";
 import { useLogger } from "./logs/logtail.js";
 import { ENVIRONMENT_TYPE } from "./environment.js";
 import { clearMigrationTests, runMigrator } from "./migration/migrator.js";
+import { sendUpgradeAlert } from "./migration/alerts.js";
+import { Client, Guild, OAuth2Guild } from "discord.js";
 
 const createLog = useLogger();
 const guildId = process.env["GUILD_ID_DEVELOPMENT"];
@@ -22,15 +24,39 @@ export default {
 
                 // await clearMigrationTests()
 
-                // const result = await runMigrator()
+                // console.log(JSON.stringify(
+                //     await runMigrator(), null, 2
+                // ))
 
-                // console.info('Migrator Results: \n', result)
+                // Load Production Bot Guilds:
+                const prodClient = new Client({ intents: 'Guilds' })
+                prodClient.login(process.env?.['DISCORD_BOT_TOKEN'])
+
+                // Fetch ALL Guild from PROD Client:
+                prodClient.once('clientReady', async (c) => {
+                    let allGuilds: (Guild | OAuth2Guild)[] = [] // new Map<string, Guild | OAuth2Guild>()
+                    let cursor = undefined;
+                    let iteration = 0
+                    while (true) {
+                        iteration++
+                        const fetch = await c.guilds.fetch({ limit: 200, after: cursor })
+                        allGuilds.push(...fetch.values())
+                        if (iteration >= 10) break
+                        if ((fetch?.size ?? 0) > 200) {
+                            cursor = fetch.lastKey()
+                        } else break
+                    }
+
+                    console.log('Fetched Guilds from PROD Client', allGuilds?.flatMap(g => g?.id))
+
+                })
+
 
                 // End testing..
                 console.info('[i] Development Tests Completed! \n---');
             }
         } catch (e) {
-            console.warn('[!] Failed to run development tests:', e)
+            console.warn('[❗] Failed to run development tests:', e)
         }
     },
 }
