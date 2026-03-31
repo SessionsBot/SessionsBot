@@ -31,6 +31,7 @@ declare module 'vue' {
     DiscordIcon: typeof import('./../components/icons/DiscordIcon.vue')['default']
     DiscordIconOutlined: typeof import('./../components/icons/DiscordIconOutlined.vue')['default']
     Form: typeof import('@primevue/forms/form')['default']
+    GalaxyBackground: typeof import('./../components/GalaxyBackground.vue')['default']
     HelpIconButton: typeof import('./../components/inputLabel/HelpIconButton.vue')['default']
     Iconify: typeof import('./../components/icons/Iconify.vue')['default']
     InputLabel: typeof import('./../components/inputLabel/inputLabel.vue')['default']
