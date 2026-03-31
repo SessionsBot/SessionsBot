@@ -69,6 +69,7 @@
         {
             label: 'Edit Schedule',
             icon: 'mdi:pencil',
+            disabled: (templateData.value == null),
             fn: () => {
                 dashboard.sessionForm.startEdit(templateData.value as any)
             }
