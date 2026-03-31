@@ -1,5 +1,5 @@
 import { Entitlement, Events } from "discord.js";
-import discordLog from "../../utils/logs/discord.js";
+import { sendDiscordLog } from "../../utils/logs/discord.js";
 import { useLogger } from "../../utils/logs/logtail.js";
 import { updateEntitlementToDatabase } from "../../utils/bot/entitlements.js";
 
@@ -15,7 +15,7 @@ export default {
             newSku,
             oldSku
         })
-        discordLog.events.entitlementCreated(newSku);
+        sendDiscordLog.events.entitlementCreated(newSku);
 
         // Add/Update Entitlement to DB:
         await updateEntitlementToDatabase(newSku)

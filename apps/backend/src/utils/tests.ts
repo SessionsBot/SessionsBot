@@ -4,6 +4,7 @@ import { ENVIRONMENT_TYPE } from "./environment.js";
 import { clearMigrationTests, runMigrator } from "./migration/migrator.js";
 import { sendUpgradeAlert } from "./migration/alerts.js";
 import { Client, Guild, OAuth2Guild } from "discord.js";
+import discordLogs, { sendDiscordLog } from "./logs/discord.js";
 
 const createLog = useLogger();
 const guildId = process.env["GUILD_ID_DEVELOPMENT"];
@@ -29,27 +30,27 @@ export default {
                 // ))
 
                 // Load Production Bot Guilds:
-                const prodClient = new Client({ intents: 'Guilds' })
-                prodClient.login(process.env?.['DISCORD_BOT_TOKEN'])
+                // const prodClient = new Client({ intents: 'Guilds' })
+                // prodClient.login(process.env?.['DISCORD_BOT_TOKEN'])
 
-                // Fetch ALL Guild from PROD Client:
-                prodClient.once('clientReady', async (c) => {
-                    let allGuilds: (Guild | OAuth2Guild)[] = [] // new Map<string, Guild | OAuth2Guild>()
-                    let cursor = undefined;
-                    let iteration = 0
-                    while (true) {
-                        iteration++
-                        const fetch = await c.guilds.fetch({ limit: 200, after: cursor })
-                        allGuilds.push(...fetch.values())
-                        if (iteration >= 10) break
-                        if ((fetch?.size ?? 0) > 200) {
-                            cursor = fetch.lastKey()
-                        } else break
-                    }
+                // // Fetch ALL Guild from PROD Client:
+                // prodClient.once('clientReady', async (c) => {
+                //     let allGuilds: (Guild | OAuth2Guild)[] = [] // new Map<string, Guild | OAuth2Guild>()
+                //     let cursor = undefined;
+                //     let iteration = 0
+                //     while (true) {
+                //         iteration++
+                //         const fetch = await c.guilds.fetch({ limit: 200, after: cursor })
+                //         allGuilds.push(...fetch.values())
+                //         if (iteration >= 10) break
+                //         if ((fetch?.size ?? 0) > 200) {
+                //             cursor = fetch.lastKey()
+                //         } else break
+                //     }
 
-                    console.log('Fetched Guilds from PROD Client', allGuilds?.flatMap(g => g?.id))
+                //     console.log('Fetched Guilds from PROD Client', allGuilds?.flatMap(g => g?.id))
 
-                })
+                // })
 
 
                 // End testing..

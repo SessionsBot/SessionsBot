@@ -1,6 +1,6 @@
 import { EventData, Events, Guild } from "discord.js";
 import dbManager from "../utils/database/manager";
-import discordLog from "../utils/logs/discord.js";
+import { sendDiscordLog } from "../utils/logs/discord.js";
 import { useLogger } from "../utils/logs/logtail.js";
 
 const createLog = useLogger();
@@ -18,7 +18,7 @@ export default <EventData>{
             return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { guildId: guild?.id, result })
         } else {
             // Log removing guild - Discord:
-            discordLog.events.guildRemoved(guild, (result.data.templateCount ?? null))
+            sendDiscordLog.events.guildRemoved(guild, (result.data.templateCount ?? null))
         }
     }
 }

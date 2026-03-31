@@ -17,7 +17,10 @@ const logChannels = {
     entitlement_updates: ENVIRONMENT_TYPE == 'production'
         ? '1425618618539835432'
         : '1462313734847598747',
-};
+    deletion_requests: ENVIRONMENT_TYPE == 'production'
+        ? '1488653943310520351'
+        : '1488657665608388719',
+} as const;
 
 
 const defaultGuildIcon = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/198142ac-f410-423a-bf0b-34c9cb5d9609/dbtif5j-60306864-d6b7-44b6-a9ff-65e8adcfb911.png/v1/fit/w_128,h_128,q_70,strp/discord_metro_icon_by_destuert_dbtif5j-375w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NTEyIiwicGF0aCI6Ii9mLzE5ODE0MmFjLWY0MTAtNDIzYS1iZjBiLTM0YzljYjVkOTYwOS9kYnRpZjVqLTYwMzA2ODY0LWQ2YjctNDRiNi1hOWZmLTY1ZThhZGNmYjkxMS5wbmciLCJ3aWR0aCI6Ijw9NTEyIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.1Fi0jR0YCIK_seYmEuy6R_LyBrJM4K6HOPXAtsf-3yQ';
@@ -47,11 +50,11 @@ const entitlementCooldowns = useEntitlementLogCooldowns()
 
 
 // Util - Send Log Message to Log Channel:
-async function sendLogMessage(msg: ContainerBuilder, channel: string) {
+async function sendLogMessage(msg: ContainerBuilder, channel: typeof logChannels[keyof typeof logChannels]) {
     try {
         // Fetch Log Channel
-        const logGuild = await core.botClient.guilds.fetch(logGuildId);
-        if (!logGuild) throw `Failed to fetch guild for logging event`
+        const logGuild = (core.botClient.guilds.cache.get(logGuildId) || await core.botClient.guilds.fetch(logGuildId));
+        if (!logGuild) throw `Failed to fetch guild for logging event!`
         const logChannel = await logGuild.channels.fetch(channel)
         if (!logChannel || !logChannel.isSendable()) throw `Failed to fetch channel for logging event`
 
@@ -69,7 +72,7 @@ async function sendLogMessage(msg: ContainerBuilder, channel: string) {
 
 
 /** Logging methods to internal Discord Server! */
-export default {
+export const sendDiscordLog = {
 
     /** Log a specific event occurrence to logs. */
     events: {
@@ -274,6 +277,36 @@ export default {
             }
         },
 
+
+        //** A new data deletion request has been made. */
+        deletionRequestCreated: async (id: number | string, targetUser: boolean, targetGuild: boolean) => {
+            try {
+                // Build Message:
+                const msg = new ContainerBuilder({
+                    accent_color: core.colors.getOxColor('error'),
+                    components: <any>[
+                        new TextDisplayBuilder({ content: `## ${core.emojis.string('list')} Data Deletion Request` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `### Request Number: \n> \`${id}\`` }),
+                        new TextDisplayBuilder({ content: `### Targeting User: \n> \`${targetUser}\`` }),
+                        new TextDisplayBuilder({ content: `### Targeting Guild: \n> \`${targetGuild}\`` }),
+                        new TextDisplayBuilder({ content: `### Created at: \n> <t:${DateTime.utc().toUnixInteger()}:f>` }),
+                        new SeparatorBuilder(),
+                        new TextDisplayBuilder({ content: `-# @here` })
+                    ]
+                })
+                // Send Message:
+                const result = await sendLogMessage(msg, logChannels.deletion_requests)
+                if (!result.success) throw result;
+
+            } catch (err) { // Error Occurred
+                createLog.for('Bot').warn(`Failed to post event "Deletion Request Created" to internal Discord Log.`, { err, deletionReq: id })
+            }
+
+        }
+
     }
 
 }
+
+export default sendDiscordLog;

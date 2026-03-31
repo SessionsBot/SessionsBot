@@ -7,6 +7,7 @@ import { APIResponse as reply } from '../utils/responseClass';
 import { HttpStatusCode } from 'axios';
 import z from 'zod';
 import { supabase } from 'apps/backend/src/utils/database/supabase';
+import sendDiscordLog from 'apps/backend/src/utils/logs/discord';
 
 const dataDeletionRouter = express.Router({ mergeParams: true })
 
@@ -45,6 +46,9 @@ dataDeletionRouter.post('/request', verifyToken, async (req, res) => {
                 .maybeSingle()
 
             if (error) throw error
+
+            // Send Discord Internal Alert:
+            sendDiscordLog.events.deletionRequestCreated(data?.id, validatedBody.data.deleteUserData, validatedBody.data.deleteGuildData)
 
             // Send Successful Response:
             return new reply(res).success({

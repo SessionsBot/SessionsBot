@@ -2,7 +2,7 @@ import { ButtonStyle, ComponentType, ContainerBuilder, EventData, Events, Guild,
 import { useLogger } from "../utils/logs/logtail";
 import core from "../utils/core/core";
 import sendWithFallback from "../utils/bot/messages/sendWithFallback";
-import discordLog from "../utils/logs/discord";
+import { sendDiscordLog } from "../utils/logs/discord";
 import dbManager from "../utils/database/manager";
 import { createAuditLog } from "../utils/database/auditLog";
 import { defaultFooterText } from "../utils/bot/messages/basic";
@@ -19,7 +19,7 @@ export default <EventData>{
     async execute(guild: Guild) {
         // Log new guild added:
         createLog.for('Guilds').info(`➕ GUILD ADDED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
-        discordLog.events.guildAdded(guild);
+        sendDiscordLog.events.guildAdded(guild);
 
         // Add Guild to database:
         const result = await dbManager.guilds.add(guild);
