@@ -127,7 +127,7 @@
                             :classes="{ icon: 'p-px' }" />
                         <!-- Sign Out -->
                         <NavButton title="Sign Out" v-if="auth.signedIn" icon="line-md:logout"
-                            :action="() => { auth.signOut() $router.push('/') }"
+                            :action="() => { auth.signOut(); $router.push('/') }"
                             :classes="{ root: 'bg-text-1/9! hover:bg-invalid-1/17!' }" />
 
                         <!-- Bot Admin -->
@@ -164,6 +164,15 @@
                     <p class="nav-footer-link" @click="closeNav();"
                         :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">
                         Terms and Conditions
+                    </p>
+                </RouterLink>
+
+                <!-- Terms & Conditions -->
+                <RouterLink to="/dev-sign-in"
+                    v-if="!auth.signedIn && !defaultWindow?.location.hostname?.includes('sessionsbot')">
+                    <p class="nav-footer-link" @click="closeNav();"
+                        :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">
+                        Developer Sign In
                     </p>
                 </RouterLink>
 

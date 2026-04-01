@@ -297,7 +297,7 @@ export const watchAuth = async () => {
 
         // Reset Identity
         if (!session) {
-            store.identity = undefined
+            store.identity = undefined;
         }
 
         // Debug:
@@ -317,7 +317,7 @@ export const watchAuth = async () => {
                     header: 'Failed to load Account!',
                     icon: 'mdi:user',
                     duration: false,
-                    content: `It appears we're having trouble initiating our account system.. please refresh this page and try again, or else get in contact with our Support Team!`
+                    content: `It appears we're having trouble initiating our account system... Please refresh this page and try again, or else get in contact with our Support Team!`
                 })
             }
         }, 10_000);

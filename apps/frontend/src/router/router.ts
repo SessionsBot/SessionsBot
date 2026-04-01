@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/auth";
 import Pricing from "./pricing/pricing.vue";
 import TestPage from "./test/TestPage.vue";
 import Sessions from "./sessions/Sessions.vue";
+import DevSignIn from "./account/devSignIn.vue";
 
 // ALL Page Routes:
 const routes: RouterOptions['routes'] = [
@@ -86,6 +87,16 @@ const routes: RouterOptions['routes'] = [
         component: TestPage,
         beforeEnter() {
             if (import.meta.env.PROD) { router.replace('/') }
+        }
+    },
+    // Dev - Login:
+    {
+        path: '/dev-sign-in',
+        name: 'Developer Sign In',
+        alias: ['/dev-signin'],
+        component: DevSignIn,
+        beforeEnter() {
+            if (import.meta.env.PROD && window.location.host == 'sessionsbot.fyi') { router.replace('/') }
         }
     },
 

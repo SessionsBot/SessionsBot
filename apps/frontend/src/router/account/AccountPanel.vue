@@ -23,12 +23,15 @@
     const userAppRoles = computed(() => auth.user?.app_metadata.roles)
 
     // Fn - Copy Access Token:
-    function copyAccessToken() {
+    function copyToken(type: 'access' | 'refresh') {
+        const token = type == 'access'
+            ? String(auth?.session?.access_token)
+            : String(auth?.session?.refresh_token);
         if (clipboard.isSupported) {
-            clipboard.copy(String(auth.session?.access_token))
-            alert('Copied access token to Clipboard!')
+            clipboard.copy(token)
+            alert(`✅ - Refresh Token COPIED to Clipboard! \n\n-- ${type?.toUpperCase()} TOKEN: \n${token}`)
         } else {
-            alert('Clipboard is NOT supported!' + `\nTOKEN: \n${auth.session?.access_token}`)
+            alert(`❌ - Clipboard is NOT supported! \n\n-- ${type?.toUpperCase()} TOKEN: \n${token}`)
         }
     }
 
@@ -168,7 +171,7 @@
             </Button>
 
             <!-- Sign Out -->
-            <Button @click="{ auth.signOut(); $router.push('/') }" unstyled
+            <Button @click="() => { auth.signOut(); $router.push('/') }" unstyled
                 class="bg-[#B34248]/80 hover:bg-[#99393D]/80 active:bg-[#802F33]/80 action-button">
                 <Iconify icon="line-md:logout" size="20" />
                 <p class="font-semibold text-sm sm:text-[16px]"> Sign Out </p>
@@ -204,8 +207,11 @@
             <span v-if="userAppRoles?.includes('admin')"
                 class="flex justify-evenly flex-wrap gap-4 p-2 border-t-2 border-ring-soft">
 
-                <a @click="copyAccessToken" class="hover:underline cursor-pointer font-medium ">
+                <a @click="copyToken('access')" class="hover:underline cursor-pointer font-medium ">
                     Copy Access Token
+                </a>
+                <a @click="copyToken('refresh')" class="hover:underline cursor-pointer font-medium ">
+                    Copy Refresh Token
                 </a>
                 <a @click="console.log({ session: auth.session, user: auth.user })"
                     class="hover:underline cursor-pointer font-medium">
