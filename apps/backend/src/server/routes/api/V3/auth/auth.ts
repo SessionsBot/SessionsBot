@@ -28,7 +28,7 @@ const authRouter = express.Router({ mergeParams: true });
 // Sign In Endpoint - REDIRECT - Initial Sign In w/ Discord:
 authRouter.get("/discord-sign-in", async (req, res) => {
     // Redirect user to Discord oAuth:
-    return res.redirect('https://discord.com/oauth2/authorize?client_id=1380300328179732500&response_type=code&redirect_uri=https%3A%2F%2Fapi.sessionsbot.fyi%2Fauth%2Fdiscord-callback&scope=identify+guilds+email');
+    return res.redirect('https://discord.com/oauth2/authorize?client_id=1137768181604302848&response_type=code&redirect_uri=https%3A%2F%2Fapi.sessionsbot.fyi%2Fauth%2Fdiscord-callback&scope=identify+guilds+email');
 });
 
 
