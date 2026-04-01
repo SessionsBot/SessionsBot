@@ -38,6 +38,7 @@ async function fetchAllGuilds() {
 
         // Alert of any guilds missing db rows:
         const { data: getData, count: getCount, error: getErr } = await supabase.from('guilds').select('id', { count: 'exact' })
+            .neq('id', "GLOBAL")
         if (getErr) {
             console.error(`(!) Failed to get current db guild ids for comparison db sync:`, getErr)
         } else {
