@@ -10,8 +10,7 @@ import { fetchUserDiscordData, updateAuthUser } from "./authUtils.js";
 import { URLS } from "apps/backend/src/utils/core/urls.js";
 import { ENVIRONMENT_TYPE } from "apps/backend/src/utils/environment.js";
 
-// ! BEFORE PRODUCTION:
-// - Switch over development tokens/keys/vars/etc.
+
 const CLIENT_ID = ENVIRONMENT_TYPE == 'production'
     ? process.env?.['DISCORD_CLIENT_ID']
     : process.env?.["DEV_CLIENT_ID"];
@@ -74,7 +73,6 @@ authRouter.get("/discord-callback", async (req, res) => {
             type: "magiclink",
             email: user.email,
             options: {
-                // ! BEFORE PRODUCTION - SWITCH TO FRONTEND URL:
                 redirectTo: ENVIRONMENT_TYPE == 'production'
                     ? URLS.website
                     : "http://localhost:5173/",

@@ -2,11 +2,10 @@ import type { BaseInteraction } from 'discord.js'
 
 export type SubscriptionPlanName = 'FREE' | 'PREMIUM' | 'ENTERPRISE';
 
-/** Subscription Plan SKU Ids indexed by name. 
- * @note **CHANGE BEFORE PRODUCTION** - CURRENTLY DEV SKUs */
+/** Subscription Plan SKU Ids indexed by name. */
 export const SubscriptionSKUs = {
-    PREMIUM: "1459624525925974088",
-    ENTERPRISE: "1459624678426546310"
+    PREMIUM: "1447675743910887425",
+    ENTERPRISE: "1458699450922041536"
 } as const;
 
 /** According plan limits/restrictions by bot subscription level. */

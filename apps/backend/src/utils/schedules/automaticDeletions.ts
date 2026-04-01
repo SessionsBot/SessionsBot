@@ -20,7 +20,7 @@ let autoDataDeletionCron: ScheduledTask = undefined;
  * @Performs Automatic data deletions across the database respecting guilds subscription plans and data retention allowances.
  * @Runs Everyday at 10:30 PM
 */
-export async function initializeDataDeletionSchedule(runImmediately: boolean) {
+export async function initializeDataDeletionSchedule(runImmediately?: boolean) {
     // Start & Assign Automatic Deletion Cron Schedule:
     const sch = cron.schedule('30 22 * * *', async () => {
         try {

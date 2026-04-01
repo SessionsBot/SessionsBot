@@ -1,4 +1,4 @@
-import { Events, ActivityType, Client, EventData } from "discord.js";
+import { ActivityType, Client, EventData } from "discord.js";
 import core from "../utils/core/core.js";
 import { useLogger } from "../utils/logs/logtail.js";
 import tests from "../utils/tests.js";
@@ -6,7 +6,6 @@ import fetchEmojis from "../utils/bot/fetchEmojis.js";
 import fetchSKUs from "../utils/bot/fetchSKUs.js";
 import fetchCommands from "../utils/bot/fetchCommands.js";
 import { initializeDataDeletionSchedule } from "../utils/schedules/automaticDeletions.js";
-import { DateTime } from "luxon";
 import { initializeTemplateCreationScheduler } from "../utils/schedules/templateCreations.js";
 import { initializeEntitlementsSyncSchedule } from "../utils/schedules/syncEntitlements.js";
 
@@ -39,7 +38,7 @@ export default <EventData>{
 			// Initialize Auto-Session/Schedule Creation(s) Schedule:
 			await initializeTemplateCreationScheduler()
 			// Initialize Auto-Deletion Schedule:
-			initializeDataDeletionSchedule()
+			await initializeDataDeletionSchedule()
 			// Initialize Auto Entitlement(s) Database Synchronization:
 			initializeEntitlementsSyncSchedule()
 		}, 1_500);
