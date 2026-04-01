@@ -156,6 +156,8 @@ export async function initializeSentry(app: App) {
         app,
         dsn: "https://DX4e7boeLWD2emwP1hYmFko7@s2166264.eu-fsn-3.betterstackdata.com/777",
         tracesSampleRate: 1.0,
+        replaysOnErrorSampleRate: 1.0,
+        replaysSessionSampleRate: 0.1,
         integrations: [
             Sentry.captureConsoleIntegration({
                 levels: ['warn', 'error'],
