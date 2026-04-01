@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APISelectMenuOption, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, LabelBuilder, MessageFlags, ModalBuilder, ModalSubmitInteraction, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, StringSelectMenuBuilder, TextDisplayBuilder, TextInputModalData, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, InteractionContextType, LabelBuilder, MessageFlags, ModalBuilder, ModalSubmitInteraction, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, StringSelectMenuBuilder, TextDisplayBuilder, TextInputModalData, TextInputStyle } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
@@ -16,6 +16,7 @@ export default <CommandData>{
         .setName('cancel')
         .setDescription('Cancel an active session that has already been posted.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .setContexts(InteractionContextType.Guild)
     ,
     // Command Cooldown:
     cooldown: 10,

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, LabelBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, StringSelectMenuBuilder, StringSelectMenuInteraction, TextDisplayBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, CommandData, CommandInteraction, ComponentType, ContainerBuilder, InteractionContextType, LabelBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, SeparatorBuilder, SlashCommandBuilder, SlashCommandStringOption, StringSelectMenuBuilder, StringSelectMenuInteraction, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import core from "../../utils/core/core";
@@ -17,6 +17,7 @@ export default <CommandData>{
         .setName('update')
         .setDescription('Update/refresh a recently posted Session Panel.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .setContexts(InteractionContextType.Guild)
     ,
     // Command Cooldown:
     cooldown: 10,

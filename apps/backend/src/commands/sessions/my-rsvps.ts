@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, CommandData, CommandInteraction, ComponentType, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, CommandData, CommandInteraction, ComponentType, ContainerBuilder, InteractionContextType, MessageFlags, SectionBuilder, SeparatorBuilder, SlashCommandBuilder, TextDisplayBuilder } from "discord.js";
 import { supabase } from "../../utils/database/supabase";
 import { DateTime } from "luxon";
 import { Database, getSubscriptionFromInteraction, Result, SubscriptionLevel, SubscriptionSKUs } from "@sessionsbot/shared";
@@ -11,6 +11,7 @@ export default <CommandData>{
     data: new SlashCommandBuilder()
         .setName('my-rsvps')
         .setDescription('View your current RSVP assignments for any upcoming sessions.')
+        .setContexts(InteractionContextType.Guild)
     ,
     cooldown: 7,
     // Command Execution:

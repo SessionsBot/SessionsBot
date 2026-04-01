@@ -82,7 +82,7 @@ export default {
 
         } catch (err) {
             // Check for Bot Permission Error:
-            if (isBotPermissionError(err)) {
+            if (i?.guildId && isBotPermissionError(err)) {
                 createLog.for('Permissions').warn(`The /support command failed during an interaction - due to permissions`, { userId: i?.user?.id, interactionId: i?.id, guildId: i?.guildId })
                 return sendPermissionAlert(i.guildId)
             }
@@ -90,7 +90,7 @@ export default {
             createLog.for('Bot').warn(`The /support command failed during an interaction...`, {
                 interaction: {
                     userId: i.user.id,
-                    guildId: i.guildId,
+                    guildId: i?.guildId,
                     interactionId: i.id
                 }, err
             });
