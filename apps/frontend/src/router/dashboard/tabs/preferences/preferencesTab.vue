@@ -231,7 +231,7 @@
                 <SubscriptionPlan />
 
                 <!-- Change Plan - Dev Buttons -->
-                <span
+                <span v-if="auth.user?.app_metadata?.roles?.includes('admin')"
                     class="w-fit m-2 p-2 rounded-md bg-bg-2 border border-text-soft flex flex-wrap items-center gap-2">
                     <p class="text-xs font-bold w-full opacity-50">
                         DEV ONLY - Control Subscription Level:
