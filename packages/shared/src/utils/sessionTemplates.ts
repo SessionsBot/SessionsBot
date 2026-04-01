@@ -87,7 +87,12 @@ export function getSchedulesNextPostUTC(opts: {
 
     // Before First Start - Return FIRST Post:
     if (opts.startsAtUtc > DateTime.now()) {
-        return firstPostDate
+        if (firstPostDate > afterDate) {
+            return firstPostDate
+        } else {
+            return null
+        }
+
     }
 
     // No Recurrence - Return First (and last) POST Date:
