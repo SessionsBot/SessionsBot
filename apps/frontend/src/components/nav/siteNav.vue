@@ -169,7 +169,7 @@
 
                 <!-- Terms & Conditions -->
                 <RouterLink to="/dev-sign-in"
-                    v-if="!auth.signedIn && !defaultWindow?.location.hostname?.includes('sessionsbot')">
+                    v-if="!auth.signedIn && !(defaultWindow?.location.hostname == 'sessionsbot.fyi')">
                     <p class="nav-footer-link" @click="closeNav();"
                         :class="{ 'text-indigo-300': $route.matched[0]?.name == 'Terms' }">
                         Developer Sign In

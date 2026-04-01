@@ -86,7 +86,7 @@ const routes: RouterOptions['routes'] = [
         alias: ['/tests', '/testing', '/t'],
         component: TestPage,
         beforeEnter() {
-            if (import.meta.env.PROD) { router.replace('/') }
+            if (window.location.hostname == 'sessionsbot.fyi') { router.replace('/') }
         }
     },
     // Dev - Login:
@@ -96,7 +96,7 @@ const routes: RouterOptions['routes'] = [
         alias: ['/dev-signin'],
         component: DevSignIn,
         beforeEnter() {
-            if (import.meta.env.PROD && window.location.host == 'sessionsbot.fyi') { router.replace('/') }
+            if (window.location.hostname == 'sessionsbot.fyi') { router.replace('/') }
         }
     },
 
