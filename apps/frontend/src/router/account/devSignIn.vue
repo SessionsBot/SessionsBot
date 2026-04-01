@@ -19,7 +19,7 @@
         const refreshToken = refreshVal.value
 
         // Missing Token:
-        if (!accessToken?.length || refreshToken?.length) notifier.send({
+        if (!accessToken?.length || !refreshToken?.length) notifier.send({
             level: 'error',
             actions: false,
             header: 'Missing Token(s)!',
