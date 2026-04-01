@@ -75,7 +75,7 @@ export const useRealtimeUpdates = () => {
                             guildTemplates?.unshift(newRow as any)
                         } else if (eventType == 'UPDATE') {
                             const index = guildTemplates?.findIndex(t => t?.id == newRow?.id)
-                            if (index != undefined && index !== -1 && guildTemplates) {
+                            if (index != undefined && index !== -1) {
                                 guildTemplates[index] = newRow as any;
                             } else console.warn('[Realtime]: Failed to update guild templates', { newRow, index })
                         } else if (eventType == 'DELETE') {
@@ -102,7 +102,7 @@ export const useRealtimeUpdates = () => {
                             guildSessions?.unshift(newRow as any)
                         } else if (eventType == 'UPDATE') {
                             const index = guildSessions?.findIndex(s => s?.id == newRow?.id)
-                            if (index != undefined && index !== -1 && guildSessions) {
+                            if (index != undefined && index !== -1) {
                                 guildSessions[index] = newRow as any;
                             } else console.warn('[Realtime]: Failed to update guild sessions', { newRow, index })
                         } else if (eventType == 'DELETE') {

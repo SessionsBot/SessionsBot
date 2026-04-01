@@ -11,14 +11,14 @@ const createLog = useLogger();
  */
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Get token from auth headers:
+        // Get token from request auth headers:
         const authToken = req.headers?.authorization?.split(' ')?.[1];
         if (!authToken) return new reply(res).failure('Authorization token was not provided!', HttpStatusCode.Unauthorized)
         // Fetch auth user from token:
         const { data: { user: authUser }, error: fetchUserErr } = await supabase.auth.getUser(authToken);
         // If Auth Errored:
         if (fetchUserErr) {
-            if (fetchUserErr.code == "bad_jwt") return new reply(res).failure('Invalid Auth Token!', HttpStatusCode.Unauthorized);
+            if (fetchUserErr.code == "bad_jwt" || fetchUserErr?.name == "AuthSessionMissing") return new reply(res).failure('Invalid/Expired Auth Token!', HttpStatusCode.Forbidden);
             else {
                 // Log & Return Failure:
                 createLog.for('Api').error('🔑 - Auth Token Verification Failure!', { err: fetchUserErr });
@@ -31,9 +31,9 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
         if (fetchProfileErr) {
             // Log & Return Error:
             createLog.for('Api').error('🔑 - Token Verification - Profile Fetch Error!', { err: fetchProfileErr, uid: authUser?.id });
-            return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
+            return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.InternalServerError);
         }
-        if (!userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.Unauthorized);
+        if (!userProfile) return new reply(res).failure('Failed to fetch user profile during token validation!', HttpStatusCode.InternalServerError);
         // Attach authorized user to req:
         req['auth'] = {
             user: authUser,
