@@ -85,18 +85,8 @@ export function getSchedulesNextPostUTC(opts: {
     const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
     const adjustedSearchFrom = afterDate?.plus({ millisecond: opts.postOffsetMs })
 
-    // Before First Start - Return FIRST Post:
-    if (opts.startsAtUtc > DateTime.now()) {
-        if (firstPostDate > afterDate) {
-            return firstPostDate
-        } else {
-            return null
-        }
-
-    }
-
-    // No Recurrence - Return First (and last) POST Date:
-    if (!opts.RRule) {
+    // No Recurrence OR Before First Start - Return First (and last) POST Date:
+    if (!opts.RRule || opts.startsAtUtc > DateTime.now()) {
         return (firstPostDate >= afterDate) ? firstPostDate : null;
     }
 
