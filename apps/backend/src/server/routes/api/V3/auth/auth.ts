@@ -111,7 +111,7 @@ authRouter.get("/discord-refresh", verifyToken, async (req, res) => {
         const tokenExpDate = DateTime.fromISO(discord_token_expires_at)
         const tokenExpired = tokenExpDate?.diffNow('seconds')?.seconds <= 0;
         // Confirm token hasn't expired:
-        if (!tokenExpDate || tokenExpired) return new reply(res).failure('Discord Token has expired! You will have to sign back into Discord.', HttpStatusCode.Unauthorized)
+        if (!tokenExpDate || tokenExpired) return new reply(res).failure('Discord Token has expired! You will have to sign back into Discord.', HttpStatusCode.Forbidden)
 
         // 3. Exchange refresh token for FRESH tokens:
         const tokenReq = await axios.post(
