@@ -49,7 +49,6 @@ export const useAuthStore = defineStore('auth', {
 
         async signOut() {
             // Services:
-            const router = useRouter()
             const notifier = useNotifier()
             // Clear Store State:
             this.signedIn = false;
@@ -66,9 +65,6 @@ export const useAuthStore = defineStore('auth', {
                     header: 'Failed to Sign Out!',
                     content: `Uh oh! We encountered an error while trying to sign you out, if this persists contact support!`
                 })
-            } else {
-                // Nav Home:
-                router.push('/')
             }
         },
 

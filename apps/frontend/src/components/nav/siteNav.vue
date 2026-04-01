@@ -127,7 +127,8 @@
                             :classes="{ icon: 'p-px' }" />
                         <!-- Sign Out -->
                         <NavButton title="Sign Out" v-if="auth.signedIn" icon="line-md:logout"
-                            :action="() => auth.signOut()" :classes="{ root: 'bg-text-1/9! hover:bg-invalid-1/17!' }" />
+                            :action="() => { auth.signOut() $router.push('/') }"
+                            :classes="{ root: 'bg-text-1/9! hover:bg-invalid-1/17!' }" />
 
                         <!-- Bot Admin -->
                         <NavButton title="BOT ADMIN" icon="eos-icons:admin" to="/bot-admin"

@@ -168,7 +168,7 @@
             </Button>
 
             <!-- Sign Out -->
-            <Button @click="auth.signOut()" unstyled
+            <Button @click="{ auth.signOut(); $router.push('/') }" unstyled
                 class="bg-[#B34248]/80 hover:bg-[#99393D]/80 active:bg-[#802F33]/80 action-button">
                 <Iconify icon="line-md:logout" size="20" />
                 <p class="font-semibold text-sm sm:text-[16px]"> Sign Out </p>
