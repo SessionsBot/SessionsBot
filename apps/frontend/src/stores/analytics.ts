@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import * as Sentry from '@sentry/vue'
-import type { App } from "vue";
 import { supabase } from "@/utils/supabase";
+import type { App } from "vue";
+
 
 /** Util - Await Gtag is ready */
 function waitForGtag(timeout = 2000): Promise<boolean> {
@@ -118,7 +119,7 @@ const useAnalyticsStore = defineStore('analytics', () => {
             const adCookies = allowedCookies.includes('marketing');
             const analyticsCookies = allowedCookies.includes('analytics');
 
-            gtag('consent', 'update', {
+            safeGTag('consent', 'update', {
                 'ad_storage': adCookies ? 'granted' : 'denied',
                 'ad_user_data': adCookies ? 'granted' : 'denied',
                 'ad_personalization': adCookies ? 'granted' : 'denied',
@@ -161,7 +162,11 @@ export async function initializeSentry(app: App) {
             }),
             Sentry.supabaseIntegration({
                 supabaseClient: supabase
-            })
+            }),
+            Sentry.vueIntegration({
+                app
+            }),
+            Sentry.replayIntegration(),
         ],
         release: `@sessionsbot/web-app-v${__APP_VERSION}`,
         environment: envMode,
