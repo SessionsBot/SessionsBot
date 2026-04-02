@@ -50,7 +50,7 @@ const selfIdentity_Cache = new LRUCache<string, API_DiscordSelfIdentity>({
     max: 250, // 250 users
     ttl: (2 * 60 * 1000) // 2 mins
 })
-discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
+discordRouter.get(`/identity/user/@me`, verifyToken, async (req, res) => {
     try {
         const userId = req?.auth?.profile?.discord_id
         if (!userId) return new Reply(res).failure('Invalid Input - Missing "userId" to fetch identity for!', HttpStatusCode.BadRequest);
@@ -72,6 +72,7 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
         if (error) throw error
         if (!data) throw 'Data returned null'
 
+        // Fetch Discord User Data - w/ Discord User Token:
         const userData = await fetchUserDiscordData(data.discord_access_token)
         if (userData instanceof AuthError) {
             // Log & Return Failure:
@@ -124,7 +125,7 @@ discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
                 .eq('id', req?.auth?.profile?.id)
                 .then(({ error: updateERR }) => {
                     // Error Updating Profile:
-                    createLog.for('Api').error(`[SELF IDENTITY]: Failed to update user profile!`, { userId: req?.auth?.profile?.discord_id, error: updateERR })
+                    if (updateERR) createLog.for('Api').error(`[SELF IDENTITY]: Failed to update user profile!`, { userId: req?.auth?.profile?.discord_id, error: updateERR })
                 })
         }
 
