@@ -38,7 +38,7 @@ authRouter.get("/discord-callback", async (req, res) => {
         // 1. Get code/query from callback:
         const { code, error } = req.query;
         // If oAuth failed:
-        if (!code || error) throw new AuthError('oAuth2');
+        if (!code || error) throw new AuthError('oAuth2', { oAuth2_error: error });
 
         // 2. Exchange code for token:
         const tokenReq = await axios.post(
@@ -87,7 +87,10 @@ authRouter.get("/discord-callback", async (req, res) => {
     } catch (err) {
         // Log & Redirect to failed sign in page:
         if (err instanceof AuthError) {
+            // if (err.errorType != 'oAuth2') {
             createLog.for('Auth').error(`Auth FAILED - ${err?.errorType} - See Details!`, { err, timestamp: stringTimestamp() })
+            // }
+
             return res.redirect(URLS.website + `/sign-in?error=${err?.errorType}`);
         } else {
             createLog.for('Auth').error(`Auth FAILED - UNKNOWN ERROR - See Details!`, { err, timestamp: stringTimestamp() })

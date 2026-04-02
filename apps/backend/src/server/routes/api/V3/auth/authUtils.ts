@@ -69,7 +69,7 @@ export async function updateAuthUser(userData: any, guildsData: AppUserGuilds, a
 
         // Search for Existing User:
         const { data: foundProfile, error: fetchErr } = await supabase.from('profiles').select('*').eq("discord_id", userData?.id).maybeSingle();
-        if (fetchErr) throw new AuthError('fetchUser', { fetchErr });
+        if (fetchErr) throw new AuthError('fetchProfile', { fetchErr });
         if (foundProfile) {
             // - Existing User Found - UPDATE:
             // Update User Data - PROFILE:

@@ -1,6 +1,6 @@
 export const AuthErrorTypes = {
     oAuth2: {
-        message: "Discord oAuth2 Failed, code not valid or Discord error present.",
+        message: "Discord oAuth2 Failed, likely not granted from Discord user.",
         status: 401,
     },
     codeExchange: {
@@ -9,6 +9,10 @@ export const AuthErrorTypes = {
     },
     fetchUser: {
         message: "Failed to fetch user data from Discord API.",
+        status: 502,
+    },
+    fetchProfile: {
+        message: "Failed to fetch user data from Supabase API.",
         status: 502,
     },
     missingEmail: {
