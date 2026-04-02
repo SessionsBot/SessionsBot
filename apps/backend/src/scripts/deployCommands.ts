@@ -6,10 +6,10 @@ import { REST, Routes } from "discord.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
-import { ENVIRONMENT_TYPE } from "../environment";
+import { ENVIRONMENT_TYPE } from "../utils/environment";
+
 
 const deployToDevTester = (ENVIRONMENT_TYPE != 'production')
-
 const botToken = !deployToDevTester ? process.env['DISCORD_BOT_TOKEN'] : process.env['DEV_BOT_TOKEN'];
 const clientId = !deployToDevTester ? process.env['DISCORD_CLIENT_ID'] : process.env['DEV_CLIENT_ID'];
 
@@ -18,10 +18,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const commands = [];
-const foldersPath = path.join(__dirname, "../../commands");
+const foldersPath = path.join(__dirname, "../commands");
 const commandFolders = fs.readdirSync(foldersPath, { withFileTypes: true })
     .filter(f => f.isDirectory())
-    .map(f => f.name);
+    .map(f => f.name)
 
 for (const folder of commandFolders) {
     if (folder === "disabled") continue;
@@ -48,6 +48,8 @@ const rest = new REST().setToken(botToken);
 // Deploy commands
 (async () => {
     try {
+        if (deployToDevTester) console.info(`(i) DEPLOYING COMMANDS TO DEVELOPMENT APPLICATION..`)
+
         console.log(`(i) Started refreshing ${commands.length} application (/) commands.`);
 
         const data: any = await rest.put(

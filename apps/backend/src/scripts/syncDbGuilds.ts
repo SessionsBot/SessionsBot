@@ -1,6 +1,6 @@
 import { REST, RESTAPIPartialCurrentUserGuild, RESTGetAPICurrentUserGuildsQuery, RESTGetAPICurrentUserGuildsResult, Routes } from "discord.js";
 import 'dotenv/config'
-import { supabase } from "../database/supabase";
+import { supabase } from "../utils/database/supabase";
 
 const rest = new REST({ version: "10" }).setToken(process.env?.['DISCORD_BOT_TOKEN']!);
 
