@@ -133,11 +133,11 @@
             <span class="ml-2 bg-bg-3 rounded-md p-1 px-1.5 flex flex-center">
                 <span v-if="!auth.signedIn" class="flex-center gap-1">
                     <Iconify icon="mdi:eye-off-outline" size="16" class="opacity-65" />
-                    <p v-if="!auth.signedIn" class="italic text-sm py-1 opacity-55">
+                    <p class="italic text-sm py-1 opacity-55">
                         Sign in to view...
                     </p>
                 </span>
-                <RsvpDetailsList :rsvps="s?.session_rsvp_slots ?? []" />
+                <RsvpDetailsList v-else :rsvps="s?.session_rsvp_slots ?? []" />
             </span>
         </div>
 
