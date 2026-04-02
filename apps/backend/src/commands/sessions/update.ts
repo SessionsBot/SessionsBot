@@ -62,7 +62,7 @@ export default <CommandData>{
         const sessions = await getUpdatableSessions()
 
         // If No Updatable Sessions Found - Send/Return Alert:
-        if (!sessions || !sessions?.length) return await i.reply({
+        if (!sessions || !sessions?.length) return await i.editReply({
             components: [new ContainerBuilder({
                 accent_color: core.colors.getOxColor('blue'),
                 components: <any>[
