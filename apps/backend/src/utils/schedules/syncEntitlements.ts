@@ -10,6 +10,7 @@ import { DateTime } from "luxon";
 const createLog = useLogger('[Entitlements Synchronization]:').for('Schedule');
 const devGuildIds = [
     process.env?.['GUILD_ID_DEVELOPMENT'],
+    process.env?.['GUILD_ID_PUBLIC'],
     '593097033368338435'
 ]
 
@@ -46,11 +47,6 @@ export function initializeEntitlementsSyncSchedule(runImmediately?: true) {
                     }
                     // Util: Entitlement Test/Dev Bool:
                     const isTest = () => (!e.starts_at && !e.ends_at) || (e.type == EntitlementType.TestModePurchase)
-
-                    if (devGuildIds?.includes(e?.guild_id) && !isActive()) {
-                        // Skip True Dev Testing Entitlement(s):
-                        continue
-                    }
 
                     // Save to Database:
                     const { error } = await supabase.from('entitlements').upsert({
