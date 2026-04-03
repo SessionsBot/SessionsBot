@@ -106,6 +106,7 @@ export function getSchedulesNextPostUTC_OLD(opts: {
     if (nextPostDT < afterDate) {
         // Date TOO EARLY - Try Another Recurrence - or Return null:
         const secondStartJS = rule.after(nextStartJS, false)
+        if(!secondStartJS) return null
         const secondStartDT = rruleDateToLuxon(secondStartJS, timeZone)
         const secondPostDT = secondStartDT?.minus({ millisecond: opts.postOffsetMs })
         if (secondPostDT < afterDate) {
@@ -147,7 +148,7 @@ export function getSchedulesNextPostUTC(opts: {
     const timeZone = opts?.timeZone
 
     // Debug:
-    const debugDateResult = (d: DateTime) => ({
+    const debugDateResult = (d: DateTime|null) => ({
         utc: d?.toUTC()?.toISO(),
         zoned: d?.setZone(timeZone)?.toISO() + ' ' + timeZone,
         local: d?.toLocal()?.toISO(),
@@ -173,6 +174,10 @@ export function getSchedulesNextPostUTC(opts: {
 
     // Get Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })
+
+    const postrule = rrulestr(opts.RRule, { forceset: false })
+    const orgDtStart = rruleDateToLuxon(rule.options.dtstart, timeZone)
+    console.info('TEST ME!!')
 
     // Calculate Sessions NEXT START FROM `afterDate`
     const nextStartJS = rule.after(afterDate?.setZone(timeZone)?.toJSDate(), true)
