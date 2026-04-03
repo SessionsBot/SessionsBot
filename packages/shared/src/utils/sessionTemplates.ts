@@ -159,7 +159,7 @@ export function getSchedulesNextPostUTC(opts: {
     }, null, 2))
 
     // Now is Before First Start - Return First POST Date:
-    if (opts.firstStartUtc > DateTime.utc()) {
+    if (opts.firstStartUtc > afterDate) {
         if (debugNextPostResult) console.info(`[Next Post Calculation]: Before FIRST Session Start -> First Post`, debugDateResult(firstPostUtc,))
         return firstPostUtc
     }
