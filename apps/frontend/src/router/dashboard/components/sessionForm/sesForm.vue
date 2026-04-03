@@ -7,7 +7,7 @@
     import DiscordTab from './tabs/discord/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
-    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, rruleDateToLuxon, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -455,6 +455,14 @@
     }
 
 
+    // Debug Date Util:
+    const debugDate = (d: DateTime | null, z: string) => ({
+        utc: d?.toUTC()?.toISO() + ` UTC`,
+        zoned: d?.setZone(z)?.toISO() + ` ${DateTime.now()?.setZone(z)?.offsetNameShort}`,
+        local: d?.toLocal()?.toISO() + ` ${DateTime.now()?.toLocal()?.offsetNameShort}`
+    })
+
+
     /** Form Submission Function */
     const submitState = ref<'idle' | 'loading' | 'failed'>('idle')
     const debugSubmit = true;
@@ -558,33 +566,25 @@
 
 
             // Compute - Next Post UTC:
-            const postAfterDT = () => {
-                // Editing - Post from last post date (if any) OR Now UTC:
-                if (formAction.value != 'new') {
-                    const lastPostISO = dashboard.sessionForm.editPayload?.last_post_utc
-                    if (lastPostISO) {
-                        return DateTime.fromISO(lastPostISO, { zone: 'utc' })
-                    } else {
-                        // Default - FROM Today's start of day
-                        const startOfToday = DateTime.utc().setZone(data.timeZone)?.startOf('day')?.toUTC()
-                        if (data.postDay == 'Day before') return startOfToday?.plus({ day: 1 })?.toUTC()
-                        else return startOfToday?.toUTC()
-                    }
-                } else {
-                    // New - Post From Start OF DAY of Session Start -- MINUS 1 day if "day before" post
-                    if (data.postDay == 'Day before') {
-                        return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
-                    } else {
-                        return startInZone?.startOf('day')?.toUTC()
-                    }
-                }
-            }
-
             const nextPostUTC = getSchedulesNextPostUTC({
-                startsAtUtc: startUtc,
+                firstStartUtc: startUtc,
                 postOffsetMs: postOffsetMs,
+                timeZone: data?.timeZone,
                 RRule: newRRule?.toString(),
-                afterDate: postAfterDT()
+                afterDate: (() => {
+                    if (formAction.value == 'new') {
+                        // New - Post From Start OF DAY of Session Start -- MINUS 1 day if "day before" post
+                        if (data.postDay == 'Day before') {
+                            return startInZone?.minus({ day: 1 })?.startOf('day')?.toUTC()
+                        } else {
+                            return startInZone?.startOf('day')?.toUTC()
+                        }
+                    } else {
+                        // Editing - Search from NOW UTC:
+                        // Note - Previously Used Last Post ISO
+                        return DateTime.utc()
+                    }
+                })()
             })
 
             // Compute - Last Post UTC:
@@ -604,35 +604,15 @@
                     rsvps: data.rsvps
                 })
                 console.log('Session Form Dates', {
-                    firstStart: {
-                        utc: startInZone.toUTC().toFormat('F'),
-                        local: startInZone.toFormat('F'),
-                        selected: startInZone.setZone(data.timeZone).toFormat('F'),
-                        cst: startInZone?.setZone('America/Chicago').toFormat('F')
-                    },
-                    firstEnd: {
-                        utc: endInZone?.toUTC()?.toFormat('F'),
-                        local: endInZone?.toFormat('F'),
-                        selected: endInZone?.setZone(data.timeZone)?.toFormat('F'),
-                        cst: endInZone?.setZone('America/Chicago')?.toFormat('F')
-                    },
-                    nextPost: {
-                        utc: nextPostUTC?.toFormat('F'),
-                        local: nextPostUTC?.setZone('local')?.toFormat('F'),
-                        selected: nextPostUTC?.setZone(data.timeZone)?.toFormat('F'),
-                        cst: nextPostUTC?.setZone('America/Chicago')?.toFormat('F')
-                    },
-                    lastPost: {
-                        utc: lastPostUTC?.toFormat('F'),
-                        local: lastPostUTC?.setZone('local')?.toFormat('F'),
-                        selected: lastPostUTC?.setZone(data.timeZone)?.toFormat('F'),
-                        cst: lastPostUTC?.setZone('America/Chicago')?.toFormat('F')
-                    }
+                    firstStart: debugDate(startInZone, data.timeZone),
+                    firstEnd: debugDate(endInZone, data.timeZone),
+                    nextPost: debugDate(nextPostUTC, data.timeZone),
+                    lastPost: debugDate(lastPostUTC, data.timeZone)
                 })
                 submitState.value = 'idle';
-                if (dryRun) return console.info('(!) debug submit - prevented submission!');
-            }
 
+            }
+            if (dryRun) return console.info('(!) debug submit - prevented submission!');
             // Else - Create Request Body:
             const bodyData = {
                 data: <API_SessionTemplateBodyInterface>{

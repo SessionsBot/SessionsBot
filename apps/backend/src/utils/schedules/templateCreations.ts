@@ -380,8 +380,9 @@ async function executeTemplateCreationSchedule() {
 
                             // Get Templates Next Post Date:
                             const newNextPostUTC = getSchedulesNextPostUTC({
-                                startsAtUtc: DateTime?.fromISO(t.starts_at_utc, { zone: 'utc' }),
+                                firstStartUtc: DateTime?.fromISO(t.starts_at_utc, { zone: 'utc' }),
                                 postOffsetMs: t.post_before_ms,
+                                timeZone: t.time_zone,
                                 RRule: t.rrule,
                                 afterDate: DateTime.utc()
                             });

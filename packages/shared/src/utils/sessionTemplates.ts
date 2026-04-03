@@ -65,8 +65,8 @@ export function rruleDateToLuxon(jsDate: Date, tz: string) {
 }
 
 
-/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. */
-export function getSchedulesNextPostUTC(opts: {
+/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. @deprecated*/
+export function getSchedulesNextPostUTC_OLD(opts: {
     /** The sessions first start date in UTC zone as `DateTime`. */
     startsAtUtc: DateTime,
     /** Post offset in positive milliseconds from the sessions start time. */
@@ -86,7 +86,7 @@ export function getSchedulesNextPostUTC(opts: {
     const adjustedSearchFrom = afterDate?.plus({ millisecond: opts.postOffsetMs })
 
     // No Recurrence OR Before First Start - Return First (and last) POST Date:
-    if (!opts.RRule || opts.startsAtUtc > DateTime.now()) {
+    if (!opts.RRule || opts.startsAtUtc > DateTime.utc()) {
         return (firstPostDate >= afterDate) ? firstPostDate : null;
     }
 
@@ -117,6 +117,83 @@ export function getSchedulesNextPostUTC(opts: {
     } else {
         return nextPostDT?.toUTC()
     }
+}
+
+
+
+const debugNextPostResult = true
+/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. */
+export function getSchedulesNextPostUTC(opts: {
+    /** The sessions first start date in UTC zone as `DateTime`. */
+    firstStartUtc: DateTime,
+    /** Post offset in positive milliseconds from the sessions start time. */
+    postOffsetMs: number,
+    /** The time zone used for this schedule */
+    timeZone: string,
+    /** The RRule String representing this sessions scheduled start dates. */
+    RRule: string | undefined | null,
+    /** Search for the next session **START** after or equal to this date.
+     * @note Result/return date can still be **BEFORE `THIS`**
+     * - due to (`Session Start` - `Post Offset`) calculation
+     * @Default `DateTime.now()`
+     * @TimeZone `UTC` */
+    afterDate?: DateTime | undefined | null,
+
+}): DateTime | null {
+
+    // Get Search Dates/Vars:
+    const firstPostUtc = opts.firstStartUtc.minus({ milliseconds: opts.postOffsetMs })
+    const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
+    const timeZone = opts?.timeZone
+
+    // Debug:
+    const debugDateResult = (d: DateTime) => ({
+        utc: d?.toUTC()?.toISO(),
+        zoned: d?.setZone(timeZone)?.toISO() + ' ' + timeZone,
+        local: d?.toLocal()?.toISO(),
+    })
+    if (debugNextPostResult) console.info(`[Next Post Calculation]:`, JSON.stringify({
+        options: { ...opts, postOffsetHrs: ((opts.postOffsetMs ?? 0) / 1000 / 60 / 60) },
+        firstPostUtc: firstPostUtc?.toISO(),
+        afterDate: afterDate?.toISO()
+    }, null, 2))
+
+    // Now is Before First Start - Return First POST Date:
+    if (opts.firstStartUtc > DateTime.utc()) {
+        if (debugNextPostResult) console.info(`[Next Post Calculation]: Before FIRST Session Start -> First Post`, debugDateResult(firstPostUtc,))
+        return firstPostUtc
+    }
+
+    // No Recurrence - Return First POST Date:
+    if (!opts.RRule) {
+        const r = (opts.firstStartUtc >= afterDate) ? firstPostUtc : null;
+        if (debugNextPostResult) console.info(`[Next Post Calculation]: No RECURRENCE -> firstPost < afterDate -> First Post OR null`, debugDateResult(r))
+        return r
+    }
+
+    // Get Recurrence Rule:
+    const rule = rrulestr(opts.RRule, { forceset: false })
+
+    // Calculate Sessions NEXT START FROM `afterDate`
+    const nextStartJS = rule.after(afterDate?.setZone(timeZone)?.toJSDate(), true)
+    if (!nextStartJS) {
+        console.warn(`[Next Post Calculation]: (!) Couldn't find next session start from RRule...`, { opts, next: nextStartJS })
+        return null
+    }
+    const nextStartDT = rruleDateToLuxon(nextStartJS, timeZone)
+    if (!nextStartDT) {
+        console.warn(`[Next Post Calculation]: (!) Couldn't find next session start from RRule...`, { opts, next: nextStartDT })
+        return null
+    } else if (debugNextPostResult) {
+        console.info(`[Next Post Calculation]: Calculated Next START Date from RRule (from afterDate)!!`, debugDateResult(nextStartDT))
+    }
+
+
+    // Calculate next post date:
+    const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
+    if (debugNextPostResult) console.info(`[Next Post Calculation]: Calculated Next Post Date from RRule!!`, debugDateResult(nextPostDT))
+    return nextPostDT?.toUTC()
+
 }
 
 
