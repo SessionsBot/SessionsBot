@@ -50,7 +50,7 @@ const selfIdentity_Cache = new LRUCache<string, API_DiscordSelfIdentity>({
     max: 250, // 250 users
     ttl: (2 * 60 * 1000) // 2 mins
 })
-discordRouter.get(`/identity/user/@me`, verifyToken, async (req, res) => {
+discordRouter.get(`/identity/@me`, verifyToken, async (req, res) => {
     try {
         const userId = req?.auth?.profile?.discord_id
         if (!userId) return new Reply(res).failure('Invalid Input - Missing "userId" to fetch identity for!', HttpStatusCode.BadRequest);
