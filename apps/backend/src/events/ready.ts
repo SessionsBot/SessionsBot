@@ -8,6 +8,7 @@ import fetchCommands from "../utils/bot/fetchCommands.js";
 import { initializeDataDeletionSchedule } from "../utils/schedules/automaticDeletions.js";
 import { initializeTemplateCreationScheduler } from "../utils/schedules/templateCreations.js";
 import { initializeEntitlementsSyncSchedule } from "../utils/schedules/syncEntitlements.js";
+import { ENVIRONMENT_TYPE } from "../utils/environment.js";
 
 const createLog = useLogger();
 
@@ -31,17 +32,20 @@ export default <EventData>{
 		// Set Bot User's Activity:
 		client.user.setActivity('🔗 sessionsbot.fyi', { type: ActivityType.Custom });
 
-		// After Startup - Initialize Schedule System(s):
-		setTimeout(async () => {
-			// Run Dev Tests (if dev env):
+		// PROD: After Startup - Initialize Schedule System(s):
+		if (ENVIRONMENT_TYPE == 'production') {
+			setTimeout(async () => {
+				// Initialize Auto-Session/Schedule Creation(s) Schedule:
+				await initializeTemplateCreationScheduler()
+				// Initialize Auto-Deletion Schedule:
+				await initializeDataDeletionSchedule()
+				// Initialize Auto Entitlement(s) Database Synchronization:
+				initializeEntitlementsSyncSchedule()
+			}, 1_500);
+		} else { // DEV ENVIRONMENTS:
+			// Run Dev Tests:
 			await tests.init();
-			// Initialize Auto-Session/Schedule Creation(s) Schedule:
-			await initializeTemplateCreationScheduler()
-			// Initialize Auto-Deletion Schedule:
-			await initializeDataDeletionSchedule()
-			// Initialize Auto Entitlement(s) Database Synchronization:
-			initializeEntitlementsSyncSchedule()
-		}, 1_500);
+		}
 
 	},
 };
