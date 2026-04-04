@@ -8,12 +8,13 @@
     ],
     "dependencyDashboard": true,
     "dependencyDashboardApproval": false,
+    "automergeType": "pr",
     "rangeStrategy": "bump",
     "packageRules": [
         {
-            "groupName": "patch dependencies",
-            "groupSlug": "all-patch",
-            "description": "Auto-merge safe patch updates",
+            "groupName": null,
+            "groupSlug": null,
+            "description": "Auto-merge patch updates",
             "matchUpdateTypes": [
                 "patch"
             ],
@@ -26,6 +27,7 @@
             "matchUpdateTypes": [
                 "minor"
             ],
+            "minimumReleaseAge": "3 days",
             "automerge": false
         },
         {
@@ -35,6 +37,7 @@
             "matchUpdateTypes": [
                 "major"
             ],
+            "minimumReleaseAge": "7 days",
             "automerge": false
         },
         {
@@ -55,10 +58,5 @@
             ],
             "enabled": false
         }
-    ],
-    "schedule": [
-        "before 7am on monday"
-    ],
-    "automergeType": "pr",
-    "minimumReleaseAge": "7 days"
+    ]
 }
