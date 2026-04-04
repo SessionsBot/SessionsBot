@@ -330,7 +330,7 @@
             description: data.description ?? '',
             url: data.url ?? null,
             startDate: nextStartDT?.setZone('local', { keepLocalTime: true })?.toJSDate(),
-            endDate: data.duration_ms ? dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
+            endDate: data.duration_ms ? nextStartDT?.plus({ milliseconds: data.duration_ms }) : null,
             timeZone: getZoneSelected(data.time_zone),
             rsvps: data?.rsvps ? mapRsvps(data.rsvps)?.map(r => {
                 return {
