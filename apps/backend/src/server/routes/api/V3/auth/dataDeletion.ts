@@ -1,13 +1,14 @@
 
 import { API_DataDeletionRequestBodySchema, discordSnowflakeSchema } from '@sessionsbot/shared';
-import verifyToken from 'apps/backend/src/server/middleware/verifyToken';
-import { useLogger } from 'apps/backend/src/utils/logs/logtail';
+import { useLogger } from '../../../../../utils/logs/logtail';
 import express from 'express';
 import { APIResponse as reply } from '../utils/responseClass';
 import { HttpStatusCode } from 'axios';
 import z from 'zod';
-import { supabase } from 'apps/backend/src/utils/database/supabase';
-import sendDiscordLog from 'apps/backend/src/utils/logs/discord';
+import { supabase } from '../../../../../utils/database/supabase';
+import verifyToken from '../../../../middleware/verifyToken';
+import sendDiscordLog from '../../../../../utils/logs/discord';
+
 
 const dataDeletionRouter = express.Router({ mergeParams: true })
 

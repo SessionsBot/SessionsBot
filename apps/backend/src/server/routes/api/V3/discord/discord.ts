@@ -5,11 +5,13 @@ import { APIResponse as Reply } from '../utils/responseClass';
 import { useLogger } from '../../../../../utils/logs/logtail';
 import core from '../../../../../utils/core/core';
 import z from 'zod';
-import verifyToken from 'apps/backend/src/server/middleware/verifyToken';
-import { supabase } from 'apps/backend/src/utils/database/supabase';
+import verifyToken from '../../../../middleware/verifyToken';
+import { supabase } from '../../../../../utils/database/supabase';
 import { fetchUserDiscordData } from '../auth/authUtils';
 import { AuthError } from '../auth/authErrTypes';
 import { LRUCache } from 'lru-cache'
+
+
 
 const createLog = useLogger();
 const discordRouter = express.Router({ mergeParams: true })

@@ -8,17 +8,23 @@ const createLog = useLogger();
 /** Event - Guild has removed Sessions Bot */
 export default <EventData>{
     name: Events.GuildDelete,
-    async execute(guild: Guild) {
+    async execute(g: Guild) {
         // Log removing guild - cloud:
-        createLog.for('Guilds').info(`➖ GUILD REMOVED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
+        createLog.for('Guilds').info(`❌ GUILD REMOVED - ${g?.name} - ${g?.id}`, {
+            guildId: g?.id,
+            memberCount: g?.memberCount,
+            largeServer: g?.large,
+            addedAt: g?.joinedAt,
+            ownerId: g?.ownerId
+        });
 
         // Delete Guild from database:
-        const result = await dbManager.guilds.delete(guild.id);
+        const result = await dbManager.guilds.delete(g?.id);
         if (!result.success) {
-            return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { guildId: guild?.id, result })
+            return createLog.for('Database').error('Failed to delete! - Removing Guild - SEE DETAILS', { guildId: g?.id, result })
         } else {
             // Log removing guild - Discord:
-            sendDiscordLog.events.guildRemoved(guild, (result.data.templateCount ?? null))
+            sendDiscordLog.events.guildRemoved(g, (result.data.templateCount ?? null))
         }
     }
 }

@@ -167,7 +167,7 @@ export function getSchedulesNextPostUTC(opts: {
     // No Recurrence - Return First POST Date:
     if (!opts.RRule) {
         const r = (opts.firstStartUtc >= afterDate) ? firstPostUtc : null;
-        if (debugNextPostResult) console.info(`[Next Post Calculation]: No RECURRENCE -> firstPost < afterDate -> First Post OR null`, debugDateResult(r))
+        if (debugNextPostResult) console.info(`[Next Post Calculation]: No RECURRENCE -> firstPost < afterDate -> First Post OR null`, r ? debugDateResult(r) : undefined)
         return r
     }
 

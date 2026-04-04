@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "engines": {
-    "node": "^22.22.2"
+    "node": "^22.0.0"
   },
   "scripts": {
     "start": "tsx src/index.ts",
@@ -44,6 +44,6 @@
     "@types/luxon": "^3.7.1",
     "release-it": "^19.2.4",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.2"
   }
 }

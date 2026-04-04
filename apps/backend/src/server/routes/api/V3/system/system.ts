@@ -7,7 +7,9 @@ import { ENVIRONMENT_GIT_COMMIT_SHA, ENVIRONMENT_TYPE } from '../../../../../uti
 import verifyToken from '../../../../middleware/verifyToken';
 import { verifyBotAdmin } from '../../../../middleware/verifyBotAdmin';
 import { DateTime } from 'luxon';
-import { URLS } from 'apps/backend/src/utils/core/urls';
+import { URLS } from '../../../../../utils/core/urls';
+
+
 
 const createLog = useLogger();
 

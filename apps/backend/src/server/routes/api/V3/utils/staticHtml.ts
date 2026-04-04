@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import core from "../../../../../utils/core/core";
-import { URLS } from "apps/backend/src/utils/core/urls";
+import { URLS } from "../../../../../utils/core/urls";
 
 
 export const rootDomainHtml = () => {
