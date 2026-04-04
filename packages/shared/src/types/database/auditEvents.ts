@@ -24,7 +24,7 @@ export enum AuditEvent {
 
 /** Individualized Meta Data for Audit Event's by Event Type */
 const EventMetaData = {
-    [AuditEvent.BotAdded]: undefined,
+    [AuditEvent.BotAdded]: undefined as undefined,
     [AuditEvent.ScheduleCreated]: {
         template_id: '' as string
     },
@@ -53,7 +53,7 @@ const EventMetaData = {
         session_id: '' as string,
         rsvp_id: '' as string
     },
-    [AuditEvent.PreferencesUpdated]: undefined
+    [AuditEvent.PreferencesUpdated]: undefined as undefined
 } as const
 
 /** Returns the Meta Data *Type* for a specific **{@link AuditEvent}**. */
