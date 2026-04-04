@@ -10,10 +10,13 @@
     import { rruleDateToLuxon } from '@sessionsbot/shared';
     import InfoHelpButton from '../labels/infoHelpButton.vue';
 
+    // Add Alert about adjust start date with pre-existing max repeat count?
+
     // Incoming Props/Models:
     const props = defineProps<{
         invalidFields: Map<NewSessions_FieldNames, string[]>,
         validateField: (name: NewSessions_FieldNames) => void,
+        v_startDate: Date | null
     }>();
     const { invalidFields, validateField } = props;
 
@@ -24,8 +27,8 @@
     const recurrenceEnabled = defineModel<boolean>('recurrenceEnabled');
     // End Repeat Date Toggle:
     const endRepeatDateEnabled = ref(false)
-    // End Repeat Count Toggle:
-    const endRepeatCountEnabled = ref(false)
+    // Restrict Weekdays Toggle:
+    const restrictWeekdaysEnabled = ref(false)
 
     // Recurrence RRule String:
     const recurrence = defineModel<string>('recurrence');
@@ -137,7 +140,7 @@
             const newRule = new RRule({
                 freq: v.frequency as any,
                 interval: v.interval,
-                byweekday: v.weekdays || undefined,
+                byweekday: v.weekdays?.length ? v.weekdays : undefined,
                 count: v.endRepeatCount,
                 until: endDate
                     ? datetime(endDate.year, endDate.month, endDate.day, endDate.hour, endDate.minute, endDate.second)
@@ -191,11 +194,6 @@
                     .setZone('local', { keepLocalTime: true })
                 localForm.value.formValues.endRepeatDate = untilInZoneAsLocal.toJSDate();
 
-            }
-            // Set Max Repeat Count:
-            if (rule.origOptions.count) {
-                endRepeatCountEnabled.value = true;
-                localForm.value.formValues.endRepeatCount = rule.origOptions.count
             }
         }
     }, { deep: true, immediate: true })
@@ -260,9 +258,18 @@
                     </Message>
                 </div>
 
+                <!-- INPUT: Restrict Weekdays - Toggle -->
+                <div class="flex gap-1 flex-wrap my-2 mb-0.75 flex-row w-full items-center justify-start">
+                    <ToggleSwitch input-id="endRepeatDateEnabled" @value-change="(v) => {
+                        if (!v) { localForm.formValues.weekdays = []; weekdaysSelected.clear() }
+                    }" v-model="restrictWeekdaysEnabled" class="scale-85" />
+                    <label for="endRepeatDateEnabled" class="block gap-0.25 flex-row items-center">
+                        <p class="inline!"> Restrict Weekdays </p>
+                    </label>
+                </div>
+
                 <!-- INPUT: Weekdays -->
-                <div v-if="localForm.formValues.frequency == Frequency.WEEKLY as any"
-                    class="flex flex-col gap-1 w-full items-start"
+                <div v-if="restrictWeekdaysEnabled" class="flex flex-col gap-1 w-full items-start"
                     :class="{ 'text-invalid-1!': localForm.invalidFields.has('weekdays') }">
                     <InputTitle fieldTitle="Weekdays" :icon="CalendarRangeIcon" />
 
@@ -309,7 +316,8 @@
 
                         <InputTitle fieldTitle="End Repeat Date" :icon="CalendarX2Icon" />
                         <DatePicker name="endRepeatDate" v-model="localForm.formValues.endRepeatDate" fluid
-                            date-format="m/d/y" class="w-full flex " show-clear :min-date="new Date()"
+                            date-format="m/d/y" class="w-full flex " show-clear
+                            :min-date="props.v_startDate || new Date()"
                             @value-change="(v) => validateLocalField('endRepeatDate', v)"
                             :invalid="localForm.invalidFields.has('endRepeatDate')" />
                         <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
@@ -321,37 +329,6 @@
                     </div>
                 </Transition>
 
-
-                <!-- INPUT: Max Repeat Count - Toggle -->
-                <div class="flex gap-1 flex-wrap my-2 mb-0.75 flex-row w-full items-center justify-start">
-                    <ToggleSwitch input-id="endRepeatCountEnabled" @value-change="(v) => {
-                        if (!v) { localForm.formValues.endRepeatCount = null }
-                    }" v-model="endRepeatCountEnabled" class="scale-85" />
-                    <label for="endRepeatCountEnabled" class="block gap-0.25 flex-row items-center">
-                        <p class="inline!"> Max Repeat Count </p>
-                    </label>
-                </div>
-
-                <!-- INPUT: Max Repeat Count -->
-                <Transition name="zoom" :duration=".75" mode="out-in">
-                    <div v-if="endRepeatCountEnabled" class="flex flex-col gap-1 w-full items-start"
-                        :class="{ 'text-invalid-1!': localForm.invalidFields.has('endRepeatCount') }">
-                        <InputTitle fieldTitle="Max Repeat Count" required :icon="CalendarSyncIcon" />
-
-                        <InputNumber :invalid="localForm.invalidFields.has('endRepeatCount')"
-                            @value-change="(v) => validateLocalField('endRepeatCount', v)"
-                            v-model="localForm.formValues.endRepeatCount as any" inputId="horizontal-buttons"
-                            showButtons show-clear :step="1" :min="1" suffix=" Repeats" fluid
-                            :pt="{ incrementButton: 'bg-transparent!', decrementButton: 'bg-transparent!' }" />
-
-                        <Message unstyled class="w-full! text-wrap! flex-wrap! mt-1 gap-2 text-invalid-1!"
-                            v-for="err in localForm.invalidFields.get('endRepeatCount') || []" :key="err">
-                            <p class="text-sm! pl-0.5">
-                                {{ err || 'Invalid Input!' }}
-                            </p>
-                        </Message>
-                    </div>
-                </Transition>
 
                 <!-- RRULE - Info Text -->
                 <div
