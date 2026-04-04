@@ -1,36 +1,57 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:base"
+        ":semanticCommitType(chore)",
+        "helpers:githubDigestChangelogs",
+        "mergeConfidence:age-confidence-badges"
     ],
-    "dependencyDashboard": false,
+    "dependencyDashboard": true,
+    "dependencyDashboardApproval": false,
     "rangeStrategy": "bump",
+    // Update Rule Groups:
     "packageRules": [
-        {
+        { // PATCH UPDATES:
+            "groupName": "patch dependencies",
+            "groupSlug": "patch",
             "description": "Auto-merge safe patch updates",
             "matchUpdateTypes": [
                 "patch"
             ],
-            "groupName": "patch dependencies",
-            "automerge": true
+            "autoMerge": true
         },
-        {
+        { // MINOR UPDATES:
+            "groupName": "minor dependencies",
+            "groupSlug": "minor",
             "description": "Group minor updates (manual review)",
             "matchUpdateTypes": [
                 "minor"
             ],
-            "groupName": "minor dependencies",
-            "automerge": false
+            "autoMerge": false
         },
-        {
+        { // MAJOR UPDATES:
+            "groupName": "major dependencies",
+            "groupSlug": "major",
             "description": "Disable major updates",
             "matchUpdateTypes": [
                 "major"
             ],
-            "enabled": false
+            "autoMerge": false
+        },
+        { // NODE UPDATES:
+            "groupName": "node versions",
+            "groupSlug": "node",
+            "description": "Restrict Node to v22",
+            "automerge": false,
+            "matchPackageNames": [
+                "@types/node",
+                "@tsconfig/node*"
+            ],
+            "allowedVersions": "^22"
         }
     ],
     "schedule": [
         "before 6am on monday"
-    ]
+    ],
+    "automergeType": "pr",
+    "minimumReleaseAge": "7 days"
 }

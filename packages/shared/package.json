@@ -5,7 +5,9 @@
     "private": true,
     "version": "2.0.0",
     "type": "module",
-    "scripts": {},
+    "scripts": {
+        "build": "tsc -b"
+    },
     "dependencies": {
         "axios": "^1.14.0",
         "luxon": "^3.7.2",
