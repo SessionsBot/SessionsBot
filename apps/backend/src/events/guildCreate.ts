@@ -16,22 +16,29 @@ const createLog = useLogger();
 /** Event - New guild added Sessions Bot */
 export default <EventData>{
     name: Events.GuildCreate,
-    async execute(guild: Guild) {
+    async execute(g: Guild) {
         // Log new guild added:
-        createLog.for('Guilds').info(`➕ GUILD ADDED - ${guild.name} - ${guild.id}`, { guildId: guild?.id });
-        sendDiscordLog.events.guildAdded(guild);
+        createLog.for('Guilds').info(`✅ GUILD ADDED - ${g?.name} - ${g?.id}`, {
+            guildId: g?.id,
+            createdAt: g?.createdAt,
+            memberCount: g?.memberCount,
+            largeServer: g?.large,
+            addedAt: g?.joinedAt,
+            ownerId: g?.ownerId
+        });
+        sendDiscordLog.events.guildAdded(g);
 
         // Add Guild to database:
-        const result = await dbManager.guilds.add(guild);
+        const result = await dbManager.guilds.add(g);
 
         if (!result.success) {
-            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result, guildId: guild?.id })
+            return createLog.for('Database').error('Failed to save/create - New Guild - SEE DETAILS', { result, guildId: g?.id })
         }
 
         // Create Audit Log for Guild:
         createAuditLog({
             event: AuditEvent.BotAdded,
-            guild: guild.id,
+            guild: g?.id,
             user: core.botClient?.user?.id || null,
             meta: undefined
         })
@@ -97,9 +104,9 @@ export default <EventData>{
             ]
         })
 
-        const send = await sendWithFallback(guild.id, welcomeMsg);
+        const send = await sendWithFallback(g?.id, welcomeMsg);
         if (!send.success) {
-            createLog.for('Bot').warn(`Failed to send "Welcome Message" for new guild! - ${guild.id}`, { sendResult: send, guildId: guild?.id });
+            createLog.for('Bot').warn(`Failed to send "Welcome Message" for new guild! - ${g?.id}`, { sendResult: send, guildId: g?.id });
         }
     }
 }
