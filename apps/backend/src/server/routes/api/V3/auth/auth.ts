@@ -7,8 +7,8 @@ import verifyToken from "../../../../middleware/verifyToken.js";
 import { DateTime } from "luxon";
 import { AuthError } from "./authErrTypes.js";
 import { fetchUserDiscordData, updateAuthUser } from "./authUtils.js";
-import { URLS } from "apps/backend/src/utils/core/urls.js";
-import { ENVIRONMENT_TYPE } from "apps/backend/src/utils/environment.js";
+import { ENVIRONMENT_TYPE } from "../../../../../utils/environment.js";
+import { URLS } from "../../../../../utils/core/urls.js";
 
 
 const CLIENT_ID = ENVIRONMENT_TYPE == 'production'
