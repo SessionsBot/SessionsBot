@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "module": "esnext",
         "target": "es2022",
         "skipLibCheck": true,
@@ -12,8 +11,8 @@
         "sourceMap": true,
 
         "paths": {
-            "@sessionsbot/shared": ["/packages/shared/src"],
-            "@sessionsbot/shared/*": ["/packages/shared/src/*"]
+            "@sessionsbot/shared": ["./packages/shared/src"],
+            "@sessionsbot/shared/*": ["./packages/shared/src/*"]
         }
     }
 }
