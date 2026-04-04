@@ -384,7 +384,7 @@ async function executeTemplateCreationSchedule() {
                                 postOffsetMs: t.post_before_ms,
                                 timeZone: t.time_zone,
                                 RRule: t.rrule,
-                                afterDate: sessionStart?.plus({ second: 7 })
+                                afterDate: DateTime.utc()?.plus({ second: 7 })
                             });
                             // Update Session Template - Next/Last Post UTC:
                             const { error: updateTemplateErr } = await supabase

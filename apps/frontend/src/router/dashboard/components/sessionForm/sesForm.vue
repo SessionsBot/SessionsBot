@@ -7,7 +7,7 @@
     import DiscordTab from './tabs/discord/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
-    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, rruleDateToLuxon, rrulestr, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -314,13 +314,23 @@
         const accessible_channelId: string | null = dashboard.guildData.channels.state?.sendable?.find(c => c?.id == data?.channel_id)?.id
         const accessible_mentionRoles: string[] | undefined | null = dashboard.guildData.roles.state?.filter(r => data?.mention_roles?.includes(r?.id))?.flatMap(r => r?.id)
 
+        // Get Soonest "Next" Start Date:
+        const nowInZone = DateTime.now().setZone(data.time_zone)
+        const nextStart = data.rrule
+            ? rrulestr(data.rrule, { forceset: false })
+                ?.after(datetime(nowInZone.year, nowInZone.month, nowInZone.day, nowInZone.hour, nowInZone.minute, nowInZone.second), true)
+            : null
+        const nextStartDT = nextStart
+            ? rruleDateToLuxon(nextStart, data.time_zone)
+            : DateTime.fromISO(data.starts_at_utc, { zone: 'utc' })?.setZone(data.time_zone)
+
         // Set Form Data:
         formValues.value = {
             title: data.title,
             description: data.description ?? '',
             url: data.url ?? null,
-            startDate: dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone),
-            endDate: data.duration_ms ? dbIsoUtcToFormDate(data.starts_at_utc, data.time_zone, data.duration_ms) : null,
+            startDate: nextStartDT?.setZone('local', { keepLocalTime: true })?.toJSDate(),
+            endDate: data.duration_ms ? nextStartDT?.plus({ milliseconds: data.duration_ms }) : null,
             timeZone: getZoneSelected(data.time_zone),
             rsvps: data?.rsvps ? mapRsvps(data.rsvps)?.map(r => {
                 return {
@@ -582,7 +592,15 @@
                     } else {
                         // Editing - Search from NOW UTC:
                         // Note - Previously Used Last Post ISO
-                        return DateTime.utc()
+                        const lastPostISO = dashboard.sessionForm.editPayload?.last_post_utc
+                            ? DateTime.fromISO(dashboard.sessionForm.editPayload?.last_post_utc, { zone: 'utc' })
+                            : null;
+                        if (lastPostISO)
+                            return lastPostISO
+                        if (startInZone >= DateTime.now()?.setZone(data.timeZone)) {
+                            // Future Start Date - Search From Start Date - Offset:
+                            return startInZone.minus({ milliseconds: postOffsetMs })?.toUTC?.()
+                        } else return DateTime.utc()
                     }
                 })()
             })
@@ -802,6 +820,7 @@
                                     v-model:rsvps-enabled="formOptions.rsvpsEnabled" v-model:rsvps="formValues.rsvps" />
 
                                 <ScheduleTab v-else-if="tabSelected == 'schedule'" :invalidFields :validateField
+                                    :v_start-date="formValues.startDate"
                                     v-model:recurrence-enabled="formOptions.recurrenceEnabled"
                                     v-model:recurrence="formValues.recurrence" />
 

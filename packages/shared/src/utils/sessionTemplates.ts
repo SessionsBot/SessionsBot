@@ -65,78 +65,24 @@ export function rruleDateToLuxon(jsDate: Date, tz: string) {
 }
 
 
-/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. @deprecated*/
-export function getSchedulesNextPostUTC_OLD(opts: {
-    /** The sessions first start date in UTC zone as `DateTime`. */
-    startsAtUtc: DateTime,
-    /** Post offset in positive milliseconds from the sessions start time. */
-    postOffsetMs: number,
-    /** The RRule String representing this sessions schedule. */
-    RRule: string | undefined | null,
-    /** Search for the next post date AFTER this date 
-     * @Default `DateTime.now()`
-     * @TimeZone `UTC` */
-    afterDate?: DateTime | undefined | null,
-
-}): DateTime | null {
-
-    // Get Search Dates:
-    const firstPostDate = opts.startsAtUtc.minus({ milliseconds: opts.postOffsetMs })
-    const afterDate = opts.afterDate?.isValid ? opts.afterDate : DateTime.utc()
-    const adjustedSearchFrom = afterDate?.plus({ millisecond: opts.postOffsetMs })
-
-    // No Recurrence OR Before First Start - Return First (and last) POST Date:
-    if (!opts.RRule || opts.startsAtUtc > DateTime.utc()) {
-        return (firstPostDate >= afterDate) ? firstPostDate : null;
-    }
-
-    // Get Recurrence Rule:
-    const rule = rrulestr(opts.RRule, { forceset: false })
-    const timeZone = rule.options.tzid ?? "UTC"
-
-
-    const nextStartJS = rule.after(adjustedSearchFrom?.setZone(timeZone)?.toJSDate(), true)
-    if (!nextStartJS) return null
-    const nextStartDT = rruleDateToLuxon(nextStartJS, timeZone)
-    if (!nextStartDT) return null
-
-
-    // Calculate next post date:
-    const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
-    if (nextPostDT < afterDate) {
-        // Date TOO EARLY - Try Another Recurrence - or Return null:
-        const secondStartJS = rule.after(nextStartJS, false)
-        const secondStartDT = rruleDateToLuxon(secondStartJS, timeZone)
-        const secondPostDT = secondStartDT?.minus({ millisecond: opts.postOffsetMs })
-        if (secondPostDT < afterDate) {
-            console.warn('(!) Calculated next post UTC date is BEFORE the requested after date!', nextPostDT?.setZone(timeZone)?.toFormat('f'), { originalOptions: opts })
-            return null;
-        } else {
-            return secondPostDT?.toUTC()
-        }
-    } else {
-        return nextPostDT?.toUTC()
-    }
-}
-
-
 
 const debugNextPostResult = true
-/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone. */
+/** Calculates a session template schedule's **NEXT POST** `DateTime` in UTC zone.
+ * @returns - {@linkcode DateTime} in `UTC`
+ * @version - 3.2 */
 export function getSchedulesNextPostUTC(opts: {
-    /** The sessions first start date in UTC zone as `DateTime`. */
+    /** The sessions first start date in `UTC` zone as {@linkcode DateTime}. */
     firstStartUtc: DateTime,
     /** Post offset in positive milliseconds from the sessions start time. */
     postOffsetMs: number,
-    /** The time zone used for this schedule */
+    /** The time zone used for this schedule
+     * @ex - "America/Chicago" */
     timeZone: string,
-    /** The RRule String representing this sessions scheduled start dates. */
+    /** The {@linkcode RRule} `String` representing this sessions scheduled start dates. */
     RRule: string | undefined | null,
-    /** Search for the next session **START** after or equal to this date.
-     * @note Result/return date can still be **BEFORE `THIS`**
-     * - due to (`Session Start` - `Post Offset`) calculation
-     * @Default `DateTime.now()`
-     * @TimeZone `UTC` */
+    /** Search for the next **POST DATE** __*after or equal*__ to this date.
+     * @TimeZone Use `UTC` Date 
+     * @Note If there is ***no post date*** after `this` {@linkcode DateTime} — Returns `null` */
     afterDate?: DateTime | undefined | null,
 
 }): DateTime | null {
@@ -147,7 +93,7 @@ export function getSchedulesNextPostUTC(opts: {
     const timeZone = opts?.timeZone
 
     // Debug:
-    const debugDateResult = (d: DateTime) => ({
+    const debugDateResult = (d: DateTime | null) => ({
         utc: d?.toUTC()?.toISO(),
         zoned: d?.setZone(timeZone)?.toISO() + ' ' + timeZone,
         local: d?.toLocal()?.toISO(),
@@ -158,42 +104,87 @@ export function getSchedulesNextPostUTC(opts: {
         afterDate: afterDate?.toISO()
     }, null, 2))
 
-    // Now is Before First Start - Return First POST Date:
-    if (opts.firstStartUtc > afterDate) {
-        if (debugNextPostResult) console.info(`[Next Post Calculation]: Before FIRST Session Start -> First Post`, debugDateResult(firstPostUtc,))
+    // First post <= afterDate - Return First POST Date:
+    if (firstPostUtc >= afterDate) {
+        if (debugNextPostResult) console.info(`[Next Post Calculation]: (First Post >= afterDate) -> First Post`, debugDateResult(firstPostUtc,))
         return firstPostUtc
     }
 
     // No Recurrence - Return First POST Date:
     if (!opts.RRule) {
-        const r = (opts.firstStartUtc >= afterDate) ? firstPostUtc : null;
-        if (debugNextPostResult) console.info(`[Next Post Calculation]: No RECURRENCE -> firstPost < afterDate -> First Post OR null`, r ? debugDateResult(r) : undefined)
+        const r = (firstPostUtc >= afterDate) ? firstPostUtc : null;
+        if (debugNextPostResult) console.info(`[Next Post Calculation]: No RECURRENCE -> (firstPost >= afterDate) -> First Post OR null`, debugDateResult(r))
         return r
     }
 
-    // Get Recurrence Rule:
+    // Get Original Recurrence Rule:
     const rule = rrulestr(opts.RRule, { forceset: false })
 
-    // Calculate Sessions NEXT START FROM `afterDate`
-    const nextStartJS = rule.after(afterDate?.setZone(timeZone)?.toJSDate(), true)
-    if (!nextStartJS) {
-        console.warn(`[Next Post Calculation]: (!) Couldn't find next session start from RRule...`, { opts, next: nextStartJS })
-        return null
+
+    // Util - Convert DateTime to RRule Striped Offset Date:
+    const luxonToRRuleDate = (d: DateTime) => (datetime(d.year, d.month, d.day, d.hour, d.minute, 0))
+
+    // Util - Adjust Until Date (if any) for Post Schedule RRule:
+    const adjustUntilDate = (d: Date | undefined, z: string) => {
+        if (d) {
+            const orgUntilDate = rruleDateToLuxon(d, z)
+            return luxonToRRuleDate(orgUntilDate?.minus({ milliseconds: opts.postOffsetMs }))
+        }
+        else return undefined
     }
-    const nextStartDT = rruleDateToLuxon(nextStartJS, timeZone)
-    if (!nextStartDT) {
-        console.warn(`[Next Post Calculation]: (!) Couldn't find next session start from RRule...`, { opts, next: nextStartDT })
-        return null
-    } else if (debugNextPostResult) {
-        console.info(`[Next Post Calculation]: Calculated Next START Date from RRule (from afterDate)!!`, debugDateResult(nextStartDT))
+
+
+    // Recreate RRule w/ Panel Post Time Schedule:
+    const firstPostInZone = firstPostUtc?.setZone(timeZone)
+    const postRule = new RRule({
+        freq: rule.options.freq,
+        interval: rule.options.interval,
+        byweekday: rule.options.byweekday,
+        byhour: firstPostInZone.hour,
+        byminute: firstPostInZone.minute,
+        tzid: timeZone,
+        dtstart: luxonToRRuleDate(firstPostInZone),
+        count: rule.options.count,
+        until: adjustUntilDate(rule.options.until, timeZone),
+    })
+
+
+    if (debugNextPostResult) console.info(`[Next Post Calculation]: RECREATED RRULE - Start -> Post Schedule\n`, postRule?.toString(), `\n---`)
+
+    // Calc next post from after date:
+    const zonedAfterDate = luxonToRRuleDate(afterDate?.setZone(timeZone)?.startOf('minute'))
+    const nextResultJS = postRule.after(zonedAfterDate, true)
+    if (!nextResultJS) {
+        if (debugNextPostResult) console.warn(`[Next Post Calculation]: (!) Couldn't find next session post date from re-created RRule...`, { orgOpts: opts, postRule });
+        return null;
     }
+    const nextResultDT = rruleDateToLuxon(nextResultJS, timeZone)
+    if (debugNextPostResult) console.info(`[Next Post Calculation]: RESULT (1) FROM NEW RULE`, debugDateResult(nextResultDT))
+    if (debugNextPostResult && (nextResultDT < afterDate)) console.log('RESULT (1) - START FROM THIS POST', debugDateResult(nextResultDT?.plus({ milliseconds: opts.postOffsetMs })))
 
+    // Safety Check- Confirm Result > After Date
+    if (nextResultDT < afterDate) {
+        // Invalid Result - Search for Next Post Date:
+        if (debugNextPostResult) console.warn(`[Next Post Calculation]: (!) First Result Post Date WAS TOO EARLY -- Getting next recurrence...`)
+        // Search for NEXT after LAST RESULT:
+        const newResultJS = postRule.after(nextResultJS, false)
+        if (!newResultJS) {
+            // If new result = null:
+            if (debugNextPostResult) console.warn(`[Next Post Calculation]: (!) Couldn't find next (after prev result) session post date from re-created RRule...`, { orgOpts: opts, postRule });
+            return null;
+        }
+        // Parse & Check NEW Result:
+        const newResultDT = rruleDateToLuxon(newResultJS, timeZone)
+        if (newResultDT < afterDate && debugNextPostResult) console.warn('[Next Post Calculation]: (!) SECOND DATE RESULT IS STILL INVALID !!!! \n- Invalid Result:', debugDateResult(newResultDT));
+        // Debug:
+        if (debugNextPostResult) console.log('RESULT (2) FROM NEW RULE', debugDateResult(newResultDT))
+        if (debugNextPostResult) console.log('RESULT (2) - START FROM THIS POST', debugDateResult(newResultDT?.plus({ milliseconds: opts.postOffsetMs })))
+        // Return New Valid Result OR null:
+        return (newResultDT < afterDate) ? null : newResultDT?.toUTC();
 
-    // Calculate next post date:
-    const nextPostDT = nextStartDT.minus({ milliseconds: opts.postOffsetMs })
-    if (debugNextPostResult) console.info(`[Next Post Calculation]: Calculated Next Post Date from RRule!!`, debugDateResult(nextPostDT))
-    return nextPostDT?.toUTC()
-
+    } else
+        // Return FIRST Valid Result OR null:
+        return (nextResultDT < afterDate) ? null : nextResultDT?.toUTC();
 }
 
 
