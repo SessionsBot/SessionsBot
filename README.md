@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://sessionsbot.fyi/sessionsBotWithText.png" alt="SessionsBot Logo" width="200" style="border-radius: 15px;" />
+<img src="https://sessionsbot.fyi/logo-text.png" alt="SessionsBot Logo" width="200" style="border-radius: 15px;" />
 
 # SessionsBot
 
@@ -11,7 +11,7 @@ From scheduling to signups, SessionsBot handles it all!
 
 [![Visit Site](https://img.shields.io/badge/Visit_Website-5168A4?style=for-the-badge&logo=safari&logoColor=white)](https://sessionsbot.fyi)
 [![Invite Bot](https://img.shields.io/badge/Invite_Bot-65579E?style=for-the-badge&logo=discord&logoColor=white)](https://invite.sessionsbot.fyi)
-[![View Docs](https://img.shields.io/badge/View%20Docs-5F8A95?style=for-the-badge&logo=safari)](https://docs.sessionsbot.fyi)
+[![Read Docs](https://img.shields.io/badge/View%20Docs-5F8A95?style=for-the-badge&logo=safari)](https://docs.sessionsbot.fyi)
 
 
 
@@ -25,10 +25,10 @@ SessionsBot is a multi-featured Discord bot designed to help Discord communities
 
 Built for simplicity and scalability, SessionsBot makes it easy for your team to:
 - 📅 **Create and manage sessions***(events)* directly from our web dashboard
-- ⏰ **Set recurring schedules** for daily events
+- ⏰ **Set recurring schedules** for repeating events
 - ✅ **Allow users to sign up for RSVP slots** (Customizable) within sessions
 - 🔔 **Group sessions by daily threads** for clean orgganization
-- 📊 **Track attendance and session data** from Discord
+- 📊 **Track attendance and session data** from Discord and Web Dashboard
 - 🌐 **Configure/adjust via web dashboard** with ease
 
 ---
@@ -52,7 +52,6 @@ This Monorepo hosts all code and documentation for the SessionsBot project:
 
 - **Server moderators** looking for a Discord-based event system 
 - **Anyone** who wants to simplify session coordination using Discord
-- **Study Groups** looking to collaboratively RSVP
 
 ---
 
