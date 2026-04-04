@@ -38,6 +38,17 @@
             "automerge": false
         },
         {
+            "groupName": "node engine",
+            "matchDepNames": [
+                "node"
+            ],
+            "matchDepTypes": [
+                "engines"
+            ],
+            "enabled": false
+        },
+        {
+            "groupName": "node dependencies",
             "matchPackageNames": [
                 "@types/node",
                 "@tsconfig/node22"
