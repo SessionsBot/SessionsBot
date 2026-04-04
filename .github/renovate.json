@@ -1,6 +1,7 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
+        "config:recommended",
         ":semanticCommitType(chore)",
         "helpers:githubDigestChangelogs",
         "mergeConfidence:age-confidence-badges"
@@ -12,41 +13,41 @@
     "packageRules": [
         { // PATCH UPDATES:
             "groupName": "patch dependencies",
-            "groupSlug": "patch",
+            "groupSlug": "all-patch",
             "description": "Auto-merge safe patch updates",
             "matchUpdateTypes": [
                 "patch"
             ],
-            "autoMerge": true
+            "automerge": true
         },
         { // MINOR UPDATES:
             "groupName": "minor dependencies",
-            "groupSlug": "minor",
+            "groupSlug": "all-minor",
             "description": "Group minor updates (manual review)",
             "matchUpdateTypes": [
                 "minor"
             ],
-            "autoMerge": false
+            "automerge": false
         },
         { // MAJOR UPDATES:
             "groupName": "major dependencies",
-            "groupSlug": "major",
-            "description": "Disable major updates",
+            "groupSlug": "all-major",
+            "description": "Group major updates (manual review)",
             "matchUpdateTypes": [
                 "major"
             ],
-            "autoMerge": false
+            "automerge": false
         },
         { // NODE UPDATES:
             "groupName": "node versions",
             "groupSlug": "node",
             "description": "Restrict Node to v22",
-            "automerge": false,
             "matchPackageNames": [
                 "@types/node",
                 "@tsconfig/node*"
             ],
-            "allowedVersions": "^22"
+            "allowedVersions": "^22",
+            "automerge": false
         }
     ],
     "schedule": [
