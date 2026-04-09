@@ -18,7 +18,7 @@
     "@odiffey/discord-markdown": "^3.3.0",
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^2.0.3",
-    "@primevue/forms": "^4.5.4",
+    "@primevue/forms": "^4.5.5",
     "@sentry/vue": "^10.47.0",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.101.1",
