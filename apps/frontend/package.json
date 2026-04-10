@@ -43,7 +43,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.31.1",
+    "@cloudflare/vite-plugin": "^1.31.2",
     "@iconify/vue": "^5.0.0",
     "@primevue/auto-import-resolver": "^4.5.5",
     "@tsconfig/node22": "^22.0.5",
