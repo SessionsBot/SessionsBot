@@ -22,7 +22,7 @@
     "@sentry/vue": "^10.47.0",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.101.1",
-    "@tailwindcss/vite": "^4.2.3",
+    "@tailwindcss/vite": "^4.2.4",
     "@vueuse/core": "^14.2.1",
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.14.0",
