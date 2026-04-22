@@ -20,7 +20,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "@vueuse/core": "^14.2.1",
     "pinia": "^3.0.4",
-    "tailwindcss": "^4.2.3",
+    "tailwindcss": "^4.2.4",
     "zod": "^4.3.6"
   }
 }
