@@ -19,9 +19,9 @@
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^2.0.3",
     "@primevue/forms": "^4.5.5",
-    "@sentry/vue": "^10.47.0",
+    "@sentry/vue": "^10.50.0",
     "@sessionsbot/shared": "*",
-    "@supabase/supabase-js": "^2.101.1",
+    "@supabase/supabase-js": "^2.104.1",
     "@tailwindcss/vite": "^4.2.4",
     "@vueuse/core": "^14.2.1",
     "@vvo/tzdb": "^6.198.0",
@@ -43,7 +43,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.31.2",
+    "@cloudflare/vite-plugin": "^1.33.2",
     "@iconify/vue": "^5.0.0",
     "@primevue/auto-import-resolver": "^4.5.5",
     "@tsconfig/node22": "^22.0.5",
@@ -57,6 +57,6 @@
     "vite": "^8.0.10",
     "vite-plugin-vue-devtools": "^8.1.1",
     "vue-tsc": "^3.2.7",
-    "wrangler": "^4.80.0"
+    "wrangler": "^4.85.0"
   }
 }

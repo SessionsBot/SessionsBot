@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "supabase": "^2.84.10"
+    "supabase": "^2.95.3"
   },
   "engines": {
     "node": "^22.0.0"
