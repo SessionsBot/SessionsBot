@@ -56,7 +56,7 @@
     "unplugin-vue-components": "^32.0.0",
     "vite": "^8.0.10",
     "vite-plugin-vue-devtools": "^8.1.1",
-    "vue-tsc": "^3.2.7",
+    "vue-tsc": "^3.2.8",
     "wrangler": "^4.80.0"
   }
 }
