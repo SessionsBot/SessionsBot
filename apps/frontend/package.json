@@ -25,7 +25,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "@vueuse/core": "^14.2.1",
     "@vvo/tzdb": "^6.198.0",
-    "axios": "^1.14.0",
+    "axios": "^1.16.0",
     "calendar-link": "^2.11.0",
     "lucide-vue-next": "^1.0.0",
     "luxon": "^3.7.2",
