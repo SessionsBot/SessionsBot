@@ -5,7 +5,7 @@
   "type": "module",
   "devDependencies": {
     "vitepress": "^2.0.0-alpha.17",
-    "wrangler": "^4.80.0"
+    "wrangler": "^4.87.0"
   },
   "scripts": {
     "dev": "vitepress dev",
@@ -18,9 +18,9 @@
     "@odiffey/discord-markdown": "^3.3.0",
     "@sessionsbot/shared": "*",
     "@tailwindcss/vite": "^4.2.4",
-    "@vueuse/core": "^14.2.1",
+    "@vueuse/core": "^14.3.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.2.4",
-    "zod": "^4.3.6"
+    "zod": "^4.4.2"
   }
 }
