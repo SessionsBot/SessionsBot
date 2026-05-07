@@ -14,7 +14,7 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
-    "@iconify/vue": "^5.0.0",
+    "@iconify/vue": "^5.0.1",
     "@odiffey/discord-markdown": "^3.3.0",
     "@sessionsbot/shared": "*",
     "@tailwindcss/vite": "^4.2.4",
