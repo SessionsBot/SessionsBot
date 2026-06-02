@@ -20,7 +20,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.15.2",
-    "calendar-link": "^2.11.2",
+    "calendar-link": "^2.11.3",
     "chrono-node": "^2.9.1",
     "cors": "^2.8.6",
     "discord.js": "^14.26.4",
