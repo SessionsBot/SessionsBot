@@ -4,8 +4,26 @@ import { supabase } from '../../../../../utils/database/supabase.js';
 import { AuthError } from './authErrTypes.js';
 import { APIUser, RESTGetAPICurrentUserGuildsResult } from "discord.js";
 import { AppUserGuilds } from '@sessionsbot/shared';
+import { useLogger } from '../../../../../utils/logs/logtail.js';
 
+const createLog = useLogger()
 const BOT_ADMIN_UIDs = String(process.env["BOT_ADMIN_DISCORD_IDS"])?.split(",") ?? [];
+
+/** UTIL: Fetch/Check for "Bot Installed" Guilds from User's Guild Ids */
+async function getInstalledGuildIds(userGuildIds: string[]) {
+    // Fetch/check for user's guild ids from DB:
+    const { data: guildsInstalledIds, error: guildsInstalledErr } = await supabase.from('guilds').select('id')
+        .in('id', userGuildIds)
+    // On DB Error return AuthError:
+    if (guildsInstalledErr) {
+        createLog.for('Auth').error('FAILED to fetch users bot installed guilds from DB for authentication!', { db_error: guildsInstalledErr })
+        return new AuthError('unknown', { message: 'Failed to retrieve currently installed sessions bot guild (ids) from database for authentication!' })
+    }
+    // Otherwise Map SessionsBot Installed Guilds:
+    const installedIds = guildsInstalledIds.flatMap(g => g.id)
+    return installedIds
+}
+
 
 /** Fetch FRESH Discord Data for a user by `accessToken`. */
 export async function fetchUserDiscordData(accessToken: string) {
@@ -26,13 +44,14 @@ export async function fetchUserDiscordData(accessToken: string) {
         if (!userDataMapped.email) return new AuthError('missingEmail');
 
         // 2. Get DISCORD - User's Guilds - Map:
-        const botGuilds = await core.botClient.guilds.fetch();
-        const botGuildsIds = botGuilds.map((g) => g.id);
         const ADMINISTRATOR = 0x00000008;
         const MANAGE_GUILD = 0x00000020;
         const guildsResponse = await axios.get("https://discord.com/api/users/@me/guilds?with_counts=true", { headers: { Authorization: `Bearer ${accessToken}` } });
         const guilds: RESTGetAPICurrentUserGuildsResult = guildsResponse.data;
         if (!guilds) return new AuthError('fetchUser', { source: 'Discord user guilds data fetch from token.' });
+        const installedGuilds = await getInstalledGuildIds(guilds.map(g => g.id))
+        if (installedGuilds instanceof AuthError) return installedGuilds
+
         const userGuildsMapped = guilds.map((g) => ({
             id: g?.id,
             name: g?.name,
@@ -42,7 +61,7 @@ export async function fetchUserDiscordData(accessToken: string) {
             permissions: g?.permissions,
             isOwner: g?.owner,
             memberCount: g?.approximate_member_count,
-            hasSessionsBot: botGuildsIds.includes(g?.id),
+            hasSessionsBot: installedGuilds?.includes(g?.id) || false,
         }));
         const manageableGuildsMapped = userGuildsMapped.filter((guild) => {
             const permissions = BigInt(guild.permissions);
