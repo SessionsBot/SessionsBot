@@ -14,7 +14,7 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
-    "@floating-ui/vue": "^1.1.11",
+    "@floating-ui/vue": "^2.0.0",
     "@odiffey/discord-markdown": "^3.3.0",
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^2.0.3",
@@ -50,7 +50,7 @@
     "@types/node": "^22.19.15",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
-    "npm-run-all2": "^8.0.4",
+    "npm-run-all2": "^9.0.2",
     "typescript": "~6.0.3",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^32.0.0",
