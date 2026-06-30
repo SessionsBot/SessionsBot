@@ -17,25 +17,25 @@
     "@logtail/node": "^0.5.8",
     "@napi-rs/canvas": "^0.1.100",
     "@sessionsbot/shared": "*",
-    "@supabase/supabase-js": "^2.101.1",
+    "@supabase/supabase-js": "^2.108.2",
     "@vvo/tzdb": "^6.198.0",
-    "axios": "^1.15.2",
+    "axios": "^1.18.1",
     "calendar-link": "^2.11.4",
     "chrono-node": "^2.9.1",
     "cors": "^2.8.6",
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.3.2",
-    "firebase-admin": "^13.7.0",
+    "express-rate-limit": "^8.5.2",
+    "firebase-admin": "^13.10.0",
     "jsonwebtoken": "^9.0.3",
-    "lru-cache": "^11.2.7",
+    "lru-cache": "^11.5.1",
     "luxon": "^3.7.2",
     "lz-string": "^1.5.0",
-    "node-cron": "^4.2.1",
+    "node-cron": "^4.5.0",
     "p-limit": "^7.3.0",
     "rrule": "^2.8.1",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^10.0.6",
@@ -43,7 +43,7 @@
     "@types/express": "^5.0.6",
     "@types/luxon": "^3.7.2",
     "release-it": "^19.2.4",
-    "tsx": "^4.21.1",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.3"
   }
 }
