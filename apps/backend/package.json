@@ -19,7 +19,7 @@
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.101.1",
     "@vvo/tzdb": "^6.198.0",
-    "axios": "^1.15.2",
+    "axios": "^1.18.0",
     "calendar-link": "^2.11.4",
     "chrono-node": "^2.9.2",
     "cors": "^2.8.6",
