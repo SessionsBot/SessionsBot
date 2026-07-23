@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@logtail/node": "^0.5.8",
-    "@napi-rs/canvas": "^0.1.100",
+    "@napi-rs/canvas": "^1.0.2",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.101.1",
     "@vvo/tzdb": "^6.198.0",
@@ -27,7 +27,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
-    "firebase-admin": "^13.7.0",
+    "firebase-admin": "^14.2.0",
     "jsonwebtoken": "^9.0.3",
     "lru-cache": "^11.2.7",
     "luxon": "^3.7.2",
@@ -38,12 +38,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@release-it/conventional-changelog": "^10.0.6",
+    "@release-it/conventional-changelog": "^11.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/luxon": "^3.7.2",
-    "release-it": "^19.2.4",
+    "release-it": "^20.2.1",
     "tsx": "^4.21.1",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   }
 }
