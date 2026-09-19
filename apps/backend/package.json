@@ -14,7 +14,7 @@
     "sync-db-guilds": "tsx src/scripts/syncDbGuilds.ts"
   },
   "dependencies": {
-    "@logtail/node": "^0.5.8",
+    "@logtail/node": "^0.5.9",
     "@napi-rs/canvas": "^0.1.100",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.101.1",
