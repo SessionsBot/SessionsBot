@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-import pkgFile from './package.json'
+import pkgFile from './package.json' with {type: 'json'}
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
