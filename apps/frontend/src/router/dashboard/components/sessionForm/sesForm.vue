@@ -7,7 +7,7 @@
     import DiscordTab from './tabs/discord/discord.vue';
     import { KeepAlive, Transition } from 'vue';
     import { useConfirm } from 'primevue';
-    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, rruleDateToLuxon, rrulestr, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
+    import { dbIsoUtcToFormDate, getSchedulesLastPostUTC, getSchedulesNextPostUTC, mapRsvps, RegExp_DefaultEmojiString, RegExp_DiscordEmojiId, rruleDateToLuxon, rrulestr, type API_SessionTemplateBodyInterface, type APIResponseValue } from '@sessionsbot/shared';
     import { API } from '@/utils/api';
     import { DateTime } from 'luxon';
     import { getTimeZones } from '@vvo/tzdb';
@@ -145,8 +145,9 @@
             // 2nd Level - See RsvpPanel Schema
             name: z.string().normalize(),
             emoji: z.nullish(z.string()
-                .regex(/^(?:<(?:a)?:[A-Za-z0-9_]{2,32}:\d{17,20}>|\p{Extended_Pictographic}(?:\uFE0F)?)$/u, "Please enter a valid emoji.")
-                .or(z.literal(""))),
+                .regex(RegExp_DefaultEmojiString, "Please enter a valid emoji.")
+                .or(z.string().regex(RegExp_DiscordEmojiId, "Please enter a valid emoji."))
+                .or(z.literal("", "Please enter a valid emoji."))),
             capacity: z.number(),
             required_roles: z.array(z.string()).nullish()
         })).nullish(),

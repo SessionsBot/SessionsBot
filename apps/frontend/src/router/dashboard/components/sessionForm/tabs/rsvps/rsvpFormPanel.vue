@@ -3,13 +3,13 @@
     import z from 'zod';
     import { CheckIcon, ArrowLeft, Trash2Icon, UserCheckIcon, BaselineIcon, SmileIcon, UsersRoundIcon, UserStarIcon } from 'lucide-vue-next';
     import { useConfirm } from 'primevue';
-
+    //@ts-expect-error
     import 'vue3-emoji-picker/css'
     import type { PopoverMethods } from 'primevue';
     import type { FormInstance, FormSubmitEvent } from '@primevue/forms/form';
     import InputTitle from '../../labels/inputTitle.vue'
     import useDashboardStore from '@/stores/dashboard/dashboard';
-    import { SubscriptionLevel } from '@sessionsbot/shared';
+    import { RegExp_DefaultEmojiString, RegExp_DiscordEmojiId, SubscriptionLevel } from '@sessionsbot/shared';
     import useNotifier from '@/stores/notifier';
     import EmojiPanel from './emojiPanel.vue';
 
@@ -66,8 +66,9 @@
     const RsvpFormSchema = z.object({
         name: z.string("Invalid Title").trim().min(1, "Title must be at least 1 character.").max(32, "Title cannot exceed 32 characters."),
         emoji: z.string()
-            .regex(/^(?:<(?:a)?:[A-Za-z0-9_]{2,32}:\d{17,20}>|\p{Extended_Pictographic}(?:\uFE0F)?)$/u, "Please enter a valid emoji.")
-            .or(z.literal("")),
+            .regex(RegExp_DefaultEmojiString, "Please enter a valid emoji.")
+            .or(z.string().regex(RegExp_DiscordEmojiId, "Please enter a valid emoji."))
+            .or(z.literal("", "Please enter a valid emoji.")),
         capacity: z.number().min(1, 'Capacity must be greater than or equal to 1.').max(maxRsvpCapacity.value, `Capacity must be less than or equal to ${maxRsvpCapacity.value}! <br> <a href="./pricing" target="_blank" class="text-sky-400/80 underline">Upgrade your bot</a> for higher limits!`),
         required_roles: z.nullish(z.array(z.string()))
     })
@@ -229,7 +230,7 @@
 
                 <!-- Emoji Picker -->
                 <Popover unstyled ref="emojiPickerPORef" class="p-2! bg-bg-2! border! border-ring-soft! rounded-md">
-                    <EmojiPanel @select-custom-emoji="(e) => {
+                    <EmojiPanel :emoji-value="RsvpFormValues.emoji" @select-custom-emoji="(e) => {
                         RsvpFormValues.emoji = e;
                         rsvpFormRef?.setFieldValue('emoji', e)
                         emojiPickerPORef?.hide()
@@ -237,6 +238,11 @@
                     }" @select-emoji="(e) => {
                         RsvpFormValues.emoji = e.i;
                         rsvpFormRef?.setFieldValue('emoji', e.i)
+                        emojiPickerPORef.hide()
+                        rsvpFormRef?.validate('emoji')
+                    }" @clear-emoji="() => {
+                        RsvpFormValues.emoji = '';
+                        rsvpFormRef?.setFieldValue('emoji', '')
                         emojiPickerPORef.hide()
                         rsvpFormRef?.validate('emoji')
                     }" />

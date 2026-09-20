@@ -6,6 +6,11 @@
     // Services:
     const dashboard = useDashboardStore()
 
+    // Props:
+    const props = defineProps<{
+        emojiValue: string | null
+    }>()
+
     // Guild Emojis:
     const guildEmojis = computed(() => dashboard.guildData.emojis.state)
     const lastEmojiFetch = ref<DateTime | undefined>(undefined)
@@ -47,7 +52,8 @@
     // Outgoing Emits:
     const emits = defineEmits<{
         selectEmoji: [EmojiExt],
-        selectCustomEmoji: [string]
+        selectCustomEmoji: [string],
+        clearEmoji: []
     }>()
 
 </script>
@@ -67,6 +73,11 @@
                     class="button-base bg-bg-soft border border-ring-soft rounded-lg px-1">
                     <Iconify icon="mingcute:star-fill" size="16" />
                     <p class="text-sm font-bold"> Custom </p>
+                </Button>
+                <Button v-if="props.emojiValue != ''" title="No Emoji" @click="emits('clearEmoji')" unstyled
+                    class="button-base bg-bg-soft border border-ring-soft rounded-lg px-1">
+                    <Iconify icon="fa:close" size="16" />
+                    <p class="text-sm font-bold"> Remove </p>
                 </Button>
             </span>
 
