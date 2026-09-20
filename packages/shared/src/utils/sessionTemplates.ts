@@ -125,7 +125,7 @@ export function getSchedulesNextPostUTC(opts: {
     const luxonToRRuleDate = (d: DateTime) => (datetime(d.year, d.month, d.day, d.hour, d.minute, 0))
 
     // Util - Adjust Until Date (if any) for Post Schedule RRule:
-    const adjustUntilDate = (d: Date | undefined, z: string) => {
+    const adjustUntilDate = (d: Date | null, z: string) => {
         if (d) {
             const orgUntilDate = rruleDateToLuxon(d, z)
             return luxonToRRuleDate(orgUntilDate?.minus({ milliseconds: opts.postOffsetMs }))
