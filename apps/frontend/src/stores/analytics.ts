@@ -24,7 +24,7 @@ function waitForGtag(timeout = 2000): Promise<boolean> {
 /** Safe GTag Usage Utility */
 export function safeGTag(...args: any[]) {
     if (typeof window.gtag == 'function') {
-        window.gtag(args)
+        window.gtag(...args)
     } else console.warn('GTag not available...', args)
 }
 

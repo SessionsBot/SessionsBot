@@ -14,10 +14,10 @@
 
     // On App Mount:
     onMounted(async () => {
-        // Initialize Auth (watcher):
-        await watchAuth();
         // Initialize Analytics - Cookie Consent:
         analytics.cookieConsent.init()
+        // Initialize Auth (watcher):
+        await watchAuth();
     })
 
 </script>
