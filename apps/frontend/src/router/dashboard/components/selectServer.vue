@@ -76,14 +76,15 @@
                 <div
                     class="flex flex-wrap flex-row gap-2 pb-4 justify-center items-center w-full bg-bg-1/15 border-y-2 border-ring-soft">
                     <!-- Guilds List -->
-                    <span
-                        class="flex flex-wrap flex-row gap-2 justify-center items-center w-full p-4 pb-2 max-h-100 overflow-y-auto">
+                    <span class="flex flex-wrap flex-row gap-2 justify-center w-full p-4 pb-2 overflow-y-auto">
                         <!-- Guild Button - Select -->
                         <Button v-for="guild of guildsWSession" :title="guild.name" :key="guild?.id"
                             @click="selectReadyServer(guild?.id)" unstyled
-                            class="bg-text-soft/50 flex-1 grow hover:bg-text-soft/35 ring-2 ring-ring-4 hover:ring-brand-2 cursor-pointer transition-all p-4 min-w-27 rounded-sm flex flex-col gap-1 justify-center items-center flex-wrap">
-                            <img :src="guild?.icon" class="size-11 bg-text-1/50 rounded-full ring-2 ring-ring-3" />
-                            <p class="font-semibold truncate"> {{ guild.name }} </p>
+                            class="bg-text-soft/50 flex-1 hover:bg-text-soft/35 ring-2 ring-ring-4 hover:ring-brand-2 cursor-pointer transition-all p-4 min-w-27 min-h- rounded-sm flex">
+                            <div class="flex flex-col flex-1 gap-1 flex-center">
+                                <img :src="guild?.icon" class="size-11 bg-text-1/50 rounded-full ring-2 ring-ring-3" />
+                                <p class="font-semibold"> {{ guild.name }} </p>
+                            </div>
                         </Button>
                     </span>
 
