@@ -21,10 +21,10 @@
 
 
 <template>
-    <div class="dashboard-tab-view flex! flex-wrap! flex-col!">
+    <div class="dashboard-tab-view">
 
         <!-- Title & Desc -->
-        <div class="w-full flex items-center justify-start flex-row gap-0">
+        <div class="w-full max-w-full flex-wrap flex items-center justify-start flex-row gap-0">
             <div class="w-fit h-fit flex aspect-square">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -46,11 +46,11 @@
             </p>
         </div>
 
-        <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
+        <p class="pl-4 pt-1 text-sm text-start w-full text-text-1/70">
             View your Discord Server's recently posted sessions and any active session schedules you have configured.
         </p>
 
-        <div class="w-full h-fit flex items-start justify-center p-4 pb-2 flex-wrap">
+        <div class="w-full flex items-start justify-center p-4 flex-wrap">
 
             <!-- Disbanded Schedule(s) - Alert -->
             <DisabledTemplateAlert v-if="guildTemplates?.some(t => !t.enabled)" />

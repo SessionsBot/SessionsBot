@@ -30,12 +30,13 @@
 
 
 <template>
-    <div class="flex relative flex-col grow items-center justify-center flex-1 w-full h-full">
+    <div class="flex relative flex-1 w-full h-full overflow-y-auto! overflow-x-clip">
 
         <Transition name="slide" :duration="0.5" mode="out-in">
+
             <!-- Loading Content - Modal -->
             <div v-if="!dashboard.guildDataState.initialFetchOk"
-                class="flex gap-2 items-center justify-center p-4 bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
+                class="flex flex-wrap gap-2 items-center justify-center p-4 m-auto bg-bg-2 border-2 border-ring-soft rounded-md shadow-lg">
                 <ProgressSpinner />
                 <div class="text-text-1/70 p-2 text-center">
                     <p class="font-bold text-lg"> Loading Dashboard </p>
@@ -45,8 +46,7 @@
 
 
             <!-- Main Page Content -->
-            <div v-else
-                class="flex flex-row flex-wrap grow w-full! overflow-x-clip overflow-y-auto max-w-full! min-h-fit!">
+            <div v-else class="flex flex-row flex-1 overflow-x-clip overflow-y-auto w-full! h-full! max-w-full!">
 
                 <Transition name="dashboard-tab">
                     <component :is="activeTabComponent" />
@@ -61,9 +61,6 @@
     </div>
 
 
-
-
-
 </template>
 
 
@@ -72,7 +69,7 @@
     @reference "@/styles/main.css";
 
     :deep(.dashboard-tab-view) {
-        @apply flex !p-5 flex-col flex-wrap !w-full !max-w-full !min-h-fit grow flex-1 justify-start items-center content-center;
+        @apply flex p-5 flex-col !w-full h-fit flex-1;
     }
 
     /* Dashboard Tab - Animation */
@@ -99,6 +96,8 @@
     .dashboard-tab-leave-active {
         transition: all .33s ease;
         position: absolute;
+        min-width: 100% !important;
+        flex: 1;
     }
 
 </style>

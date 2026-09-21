@@ -84,7 +84,7 @@
         </div>
 
         <!-- Desc -->
-        <p class="mx-4 pt-1 text-sm text-start w-full text-text-1/70">
+        <p class="pl-4 pt-1 text-sm text-start w-full text-text-1/70">
             Take a look below at any of the recent actions Sessions Bot or server members have made in relation to
             sessions, RSVPs, etc.
         </p>

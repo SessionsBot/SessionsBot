@@ -12,7 +12,7 @@
 
 <template>
     <!-- Content Root - Scroll Wrap -->
-    <div class="dashboard-tab-view min-w-fit! flex-nowrap!">
+    <div class="dashboard-tab-view">
 
 
 
@@ -26,15 +26,15 @@
             </p>
         </div>
 
-        <p class="mx-4 mb-7 pt-1 text-sm text-start w-full text-text-1/70">
+        <p class="pl-4 mb-7 pt-1 text-sm text-start w-full text-text-1/70">
             View your Discord Server's personal calendar below. Here you can inspect individual days and look back
             at
             session
             history!
         </p>
-        <span class="flex flex-col justify-between grow p-2 relative">
+        <span class="flex flex-col justify-between grow p-2">
             <!-- Calendar Container Wrap -->
-            <div class="flex grow items-center justify-center p-2 flex-wrap max-h-full w-full max-w-full">
+            <div class="flex p-2 m-auto">
 
                 <CustomCalendar />
 
