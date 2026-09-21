@@ -167,7 +167,7 @@
                     </p>
                 </RouterLink>
 
-                <!-- Developer Sign In - FIX V-IF LATER -->
+                <!-- Developer Sign In -->
                 <RouterLink to="/dev-sign-in"
                    v-if="
 									  !auth.signedIn &&
