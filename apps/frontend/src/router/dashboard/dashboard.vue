@@ -138,7 +138,7 @@
 <template>
 
 
-    <div class="relative flex flex-col grow w-full h-full max-w-full max-h-full">
+    <div class="relative flex flex-col flex-1 w-full h-full max-w-full max-h-full">
 
         <Transition name="slide" mode="out-in">
 
@@ -189,8 +189,7 @@
                 <DashboardNav />
 
                 <!-- Dashboard - Content View -->
-                <div
-                    class=" pl-15 sm:pl-0! w-full h-full! max-w-full! max-h-full! p-0 grow flex items-center justify-center">
+                <div class="pl-15 sm:pl-0! w-full! h-full! flex-1 flex">
 
                     <DashboardTabView />
 
