@@ -19,7 +19,7 @@
     "@popperjs/core": "^2.11.8",
     "@primeuix/themes": "^2.0.3",
     "@primevue/forms": "^4.5.5",
-    "@sentry/vue": "^10.75.1",
+    "@sentry/vue": "^10.75.3",
     "@sessionsbot/shared": "*",
     "@supabase/supabase-js": "^2.116.0",
     "@tailwindcss/vite": "^4.3.3",
