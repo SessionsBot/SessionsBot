@@ -17,7 +17,7 @@
     "@logtail/node": "^0.5.10",
     "@napi-rs/canvas": "^0.1.100",
     "@sessionsbot/shared": "*",
-    "@supabase/supabase-js": "^2.116.0",
+    "@supabase/supabase-js": "^2.117.1",
     "@vvo/tzdb": "^6.198.0",
     "axios": "^1.20.0",
     "calendar-link": "^2.11.5",
