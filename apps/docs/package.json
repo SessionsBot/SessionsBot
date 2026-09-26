@@ -5,7 +5,7 @@
   "type": "module",
   "devDependencies": {
     "vitepress": "^2.0.0-alpha.20",
-    "wrangler": "^4.133.0"
+    "wrangler": "^4.136.3"
   },
   "scripts": {
     "dev": "vitepress dev",
