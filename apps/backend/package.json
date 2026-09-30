@@ -40,7 +40,7 @@
     "@release-it/conventional-changelog": "^10.0.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/luxon": "^3.7.5",
+    "@types/luxon": "^3.7.6",
     "release-it": "^19.2.4",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
