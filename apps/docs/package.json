@@ -18,8 +18,8 @@
     "@odiffey/discord-markdown": "^3.3.0",
     "@sessionsbot/shared": "*",
     "@tailwindcss/vite": "^4.3.3",
-    "@vueuse/core": "^14.4.0",
-    "pinia": "^3.0.4",
+    "@vueuse/core": "^15.0.0",
+    "pinia": "^4.0.3",
     "tailwindcss": "^4.3.3",
     "zod": "^4.6.5"
   }
