@@ -17,7 +17,7 @@
     "@iconify/vue": "^5.0.5",
     "@odiffey/discord-markdown": "^3.3.0",
     "@sessionsbot/shared": "*",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.5",
     "@vueuse/core": "^14.4.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.3.3",
